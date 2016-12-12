@@ -34,6 +34,29 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 }
 ```
 
+### Spark support
+The library also supports applications written with the [Spark framework](http://sparkjava.com/). When using the library with Spark, it's important to initialize the `SparkLambdaContainerHandler` before defining routes.
+
+```java
+public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyResponse> {
+    private SparkLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = 
+            SparkLambdaContainerHandler.getAwsProxyHandler();
+    private boolean initialized = false;
+    
+    public AwsProxyResponse handleRequest(AwsProxyRequest awsProxyRequest, Context context) {
+        if (!initialized) {
+            defineRoutes();
+            initialized = true;
+        }
+        return handler.proxy(awsProxyRequest, context);
+    }
+    
+    private void defineRoutes() {
+        get("/hello", (req, res) -> "Hello World");
+    }
+}
+```
+
 ## Security context
 The `aws-serverless-java-container-core` contains a default implementation of the `SecurityContextWriter` that supports API Gateway's proxy integration. The generated security context uses the API Gateway `$context` object to establish the request security context. The context looks for the following values in order and returns the first matched type:
 
