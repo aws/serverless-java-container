@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.amazonaws.serverless</groupId>
+    <artifactId>aws-serverless-java-container-spark</artifactId>
+    <name>AWS Serverless Java container support - Spark implementation</name>
+    <description>Allows Java applications written for Spark to run in AWS Lambda</description>
+    <url>https://aws.amazon.com/lambda/</url>
+    <version>0.1</version>
+
+    <scm>
+        <url>https://github.com/awslabs/aws-serverless-java-container.git</url>
+    </scm>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <jackson.version>2.8.4</jackson.version>
+        <spark.version>2.5.3</spark.version>
+    </properties>
+
+    <dependencies>
+        <!-- Core interfaces for the aws-serverless-java-container project -->
+        <dependency>
+            <groupId>com.amazonaws.serverless</groupId>
+            <artifactId>aws-serverless-java-container-core</artifactId>
+            <version>0.1</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.sparkjava/spark-core -->
+        <dependency>
+            <groupId>com.sparkjava</groupId>
+            <artifactId>spark-core</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/junit/junit -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.4</version>
+            </plugin>
+        </plugins>
+    </build>
+</project>
