@@ -62,7 +62,7 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
     protected abstract ContainerResponseType getContainerResponse(CountDownLatch latch);
 
 
-    protected abstract void handleRequest(ContainerRequestType containerRequest, ContainerResponseType containerResponse)
+    protected abstract void handleRequest(ContainerRequestType containerRequest, ContainerResponseType containerResponse, Context lambdaContext)
             throws Exception;
 
 
@@ -85,7 +85,7 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
             ContainerResponseType containerResponse = getContainerResponse(latch);
             ContainerRequestType containerRequest = requestReader.readRequest(request, securityContext, context);
 
-            handleRequest(containerRequest, containerResponse);
+            handleRequest(containerRequest, containerResponse, context);
 
             latch.await();
 
@@ -93,9 +93,10 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
         } catch (Exception e) {
             context.getLogger().log("Error while handling request: " + e.getMessage());
 
-            for (StackTraceElement el : e.getStackTrace()) {
+            /*for (StackTraceElement el : e.getStackTrace()) {
                 context.getLogger().log(el.toString());
-            }
+            }*/
+            e.printStackTrace();
 
             return exceptionHandler.handle(e);
         }

@@ -32,7 +32,11 @@ public class AwsProxyHttpServletRequestReader extends RequestReader<AwsProxyRequ
     @Override
     public AwsProxyHttpServletRequest readRequest(AwsProxyRequest request, SecurityContext securityContext, Context lambdaContext)
             throws InvalidRequestEventException {
-        return new AwsProxyHttpServletRequest(request, lambdaContext, securityContext);
+        AwsProxyHttpServletRequest servletRequest = new AwsProxyHttpServletRequest(request, lambdaContext, securityContext);
+        servletRequest.setAttribute(API_GATEWAY_CONTEXT_PROPERTY, request.getRequestContext());
+        servletRequest.setAttribute(API_GATEWAY_STAGE_VARS_PROPERTY, request.getStageVariables());
+        servletRequest.setAttribute(LAMBDA_CONTEXT_PROPERTY, lambdaContext);
+        return servletRequest;
     }
 
 

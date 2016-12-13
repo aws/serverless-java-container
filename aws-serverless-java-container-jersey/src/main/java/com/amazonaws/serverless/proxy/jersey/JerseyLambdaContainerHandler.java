@@ -23,6 +23,7 @@ import com.amazonaws.serverless.proxy.internal.SecurityContextWriter;
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyResponse;
 
+import com.amazonaws.services.lambda.runtime.Context;
 import org.glassfish.jersey.server.ApplicationHandler;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -181,7 +182,7 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Lam
 
 
     @Override
-    protected void handleRequest(ContainerRequest containerRequest, JerseyResponseWriter jerseyResponseWriter) {
+    protected void handleRequest(ContainerRequest containerRequest, JerseyResponseWriter jerseyResponseWriter, Context lambdaContext) {
         containerRequest.setWriter(jerseyResponseWriter);
 
         applicationHandler.handle(containerRequest);

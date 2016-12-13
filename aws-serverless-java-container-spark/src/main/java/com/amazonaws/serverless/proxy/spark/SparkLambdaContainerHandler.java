@@ -23,6 +23,7 @@ import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRespon
 import com.amazonaws.serverless.proxy.spark.embeddedserver.LambdaEmbeddedServer;
 import com.amazonaws.serverless.proxy.spark.embeddedserver.LambdaEmbeddedServerFactory;
 
+import com.amazonaws.services.lambda.runtime.Context;
 import spark.Service;
 import spark.Spark;
 import spark.embeddedserver.EmbeddedServers;
@@ -145,7 +146,7 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType> extends Lamb
 
 
     @Override
-    protected void handleRequest(AwsProxyHttpServletRequest httpServletRequest, AwsHttpServletResponse httpServletResponse)
+    protected void handleRequest(AwsProxyHttpServletRequest httpServletRequest, AwsHttpServletResponse httpServletResponse, Context lambdaContext)
             throws Exception {
         if (embeddedServer == null) {
             embeddedServer = LambdaEmbeddedServerFactory.getServerInstance();

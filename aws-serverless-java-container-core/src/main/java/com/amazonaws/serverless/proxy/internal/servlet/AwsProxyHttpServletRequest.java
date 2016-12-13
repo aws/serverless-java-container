@@ -180,6 +180,9 @@ public class AwsProxyHttpServletRequest
 
     @Override
     public Enumeration<String> getHeaderNames() {
+        if (request.getHeaders() == null) {
+            return Collections.emptyEnumeration();
+        }
         return Collections.enumeration(request.getHeaders().keySet());
     }
 
@@ -220,7 +223,7 @@ public class AwsProxyHttpServletRequest
 
     @Override
     public String getContextPath() {
-        return request.getResource();
+        return "/";
     }
 
 
@@ -529,7 +532,9 @@ public class AwsProxyHttpServletRequest
         }
 
         for (Map.Entry<String, List<String>> entry : params.entrySet()) {
-            output.put(entry.getKey(), (String[])entry.getValue().toArray());
+            String[] valuesArray = new String[entry.getValue().size()];
+            valuesArray = entry.getValue().toArray(valuesArray);
+            output.put(entry.getKey(), valuesArray);
         }
         return output;
     }

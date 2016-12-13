@@ -364,8 +364,15 @@ public class AwsHttpServletResponse
     // Methods - Package
     //-------------------------------------------------------------
 
-    String getAwsResponseBody() {
+    String getAwsResponseBodyString() {
         return responseBody;
+    }
+
+    byte[] getAwsResponseBodyBytes() {
+        if (bodyOutputStream != null) {
+            return bodyOutputStream.toByteArray();
+        }
+        return new byte[0];
     }
 
 

@@ -41,7 +41,7 @@ import java.util.Map;
 import java.util.Set;
 
 
-class AwsProxyServletContext
+public class AwsProxyServletContext
         implements ServletContext {
 
     //-------------------------------------------------------------
@@ -218,7 +218,7 @@ class AwsProxyServletContext
 
     @Override
     public String getInitParameter(String s) {
-        return "AWS Lambda (JDK " + System.getProperty("java.version") + ")";
+        return null;
     }
 
 
@@ -411,11 +411,7 @@ class AwsProxyServletContext
     }
 
 
-    //-------------------------------------------------------------
-    // Methods - Package
-    //-------------------------------------------------------------
-
-    static ServletContext getInstance(AwsProxyRequest request, Context lambdaContext) {
+    public static ServletContext getInstance(AwsProxyRequest request, Context lambdaContext) {
         if (instance == null) {
             instance = new AwsProxyServletContext(request, lambdaContext);
         }
