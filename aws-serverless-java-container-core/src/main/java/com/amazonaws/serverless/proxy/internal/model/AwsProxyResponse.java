@@ -27,6 +27,7 @@ public class AwsProxyResponse {
     private int statusCode;
     private Map<String, String> headers;
     private String body;
+    private boolean isBase64Encoded;
 
 
     //-------------------------------------------------------------
@@ -99,5 +100,13 @@ public class AwsProxyResponse {
 
     public void setBody(String body) {
         this.body = body;
+    }
+
+    public boolean isBase64Encoded() {
+        return isBase64Encoded;
+    }
+
+    public void setBase64Encoded(boolean base64Encoded) {
+        isBase64Encoded = base64Encoded;
     }
 }

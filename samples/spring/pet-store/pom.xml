@@ -2,13 +2,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.amazonaws.serverless</groupId>
-    <artifactId>aws-serverless-java-container-spring</artifactId>
-    <name>AWS Serverless Java container support - Spring implementation</name>
-    <description>Allows Java applications written for the Spring framework to run in AWS Lambda</description>
+    <groupId>com.amazonaws.serverless.sample</groupId>
+    <artifactId>serverless-spring-example</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <name>Spring example for the aws-serverless-java-container library</name>
+    <description>Simple pet store written with the Spring framework</description>
     <url>https://aws.amazon.com/lambda/</url>
-    <version>0.1</version>
 
     <scm>
         <url>https://github.com/awslabs/aws-serverless-java-container.git</url>
@@ -21,7 +22,6 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-    <modelVersion>4.0.0</modelVersion>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -31,11 +31,16 @@
     </properties>
 
     <dependencies>
-        <!-- Core interfaces for the aws-serverless-java-container project -->
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
-            <artifactId>aws-serverless-java-container-core</artifactId>
+            <artifactId>aws-serverless-java-container-spring</artifactId>
             <version>0.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-lambda-java-core</artifactId>
+            <version>1.1.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.springframework/spring-webmvc -->
@@ -45,41 +50,41 @@
             <version>${spring.version}</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
-        <dependency>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
-            <version>1.10</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/junit/junit -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>
-
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
             <version>${jackson.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <version>${jackson.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
-            <scope>test</scope>
         </dependency>
-
-
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.3</version>
+                <configuration>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

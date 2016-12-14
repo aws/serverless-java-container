@@ -122,8 +122,18 @@ public class AwsProxyRequestBuilder {
 
 
     public AwsProxyRequestBuilder authorizerPrincipal(String principal) {
-        this.request.getRequestContext().setAuthorizer(new ApiGatewayAuthorizerContext());
+        if (this.request.getRequestContext().getAuthorizer() == null) {
+            this.request.getRequestContext().setAuthorizer(new ApiGatewayAuthorizerContext());
+        }
         this.request.getRequestContext().getAuthorizer().setPrincipalId(principal);
+        return this;
+    }
+
+    public AwsProxyRequestBuilder authorizerContextValue(String key, String value) {
+        if (this.request.getRequestContext().getAuthorizer() == null) {
+            this.request.getRequestContext().setAuthorizer(new ApiGatewayAuthorizerContext());
+        }
+        this.request.getRequestContext().getAuthorizer().put(key, value);
         return this;
     }
 

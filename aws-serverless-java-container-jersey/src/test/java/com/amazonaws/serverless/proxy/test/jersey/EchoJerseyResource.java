@@ -79,6 +79,17 @@ public class EchoJerseyResource {
         return valueModel;
     }
 
+    @Path("/authorizer-context") @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public SingleValueModel echoAuthorizerContext(@Context ContainerRequestContext context, @QueryParam("key") String key) {
+        SingleValueModel valueModel = new SingleValueModel();
+        ApiGatewayRequestContext apiGatewayRequestContext =
+                (ApiGatewayRequestContext) context.getProperty(RequestReader.API_GATEWAY_CONTEXT_PROPERTY);
+        valueModel.setValue(apiGatewayRequestContext.getAuthorizer().getContextValue(key));
+
+        return valueModel;
+    }
+
     @Path("/json-body") @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

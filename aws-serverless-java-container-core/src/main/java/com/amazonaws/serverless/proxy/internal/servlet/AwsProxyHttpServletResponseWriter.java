@@ -42,6 +42,7 @@ public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpSer
                 responseString = containerResponse.getAwsResponseBodyString();
             } else {
                 responseString = Base64.getMimeEncoder().encodeToString(containerResponse.getAwsResponseBodyBytes());
+                awsProxyResponse.setBase64Encoded(true);
             }
 
             awsProxyResponse.setBody(responseString);

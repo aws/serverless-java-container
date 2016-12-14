@@ -59,6 +59,7 @@ public class JerseyAwsProxyResponseWriter extends ResponseWriter<JerseyResponseW
                     responseString = new String(containerResponse.getResponseBody().toByteArray());
                 } else {
                     responseString = Base64.getMimeEncoder().encodeToString(containerResponse.getResponseBody().toByteArray());
+                    response.setBase64Encoded(true);
                 }
 
                 response.setBody(responseString);

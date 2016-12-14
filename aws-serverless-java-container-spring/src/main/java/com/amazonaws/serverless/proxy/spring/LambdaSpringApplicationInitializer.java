@@ -12,6 +12,7 @@
  */
 package com.amazonaws.serverless.proxy.spring;
 
+import com.amazonaws.serverless.exceptions.InvalidResponseObjectException;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.web.WebApplicationInitializer;
@@ -40,6 +41,8 @@ import java.util.List;
  * Spring notifications for the `ServletRequestHandledEvent` and call the flush method to release the latch.
  */
 public class LambdaSpringApplicationInitializer implements WebApplicationInitializer {
+    private static final String DEFAULT_SERVLET_NAME = "aws-servless-java-container";
+
     // Configuration variables that can be passed in
     private List<Class> configurationClasses;
     private List<ServletContextListener> contextListeners;
@@ -49,8 +52,7 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
     private ServletConfig dispatcherConfig;
     private DispatcherServlet dispatcherServlet;
 
-    // State vars
-    private boolean initialized;
+    // The current response is used to release the latch when Spring emits the request handled event
     private HttpServletResponse currentResponse;
 
     /**
@@ -59,7 +61,6 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
     public LambdaSpringApplicationInitializer() {
         configurationClasses = new ArrayList<>();
         contextListeners = new ArrayList<>();
-        initialized = false;
     }
 
     /**
@@ -95,11 +96,6 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
 
     public void dispatch(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        if (!initialized) {
-            ServletContext context = request.getServletContext();
-            onStartup(context);
-            initialized = true;
-        }
         currentResponse = response;
         dispatcherServlet.service(request, response);
     }
@@ -121,38 +117,18 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
         }
         applicationContext.setServletContext(servletContext);
 
-        dispatcherConfig = new ServletConfig() {
-            @Override
-            public String getServletName() {
-                return "aws-servless-java-container";
-            }
-
-            @Override
-            public ServletContext getServletContext() {
-                return servletContext;
-            }
-
-            @Override
-            public String getInitParameter(String s) {
-                return null;
-            }
-
-            @Override
-            public Enumeration<String> getInitParameterNames() {
-                return Collections.emptyEnumeration();
-            }
-        };
+        dispatcherConfig = new DefaultDispatcherConfig(servletContext);
         applicationContext.setServletConfig(dispatcherConfig);
 
+        // Configure the listener for the request handled events. All we do here is release the latch
         applicationContext.addApplicationListener(new ApplicationListener<ServletRequestHandledEvent>() {
-
             @Override
             public void onApplicationEvent(ServletRequestHandledEvent servletRequestHandledEvent) {
                 try {
                     currentResponse.flushBuffer();
                 } catch (IOException e) {
                     e.printStackTrace();
-                    // TODO: We just die here??
+                    throw new RuntimeException("Could not flush response buffer", e);
                 }
             }
         });
@@ -175,4 +151,35 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
         }
     }
 
+    /**
+     * Default configuration class for the DispatcherServlet. This just mocks the behaviour of a default
+     * ServletConfig object with no init parameters
+     */
+    private class DefaultDispatcherConfig implements ServletConfig {
+        private ServletContext servletContext;
+
+        DefaultDispatcherConfig(ServletContext context) {
+            servletContext = context;
+        }
+
+        @Override
+        public String getServletName() {
+            return DEFAULT_SERVLET_NAME;
+        }
+
+        @Override
+        public ServletContext getServletContext() {
+            return servletContext;
+        }
+
+        @Override
+        public String getInitParameter(String s) {
+            return null;
+        }
+
+        @Override
+        public Enumeration<String> getInitParameterNames() {
+            return Collections.emptyEnumeration();
+        }
+    }
 }
