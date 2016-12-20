@@ -32,7 +32,7 @@ import java.util.concurrent.CountDownLatch;
  * @param <RequestType> The incoming event type
  * @param <ResponseType> The expected return type
  */
-public class SpringLambdacontainerHandler<RequestType, ResponseType> extends LambdaContainerHandler<RequestType, ResponseType, AwsProxyHttpServletRequest, AwsHttpServletResponse> {
+public class SpringLambdaContainerHandler<RequestType, ResponseType> extends LambdaContainerHandler<RequestType, ResponseType, AwsProxyHttpServletRequest, AwsHttpServletResponse> {
     private LambdaSpringApplicationInitializer initializer;
 
     // State vars
@@ -44,10 +44,10 @@ public class SpringLambdacontainerHandler<RequestType, ResponseType> extends Lam
      * @return An initialized instance of the `SpringLambdaContainerHandler`
      * @throws ContainerInitializationException
      */
-    public static SpringLambdacontainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(Class... config)
+    public static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(Class... config)
             throws ContainerInitializationException {
-        SpringLambdacontainerHandler<AwsProxyRequest, AwsProxyResponse> handler =
-                new SpringLambdacontainerHandler<>(
+        SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler =
+                new SpringLambdaContainerHandler<>(
                         new AwsProxyHttpServletRequestReader(),
                         new AwsProxyHttpServletResponseWriter(),
                         new AwsProxySecurityContextWriter(),
@@ -68,7 +68,7 @@ public class SpringLambdacontainerHandler<RequestType, ResponseType> extends Lam
      * @param exceptionHandler An implementation of `ExceptionHandler`
      * @throws ContainerInitializationException
      */
-    public SpringLambdacontainerHandler(RequestReader<RequestType, AwsProxyHttpServletRequest> requestReader,
+    public SpringLambdaContainerHandler(RequestReader<RequestType, AwsProxyHttpServletRequest> requestReader,
                                        ResponseWriter<AwsHttpServletResponse, ResponseType> responseWriter,
                                        SecurityContextWriter<RequestType> securityContextWriter,
                                        ExceptionHandler<ResponseType> exceptionHandler)
