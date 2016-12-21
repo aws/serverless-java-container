@@ -29,14 +29,14 @@ public class SpringAwsProxyTest {
 
 
     private static ObjectMapper objectMapper = new ObjectMapper();
-    private static SpringLambdacontainerHandler<AwsProxyRequest, AwsProxyResponse> handler = null;
+    private static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = null;
 
     private static Context lambdaContext = new MockLambdaContext();
 
     @BeforeClass
     public static void init() {
         try {
-            handler = SpringLambdacontainerHandler.getAwsProxyHandler(EchoSpringAppConfig.class);
+            handler = SpringLambdaContainerHandler.getAwsProxyHandler(EchoSpringAppConfig.class);
         } catch (ContainerInitializationException e) {
             e.printStackTrace();
             fail();
