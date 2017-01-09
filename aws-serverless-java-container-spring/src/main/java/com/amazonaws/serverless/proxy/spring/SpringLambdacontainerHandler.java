@@ -21,6 +21,7 @@ import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletReques
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequestReader;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
 import com.amazonaws.services.lambda.runtime.Context;
+import org.springframework.web.context.ConfigurableWebApplicationContext;
 
 import javax.servlet.ServletContext;
 import java.util.concurrent.CountDownLatch;
@@ -38,25 +39,22 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Lam
     // State vars
     private boolean initialized;
 
+
     /**
      * Creates a default SpringLambdaContainerHandler initialized with the `AwsProxyRequest` and `AwsProxyResponse` objects
-     * @param config A set of classes annotated with the Spring @Configuration annotation
+     * @param applicationContext A custom ConfigurableWebApplicationContext to be used
      * @return An initialized instance of the `SpringLambdaContainerHandler`
      * @throws ContainerInitializationException
      */
-    public static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(Class... config)
+    public static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(ConfigurableWebApplicationContext applicationContext)
             throws ContainerInitializationException {
-        SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler =
-                new SpringLambdaContainerHandler<>(
-                        new AwsProxyHttpServletRequestReader(),
-                        new AwsProxyHttpServletResponseWriter(),
-                        new AwsProxySecurityContextWriter(),
-                        new AwsProxyExceptionHandler()
-                );
-
-        handler.addConfiguration(config);
-
-        return handler;
+        return new SpringLambdaContainerHandler<>(
+                new AwsProxyHttpServletRequestReader(),
+                new AwsProxyHttpServletResponseWriter(),
+                new AwsProxySecurityContextWriter(),
+                new AwsProxyExceptionHandler(),
+                applicationContext
+        );
     }
 
     /**
@@ -69,20 +67,13 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Lam
      * @throws ContainerInitializationException
      */
     public SpringLambdaContainerHandler(RequestReader<RequestType, AwsProxyHttpServletRequest> requestReader,
-                                       ResponseWriter<AwsHttpServletResponse, ResponseType> responseWriter,
-                                       SecurityContextWriter<RequestType> securityContextWriter,
-                                       ExceptionHandler<ResponseType> exceptionHandler)
+                                        ResponseWriter<AwsHttpServletResponse, ResponseType> responseWriter,
+                                        SecurityContextWriter<RequestType> securityContextWriter,
+                                        ExceptionHandler<ResponseType> exceptionHandler,
+                                        ConfigurableWebApplicationContext applicationContext)
             throws ContainerInitializationException {
         super(requestReader, responseWriter, securityContextWriter, exceptionHandler);
-        initializer = new LambdaSpringApplicationInitializer();
-    }
-
-    /**
-     * Registers a set of classes with the underlying Spring application context
-     * @param config Spring annotated classes to be registered with the application context
-     */
-    public void addConfiguration(Class... config) {
-        initializer.addConfigurationClasses(config);
+        initializer = new LambdaSpringApplicationInitializer(applicationContext);
     }
 
     @Override
@@ -98,6 +89,7 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Lam
             initializer.onStartup(context);
             initialized = true;
         }
+
         initializer.dispatch(containerRequest, containerResponse);
     }
 }
