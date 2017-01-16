@@ -12,11 +12,12 @@
  */
 package com.amazonaws.serverless.proxy.spring;
 
-import com.amazonaws.serverless.exceptions.InvalidResponseObjectException;
+import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ContextLoaderListener;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.context.support.ServletRequestHandledEvent;
 import org.springframework.web.servlet.DispatcherServlet;
@@ -25,10 +26,7 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 
 /**
  * Custom implementation of Spring's `WebApplicationInitializer`. Uses internal variables to keep application state
@@ -41,6 +39,8 @@ import java.util.List;
  * Spring notifications for the `ServletRequestHandledEvent` and call the flush method to release the latch.
  */
 public class LambdaSpringApplicationInitializer implements WebApplicationInitializer {
+    public static final String ERROR_NO_CONTEXT = "No application context or configuration classes provided";
+
     private static final String DEFAULT_SERVLET_NAME = "aws-servless-java-container";
 
     // Configuration variables that can be passed in
@@ -48,7 +48,7 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
     private List<ServletContextListener> contextListeners;
 
     // Dynamically instantiated properties
-    private AnnotationConfigWebApplicationContext applicationContext;
+    private WebApplicationContext applicationContext;
     private ServletConfig dispatcherConfig;
     private DispatcherServlet dispatcherServlet;
 
@@ -56,32 +56,26 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
     private HttpServletResponse currentResponse;
 
     /**
-     * Creates a new instance of the WebApplicationInitializer
+     * Starts the application initializer with a set of annotated configuration classes. At the first request, this will
+     * create a new instance of AnnotationWebApplicationContext using the array of configuration classes.
+     *
+     * @param configuration A set of configuration classes
      */
-    public LambdaSpringApplicationInitializer() {
-        configurationClasses = new ArrayList<>();
+    public LambdaSpringApplicationInitializer(Class... configuration) {
+        configurationClasses = new ArrayList<>(Arrays.asList(configuration));
         contextListeners = new ArrayList<>();
     }
 
     /**
-     * Adds a configuration class to the Spring startup process. This should be called at least once with an annotated
-     * class that contains the @Configuration annotations. The simplest possible class uses the @ComponentScan
-     * annocation to load all controllers.
+     * Creates a new instance of LambdaSpringApplicationInitializer with an instance of applicationContext. When created
+     * this way, annotated configuration classes have no effect and the library will only use the application context.
      *
-     * <pre>
-     * {@Code
-     * @Configuration
-     * @ComponentScan("com.amazonaws.serverless.proxy.spring.echoapp")
-     * public class EchoSpringAppConfig {
-     * }
-     * }
-     * </pre>
-     * @param configuration A set of configuration classes
+     * @param applicationContext An initialized implementation of WebApplicationContext
      */
-    public void addConfigurationClasses(Class... configuration) {
-        for (Class config : configuration) {
-            configurationClasses.add(config);
-        }
+    public LambdaSpringApplicationInitializer(WebApplicationContext applicationContext) {
+        configurationClasses = new ArrayList<>();
+        this.applicationContext = applicationContext;
+        contextListeners = new ArrayList<>();
     }
 
     /**
@@ -104,24 +98,53 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
      * Returns the application context initialized in the library
      * @return
      */
-    public AnnotationConfigWebApplicationContext getApplicationContext() {
+    public WebApplicationContext getApplicationContext() {
         return applicationContext;
     }
 
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
-        // Create the 'root' Spring application context
-        applicationContext = new AnnotationConfigWebApplicationContext();
-        for (Class config : configurationClasses) {
-            applicationContext.register(config);
+        if (applicationContext == null) {
+            if (configurationClasses.size() > 0) {
+                applicationContext = initializeAnnotationApplicationContext(servletContext);
+            } else {
+                throw new ServletException(
+                        new ContainerInitializationException(ERROR_NO_CONTEXT, null)
+                );
+            }
         }
-        applicationContext.setServletContext(servletContext);
+        // Manage the lifecycle of the root application context
+        this.addListener(new ContextLoaderListener(applicationContext));
+
+        // Register and map the dispatcher servlet
+        dispatcherServlet = new DispatcherServlet(applicationContext);
+        dispatcherServlet.refresh();
+        dispatcherServlet.onApplicationEvent(new ContextRefreshedEvent(applicationContext));
+        dispatcherServlet.init(dispatcherConfig);
+
+        notifyStartListeners(servletContext);
+    }
+
+    /**
+     * Initializes a new AnnotationConfigWebApplicationContext using the list of annotated configuration classes
+     * passed to the constructor
+     *
+     * @param servletContext The context from the servlet container
+     * @return A new instance of WebApplicationContext using the config classes passed to the constructor
+     */
+    private AnnotationConfigWebApplicationContext initializeAnnotationApplicationContext(ServletContext servletContext) {
+        // Create the 'root' Spring application context
+        AnnotationConfigWebApplicationContext newApplicationContext = new AnnotationConfigWebApplicationContext();
+        for (Class config : configurationClasses) {
+            newApplicationContext.register(config);
+        }
+        newApplicationContext.setServletContext(servletContext);
 
         dispatcherConfig = new DefaultDispatcherConfig(servletContext);
-        applicationContext.setServletConfig(dispatcherConfig);
+        newApplicationContext.setServletConfig(dispatcherConfig);
 
         // Configure the listener for the request handled events. All we do here is release the latch
-        applicationContext.addApplicationListener(new ApplicationListener<ServletRequestHandledEvent>() {
+        newApplicationContext.addApplicationListener(new ApplicationListener<ServletRequestHandledEvent>() {
             @Override
             public void onApplicationEvent(ServletRequestHandledEvent servletRequestHandledEvent) {
                 try {
@@ -133,16 +156,7 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
             }
         });
 
-        // Manage the lifecycle of the root application context
-        this.addListener(new ContextLoaderListener(applicationContext));
-
-        // Register and map the dispatcher servlet
-        dispatcherServlet = new DispatcherServlet(applicationContext);
-        dispatcherServlet.refresh();
-        dispatcherServlet.onApplicationEvent(new ContextRefreshedEvent(applicationContext));
-        dispatcherServlet.init(dispatcherConfig);
-
-        notifyStartListeners(servletContext);
+        return newApplicationContext;
     }
 
     private void notifyStartListeners(ServletContext context) {

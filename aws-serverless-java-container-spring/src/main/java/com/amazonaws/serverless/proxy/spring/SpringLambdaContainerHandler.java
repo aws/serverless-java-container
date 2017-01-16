@@ -21,6 +21,7 @@ import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletReques
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequestReader;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
 import com.amazonaws.services.lambda.runtime.Context;
+import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.ServletContext;
 import java.util.concurrent.CountDownLatch;
@@ -74,7 +75,6 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Lam
                                        ExceptionHandler<ResponseType> exceptionHandler)
             throws ContainerInitializationException {
         super(requestReader, responseWriter, securityContextWriter, exceptionHandler);
-        initializer = new LambdaSpringApplicationInitializer();
     }
 
     /**
@@ -82,7 +82,11 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Lam
      * @param config Spring annotated classes to be registered with the application context
      */
     public void addConfiguration(Class... config) {
-        initializer.addConfigurationClasses(config);
+        initializer = new LambdaSpringApplicationInitializer(config);
+    }
+
+    public void setApplicationContext(WebApplicationContext context) {
+        initializer = new LambdaSpringApplicationInitializer(context);
     }
 
     @Override
@@ -92,6 +96,10 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Lam
 
     @Override
     protected void handleRequest(AwsProxyHttpServletRequest containerRequest, AwsHttpServletResponse containerResponse, Context lambdaContext) throws Exception {
+        if (initializer == null) {
+            throw new ContainerInitializationException(LambdaSpringApplicationInitializer.ERROR_NO_CONTEXT, null);
+        }
+
         // wire up the application context on the first invocation
         if (!initialized) {
             ServletContext context = containerRequest.getServletContext();
