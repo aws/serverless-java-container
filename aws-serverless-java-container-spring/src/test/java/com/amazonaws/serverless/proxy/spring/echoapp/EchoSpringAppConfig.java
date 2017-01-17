@@ -21,7 +21,9 @@ public class EchoSpringAppConfig {
 
     @Bean
     public SpringLambdaContainerHandler springLambdaContainerHandler() throws ContainerInitializationException {
-        return SpringLambdaContainerHandler.getAwsProxyHandler(applicationContext, false);
+        SpringLambdaContainerHandler handler = SpringLambdaContainerHandler.getAwsProxyHandler(applicationContext);
+        handler.setRefreshContext(false);
+        return handler;
     }
 
     @Bean
