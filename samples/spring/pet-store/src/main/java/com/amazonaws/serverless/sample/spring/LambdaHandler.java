@@ -15,7 +15,7 @@ package com.amazonaws.serverless.sample.spring;
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyResponse;
-import com.amazonaws.serverless.proxy.spring.SpringLambdacontainerHandler;
+import com.amazonaws.serverless.proxy.spring.SpringLambdaContainerHandler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 
@@ -23,14 +23,14 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
  * Created by bulianis on 12/13/16.
  */
 public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyResponse> {
-    SpringLambdacontainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+    SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
     boolean isinitialized = false;
 
     public AwsProxyResponse handleRequest(AwsProxyRequest awsProxyRequest, Context context) {
         if (!isinitialized) {
             isinitialized = true;
             try {
-                handler = SpringLambdacontainerHandler.getAwsProxyHandler(PetStoreSpringAppConfig.class);
+                handler = SpringLambdaContainerHandler.getAwsProxyHandler(PetStoreSpringAppConfig.class);
             } catch (ContainerInitializationException e) {
                 e.printStackTrace();
                 return null;

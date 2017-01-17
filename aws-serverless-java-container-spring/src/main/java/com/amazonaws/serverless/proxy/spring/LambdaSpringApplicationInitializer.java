@@ -12,10 +12,10 @@
  */
 package com.amazonaws.serverless.proxy.spring;
 
-import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.web.WebApplicationInitializer;
+import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
@@ -44,11 +44,11 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
     private static final String DEFAULT_SERVLET_NAME = "aws-servless-java-container";
 
     // Configuration variables that can be passed in
-    private List<Class> configurationClasses;
+    private ConfigurableWebApplicationContext applicationContext;
+    private boolean refreshContext = true;
     private List<ServletContextListener> contextListeners;
 
     // Dynamically instantiated properties
-    private WebApplicationContext applicationContext;
     private ServletConfig dispatcherConfig;
     private DispatcherServlet dispatcherServlet;
 
@@ -56,26 +56,12 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
     private HttpServletResponse currentResponse;
 
     /**
-     * Starts the application initializer with a set of annotated configuration classes. At the first request, this will
-     * create a new instance of AnnotationWebApplicationContext using the array of configuration classes.
-     *
-     * @param configuration A set of configuration classes
+     * Creates a new instance of the WebApplicationInitializer
+     * @param applicationContext A custom ConfigurableWebApplicationContext to be used
      */
-    public LambdaSpringApplicationInitializer(Class... configuration) {
-        configurationClasses = new ArrayList<>(Arrays.asList(configuration));
-        contextListeners = new ArrayList<>();
-    }
-
-    /**
-     * Creates a new instance of LambdaSpringApplicationInitializer with an instance of applicationContext. When created
-     * this way, annotated configuration classes have no effect and the library will only use the application context.
-     *
-     * @param applicationContext An initialized implementation of WebApplicationContext
-     */
-    public LambdaSpringApplicationInitializer(WebApplicationContext applicationContext) {
-        configurationClasses = new ArrayList<>();
+    public LambdaSpringApplicationInitializer(ConfigurableWebApplicationContext applicationContext) {
+        this.contextListeners = new ArrayList<>();
         this.applicationContext = applicationContext;
-        contextListeners = new ArrayList<>();
     }
 
     /**
@@ -88,63 +74,25 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
         contextListeners.add(listener);
     }
 
+    public void setRefreshContext(boolean refreshContext) {
+        this.refreshContext = refreshContext;
+    }
+
     public void dispatch(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         currentResponse = response;
         dispatcherServlet.service(request, response);
     }
 
-    /**
-     * Returns the application context initialized in the library
-     * @return
-     */
-    public WebApplicationContext getApplicationContext() {
-        return applicationContext;
-    }
-
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
-        if (applicationContext == null) {
-            if (configurationClasses.size() > 0) {
-                applicationContext = initializeAnnotationApplicationContext(servletContext);
-            } else {
-                throw new ServletException(
-                        new ContainerInitializationException(ERROR_NO_CONTEXT, null)
-                );
-            }
-        }
-        // Manage the lifecycle of the root application context
-        this.addListener(new ContextLoaderListener(applicationContext));
-
-        // Register and map the dispatcher servlet
-        dispatcherServlet = new DispatcherServlet(applicationContext);
-        dispatcherServlet.refresh();
-        dispatcherServlet.onApplicationEvent(new ContextRefreshedEvent(applicationContext));
-        dispatcherServlet.init(dispatcherConfig);
-
-        notifyStartListeners(servletContext);
-    }
-
-    /**
-     * Initializes a new AnnotationConfigWebApplicationContext using the list of annotated configuration classes
-     * passed to the constructor
-     *
-     * @param servletContext The context from the servlet container
-     * @return A new instance of WebApplicationContext using the config classes passed to the constructor
-     */
-    private AnnotationConfigWebApplicationContext initializeAnnotationApplicationContext(ServletContext servletContext) {
-        // Create the 'root' Spring application context
-        AnnotationConfigWebApplicationContext newApplicationContext = new AnnotationConfigWebApplicationContext();
-        for (Class config : configurationClasses) {
-            newApplicationContext.register(config);
-        }
-        newApplicationContext.setServletContext(servletContext);
+        applicationContext.setServletContext(servletContext);
 
         dispatcherConfig = new DefaultDispatcherConfig(servletContext);
-        newApplicationContext.setServletConfig(dispatcherConfig);
+        applicationContext.setServletConfig(dispatcherConfig);
 
         // Configure the listener for the request handled events. All we do here is release the latch
-        newApplicationContext.addApplicationListener(new ApplicationListener<ServletRequestHandledEvent>() {
+        applicationContext.addApplicationListener(new ApplicationListener<ServletRequestHandledEvent>() {
             @Override
             public void onApplicationEvent(ServletRequestHandledEvent servletRequestHandledEvent) {
                 try {
@@ -156,7 +104,20 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
             }
         });
 
-        return newApplicationContext;
+        // Manage the lifecycle of the root application context
+        this.addListener(new ContextLoaderListener(applicationContext));
+
+        // Register and map the dispatcher servlet
+        dispatcherServlet = new DispatcherServlet(applicationContext);
+
+        if (refreshContext) {
+            dispatcherServlet.refresh();
+        }
+
+        dispatcherServlet.onApplicationEvent(new ContextRefreshedEvent(applicationContext));
+        dispatcherServlet.init(dispatcherConfig);
+
+        notifyStartListeners(servletContext);
     }
 
     private void notifyStartListeners(ServletContext context) {
