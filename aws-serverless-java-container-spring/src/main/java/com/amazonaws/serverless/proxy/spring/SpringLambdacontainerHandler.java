@@ -22,6 +22,7 @@ import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletReques
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
 import com.amazonaws.services.lambda.runtime.Context;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
+import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
 import javax.servlet.ServletContext;
 import java.util.concurrent.CountDownLatch;
@@ -39,6 +40,25 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Lam
     // State vars
     private boolean initialized;
 
+    /**
+     * Creates a default SpringLambdaContainerHandler initialized with the `AwsProxyRequest` and `AwsProxyResponse` objects
+     * @param config A set of classes annotated with the Spring @Configuration annotation
+     * @return An initialized instance of the `SpringLambdaContainerHandler`
+     * @throws ContainerInitializationException
+     */
+    public static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(Class... config) throws ContainerInitializationException {
+        AnnotationConfigWebApplicationContext applicationContext = new AnnotationConfigWebApplicationContext();
+        applicationContext.register(config);
+
+        return new SpringLambdaContainerHandler<>(
+                new AwsProxyHttpServletRequestReader(),
+                new AwsProxyHttpServletResponseWriter(),
+                new AwsProxySecurityContextWriter(),
+                new AwsProxyExceptionHandler(),
+                applicationContext,
+                true
+        );
+    }
 
     /**
      * Creates a default SpringLambdaContainerHandler initialized with the `AwsProxyRequest` and `AwsProxyResponse` objects
@@ -46,14 +66,15 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Lam
      * @return An initialized instance of the `SpringLambdaContainerHandler`
      * @throws ContainerInitializationException
      */
-    public static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(ConfigurableWebApplicationContext applicationContext)
+    public static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(ConfigurableWebApplicationContext applicationContext, boolean refresh)
             throws ContainerInitializationException {
         return new SpringLambdaContainerHandler<>(
                 new AwsProxyHttpServletRequestReader(),
                 new AwsProxyHttpServletResponseWriter(),
                 new AwsProxySecurityContextWriter(),
                 new AwsProxyExceptionHandler(),
-                applicationContext
+                applicationContext,
+                refresh
         );
     }
 
@@ -73,7 +94,29 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Lam
                                         ConfigurableWebApplicationContext applicationContext)
             throws ContainerInitializationException {
         super(requestReader, responseWriter, securityContextWriter, exceptionHandler);
-        initializer = new LambdaSpringApplicationInitializer(applicationContext);
+        initializer = new LambdaSpringApplicationInitializer(applicationContext, false);
+    }
+
+    /**
+     * Creates a new container handler with the given reader and writer objects
+     *
+     * @param requestReader An implementation of `RequestReader`
+     * @param responseWriter An implementation of `ResponseWriter`
+     * @param securityContextWriter An implementation of `SecurityContextWriter`
+     * @param exceptionHandler An implementation of `ExceptionHandler`
+     * @param applicationContext An implementation of `ConfigurableWebApplicationContext`
+     * @param refreshContext Whether or not applicationContext needs to be refreshed
+     * @throws ContainerInitializationException
+     */
+    public SpringLambdaContainerHandler(RequestReader<RequestType, AwsProxyHttpServletRequest> requestReader,
+                                        ResponseWriter<AwsHttpServletResponse, ResponseType> responseWriter,
+                                        SecurityContextWriter<RequestType> securityContextWriter,
+                                        ExceptionHandler<ResponseType> exceptionHandler,
+                                        ConfigurableWebApplicationContext applicationContext,
+                                        boolean refreshContext)
+            throws ContainerInitializationException {
+        super(requestReader, responseWriter, securityContextWriter, exceptionHandler);
+        initializer = new LambdaSpringApplicationInitializer(applicationContext, refreshContext);
     }
 
     @Override

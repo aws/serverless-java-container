@@ -45,6 +45,7 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
 
     // Configuration variables that can be passed in
     private ConfigurableWebApplicationContext applicationContext;
+    private boolean refreshContext;
     private List<ServletContextListener> contextListeners;
 
     // Dynamically instantiated properties
@@ -57,10 +58,12 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
     /**
      * Creates a new instance of the WebApplicationInitializer
      * @param applicationContext A custom ConfigurableWebApplicationContext to be used
+     * @param applicationContext Whether or not to refresh the applicationContext
      */
-    public LambdaSpringApplicationInitializer(ConfigurableWebApplicationContext applicationContext) {
+    public LambdaSpringApplicationInitializer(ConfigurableWebApplicationContext applicationContext, boolean refreshContext) {
         this.contextListeners = new ArrayList<>();
         this.applicationContext = applicationContext;
+        this.refreshContext = refreshContext;
     }
 
     /**
@@ -104,7 +107,11 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
 
         // Register and map the dispatcher servlet
         dispatcherServlet = new DispatcherServlet(applicationContext);
-//        dispatcherServlet.refresh();
+
+        if (refreshContext) {
+            dispatcherServlet.refresh();
+        }
+
         dispatcherServlet.onApplicationEvent(new ContextRefreshedEvent(applicationContext));
         dispatcherServlet.init(dispatcherConfig);
 
