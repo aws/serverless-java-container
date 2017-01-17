@@ -18,6 +18,9 @@ import com.amazonaws.serverless.proxy.internal.ResponseWriter;
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
 
+import java.io.IOException;
+import java.util.Base64;
+
 /**
  * Creates an <code>AwsProxyResponse</code> object given an <code>AwsHttpServletResponse</code> object. If the
  * response is not populated with a status code we infer a default 200 status code.
@@ -32,7 +35,18 @@ public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpSer
     public AwsProxyResponse writeResponse(AwsHttpServletResponse containerResponse, Context lambdaContext)
             throws InvalidResponseObjectException {
         AwsProxyResponse awsProxyResponse = new AwsProxyResponse();
-        awsProxyResponse.setBody(containerResponse.getAwsResponseBody());
+        if (containerResponse.getAwsResponseBodyString() != null) {
+            String responseString;
+
+            if (isValidUtf8(containerResponse.getAwsResponseBodyBytes())) {
+                responseString = containerResponse.getAwsResponseBodyString();
+            } else {
+                responseString = Base64.getMimeEncoder().encodeToString(containerResponse.getAwsResponseBodyBytes());
+                awsProxyResponse.setBase64Encoded(true);
+            }
+
+            awsProxyResponse.setBody(responseString);
+        }
         awsProxyResponse.setHeaders(containerResponse.getAwsResponseHeaders());
 
         if (containerResponse.getStatus() <= 0) {

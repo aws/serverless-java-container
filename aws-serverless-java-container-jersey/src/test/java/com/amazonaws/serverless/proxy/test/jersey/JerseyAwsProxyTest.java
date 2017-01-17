@@ -118,6 +118,22 @@ public class JerseyAwsProxyTest {
     }
 
     @Test
+    public void authorizer_securityContext_customAuthorizerContextSuccess() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/authorizer-context", "GET")
+                .json()
+                .authorizerPrincipal(AUTHORIZER_PRINCIPAL_ID)
+                .authorizerContextValue(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
+                .queryString("key", CUSTOM_HEADER_KEY)
+                .build();
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(200, output.getStatusCode());
+        assertEquals("application/json", output.getHeaders().get("Content-Type"));
+
+        validateSingleValueModel(output, CUSTOM_HEADER_VALUE);
+    }
+
+    @Test
     public void errors_unknownRoute_expect404() {
         AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/test33", "GET").build();
 

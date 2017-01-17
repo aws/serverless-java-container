@@ -12,28 +12,27 @@
  */
 package com.amazonaws.serverless.proxy.internal.model;
 
+import java.util.HashMap;
+
 /**
  * Custom authorizer context object for the API Gateway request context.
  */
-public class ApiGatewayAuthorizerContext {
-
-    //-------------------------------------------------------------
-    // Variables - Private
-    //-------------------------------------------------------------
-
-    private String principalId;
-
+public class ApiGatewayAuthorizerContext extends HashMap<String, String> {
 
     //-------------------------------------------------------------
     // Methods - Getter/Setter
     //-------------------------------------------------------------
 
     public String getPrincipalId() {
-        return principalId;
+        return get("principalId");
     }
 
 
     public void setPrincipalId(String principalId) {
-        this.principalId = principalId;
+        put("principalId", principalId);
+    }
+
+    public String getContextValue(String key) {
+        return get(key);
     }
 }

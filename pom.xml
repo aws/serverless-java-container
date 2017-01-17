@@ -26,6 +26,7 @@
         <module>aws-serverless-java-container-core</module>
         <module>aws-serverless-java-container-jersey</module>
         <module>aws-serverless-java-container-spark</module>
+        <module>aws-serverless-java-container-spring</module>
     </modules>
 
     <build>

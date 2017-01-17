@@ -1,5 +1,5 @@
 # Serverless Java container
-The `aws-serverless-java-container` is collection of interfaces and their implementations that let you run Java application written with frameworks such as [Jersey](https://jersey.java.net/) or [Spark]() in [AWS Lambda](https://aws.amazon.com/lambda/).
+The `aws-serverless-java-container` is collection of interfaces and their implementations that let you run Java application written with frameworks such as [Jersey](https://jersey.java.net/) or [Spark](http://sparkjava.com/) in [AWS Lambda](https://aws.amazon.com/lambda/).
 
 The library contains a core artifact called `aws-serverless-java-container-core` that defines the interfaces and base classes required as well as default implementation of the Java servlet `HttpServletRequest` and `HttpServletResponse`.
 The library also includes two initial implementations of the interfaces to support Jersey apps (`aws-serverless-java-container-jersey`) and Spark (`aws-serverless-java-container-spark`).
@@ -18,7 +18,10 @@ To include the library in your Maven project, add the desired implementation to 
 The simplest way to run your application serverlessly is to configure [API Gateway](https://aws.amazon.com/api-gateway/) to use the
 [`AWS_PROXY`](http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-set-up-simple-proxy.html#api-gateway-set-up-lambda-proxy-integration-on-proxy-resource) integration type and
 configure your desired `LambdaContainerHandler` implementation to use `AwsProxyRequest`/`AwsProxyResponse` readers and writers. Both Spark and Jersey implementations provide static helper methods that
-pre-configure this for you, so your handler method would look like this:
+pre-configure this for you.
+
+### Jersey support
+The library expects to receive a valid Jax RS application object. For the Jersey implementation this is the `ResourceConfig` object.
 
 ```java
 public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyResponse> {
@@ -26,8 +29,28 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
     private JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler
         = JerseyLambdaContainerHandler.getAwsProxyHandler(jerseyApplication);
 
-    // for Spark applications, use the SparkLambdaContainerHandler.getAwsProxyHandler() helper method;
+    public AwsProxyResponse handleRequest(AwsProxyRequest awsProxyRequest, Context context) {
+        return handler.proxy(awsProxyRequest, context);
+    }
+}
+```
 
+### Spring support
+The library supports Spring applications that are configured using annotations (in code) rather than in an XML file. The simplest possible configuration uses the `@ComponentScan` annotation to load all controller classes from a package. For example, our unit test application has the following configuuration class.
+
+```java
+@Configuration
+@ComponentScan("com.amazonaws.serverless.proxy.spring.echoapp")
+public class EchoSpringAppConfig {
+}
+```
+
+Once you have declared a configuration class, you can initialize the library with the class name:
+```java
+public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyResponse> {
+    SpringLambdacontainerHandler<AwsProxyRequest, AwsProxyResponse> handler = 
+        SpringLambdacontainerHandler.getAwsProxyHandler(EchoSpringAppConfig.class)
+    
     public AwsProxyResponse handleRequest(AwsProxyRequest awsProxyRequest, Context context) {
         return handler.proxy(awsProxyRequest, context);
     }
