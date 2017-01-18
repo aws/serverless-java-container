@@ -10,7 +10,7 @@ To include the library in your Maven project, add the desired implementation to 
 <dependency>
     <groupId>com.amazonaws.serverless</groupId>
     <artifactId>aws-serverless-java-container-jersey</artifactId>
-    <version>0.1</version>
+    <version>0.2</version>
 </dependency>
 ```
 
