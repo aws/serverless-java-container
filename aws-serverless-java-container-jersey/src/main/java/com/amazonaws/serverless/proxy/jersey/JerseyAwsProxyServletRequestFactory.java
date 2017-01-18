@@ -24,17 +24,17 @@ import javax.servlet.http.HttpServletRequest;
  * by Jersey to generate a Servlet request given an <code>AwsProxyRequest</code> event.
  *
  * <pre>
- * {@code
+ * <code>
  *     ResourceConfig app = new ResourceConfig().packages("my.app.package")
  *         .register(new AbstractBinder() {
- *             @Override
+ *             {@literal @}Override
  *             protected void configure() {
  *                 bindFactory(JerseyAwsProxyServletRequestFactory.class)
  *                     .to(HttpServletRequest.class)
  *                     .in(RequestScoped.class);
  *            }
  *       });
- * }
+ * </code>
  * </pre>
  */
 public class JerseyAwsProxyServletRequestFactory

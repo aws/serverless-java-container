@@ -4,29 +4,17 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.amazonaws.serverless</groupId>
     <artifactId>aws-serverless-java-container-core</artifactId>
     <name>AWS Serverless Java container support - Core</name>
     <description>Allows Java applications written for a servlet container to run in AWS Lambda</description>
-    <url>https://aws.amazon.com/lambda/</url>
-    <version>0.1</version>
+    <url>https://aws.amazon.com/lambda</url>
+    <version>0.2-SNAPSHOT</version>
 
-    <scm>
-        <url>https://github.com/awslabs/aws-serverless-java-container.git</url>
-    </scm>
-
-    <licenses>
-        <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-
-    <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-    </properties>
+    <parent>
+        <groupId>com.amazonaws.serverless</groupId>
+        <artifactId>aws-serverless-java-container</artifactId>
+        <version>0.2-SNAPSHOT</version>
+    </parent>
 
     <dependencies>
         <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-lambda-java-core -->
@@ -81,13 +69,4 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.4</version>
-            </plugin>
-        </plugins>
-    </build>
 </project>

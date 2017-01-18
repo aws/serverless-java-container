@@ -7,11 +7,27 @@
     <groupId>com.amazonaws.serverless</groupId>
     <artifactId>aws-serverless-java-container</artifactId>
     <packaging>pom</packaging>
-    <version>0.1</version>
+    <version>0.2-SNAPSHOT</version>
     <name>AWS Serverless Java container</name>
+
+    <!-- https://mvnrepository.com/artifact/org.sonatype.oss/oss-parent -->
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
+
+    <modules>
+        <module>aws-serverless-java-container-core</module>
+        <module>aws-serverless-java-container-jersey</module>
+        <module>aws-serverless-java-container-spark</module>
+        <module>aws-serverless-java-container-spring</module>
+    </modules>
 
     <scm>
         <url>https://github.com/awslabs/aws-serverless-java-container.git</url>
+        <connection>scm:git:git@github.com:awslabs/aws-serverless-java-container.git</connection>
+        <developerConnection>scm:git:git@github.com:awslabs/aws-serverless-java-container.git</developerConnection>
     </scm>
 
     <licenses>
@@ -21,13 +37,6 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-
-    <modules>
-        <module>aws-serverless-java-container-core</module>
-        <module>aws-serverless-java-container-jersey</module>
-        <module>aws-serverless-java-container-spark</module>
-        <module>aws-serverless-java-container-spring</module>
-    </modules>
 
     <build>
         <pluginManagement>
@@ -40,11 +49,54 @@
                         <target>1.8</target>
                     </configuration>
                 </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>2.10.4</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <configuration>
+                        <preparationGoals>clean verify install</preparationGoals>
+                        <pushChanges>false</pushChanges>
+                        <localCheckout>true</localCheckout>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
 
-    <dependencies>
+    <profiles>
+        <profile>
+            <id>release-sign-artifacts</id>
+            <activation>
+                <property>
+                    <name>performRelease</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.4</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
-    </dependencies>
 </project>

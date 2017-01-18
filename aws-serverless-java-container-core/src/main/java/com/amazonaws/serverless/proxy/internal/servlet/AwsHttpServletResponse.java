@@ -29,7 +29,7 @@ import java.util.concurrent.CountDownLatch;
 /**
  * Basic implementation of the <code>HttpServletResponse</code> object. This is used by the <code>AwsProxyHttpServletResponseWriter</code>
  * to generate an <code>AwsProxyResponse</code> object. We have an additional <code>getAwsResponseHeaders()</code> method
- * that returns a <code>Map<String, String</code> that can be used for our proxy response object.
+ * that returns a {@code Map<String, String>} that can be used for our proxy response object.
  */
 public class AwsHttpServletResponse
         implements HttpServletResponse {
