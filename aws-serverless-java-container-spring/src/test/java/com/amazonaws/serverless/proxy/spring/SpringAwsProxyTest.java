@@ -19,6 +19,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 import org.springframework.test.context.web.WebAppConfiguration;
 
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.UUID;
 
@@ -163,6 +165,26 @@ public class SpringAwsProxyTest {
         AwsProxyResponse response = handler.proxy(request, lambdaContext);
         assertNotNull(response.getBody());
         assertTrue(Base64.isBase64(response.getBody()));
+    }
+
+    @Test
+    public void servletRequestEncoding_acceptEncoding_okStatusCode() {
+        SingleValueModel singleValueModel = new SingleValueModel();
+        singleValueModel.setValue(CUSTOM_HEADER_VALUE);
+        AwsProxyRequest request = null;
+        try {
+            request = new AwsProxyRequestBuilder("/echo/json-body", "POST")
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate")
+                    .queryString("status", "200")
+                    .body(objectMapper.writeValueAsString(singleValueModel))
+                    .build();
+        } catch (JsonProcessingException e) {
+            fail("Could not serialize object to JSON");
+        }
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(200, output.getStatusCode());
     }
 
     private void validateMapResponseModel(AwsProxyResponse output) {

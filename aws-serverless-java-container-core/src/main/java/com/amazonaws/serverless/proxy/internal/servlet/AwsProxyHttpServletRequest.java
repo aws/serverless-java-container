@@ -79,6 +79,7 @@ public class AwsProxyHttpServletRequest
     private static final String FORM_DATA_SEPARATOR = "&";
     private static final String DEFAULT_CHARACTER_ENCODING = "UTF-8";
     private static final String HEADER_DATE_FORMAT = "EEE, d MMM yyyy HH:mm:ss z";
+    private static final String ENCODING_VALUE_KEY = "charset";
 
     // We need this to pickup the protocol from the CloudFront header since Lambda doesn't receive this
     // information from anywhere else
@@ -382,15 +383,60 @@ public class AwsProxyHttpServletRequest
 
     @Override
     public String getCharacterEncoding() {
-        return getHeaderCaseInsensitive(HttpHeaders.ACCEPT_ENCODING);
+        // we only look at content-type because content-encoding should only be used for
+        // "binary" requests such as gzip/deflate.
+        String contentTypeHeader = getHeaderCaseInsensitive(HttpHeaders.CONTENT_TYPE);
+        if (contentTypeHeader == null) {
+            return null;
+        }
+
+        String[] contentTypeValues = contentTypeHeader.split(HEADER_VALUE_SEPARATOR);
+        if (contentTypeValues.length <= 1) {
+            return null;
+        }
+
+        for (String contentTypeValue : contentTypeValues) {
+            if (contentTypeValue.trim().startsWith(ENCODING_VALUE_KEY)) {
+                String[] encodingValues = contentTypeValue.split(HEADER_KEY_VALUE_SEPARATOR);
+                if (encodingValues.length <= 1) {
+                    return null;
+                }
+                return encodingValues[1];
+            }
+        }
+        return null;
     }
 
 
     @Override
     public void setCharacterEncoding(String s) throws UnsupportedEncodingException {
-        request.getHeaders().put(HttpHeaders.ACCEPT_ENCODING, s);
-    }
+        String currentContentType = request.getHeaders().get(HttpHeaders.CONTENT_TYPE);
+        if (currentContentType == null) {
+            request.getHeaders().put(
+                    HttpHeaders.CONTENT_TYPE,
+                    HEADER_VALUE_SEPARATOR + " " + ENCODING_VALUE_KEY + HEADER_KEY_VALUE_SEPARATOR + s);
+            return;
+        }
 
+        if (currentContentType.contains(HEADER_VALUE_SEPARATOR)) {
+            String[] contentTypeValues = currentContentType.split(HEADER_VALUE_SEPARATOR);
+            String contentType = contentTypeValues[0];
+
+            for (String contentTypeValue : contentTypeValues) {
+                if (contentTypeValue.trim().startsWith(ENCODING_VALUE_KEY)) {
+                    contentType += HEADER_VALUE_SEPARATOR + " " + ENCODING_VALUE_KEY + HEADER_KEY_VALUE_SEPARATOR + s;
+                } else {
+                    contentType += HEADER_VALUE_SEPARATOR + " " + contentTypeValue;
+                }
+            }
+
+            request.getHeaders().put(HttpHeaders.CONTENT_TYPE, contentType);
+        } else {
+            request.getHeaders().put(
+                    HttpHeaders.CONTENT_TYPE,
+                    currentContentType + HEADER_VALUE_SEPARATOR + " " + ENCODING_VALUE_KEY + HEADER_KEY_VALUE_SEPARATOR + s);
+        }
+    }
 
     @Override
     public int getContentLength() {
