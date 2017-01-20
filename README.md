@@ -21,7 +21,7 @@ configure your desired `LambdaContainerHandler` implementation to use `AwsProxyR
 pre-configure this for you.
 
 ### Jersey support
-The library expects to receive a valid Jax RS application object. For the Jersey implementation this is the `ResourceConfig` object.
+The library expects to receive a valid [JAX-RS](https://jax-rs-spec.java.net) application object. For the Jersey implementation this is the `ResourceConfig` object.
 
 ```java
 public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyResponse> {
