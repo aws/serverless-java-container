@@ -529,7 +529,10 @@ public class AwsProxyHttpServletRequest
     @Override
     public Enumeration<String> getParameterNames() {
         List<String> paramNames = new ArrayList<>();
-        paramNames.addAll(request.getQueryStringParameters().keySet());
+        Map<String, String> queryStringParameters = request.getQueryStringParameters();
+        if (queryStringParameters != null) {
+            paramNames.addAll(queryStringParameters.keySet());
+        }
         paramNames.addAll(urlEncodedFormParameters.keySet());
         return Collections.enumeration(paramNames);
     }
@@ -567,13 +570,16 @@ public class AwsProxyHttpServletRequest
             params = new HashMap<>();
         }
 
-        for (Map.Entry<String, String> entry : request.getQueryStringParameters().entrySet()) {
-            if (params.containsKey(entry.getKey())) {
-                params.get(entry.getKey()).add(entry.getValue());
-            } else {
-                List<String> valueList = new ArrayList<>();
-                valueList.add(entry.getValue());
-                params.put(entry.getKey(), valueList);
+        Map<String, String> queryStringParameters = request.getQueryStringParameters();
+        if (queryStringParameters != null) {
+            for (Map.Entry<String, String> entry : queryStringParameters.entrySet()) {
+                if (params.containsKey(entry.getKey())) {
+                    params.get(entry.getKey()).add(entry.getValue());
+                } else {
+                    List<String> valueList = new ArrayList<>();
+                    valueList.add(entry.getValue());
+                    params.put(entry.getKey(), valueList);
+                }
             }
         }
 
@@ -780,13 +786,14 @@ public class AwsProxyHttpServletRequest
 
 
     private String getQueryStringParameterCaseInsensitive(String key) {
-        if (request.getQueryStringParameters() == null) {
+        Map<String, String> queryStringParameters = request.getQueryStringParameters();
+        if (queryStringParameters == null) {
             return null;
         }
 
-        for (String requestParamKey : request.getQueryStringParameters().keySet()) {
+        for (String requestParamKey : queryStringParameters.keySet()) {
             if (key.toLowerCase().equals(requestParamKey.toLowerCase())) {
-                return request.getQueryStringParameters().get(requestParamKey);
+                return queryStringParameters.get(requestParamKey);
             }
         }
         return null;
