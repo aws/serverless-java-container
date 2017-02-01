@@ -48,8 +48,8 @@ public class EchoSpringAppConfig {
 Once you have declared a configuration class, you can initialize the library with the class name:
 ```java
 public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyResponse> {
-    SpringLambdacontainerHandler<AwsProxyRequest, AwsProxyResponse> handler = 
-        SpringLambdacontainerHandler.getAwsProxyHandler(EchoSpringAppConfig.class)
+    SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = 
+        SpringLambdaContainerHandler.getAwsProxyHandler(EchoSpringAppConfig.class);
     
     public AwsProxyResponse handleRequest(AwsProxyRequest awsProxyRequest, Context context) {
         return handler.proxy(awsProxyRequest, context);
