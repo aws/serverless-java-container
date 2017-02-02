@@ -529,7 +529,9 @@ public class AwsProxyHttpServletRequest
     @Override
     public Enumeration<String> getParameterNames() {
         List<String> paramNames = new ArrayList<>();
-        paramNames.addAll(request.getQueryStringParameters().keySet());
+        if (request.getQueryStringParameters() != null) {
+            paramNames.addAll(request.getQueryStringParameters().keySet());
+        }
         paramNames.addAll(urlEncodedFormParameters.keySet());
         return Collections.enumeration(paramNames);
     }
@@ -567,13 +569,15 @@ public class AwsProxyHttpServletRequest
             params = new HashMap<>();
         }
 
-        for (Map.Entry<String, String> entry : request.getQueryStringParameters().entrySet()) {
-            if (params.containsKey(entry.getKey())) {
-                params.get(entry.getKey()).add(entry.getValue());
-            } else {
-                List<String> valueList = new ArrayList<>();
-                valueList.add(entry.getValue());
-                params.put(entry.getKey(), valueList);
+        if (request.getQueryStringParameters() != null) {
+            for (Map.Entry<String, String> entry : request.getQueryStringParameters().entrySet()) {
+                if (params.containsKey(entry.getKey())) {
+                    params.get(entry.getKey()).add(entry.getValue());
+                } else {
+                    List<String> valueList = new ArrayList<>();
+                    valueList.add(entry.getValue());
+                    params.put(entry.getKey(), valueList);
+                }
             }
         }
 
