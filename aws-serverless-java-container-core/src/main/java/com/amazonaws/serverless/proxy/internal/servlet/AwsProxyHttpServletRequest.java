@@ -420,17 +420,17 @@ public class AwsProxyHttpServletRequest
 
         if (currentContentType.contains(HEADER_VALUE_SEPARATOR)) {
             String[] contentTypeValues = currentContentType.split(HEADER_VALUE_SEPARATOR);
-            String contentType = contentTypeValues[0];
+            StringBuilder contentType = new StringBuilder(contentTypeValues[0]);
 
             for (String contentTypeValue : contentTypeValues) {
                 if (contentTypeValue.trim().startsWith(ENCODING_VALUE_KEY)) {
-                    contentType += HEADER_VALUE_SEPARATOR + " " + ENCODING_VALUE_KEY + HEADER_KEY_VALUE_SEPARATOR + s;
+                    contentType.append(HEADER_VALUE_SEPARATOR + " " + ENCODING_VALUE_KEY + HEADER_KEY_VALUE_SEPARATOR + s);
                 } else {
-                    contentType += HEADER_VALUE_SEPARATOR + " " + contentTypeValue;
+                    contentType.append(HEADER_VALUE_SEPARATOR + " " + contentTypeValue);
                 }
             }
 
-            request.getHeaders().put(HttpHeaders.CONTENT_TYPE, contentType);
+            request.getHeaders().put(HttpHeaders.CONTENT_TYPE, contentType.toString());
         } else {
             request.getHeaders().put(
                     HttpHeaders.CONTENT_TYPE,

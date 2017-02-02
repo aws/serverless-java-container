@@ -130,7 +130,7 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
      * Default configuration class for the DispatcherServlet. This just mocks the behaviour of a default
      * ServletConfig object with no init parameters
      */
-    private class DefaultDispatcherConfig implements ServletConfig {
+    private static class DefaultDispatcherConfig implements ServletConfig {
         private ServletContext servletContext;
 
         DefaultDispatcherConfig(ServletContext context) {
