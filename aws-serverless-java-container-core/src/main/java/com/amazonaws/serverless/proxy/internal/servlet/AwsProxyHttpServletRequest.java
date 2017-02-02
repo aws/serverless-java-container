@@ -529,9 +529,8 @@ public class AwsProxyHttpServletRequest
     @Override
     public Enumeration<String> getParameterNames() {
         List<String> paramNames = new ArrayList<>();
-        Map<String, String> queryStringParameters = request.getQueryStringParameters();
-        if (queryStringParameters != null) {
-            paramNames.addAll(queryStringParameters.keySet());
+        if (request.getQueryStringParameters() != null) {
+            paramNames.addAll(request.getQueryStringParameters().keySet());
         }
         paramNames.addAll(urlEncodedFormParameters.keySet());
         return Collections.enumeration(paramNames);
@@ -570,9 +569,8 @@ public class AwsProxyHttpServletRequest
             params = new HashMap<>();
         }
 
-        Map<String, String> queryStringParameters = request.getQueryStringParameters();
-        if (queryStringParameters != null) {
-            for (Map.Entry<String, String> entry : queryStringParameters.entrySet()) {
+        if (request.getQueryStringParameters() != null) {
+            for (Map.Entry<String, String> entry : request.getQueryStringParameters().entrySet()) {
                 if (params.containsKey(entry.getKey())) {
                     params.get(entry.getKey()).add(entry.getValue());
                 } else {
@@ -786,14 +784,13 @@ public class AwsProxyHttpServletRequest
 
 
     private String getQueryStringParameterCaseInsensitive(String key) {
-        Map<String, String> queryStringParameters = request.getQueryStringParameters();
-        if (queryStringParameters == null) {
+        if (request.getQueryStringParameters() == null) {
             return null;
         }
 
-        for (String requestParamKey : queryStringParameters.keySet()) {
+        for (String requestParamKey : request.getQueryStringParameters().keySet()) {
             if (key.toLowerCase().equals(requestParamKey.toLowerCase())) {
-                return queryStringParameters.get(requestParamKey);
+                return request.getQueryStringParameters().get(requestParamKey);
             }
         }
         return null;
