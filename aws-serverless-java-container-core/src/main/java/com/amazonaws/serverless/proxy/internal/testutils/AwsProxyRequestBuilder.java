@@ -168,6 +168,28 @@ public class AwsProxyRequestBuilder {
         return this;
     }
 
+    public AwsProxyRequestBuilder scheme(String scheme) {
+        if (request.getHeaders() == null) {
+            request.setHeaders(new HashMap<>());
+        }
+
+        request.getHeaders().put("CloudFront-Forwarded-Proto", scheme);
+        return this;
+    }
+
+    public AwsProxyRequestBuilder serverName(String serverName) {
+        if (request.getHeaders() == null) {
+            request.setHeaders(new HashMap<>());
+        }
+
+        request.getHeaders().put("Host", serverName);
+        return this;
+    }
+
+    public AwsProxyRequestBuilder stage(String stage) {
+        this.request.getRequestContext().setStage(stage);
+        return this;
+    }
 
     public AwsProxyRequest build() {
         return this.request;

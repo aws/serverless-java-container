@@ -224,7 +224,7 @@ public class AwsProxyHttpServletRequest
 
     @Override
     public String getContextPath() {
-        return "/";
+        return request.getRequestContext().getStage();
     }
 
 
@@ -270,8 +270,13 @@ public class AwsProxyHttpServletRequest
         String url = "";
         url += getHeaderCaseInsensitive(HttpHeaders.HOST);
         url += "/";
+        url += getContextPath();
+        url += "/";
         url += request.getPath();
-        return new StringBuffer(url);
+
+        url = url.replaceAll("/+", "/");
+
+        return new StringBuffer(getScheme() + "://" + url);
     }
 
 
