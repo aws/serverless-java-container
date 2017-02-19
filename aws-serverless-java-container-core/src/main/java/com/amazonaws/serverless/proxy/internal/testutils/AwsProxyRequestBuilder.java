@@ -53,6 +53,7 @@ public class AwsProxyRequestBuilder {
         this.request.setPath(path);
         this.request.setQueryStringParameters(new HashMap<>());
         this.request.setRequestContext(new ApiGatewayRequestContext());
+        this.request.getRequestContext().setStage("test");
         ApiGatewayRequestIdentity identity = new ApiGatewayRequestIdentity();
         identity.setSourceIp("127.0.0.1");
         this.request.getRequestContext().setIdentity(identity);
