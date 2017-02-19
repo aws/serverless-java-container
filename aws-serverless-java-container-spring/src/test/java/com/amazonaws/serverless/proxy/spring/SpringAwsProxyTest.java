@@ -200,13 +200,16 @@ public class SpringAwsProxyTest {
 
     @Test
     public void request_requestURL() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/request-URL", "GET")
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/request-Url", "GET")
+                .scheme("https")
+                .serverName("api.myserver.com")
+                .stage("prod")
                 .build();
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
 
-//        validateSingleValueModel(output, "/echo/request-URI");
+        validateSingleValueModel(output, "https://api.myserver.com/prod/echo/request-Url");
     }
 
     private void validateMapResponseModel(AwsProxyResponse output) {

@@ -224,7 +224,7 @@ public class AwsProxyHttpServletRequest
 
     @Override
     public String getContextPath() {
-        return "/";
+        return request.getRequestContext().getStage();
     }
 
 
@@ -268,10 +268,15 @@ public class AwsProxyHttpServletRequest
     @Override
     public StringBuffer getRequestURL() {
         String url = "";
-        url += getHeaderCaseInsensitive(HttpHeaders.HOST);
+        url += getServerName();
+        url += "/";
+        url += getContextPath();
         url += "/";
         url += request.getPath();
-        return new StringBuffer(url);
+
+        url = url.replaceAll("/+", "/");
+
+        return new StringBuffer(getScheme() + "://" + url);
     }
 
 
@@ -608,13 +613,18 @@ public class AwsProxyHttpServletRequest
 
     @Override
     public String getServerName() {
-        return "lambda.amazonaws.com";
+        String name = getHeaderCaseInsensitive(HttpHeaders.HOST);
+
+        if (name == null || name.length() == 0) {
+            name = "lambda.amazonaws.com";
+        }
+        return name;
     }
 
 
     @Override
     public int getServerPort() {
-        return 0;
+        return getLocalPort();
     }
 
 
@@ -720,7 +730,14 @@ public class AwsProxyHttpServletRequest
 
     @Override
     public int getLocalPort() {
-        return 0;
+        int port = 0;
+
+        if ("https".equals(getScheme())) {
+            port = 443;
+        } else if ("http".equals(getScheme())) {
+            port = 80;
+        }
+        return port;
     }
 
 
