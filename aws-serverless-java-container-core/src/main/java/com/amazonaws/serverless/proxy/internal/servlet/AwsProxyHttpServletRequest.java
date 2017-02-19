@@ -420,17 +420,17 @@ public class AwsProxyHttpServletRequest
 
         if (currentContentType.contains(HEADER_VALUE_SEPARATOR)) {
             String[] contentTypeValues = currentContentType.split(HEADER_VALUE_SEPARATOR);
-            String contentType = contentTypeValues[0];
+            StringBuilder contentType = new StringBuilder(contentTypeValues[0]);
 
             for (String contentTypeValue : contentTypeValues) {
                 if (contentTypeValue.trim().startsWith(ENCODING_VALUE_KEY)) {
-                    contentType += HEADER_VALUE_SEPARATOR + " " + ENCODING_VALUE_KEY + HEADER_KEY_VALUE_SEPARATOR + s;
+                    contentType.append(HEADER_VALUE_SEPARATOR + " " + ENCODING_VALUE_KEY + HEADER_KEY_VALUE_SEPARATOR + s);
                 } else {
-                    contentType += HEADER_VALUE_SEPARATOR + " " + contentTypeValue;
+                    contentType.append(HEADER_VALUE_SEPARATOR + " " + contentTypeValue);
                 }
             }
 
-            request.getHeaders().put(HttpHeaders.CONTENT_TYPE, contentType);
+            request.getHeaders().put(HttpHeaders.CONTENT_TYPE, contentType.toString());
         } else {
             request.getHeaders().put(
                     HttpHeaders.CONTENT_TYPE,
@@ -529,7 +529,9 @@ public class AwsProxyHttpServletRequest
     @Override
     public Enumeration<String> getParameterNames() {
         List<String> paramNames = new ArrayList<>();
-        paramNames.addAll(request.getQueryStringParameters().keySet());
+        if (request.getQueryStringParameters() != null) {
+            paramNames.addAll(request.getQueryStringParameters().keySet());
+        }
         paramNames.addAll(urlEncodedFormParameters.keySet());
         return Collections.enumeration(paramNames);
     }
@@ -567,13 +569,15 @@ public class AwsProxyHttpServletRequest
             params = new HashMap<>();
         }
 
-        for (Map.Entry<String, String> entry : request.getQueryStringParameters().entrySet()) {
-            if (params.containsKey(entry.getKey())) {
-                params.get(entry.getKey()).add(entry.getValue());
-            } else {
-                List<String> valueList = new ArrayList<>();
-                valueList.add(entry.getValue());
-                params.put(entry.getKey(), valueList);
+        if (request.getQueryStringParameters() != null) {
+            for (Map.Entry<String, String> entry : request.getQueryStringParameters().entrySet()) {
+                if (params.containsKey(entry.getKey())) {
+                    params.get(entry.getKey()).add(entry.getValue());
+                } else {
+                    List<String> valueList = new ArrayList<>();
+                    valueList.add(entry.getValue());
+                    params.put(entry.getKey(), valueList);
+                }
             }
         }
 
