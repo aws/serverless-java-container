@@ -129,4 +129,19 @@ public class ApiGatewayRequestContext {
     public void setAuthorizer(ApiGatewayAuthorizerContext authorizer) {
         this.authorizer = authorizer;
     }
+
+    @Override
+    public String toString() {
+        return "ApiGatewayRequestContext{" +
+                "resourceId='" + resourceId + '\'' +
+                ", apiId='" + apiId + '\'' +
+                ", resourcePath='" + resourcePath + '\'' +
+                ", httpMethod='" + httpMethod + '\'' +
+                ", requestId='" + requestId + '\'' +
+                ", accountId='" + accountId + '\'' +
+                ", identity=" + identity +
+                ", authorizer=" + authorizer +
+                ", stage='" + stage + '\'' +
+                '}';
+    }
 }
