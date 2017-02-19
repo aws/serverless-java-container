@@ -155,4 +155,20 @@ public class AwsProxyRequest {
     public void setBase64Encoded(boolean base64Encoded) {
         isBase64Encoded = base64Encoded;
     }
+
+    @Override
+    public String toString() {
+        return "AwsProxyRequest{" +
+                "body='" + body + '\'' +
+                ", resource='" + resource + '\'' +
+                ", requestContext=" + requestContext +
+                ", queryStringParameters=" + queryStringParameters +
+                ", headers=" + headers +
+                ", pathParameters=" + pathParameters +
+                ", httpMethod='" + httpMethod + '\'' +
+                ", stageVariables=" + stageVariables +
+                ", path='" + path + '\'' +
+                ", isBase64Encoded=" + isBase64Encoded +
+                '}';
+    }
 }

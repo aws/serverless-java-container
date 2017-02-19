@@ -68,6 +68,9 @@ public class AwsProxyRequestBuilder {
         return this;
     }
 
+//    public AwsProxyRequestBuilder schemeAndHost(String scheme) {
+//        this.request.getRequestContext().
+//    }
 
     public AwsProxyRequestBuilder path(String path) {
         this.request.setPath(path);

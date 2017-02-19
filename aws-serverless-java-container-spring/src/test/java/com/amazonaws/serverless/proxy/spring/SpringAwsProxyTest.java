@@ -187,6 +187,28 @@ public class SpringAwsProxyTest {
         assertEquals(200, output.getStatusCode());
     }
 
+    @Test
+    public void request_requestURI() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/request-URI", "GET")
+                .build();
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(200, output.getStatusCode());
+
+        validateSingleValueModel(output, "/echo/request-URI");
+    }
+
+    @Test
+    public void request_requestURL() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/request-URL", "GET")
+                .build();
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(200, output.getStatusCode());
+
+//        validateSingleValueModel(output, "/echo/request-URI");
+    }
+
     private void validateMapResponseModel(AwsProxyResponse output) {
         try {
             MapResponseModel response = objectMapper.readValue(output.getBody(), MapResponseModel.class);
