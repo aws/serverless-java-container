@@ -53,6 +53,7 @@ public class AwsProxyRequestBuilder {
         this.request.setPath(path);
         this.request.setQueryStringParameters(new HashMap<>());
         this.request.setRequestContext(new ApiGatewayRequestContext());
+        this.request.getRequestContext().setStage("test");
         ApiGatewayRequestIdentity identity = new ApiGatewayRequestIdentity();
         identity.setSourceIp("127.0.0.1");
         this.request.getRequestContext().setIdentity(identity);
@@ -168,6 +169,28 @@ public class AwsProxyRequestBuilder {
         return this;
     }
 
+    public AwsProxyRequestBuilder scheme(String scheme) {
+        if (request.getHeaders() == null) {
+            request.setHeaders(new HashMap<>());
+        }
+
+        request.getHeaders().put("CloudFront-Forwarded-Proto", scheme);
+        return this;
+    }
+
+    public AwsProxyRequestBuilder serverName(String serverName) {
+        if (request.getHeaders() == null) {
+            request.setHeaders(new HashMap<>());
+        }
+
+        request.getHeaders().put("Host", serverName);
+        return this;
+    }
+
+    public AwsProxyRequestBuilder stage(String stage) {
+        this.request.getRequestContext().setStage(stage);
+        return this;
+    }
 
     public AwsProxyRequest build() {
         return this.request;
