@@ -16,10 +16,7 @@ import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.internal.*;
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyResponse;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletResponse;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequestReader;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
+import com.amazonaws.serverless.proxy.internal.servlet.*;
 import com.amazonaws.services.lambda.runtime.Context;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
@@ -112,6 +109,7 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Lam
 
         // wire up the application context on the first invocation
         if (!initialized) {
+            initializer.setLambdaStage(((AwsProxyServletContext) containerRequest.getServletContext()).getStage());
             ServletContext context = containerRequest.getServletContext();
             initializer.onStartup(context);
             initialized = true;
