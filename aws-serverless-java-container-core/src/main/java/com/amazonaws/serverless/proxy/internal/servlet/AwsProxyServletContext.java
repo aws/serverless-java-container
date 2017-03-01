@@ -410,9 +410,6 @@ public class AwsProxyServletContext
         return null;
     }
 
-    public String getStage() {
-        return awsProxyRequest.getRequestContext().getStage();
-    }
 
     public static ServletContext getInstance(AwsProxyRequest request, Context lambdaContext) {
         if (instance == null) {
@@ -420,9 +417,5 @@ public class AwsProxyServletContext
         }
 
         return instance;
-    }
-
-    public static void clearServletContextCache() {
-        instance = null;
     }
 }

@@ -47,7 +47,6 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
     private ConfigurableWebApplicationContext applicationContext;
     private boolean refreshContext = true;
     private List<ServletContextListener> contextListeners;
-    private String lambdaStage;
 
     // Dynamically instantiated properties
     private ServletConfig dispatcherConfig;
@@ -85,13 +84,8 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
         dispatcherServlet.service(request, response);
     }
 
-    public void setLambdaStage(String lambdaStage) {
-        this.lambdaStage = lambdaStage;
-    }
-
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
-        applicationContext.getEnvironment().setActiveProfiles(lambdaStage);
         applicationContext.setServletContext(servletContext);
 
         dispatcherConfig = new DefaultDispatcherConfig(servletContext);
