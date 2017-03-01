@@ -2,9 +2,7 @@ package com.amazonaws.serverless.proxy.spring.echoapp;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
-import com.amazonaws.serverless.proxy.spring.LambdaSpringApplicationInitializer;
 import com.amazonaws.serverless.proxy.spring.SpringLambdaContainerHandler;
-import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
