@@ -25,6 +25,7 @@ import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
 import javax.servlet.ServletContext;
+import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -102,6 +103,14 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Lam
     @Override
     protected AwsHttpServletResponse getContainerResponse(CountDownLatch latch) {
         return new AwsHttpServletResponse(latch);
+    }
+
+    public void activateSpringProfiles(String... profiles) throws ContainerInitializationException {
+        if (initializer == null) {
+            throw new ContainerInitializationException(LambdaSpringApplicationInitializer.ERROR_NO_CONTEXT, null);
+        }
+
+        initializer.setSpringProfiles(Arrays.asList(profiles));
     }
 
     @Override

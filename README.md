@@ -36,7 +36,7 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 ```
 
 ### Spring support
-The library supports Spring applications that are configured using annotations (in code) rather than in an XML file. The simplest possible configuration uses the `@ComponentScan` annotation to load all controller classes from a package. For example, our unit test application has the following configuuration class.
+The library supports Spring applications that are configured using annotations (in code) rather than in an XML file. The simplest possible configuration uses the `@ComponentScan` annotation to load all controller classes from a package. For example, our unit test application has the following configuration class.
 
 ```java
 @Configuration
@@ -56,6 +56,9 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
     }
 }
 ```
+
+#### Spring Profiles
+You can enable Spring Profiles (as defined with the `@Profile` annotation) by using the `SpringLambdaContainerHandler.activateSpringProfiles(String...)` method - common drivers of this might be the AWS Lambda stage that you're deployed under, or stage variables.  See [@Profile documentation](http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/context/annotation/Profile.html) for details.
 
 ### Spark support
 The library also supports applications written with the [Spark framework](http://sparkjava.com/). When using the library with Spark, it's important to initialize the `SparkLambdaContainerHandler` before defining routes.
