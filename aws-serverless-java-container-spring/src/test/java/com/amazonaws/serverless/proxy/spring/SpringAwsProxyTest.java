@@ -2,6 +2,7 @@ package com.amazonaws.serverless.proxy.spring;
 
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyResponse;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyServletContext;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.spring.echoapp.EchoSpringAppConfig;
@@ -10,6 +11,7 @@ import com.amazonaws.serverless.proxy.spring.echoapp.model.SingleValueModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +45,11 @@ public class SpringAwsProxyTest {
 
     @Autowired
     private SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+
+    @Before
+    public void clearServletContextCache() {
+        AwsProxyServletContext.clearServletContextCache();
+    }
 
     @Test
     public void headers_getHeaders_echo() {
