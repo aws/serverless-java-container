@@ -21,18 +21,14 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import javax.servlet.AsyncContext;
-import javax.servlet.DispatcherType;
 import javax.servlet.ReadListener;
 import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpUpgradeHandler;
 import javax.servlet.http.Part;
 import javax.ws.rs.core.HttpHeaders;
@@ -48,52 +44,21 @@ import java.net.URLDecoder;
 import java.security.Principal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Implementation of the <code>HttpServletRequest</code> interface that supports <code>AwsProxyRequest</code> object.
  * This object is initialized with an <code>AwsProxyRequest</code> event and a <code>SecurityContext</code> generated
  * by an implementation of the <code>SecurityContextWriter</code>.
  */
-public class AwsProxyHttpServletRequest
-        implements HttpServletRequest {
-
-    //-------------------------------------------------------------
-    // Constants
-    //-------------------------------------------------------------
-
-    private static final String HEADER_KEY_VALUE_SEPARATOR = "=";
-    private static final String HEADER_VALUE_SEPARATOR = ";";
-    private static final String FORM_DATA_SEPARATOR = "&";
-    private static final String DEFAULT_CHARACTER_ENCODING = "UTF-8";
-    private static final String HEADER_DATE_FORMAT = "EEE, d MMM yyyy HH:mm:ss z";
-    private static final String ENCODING_VALUE_KEY = "charset";
-
-    // We need this to pickup the protocol from the CloudFront header since Lambda doesn't receive this
-    // information from anywhere else
-    static final String CF_PROTOCOL_HEADER_NAME = "CloudFront-Forwarded-Proto";
-
+public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     //-------------------------------------------------------------
     // Variables - Private
     //-------------------------------------------------------------
 
     private AwsProxyRequest request;
-    private Context lamdaContext;
     private SecurityContext securityContext;
-    private Map<String, Object> attributes;
     private Map<String, List<String>> urlEncodedFormParameters;
     private Map<String, Part> multipartFormParameters;
 
@@ -102,12 +67,11 @@ public class AwsProxyHttpServletRequest
     // Constructors
     //-------------------------------------------------------------
 
-    public AwsProxyHttpServletRequest(AwsProxyRequest awsProxyRequest, Context lamdaContext, SecurityContext awsSecurityContext) {
+    public AwsProxyHttpServletRequest(AwsProxyRequest awsProxyRequest, Context lambdaContext, SecurityContext awsSecurityContext) {
+        super(lambdaContext);
         this.request = awsProxyRequest;
-        this.lamdaContext = lamdaContext;
         this.securityContext = awsSecurityContext;
 
-        this.attributes = new HashMap<>();
         this.urlEncodedFormParameters = getFormUrlEncodedParametersMap();
         this.multipartFormParameters = getMultipartFormParametersMap();
     }
@@ -129,19 +93,7 @@ public class AwsProxyHttpServletRequest
         if (cookieHeader == null) {
             return new Cookie[0];
         }
-        String[] cookies = cookieHeader.split(HEADER_VALUE_SEPARATOR);
-        List<Cookie> output = new ArrayList<>();
-
-        for (String curCookie : cookies) {
-            String[] cookieKeyValue = curCookie.split(HEADER_KEY_VALUE_SEPARATOR);
-            if (cookieKeyValue.length < 2) {
-                continue;
-            }
-            output.add(new Cookie(cookieKeyValue[0].trim(), cookieKeyValue[1].trim()));
-            // TODO: Parse the full cookie
-        }
-        Cookie[] returnValue = new Cookie[output.size()];
-        return output.toArray(returnValue);
+        return this.parseCookies(cookieHeader);
     }
 
 
@@ -230,7 +182,7 @@ public class AwsProxyHttpServletRequest
 
     @Override
     public String getQueryString() {
-        return request.getQueryString().isEmpty() ? null : request.getQueryString();
+        return this.generateQueryString(request.getQueryStringParameters());
     }
 
 
@@ -251,13 +203,6 @@ public class AwsProxyHttpServletRequest
     public Principal getUserPrincipal() {
         return securityContext.getUserPrincipal();
     }
-
-
-    @Override
-    public String getRequestedSessionId() {
-        return null;
-    }
-
 
     @Override
     public String getRequestURI() {
@@ -280,52 +225,10 @@ public class AwsProxyHttpServletRequest
         return request.getPath();
     }
 
-
-    @Override
-    public HttpSession getSession(boolean b) {
-        return null;
-    }
-
-
-    @Override
-    public HttpSession getSession() {
-        return null;
-    }
-
-
-    @Override
-    public String changeSessionId() {
-        return null;
-    }
-
-
-    @Override
-    public boolean isRequestedSessionIdValid() {
-        return false;
-    }
-
-
-    @Override
-    public boolean isRequestedSessionIdFromCookie() {
-        return false;
-    }
-
-
-    @Override
-    public boolean isRequestedSessionIdFromURL() {
-        return false;
-    }
-
-
-    @Override
-    public boolean isRequestedSessionIdFromUrl() {
-        return false;
-    }
-
-
     @Override
     public boolean authenticate(HttpServletResponse httpServletResponse)
             throws IOException, ServletException {
+        // TODO: Throw not implemented
         return false;
     }
 
@@ -333,14 +236,13 @@ public class AwsProxyHttpServletRequest
     @Override
     public void login(String s, String s1)
             throws ServletException {
-
+        // TODO: Throw not implemented
     }
-
 
     @Override
     public void logout()
             throws ServletException {
-
+        // TODO: Throw not implemented
     }
 
 
@@ -368,18 +270,6 @@ public class AwsProxyHttpServletRequest
     //-------------------------------------------------------------
     // Implementation - ServletRequest
     //-------------------------------------------------------------
-
-    @Override
-    public Object getAttribute(String s) {
-        return attributes.get(s);
-    }
-
-
-    @Override
-    public Enumeration<String> getAttributeNames() {
-        return Collections.enumeration(attributes.keySet());
-    }
-
 
     @Override
     public String getCharacterEncoding() {
@@ -588,6 +478,7 @@ public class AwsProxyHttpServletRequest
 
     @Override
     public String getProtocol() {
+        // TODO: We should have a cloudfront protocol header
         return null;
     }
 
@@ -600,19 +491,6 @@ public class AwsProxyHttpServletRequest
         }
         return headerValue;
     }
-
-
-    @Override
-    public String getServerName() {
-        return "lambda.amazonaws.com";
-    }
-
-
-    @Override
-    public int getServerPort() {
-        return 0;
-    }
-
 
     @Override
     public BufferedReader getReader()
@@ -632,47 +510,32 @@ public class AwsProxyHttpServletRequest
         return getHeaderCaseInsensitive(HttpHeaders.HOST);
     }
 
-
-    @Override
-    public void setAttribute(String s, Object o) {
-        attributes.put(s, o);
-    }
-
-
-    @Override
-    public void removeAttribute(String s) {
-        attributes.remove(s);
-    }
-
-
     @Override
     public Locale getLocale() {
-        String localeHeader = getHeaderCaseInsensitive(HttpHeaders.ACCEPT_LANGUAGE);
-        if (localeHeader == null) {
+        List<AbstractMap.SimpleEntry<String, String>> values = this.parseHeaderValue(
+                getHeaderCaseInsensitive(HttpHeaders.ACCEPT_LANGUAGE)
+        );
+        if (values.size() == 0) {
             return Locale.getDefault();
         }
-        if (localeHeader.contains(HEADER_VALUE_SEPARATOR)) {
-            localeHeader = localeHeader.split(HEADER_VALUE_SEPARATOR)[0].trim();
-        }
-        return new Locale(localeHeader);
+        return new Locale(values.get(0).getValue());
     }
 
 
     @Override
     public Enumeration<Locale> getLocales() {
-        String localeHeader = getHeaderCaseInsensitive(HttpHeaders.ACCEPT_LANGUAGE);
+        List<AbstractMap.SimpleEntry<String, String>> values = this.parseHeaderValue(
+                getHeaderCaseInsensitive(HttpHeaders.ACCEPT_LANGUAGE)
+        );
         List<Locale> locales = new ArrayList<>();
-        if (localeHeader == null) {
+        if (values.size() == 0) {
             locales.add(Locale.getDefault());
         } else {
-            if (localeHeader.contains(HEADER_VALUE_SEPARATOR)) {
-                for (String locale : localeHeader.split(HEADER_VALUE_SEPARATOR)) {
-                    locales.add(new Locale(locale.trim()));
-                }
-            } else {
-                locales.add(new Locale(localeHeader.trim()));
+            for (AbstractMap.SimpleEntry<String, String> locale : values) {
+                locales.add(new Locale(locale.getValue()));
             }
         }
+
         return Collections.enumeration(locales);
     }
 
@@ -695,36 +558,10 @@ public class AwsProxyHttpServletRequest
         return null;
     }
 
-
     @Override
     public int getRemotePort() {
         return 0;
     }
-
-
-    @Override
-    public String getLocalName() {
-        return "lambda.amazonaws.com";
-    }
-
-
-    @Override
-    public String getLocalAddr() {
-        return null;
-    }
-
-
-    @Override
-    public int getLocalPort() {
-        return 0;
-    }
-
-
-    @Override
-    public ServletContext getServletContext() {
-        return AwsProxyServletContext.getInstance(request, lamdaContext);
-    }
-
 
     @Override
     public AsyncContext startAsync() throws IllegalStateException {
@@ -736,31 +573,6 @@ public class AwsProxyHttpServletRequest
     public AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse) throws IllegalStateException {
         return null;
     }
-
-
-    @Override
-    public boolean isAsyncStarted() {
-        return false;
-    }
-
-
-    @Override
-    public boolean isAsyncSupported() {
-        return false;
-    }
-
-
-    @Override
-    public AsyncContext getAsyncContext() {
-        return null;
-    }
-
-
-    @Override
-    public DispatcherType getDispatcherType() {
-        return null;
-    }
-
 
     //-------------------------------------------------------------
     // Methods - Private

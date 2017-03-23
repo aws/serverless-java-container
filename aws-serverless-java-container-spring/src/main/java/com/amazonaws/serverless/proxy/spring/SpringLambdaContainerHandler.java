@@ -16,10 +16,7 @@ import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.internal.*;
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyResponse;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletResponse;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequestReader;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
+import com.amazonaws.serverless.proxy.internal.servlet.*;
 import com.amazonaws.services.lambda.runtime.Context;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
@@ -34,11 +31,12 @@ import java.util.concurrent.CountDownLatch;
  * @param <RequestType> The incoming event type
  * @param <ResponseType> The expected return type
  */
-public class SpringLambdaContainerHandler<RequestType, ResponseType> extends LambdaContainerHandler<RequestType, ResponseType, AwsProxyHttpServletRequest, AwsHttpServletResponse> {
+public class SpringLambdaContainerHandler<RequestType, ResponseType> extends AwsLambdaServletContainerHandler<RequestType, ResponseType, AwsProxyHttpServletRequest, AwsHttpServletResponse> {
     private LambdaSpringApplicationInitializer initializer;
 
     // State vars
     private boolean initialized;
+
 
     /**
      * Creates a default SpringLambdaContainerHandler initialized with the `AwsProxyRequest` and `AwsProxyResponse` objects
@@ -112,11 +110,22 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Lam
 
         // wire up the application context on the first invocation
         if (!initialized) {
-            ServletContext context = containerRequest.getServletContext();
-            initializer.onStartup(context);
+            // The servlet context should not be linked to a specific request object, only to the Lambda
+            // context so we only set it once.
+            setServletContext(containerRequest.getServletContext());
+            initializer.onStartup(this.servletContext);
+
+            // call the onStartup event if set to give developers a chance to set filters in the context
+            if (startupHandler != null) {
+                startupHandler.onStartup(this.servletContext);
+            }
+
             initialized = true;
         }
 
+        // process filters
+        doFilter(containerRequest, containerResponse);
+        // invoke servlet
         initializer.dispatch(containerRequest, containerResponse);
     }
 }

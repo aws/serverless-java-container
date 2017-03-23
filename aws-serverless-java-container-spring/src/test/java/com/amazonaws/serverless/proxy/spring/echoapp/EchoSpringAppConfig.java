@@ -35,5 +35,4 @@ public class EchoSpringAppConfig {
     public MockLambdaContext lambdaContext() {
         return new MockLambdaContext();
     }
-
 }

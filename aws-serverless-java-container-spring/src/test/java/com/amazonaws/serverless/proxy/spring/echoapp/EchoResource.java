@@ -4,11 +4,14 @@ import com.amazonaws.serverless.proxy.internal.RequestReader;
 import com.amazonaws.serverless.proxy.internal.model.ApiGatewayRequestContext;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.MapResponseModel;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.SingleValueModel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Enumeration;
 import java.util.Map;
@@ -18,6 +21,9 @@ import java.util.Random;
 @EnableWebMvc
 @RequestMapping("/echo")
 public class EchoResource {
+    @Autowired
+    ServletContext servletContext;
+
     @RequestMapping(path = "/headers", method = RequestMethod.GET)
     public MapResponseModel echoHeaders(@RequestHeader Map<String, String> allHeaders) {
         MapResponseModel headers = new MapResponseModel();
@@ -82,5 +88,10 @@ public class EchoResource {
         new Random().nextBytes(b);
 
         return new ResponseEntity<byte[]>(b, HttpStatus.OK);
+    }
+
+    @RequestMapping(path = "/servlet-context", method=RequestMethod.GET)
+    public ResponseEntity<String> getContext() {
+        return new ResponseEntity<String>(this.servletContext.getServerInfo(), HttpStatus.OK);
     }
 }

@@ -31,6 +31,12 @@ import java.util.concurrent.CountDownLatch;
 public abstract class LambdaContainerHandler<RequestType, ResponseType, ContainerRequestType, ContainerResponseType> {
 
     //-------------------------------------------------------------
+    // Constants
+    //-------------------------------------------------------------
+
+    public static final String SERVER_INFO = "aws-serverless-java-container";
+
+    //-------------------------------------------------------------
     // Variables - Private
     //-------------------------------------------------------------
 

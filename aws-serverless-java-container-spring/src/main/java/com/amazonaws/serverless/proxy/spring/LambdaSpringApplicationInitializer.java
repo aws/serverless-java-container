@@ -12,8 +12,10 @@
  */
 package com.amazonaws.serverless.proxy.spring;
 
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.ContextStoppedEvent;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.ContextLoaderListener;
@@ -78,6 +80,13 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
         this.refreshContext = refreshContext;
     }
 
+    /**
+     * Given a request and response objects, triggers the filters set in the servlet context and
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
+     */
     public void dispatch(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         currentResponse = response;

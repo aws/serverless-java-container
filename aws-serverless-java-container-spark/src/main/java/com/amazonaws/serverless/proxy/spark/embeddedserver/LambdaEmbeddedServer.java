@@ -62,7 +62,7 @@ public class LambdaEmbeddedServer
 
     public void configureWebSockets(Map<String, WebSocketHandlerWrapper> webSocketHandlers,
                                     Optional<Integer> webSocketIdleTimeoutMillis) {
-        // TODO: We do not support web sockets with API Gateway and Lambda
+        throw new UnsupportedOperationException();
     }
 
 

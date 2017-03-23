@@ -63,6 +63,11 @@ public class AwsProxyRequestBuilder {
     // Methods - Public
     //-------------------------------------------------------------
 
+    public AwsProxyRequestBuilder stage(String stageName) {
+        this.request.getRequestContext().setStage(stageName);
+        return this;
+    }
+
     public AwsProxyRequestBuilder method(String httpMethod) {
         this.request.setHttpMethod(httpMethod);
         return this;
