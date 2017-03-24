@@ -13,6 +13,8 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
 import javax.servlet.*;
+import javax.servlet.annotation.WebFilter;
+import javax.servlet.annotation.WebInitParam;
 import java.util.*;
 
 /**
@@ -55,9 +57,25 @@ public class FilterHolder {
         filterInitialized = false;
     }
 
+    public FilterHolder(Filter newFilter, ServletContext context) {
+        this(newFilter.getClass().getName(), newFilter, context);
+
+        if (isAnnotated()) {
+            filterName = readAnnotatedFilterName();
+            initParameters = readAnnotatedInitParams();
+            registration = new Registration(getAnnotation());
+        }
+
+    }
+
     //-------------------------------------------------------------
     // Methods - Public
     //-------------------------------------------------------------
+
+
+    public void setFilterName(String filterName) {
+        this.filterName = filterName;
+    }
 
     /**
      * Checks whether the filter this holder is responsible for has been initialized. This method should be checked before
@@ -128,6 +146,47 @@ public class FilterHolder {
         return servletContext;
     }
 
+    public boolean isAnnotated() {
+        return filter.getClass().isAnnotationPresent(WebFilter.class);
+    }
+
+    //-------------------------------------------------------------
+    // Methods - Private
+    //-------------------------------------------------------------
+
+    private String readAnnotatedFilterName() {
+        if (isAnnotated()) {
+            WebFilter regAnnotation = filter.getClass().getAnnotation(WebFilter.class);
+            if (!"".equals(regAnnotation.filterName().trim())) {
+                return regAnnotation.filterName();
+            } else {
+                return filter.getClass().getName();
+            }
+        } else {
+            return null;
+        }
+    }
+
+    private Map<String, String> readAnnotatedInitParams() {
+        Map<String, String> initParams = new HashMap<>();
+        if (isAnnotated()) {
+            WebFilter regAnnotation = filter.getClass().getAnnotation(WebFilter.class);
+            for (WebInitParam param : regAnnotation.initParams()) {
+                initParams.put(param.name(), param.value());
+            }
+        }
+
+        return initParams;
+    }
+
+    private WebFilter getAnnotation() {
+        if (isAnnotated()) {
+            return filter.getClass().getAnnotation(WebFilter.class);
+        } else {
+            return null;
+        }
+    }
+
     /**
      * Registration class for the filter. This object stores the servlet names and the url patterns the filter is
      * associated with.
@@ -141,6 +200,24 @@ public class FilterHolder {
             urlPatterns = new ArrayList<>();
             dispatcherTypes = new ArrayList<>();
             asyncSupported = false;
+        }
+
+        public Registration(WebFilter annotation) {
+            urlPatterns = new ArrayList<>();
+            dispatcherTypes = new ArrayList<>();
+
+            EnumSet<DispatcherType> dispatchers = EnumSet.noneOf(DispatcherType.class);
+            dispatchers.addAll(Arrays.asList(annotation.dispatcherTypes()));
+
+            if (annotation.value().length > 0) {
+                addMappingForUrlPatterns(dispatchers, true, annotation.value());
+            }
+
+            if (annotation.urlPatterns().length > 0) {
+                addMappingForUrlPatterns(dispatchers, true, annotation.urlPatterns());
+            }
+
+            asyncSupported = annotation.asyncSupported();
         }
 
         @Override

@@ -354,8 +354,11 @@ public class AwsServletContext
             return null;
         }
 
-        FilterHolder newFilter = new FilterHolder(name, filter, this);
-        filters.put(name, newFilter);
+        FilterHolder newFilter = new FilterHolder(filter, this);
+        if (!"".equals(name.trim())) {
+            newFilter.setFilterName(name);
+        }
+        filters.put(newFilter.getFilterName(), newFilter);
         return newFilter.getRegistration();
     }
 

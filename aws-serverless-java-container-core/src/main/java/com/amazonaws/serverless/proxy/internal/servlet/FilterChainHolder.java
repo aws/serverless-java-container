@@ -62,6 +62,31 @@ public class FilterChainHolder implements FilterChain {
         filters.add(newFilter);
     }
 
+    /**
+     * Returns the number of filters loaded in the chain holder
+     * @return The number of filters in the chain holder. If the filter chain is null then this will return 0
+     */
+    public int filterCount() {
+        if (filters == null) {
+            return 0;
+        } else {
+            return filters.size();
+        }
+    }
+
+    /**
+     * Get the <code>FilterHolder</code> object from the chain at the given index.
+     * @param idx The index in the chain. Use the <code>filterCount</code> method to get the filter count
+     * @return A populated FilterHolder object
+     */
+    public FilterHolder getFilter(int idx) {
+        if (filters == null) {
+            return null;
+        } else {
+            return filters.get(idx);
+        }
+    }
+
     //-------------------------------------------------------------
     // Implementation - FilterChain
     //-------------------------------------------------------------

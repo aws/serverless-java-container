@@ -35,6 +35,7 @@ public abstract class FilterChainManager<ServletContextType> {
     // we use the synchronizedMap because we do not expect high concurrency on this object. Lambda only allows one
     // event at a time per container
     private Map<TargetCacheKey, FilterChainHolder> filterCache = Collections.synchronizedMap(new HashMap<TargetCacheKey, FilterChainHolder>());
+    private int filtersSize = -1;
 
     //-------------------------------------------------------------
     // Variables - Protected
@@ -79,7 +80,11 @@ public abstract class FilterChainManager<ServletContextType> {
         String targetPath = request.getServletPath();
         DispatcherType type = request.getDispatcherType();
 
-        if (getFilterChainCache(type, targetPath) != null) {
+        if (filtersSize == -1) {
+            getFilterHolders().size();
+        }
+        // only return the cached result if the filter list hasn't changed in the meanwhile
+        if (getFilterHolders().size() == filtersSize && getFilterChainCache(type, targetPath) != null) {
             return getFilterChainCache(type, targetPath);
         }
 
@@ -107,6 +112,10 @@ public abstract class FilterChainManager<ServletContextType> {
         }
 
         putFilterChainCache(type, targetPath, chainHolder);
+        // update total filter size
+        if (filtersSize != registrations.size()) {
+            filtersSize = registrations.size();
+        }
         return chainHolder;
     }
 
@@ -188,13 +197,13 @@ public abstract class FilterChainManager<ServletContextType> {
                 return false;
             }
             // the exact work doesn't match the and holder is not a wildcard
-            if (!targetParts[i].equals(mappingParts[i]) && !mappingParts[i].equals("*")) {
-                return false;
-            } else {
-                // stop the loop, we have found a wildcard and all path parts prior to this matched.
-                break;
+            if (!targetParts[i].equals(mappingParts[i])) {
+                if (mappingParts[i].equals("*")) {
+                    break;
+                } else {
+                    return false;
+                }
             }
-
         }
 
         return true;
@@ -204,7 +213,7 @@ public abstract class FilterChainManager<ServletContextType> {
      * Object used as a key for the filter chain cache. It contains a target path and dispatcher type property. It overrides
      * the default <code>hashCode</code> and <code>equals</code> methods to return a consistent hash for comparison.
      */
-    private class TargetCacheKey {
+    protected static class TargetCacheKey {
         private String targetPath;
         private DispatcherType dispatcherType;
 
@@ -224,12 +233,34 @@ public abstract class FilterChainManager<ServletContextType> {
             this.dispatcherType = dispatcherType;
         }
 
+        /**
+         * The hash code for a cache key is calculated using the target path and dispatcher type. First, the target path
+         * is cleaned following these rules:
+         *  1. trim white spaces
+         *  2. Add "/" as first character if not there
+         *  3. Remove "/" as last character if it is there
+         *
+         * Once the path is cleaned, a string in the form of TARGET_PATH:DISPATCHER_TYPE is generated and used for the
+         * hash code
+         * @return An int representing the hash code fo the generated string
+         */
         @Override
         public int hashCode() {
             if (targetPath == null || dispatcherType == null) {
                 return -1;
             }
-            return (targetPath + ":" + dispatcherType.name()).hashCode();
+
+            // clean up path
+            String hashString = targetPath.trim();
+            if (hashString.endsWith(PATH_PART_SEPARATOR)) {
+                hashString = hashString.substring(0, hashString.length() - 1);
+            }
+            if (!hashString.startsWith(PATH_PART_SEPARATOR)) {
+                hashString = PATH_PART_SEPARATOR + hashString;
+            }
+            hashString += ":" + dispatcherType.name();
+
+            return hashString.hashCode();
         }
 
         @Override
