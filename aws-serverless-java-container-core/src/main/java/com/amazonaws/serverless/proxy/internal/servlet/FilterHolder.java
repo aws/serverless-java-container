@@ -28,9 +28,9 @@ public class FilterHolder {
     // Variables - Private
     //-------------------------------------------------------------
 
-    private  Filter filter;
-    private  FilterConfig filterConfig;
-    private  Registration registration;
+    private Filter filter;
+    private FilterConfig filterConfig;
+    private Registration registration;
     private String filterName;
     private Map<String, String> initParameters;
 

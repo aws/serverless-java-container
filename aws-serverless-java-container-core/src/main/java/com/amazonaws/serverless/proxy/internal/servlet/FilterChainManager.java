@@ -76,7 +76,7 @@ public abstract class FilterChainManager<ServletContextType> {
      * @param request The incoming servlet request
      * @return A <code>FilterChainHolder</code> object that can be used to apply the filters to the request
      */
-    public FilterChainHolder getFilterChain(HttpServletRequest request) {
+    public FilterChainHolder getFilterChain(final HttpServletRequest request) {
         String targetPath = request.getServletPath();
         DispatcherType type = request.getDispatcherType();
 
@@ -130,7 +130,7 @@ public abstract class FilterChainManager<ServletContextType> {
      * @param targetPath The request path - this is extracted with the <code>getPath</code> method of the request object
      * @return A populated FilterChainHolder
      */
-    protected FilterChainHolder getFilterChainCache(DispatcherType type, String targetPath) {
+    protected FilterChainHolder getFilterChainCache(final DispatcherType type, final String targetPath) {
         TargetCacheKey key = new TargetCacheKey();
         key.setDispatcherType(type);
         key.setTargetPath(targetPath);
@@ -147,7 +147,7 @@ public abstract class FilterChainManager<ServletContextType> {
      * @param targetPath The target path in the API
      * @param holder The FilterChainHolder object to save in the cache
      */
-    protected void putFilterChainCache(DispatcherType type, String targetPath, FilterChainHolder holder) {
+    protected void putFilterChainCache(final DispatcherType type, final String targetPath, final FilterChainHolder holder) {
         TargetCacheKey key = new TargetCacheKey();
         key.setDispatcherType(type);
         key.setTargetPath(targetPath);
@@ -167,7 +167,7 @@ public abstract class FilterChainManager<ServletContextType> {
      * @param mapping The mapping path stored in the filter registration
      * @return true if the given mapping path can apply to the target, false otherwise.
      */
-    protected boolean pathMatches(String target, String mapping) {
+    protected boolean pathMatches(final String target, final String mapping) {
         // easiest case, they are exactly the same
         if (target.toLowerCase().equals(mapping.toLowerCase())) {
             return true;

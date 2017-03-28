@@ -67,7 +67,7 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
      * Sets the ServletContext in the handler and initialized a new <code>FilterChainManager</code>
      * @param context An initialized ServletContext
      */
-    protected void setServletContext(ServletContext context) {
+    protected void setServletContext(final ServletContext context) {
         servletContext = context;
         // We assume custom implementations of the RequestWriter for HttpServletRequest will reuse
         // the existing AwsServletContext object since it has no dependencies other than the Lambda context
@@ -114,7 +114,7 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
      * </pre>
      * @param h A lambda expression that implements the <code>StartupHandler</code> functional interface
      */
-    public void setStartupHandler(StartupHandler h) {
+    public void setStartupHandler(final StartupHandler h) {
         startupHandler = h;
     }
 

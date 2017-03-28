@@ -97,7 +97,8 @@ public class FilterChainHolder implements FilterChain {
         if (filters == null || filters.size() == 0 || currentFilter > filters.size() - 1) {
             return;
         }
-        // TODO: We do check for async filters here
+        // TODO: We do not check for async filters here
+
         FilterHolder holder = filters.get(currentFilter);
 
         if (!holder.isFilterInitialized()) {

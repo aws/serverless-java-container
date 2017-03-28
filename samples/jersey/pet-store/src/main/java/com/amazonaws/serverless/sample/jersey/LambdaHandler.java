@@ -21,10 +21,10 @@ import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
 public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyResponse> {
-    private ResourceConfig jerseyApplication = new ResourceConfig()
+    private final ResourceConfig jerseyApplication = new ResourceConfig()
             .packages("com.amazonaws.serverless.sample.jersey")
             .register(JacksonFeature.class);
-    private JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler
+    private final JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler
             = JerseyLambdaContainerHandler.getAwsProxyHandler(jerseyApplication);
 
     @Override

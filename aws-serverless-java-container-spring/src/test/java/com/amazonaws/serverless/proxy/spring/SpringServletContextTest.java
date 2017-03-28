@@ -9,29 +9,14 @@ import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.spring.echoapp.CustomHeaderFilter;
 import com.amazonaws.serverless.proxy.spring.echoapp.EchoSpringAppConfig;
-import com.amazonaws.serverless.proxy.spring.echoapp.model.MapResponseModel;
-import com.amazonaws.serverless.proxy.spring.echoapp.model.SingleValueModel;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.codec.binary.Base64;
+import com.amazonaws.serverless.proxy.spring.echoapp.model.ValidatedUserModel;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestExecutionListeners;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
-import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.http.HttpStatus;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import java.io.IOException;
 import java.util.EnumSet;
-import java.util.UUID;
 
 import static org.junit.Assert.*;
 
@@ -97,6 +82,19 @@ public class SpringServletContextTest {
         assertTrue(output.getHeaders().size() > 0);
         assertNotNull(output.getHeaders().get(CustomHeaderFilter.HEADER_NAME));
         assertEquals(CustomHeaderFilter.HEADER_VALUE, output.getHeaders().get(CustomHeaderFilter.HEADER_NAME));
+    }
+
+    @Test
+    public void filter_validationFilter_emptyName() {
+        ValidatedUserModel userModel = new ValidatedUserModel();
+        userModel.setFirstName("Test");
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/context/user", "POST")
+                .json()
+                .body(userModel)
+                .build();
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(HttpStatus.BAD_REQUEST.value(), output.getStatusCode());
     }
 }
 

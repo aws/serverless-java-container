@@ -16,6 +16,8 @@ import com.amazonaws.serverless.proxy.internal.model.ApiGatewayAuthorizerContext
 import com.amazonaws.serverless.proxy.internal.model.ApiGatewayRequestContext;
 import com.amazonaws.serverless.proxy.internal.model.ApiGatewayRequestIdentity;
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyRequest;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -31,6 +33,7 @@ public class AwsProxyRequestBuilder {
     //-------------------------------------------------------------
 
     private AwsProxyRequest request;
+    private ObjectMapper mapper;
 
 
     //-------------------------------------------------------------
@@ -48,6 +51,8 @@ public class AwsProxyRequestBuilder {
 
 
     public AwsProxyRequestBuilder(String path, String httpMethod) {
+        this.mapper = new ObjectMapper();
+
         this.request = new AwsProxyRequest();
         this.request.setHttpMethod(httpMethod);
         this.request.setPath(path);
@@ -123,6 +128,18 @@ public class AwsProxyRequestBuilder {
     public AwsProxyRequestBuilder body(String body) {
         this.request.setBody(body);
         return this;
+    }
+
+    public AwsProxyRequestBuilder body(Object body) {
+        if (request.getHeaders() != null && request.getHeaders().get(HttpHeaders.CONTENT_TYPE).equals(MediaType.APPLICATION_JSON)) {
+            try {
+                return body(mapper.writeValueAsString(body));
+            } catch (JsonProcessingException e) {
+                throw new UnsupportedOperationException("Could not serialize object: " + e.getMessage());
+            }
+        } else {
+            throw new UnsupportedOperationException("Unsupported content type in request");
+        }
     }
 
 
