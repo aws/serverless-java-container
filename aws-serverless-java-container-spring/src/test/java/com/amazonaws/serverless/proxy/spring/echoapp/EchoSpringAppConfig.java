@@ -9,10 +9,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 
 @Configuration
 @ComponentScan("com.amazonaws.serverless.proxy.spring.echoapp")
+@PropertySource("classpath:application.properties")
 public class EchoSpringAppConfig {
 
     @Autowired

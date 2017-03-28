@@ -49,6 +49,7 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
     private ConfigurableWebApplicationContext applicationContext;
     private boolean refreshContext = true;
     private List<ServletContextListener> contextListeners;
+    private List<String> springProfiles;
 
     // Dynamically instantiated properties
     private ServletConfig dispatcherConfig;
@@ -93,8 +94,19 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
         dispatcherServlet.service(request, response);
     }
 
+    public List<String> getSpringProfiles() {
+        return Collections.unmodifiableList(springProfiles);
+    }
+
+    public void setSpringProfiles(List<String> springProfiles) {
+        this.springProfiles = new ArrayList<>(springProfiles);
+    }
+
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
+        if (springProfiles != null) {
+            applicationContext.getEnvironment().setActiveProfiles(springProfiles.toArray(new String[0]));
+        }
         applicationContext.setServletContext(servletContext);
 
         dispatcherConfig = new DefaultDispatcherConfig(servletContext);
@@ -139,7 +151,7 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
      * Default configuration class for the DispatcherServlet. This just mocks the behaviour of a default
      * ServletConfig object with no init parameters
      */
-    private class DefaultDispatcherConfig implements ServletConfig {
+    private static class DefaultDispatcherConfig implements ServletConfig {
         private ServletContext servletContext;
 
         DefaultDispatcherConfig(ServletContext context) {

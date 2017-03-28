@@ -94,4 +94,20 @@ public class EchoResource {
     public ResponseEntity<String> getContext() {
         return new ResponseEntity<String>(this.servletContext.getServerInfo(), HttpStatus.OK);
     }
+
+    @RequestMapping(path = "/request-URI", method = RequestMethod.GET)
+    public SingleValueModel echoRequestURI(HttpServletRequest request) {
+        SingleValueModel valueModel = new SingleValueModel();
+        valueModel.setValue(request.getRequestURI());
+
+        return valueModel;
+    }
+
+    @RequestMapping(path = "/request-Url", method = RequestMethod.GET)
+    public SingleValueModel echoRequestURL(HttpServletRequest request) {
+        SingleValueModel valueModel = new SingleValueModel();
+        valueModel.setValue(request.getRequestURL().toString());
+
+        return valueModel;
+    }
 }

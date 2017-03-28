@@ -176,7 +176,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getContextPath() {
-        return "/";
+        return request.getRequestContext().getStage();
     }
 
 
@@ -213,10 +213,15 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     public StringBuffer getRequestURL() {
         String url = "";
-        url += getHeaderCaseInsensitive(HttpHeaders.HOST);
+        url += getServerName();
+        url += "/";
+        url += getContextPath();
         url += "/";
         url += request.getPath();
-        return new StringBuffer(url);
+
+        url = url.replaceAll("/+", "/");
+
+        return new StringBuffer(getScheme() + "://" + url);
     }
 
 
@@ -310,17 +315,17 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
         if (currentContentType.contains(HEADER_VALUE_SEPARATOR)) {
             String[] contentTypeValues = currentContentType.split(HEADER_VALUE_SEPARATOR);
-            String contentType = contentTypeValues[0];
+            StringBuilder contentType = new StringBuilder(contentTypeValues[0]);
 
             for (String contentTypeValue : contentTypeValues) {
+                String contentTypeString = HEADER_VALUE_SEPARATOR + " " + contentTypeValue;
                 if (contentTypeValue.trim().startsWith(ENCODING_VALUE_KEY)) {
-                    contentType += HEADER_VALUE_SEPARATOR + " " + ENCODING_VALUE_KEY + HEADER_KEY_VALUE_SEPARATOR + s;
-                } else {
-                    contentType += HEADER_VALUE_SEPARATOR + " " + contentTypeValue;
+                    contentTypeString = HEADER_VALUE_SEPARATOR + " " + ENCODING_VALUE_KEY + HEADER_KEY_VALUE_SEPARATOR + s;
                 }
+                contentType.append(contentTypeString);
             }
 
-            request.getHeaders().put(HttpHeaders.CONTENT_TYPE, contentType);
+            request.getHeaders().put(HttpHeaders.CONTENT_TYPE, contentType.toString());
         } else {
             request.getHeaders().put(
                     HttpHeaders.CONTENT_TYPE,
@@ -419,7 +424,9 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     public Enumeration<String> getParameterNames() {
         List<String> paramNames = new ArrayList<>();
-        paramNames.addAll(request.getQueryStringParameters().keySet());
+        if (request.getQueryStringParameters() != null) {
+            paramNames.addAll(request.getQueryStringParameters().keySet());
+        }
         paramNames.addAll(urlEncodedFormParameters.keySet());
         return Collections.enumeration(paramNames);
     }
@@ -457,13 +464,15 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             params = new HashMap<>();
         }
 
-        for (Map.Entry<String, String> entry : request.getQueryStringParameters().entrySet()) {
-            if (params.containsKey(entry.getKey())) {
-                params.get(entry.getKey()).add(entry.getValue());
-            } else {
-                List<String> valueList = new ArrayList<>();
-                valueList.add(entry.getValue());
-                params.put(entry.getKey(), valueList);
+        if (request.getQueryStringParameters() != null) {
+            for (Map.Entry<String, String> entry : request.getQueryStringParameters().entrySet()) {
+                if (params.containsKey(entry.getKey())) {
+                    params.get(entry.getKey()).add(entry.getValue());
+                } else {
+                    List<String> valueList = new ArrayList<>();
+                    valueList.add(entry.getValue());
+                    params.put(entry.getKey(), valueList);
+                }
             }
         }
 
@@ -490,6 +499,16 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             return "https";
         }
         return headerValue;
+    }
+
+    @Override
+    public String getServerName() {
+        String name = getHeaderCaseInsensitive(HttpHeaders.HOST);
+
+        if (name == null || name.length() == 0) {
+            name = "lambda.amazonaws.com";
+        }
+        return name;
     }
 
     @Override

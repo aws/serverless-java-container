@@ -2,6 +2,7 @@ package com.amazonaws.serverless.proxy.spring;
 
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyResponse;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.spring.echoapp.EchoSpringAppConfig;
@@ -10,6 +11,7 @@ import com.amazonaws.serverless.proxy.spring.echoapp.model.SingleValueModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +47,11 @@ public class SpringAwsProxyTest {
 
     @Autowired
     private SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+
+    @Before
+    public void clearServletContextCache() {
+        AwsServletContext.clearServletContextCache();
+    }
 
     @Test
     public void headers_getHeaders_echo() {
@@ -187,6 +194,31 @@ public class SpringAwsProxyTest {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
+    }
+
+    @Test
+    public void request_requestURI() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/request-URI", "GET")
+                .build();
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(200, output.getStatusCode());
+
+        validateSingleValueModel(output, "/echo/request-URI");
+    }
+
+    @Test
+    public void request_requestURL() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/request-Url", "GET")
+                .scheme("https")
+                .serverName("api.myserver.com")
+                .stage("prod")
+                .build();
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(200, output.getStatusCode());
+
+        validateSingleValueModel(output, "https://api.myserver.com/prod/echo/request-Url");
     }
 
     private void validateMapResponseModel(AwsProxyResponse output) {

@@ -485,4 +485,8 @@ public class AwsServletContext
 
         return instance;
     }
+
+    public static void clearServletContextCache() {
+        instance = null;
+    }
 }

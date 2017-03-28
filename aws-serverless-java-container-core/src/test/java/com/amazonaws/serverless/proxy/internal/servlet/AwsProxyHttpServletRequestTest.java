@@ -8,6 +8,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+
 import static org.junit.Assert.*;
 
 public class AwsProxyHttpServletRequestTest {
@@ -38,6 +42,16 @@ public class AwsProxyHttpServletRequestTest {
             .cookie(FORM_PARAM_TEST, FORM_PARAM_NAME_VALUE).build();
     private static final AwsProxyRequest REQUEST_MALFORMED_COOKIE = new AwsProxyRequestBuilder("/hello", "GET")
             .header(HttpHeaders.COOKIE, QUERY_STRING_NAME_VALUE).build();
+
+    private static final AwsProxyRequest REQUEST_NULL_QUERY_STRING;
+    static {
+        AwsProxyRequest awsProxyRequest = new AwsProxyRequestBuilder("/hello", "GET").build();
+        awsProxyRequest.setQueryStringParameters(null);
+        REQUEST_NULL_QUERY_STRING = awsProxyRequest;
+    }
+
+    private static final AwsProxyRequest REQUEST_QUERY = new AwsProxyRequestBuilder("/hello", "POST")
+            .queryString(FORM_PARAM_NAME, QUERY_STRING_NAME_VALUE).build();
 
 
     @Test
@@ -130,5 +144,37 @@ public class AwsProxyHttpServletRequestTest {
         assertNotNull(request);
         assertNotNull(request.getCookies());
         assertEquals(0, request.getCookies().length);
+    }
+
+    @Test
+    public void queryParameters_getParameterMap_null() {
+        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_NULL_QUERY_STRING, null, null);
+        assertNotNull(request);
+        assertEquals(0, request.getParameterMap().size());
+    }
+
+    @Test
+    public void queryParameters_getParameterMap_nonNull() {
+        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_QUERY, null, null);
+        assertNotNull(request);
+        assertEquals(1, request.getParameterMap().size());
+        assertEquals(QUERY_STRING_NAME_VALUE, request.getParameterMap().get(FORM_PARAM_NAME)[0]);
+    }
+
+    @Test
+    public void queryParameters_getParameterNames_null() {
+        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_NULL_QUERY_STRING, null, null);
+        List<String> parameterNames = Collections.list(request.getParameterNames());
+        assertNotNull(request);
+        assertEquals(0, parameterNames.size());
+    }
+
+    @Test
+    public void queryParameters_getParameterNames_nonNull() {
+        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_QUERY, null, null);
+        List<String> parameterNames = Collections.list(request.getParameterNames());
+        assertNotNull(request);
+        assertEquals(1, parameterNames.size());
+        assertTrue(parameterNames.contains(FORM_PARAM_NAME));
     }
 }

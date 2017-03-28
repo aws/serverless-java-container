@@ -43,17 +43,17 @@ public class AwsProxyRequest {
 
     @JsonIgnore
     public String getQueryString() {
-        String params = "";
+        StringBuilder params = new StringBuilder("");
 
         if (this.getQueryStringParameters() != null && this.getQueryStringParameters().size() > 0) {
             for (String key : this.getQueryStringParameters().keySet()) {
-                String separator = params.equals("") ? "?" : "&";
+                String separator = params.length() == 0 ? "?" : "&";
 
-                params += separator + key + "=" + this.getQueryStringParameters().get(key);
+                params.append(separator + key + "=" + this.getQueryStringParameters().get(key));
             }
         }
 
-        return params;
+        return params.toString();
     }
 
 
