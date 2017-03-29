@@ -25,9 +25,26 @@ import java.util.regex.Pattern;
  */
 @WebFilter(filterName = "UrlPathValidator", urlPatterns = {"/*"})
 public class UrlPathValidator implements Filter {
+
+    //-------------------------------------------------------------
+    // Constants
+    //-------------------------------------------------------------
+
     public static final int DEFAULT_ERROR_CODE = 404;
     public static final Pattern PATH_PATTERN = Pattern.compile("^(/[-\\w:@&?=+,.!/~*'%$_;]*)?$");
+
+
+    //-------------------------------------------------------------
+    // Variables - Private
+    //-------------------------------------------------------------
+
     private int invalidStatusCode;
+
+
+    //-------------------------------------------------------------
+    // Implementation - Filter
+    //-------------------------------------------------------------
+
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -40,6 +57,7 @@ public class UrlPathValidator implements Filter {
             }
         }
     }
+
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
@@ -68,14 +86,21 @@ public class UrlPathValidator implements Filter {
         filterChain.doFilter(servletRequest, servletResponse);
     }
 
+
     @Override
     public void destroy() {
 
     }
 
+
+    //-------------------------------------------------------------
+    // Methods - Private
+    //-------------------------------------------------------------
+
     private void setErrorResponse(ServletResponse resp) {
         ((HttpServletResponse)resp).setStatus(invalidStatusCode);
     }
+
 
     private int countStrings(String needle, String haystack) {
         int curIndex = 0;

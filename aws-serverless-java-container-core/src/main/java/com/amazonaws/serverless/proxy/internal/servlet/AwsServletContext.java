@@ -46,9 +46,8 @@ public class AwsServletContext
         implements ServletContext {
 
     //-------------------------------------------------------------
-    // Constants
-    //-------------------------------------------------------------
-
+    // Constants - Public
+    // -------------------------------------------------------------
     public static final int SERVLET_API_MAJOR_VERSION = 3;
     public static final int SERVLET_API_MINOR_VERSION = 1;
 
@@ -56,18 +55,16 @@ public class AwsServletContext
     //-------------------------------------------------------------
     // Variables - Private
     //-------------------------------------------------------------
-
+    private static AwsServletContext instance;
     private Context lambdaContext;
     private Map<String, Object> attributes;
     private Map<String, String> initParameters;
-    private Map<String, FilterHolder> filters;
 
 
     //-------------------------------------------------------------
     // Variables - Private - Static
     //-------------------------------------------------------------
-
-    private static AwsServletContext instance;
+    private Map<String, FilterHolder> filters;
 
 
     //-------------------------------------------------------------
@@ -86,6 +83,20 @@ public class AwsServletContext
     //-------------------------------------------------------------
     // Implementation - ServletContext
     //-------------------------------------------------------------
+
+
+    public static ServletContext getInstance(Context lambdaContext) {
+        if (instance == null) {
+            instance = new AwsServletContext(lambdaContext);
+        }
+
+        return instance;
+    }
+
+
+    public static void clearServletContextCache() {
+        instance = null;
+    }
 
 
     @Override
@@ -354,10 +365,8 @@ public class AwsServletContext
             return null;
         }
 
-        FilterHolder newFilter = new FilterHolder(filter, this);
-        if (!"".equals(name.trim())) {
-            newFilter.setFilterName(name);
-        }
+        FilterHolder newFilter = new FilterHolder(name, filter, this);
+
         filters.put(newFilter.getFilterName(), newFilter);
         return newFilter.getRegistration();
     }
@@ -397,6 +406,7 @@ public class AwsServletContext
         return filters.get(s).getRegistration();
     }
 
+
     @Override
     public Map<String, ? extends FilterRegistration> getFilterRegistrations() {
         Map<String, FilterRegistration> registrations = new LinkedHashMap<>();
@@ -405,6 +415,7 @@ public class AwsServletContext
         }
         return registrations;
     }
+
 
     Map<String, FilterHolder> getFilterHolders() {
         return filters;
@@ -421,6 +432,7 @@ public class AwsServletContext
     public void setSessionTrackingModes(Set<SessionTrackingMode> set) {
 
     }
+
 
     @Override
     public Set<SessionTrackingMode> getDefaultSessionTrackingModes() {
@@ -439,15 +451,18 @@ public class AwsServletContext
 
     }
 
+
     @Override
     public <T extends EventListener> void addListener(T t) {
 
     }
 
+
     @Override
     public void addListener(Class<? extends EventListener> aClass) {
 
     }
+
 
     @Override
     public <T extends EventListener> T createListener(Class<T> aClass) throws ServletException {
@@ -468,25 +483,15 @@ public class AwsServletContext
         return ClassLoader.getSystemClassLoader();
     }
 
+
     @Override
     public void declareRoles(String... strings) {
 
     }
 
+
     @Override
     public String getVirtualServerName() {
         return null;
-    }
-
-    public static ServletContext getInstance(Context lambdaContext) {
-        if (instance == null) {
-            instance = new AwsServletContext(lambdaContext);
-        }
-
-        return instance;
-    }
-
-    public static void clearServletContextCache() {
-        instance = null;
     }
 }

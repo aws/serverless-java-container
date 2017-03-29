@@ -37,9 +37,15 @@ public class FilterHolder {
     private ServletContext servletContext;
     private boolean filterInitialized;
 
+
     //-------------------------------------------------------------
     // Constructors
     //-------------------------------------------------------------
+
+    public FilterHolder(Filter newFilter, ServletContext context) {
+        this(newFilter.getClass().getName(), newFilter, context);
+    }
+
 
     /**
      * Creates a new filter holder for the given Filter object. The object is initialized with an empty map of parameters
@@ -49,42 +55,25 @@ public class FilterHolder {
      * @param context The ServletContext this object was initialized by
      */
     public FilterHolder(String name, Filter newFilter, ServletContext context) {
-        filterName = name;
         filter = newFilter;
         servletContext = context;
-        initParameters = new HashMap<>();
-        registration = new Registration();
         filterInitialized = false;
-    }
-
-    public FilterHolder(Filter newFilter, ServletContext context) {
-        this(newFilter.getClass().getName(), newFilter, context);
 
         if (isAnnotated()) {
             filterName = readAnnotatedFilterName();
             initParameters = readAnnotatedInitParams();
             registration = new Registration(getAnnotation());
+        } else {
+            filterName = name;
+            initParameters = new HashMap<>();
+            registration = new Registration();
         }
-
     }
+
 
     //-------------------------------------------------------------
     // Methods - Public
     //-------------------------------------------------------------
-
-
-    public void setFilterName(String filterName) {
-        this.filterName = filterName;
-    }
-
-    /**
-     * Checks whether the filter this holder is responsible for has been initialized. This method should be checked before
-     * calling a filter, if it returns false then you should call the <code>init</code> method.
-     * @return True if the filter has been initialized before, false otherwise
-     */
-    public boolean isFilterInitialized() {
-        return filterInitialized;
-    }
 
     /**
      * Initializes the wrapped filter and sets the <code>isFilterInitialized</code> property to true. This should be called
@@ -97,6 +86,20 @@ public class FilterHolder {
     }
 
 
+    //-------------------------------------------------------------
+    // Methods - Getter/Setter
+    //-------------------------------------------------------------
+
+    /**
+     * Checks whether the filter this holder is responsible for has been initialized. This method should be checked before
+     * calling a filter, if it returns false then you should call the <code>init</code> method.
+     * @return True if the filter has been initialized before, false otherwise
+     */
+    public boolean isFilterInitialized() {
+        return filterInitialized;
+    }
+
+
     /**
      * Returns the filter object
      * @return the filter object
@@ -105,6 +108,7 @@ public class FilterHolder {
         return filter;
     }
 
+
     /**
      * The filter config object implementation. This is the default <code>Config</code> object implemented in this file
      * @return The filter config object
@@ -112,6 +116,7 @@ public class FilterHolder {
     public FilterConfig getFilterConfig() {
         return filterConfig;
     }
+
 
     /**
      * Returns the Registration object for the filter. The <code>Registration</code> object defined in this file implements
@@ -122,6 +127,7 @@ public class FilterHolder {
         return registration;
     }
 
+
     /**
      * The name associated with the filter
      * @return
@@ -129,6 +135,12 @@ public class FilterHolder {
     public String getFilterName() {
         return filterName;
     }
+
+
+    public void setFilterName(String filterName) {
+        this.filterName = filterName;
+    }
+
 
     /**
      * The map of initialization parameters passed to the filter
@@ -138,6 +150,7 @@ public class FilterHolder {
         return initParameters;
     }
 
+
     /**
      * The servlet context that initialized the filter
      * @return
@@ -146,9 +159,11 @@ public class FilterHolder {
         return servletContext;
     }
 
+
     public boolean isAnnotated() {
         return filter.getClass().isAnnotationPresent(WebFilter.class);
     }
+
 
     //-------------------------------------------------------------
     // Methods - Private
@@ -167,6 +182,7 @@ public class FilterHolder {
         }
     }
 
+
     private Map<String, String> readAnnotatedInitParams() {
         Map<String, String> initParams = new HashMap<>();
         if (isAnnotated()) {
@@ -179,6 +195,7 @@ public class FilterHolder {
         return initParams;
     }
 
+
     private WebFilter getAnnotation() {
         if (isAnnotated()) {
             return filter.getClass().getAnnotation(WebFilter.class);
@@ -187,20 +204,36 @@ public class FilterHolder {
         }
     }
 
+
+    //-------------------------------------------------------------
+    // Inner Class -
+    //-------------------------------------------------------------
+
     /**
      * Registration class for the filter. This object stores the servlet names and the url patterns the filter is
      * associated with.
      */
     protected class Registration implements FilterRegistration.Dynamic {
+
+        //-------------------------------------------------------------
+        // Variables - Private
+        //-------------------------------------------------------------
+
         private List<String> urlPatterns;
         private List<DispatcherType> dispatcherTypes;
         private boolean asyncSupported;
+
+
+        //-------------------------------------------------------------
+        // Constructors
+        //-------------------------------------------------------------
 
         public Registration() {
             urlPatterns = new ArrayList<>();
             dispatcherTypes = new ArrayList<>();
             asyncSupported = false;
         }
+
 
         public Registration(WebFilter annotation) {
             urlPatterns = new ArrayList<>();
@@ -220,15 +253,34 @@ public class FilterHolder {
             asyncSupported = annotation.asyncSupported();
         }
 
+
+        //-------------------------------------------------------------
+        // Implementation - Dynamic
+        //-------------------------------------------------------------
+
+
+        @Override
+        public void setAsyncSupported(boolean b) {
+            asyncSupported = b;
+        }
+
+
+        //-------------------------------------------------------------
+        // Implementation - FilterRegistration
+        //-------------------------------------------------------------
+
+
         @Override
         public void addMappingForServletNames(EnumSet<DispatcherType> types, boolean isLast, String... servlets) {
             throw new UnsupportedOperationException();
         }
 
+
         @Override
         public Collection<String> getServletNameMappings() {
             return null;
         }
+
 
         @Override
         public void addMappingForUrlPatterns(EnumSet<DispatcherType> types, boolean isLast, String... patterns) {
@@ -255,6 +307,79 @@ public class FilterHolder {
             }
         }
 
+
+        @Override
+        public Collection<String> getUrlPatternMappings() {
+            return urlPatterns;
+        }
+
+
+        //-------------------------------------------------------------
+        // Implementation - Registration
+        //-------------------------------------------------------------
+
+
+        @Override
+        public String getName() {
+            return filterName;
+        }
+
+
+        @Override
+        public String getClassName() {
+            return filter.getClass().getName();
+        }
+
+
+        @Override
+        public boolean setInitParameter(String s, String s1) {
+            if (initParameters.get(s) != null) {
+                return false;
+            }
+            initParameters.put(s, s1);
+            return true;
+        }
+
+
+        @Override
+        public String getInitParameter(String s) {
+            return initParameters.get(s);
+        }
+
+
+        @Override
+        public Set<String> setInitParameters(Map<String, String> map) {
+            Set<String> conflicts = new LinkedHashSet<>();
+            for (String newParamKey : map.keySet()) {
+                if (initParameters.get(newParamKey) != null) {
+                    conflicts.add(newParamKey);
+                } else {
+                    initParameters.put(newParamKey, map.get(newParamKey));
+                }
+            }
+            return conflicts;
+        }
+
+
+        @Override
+        public Map<String, String> getInitParameters() {
+            return initParameters;
+        }
+
+
+        //-------------------------------------------------------------
+        // Methods - Getter/Setter
+        //-------------------------------------------------------------
+
+        public List<DispatcherType> getDispatcherTypes() {
+            return dispatcherTypes;
+        }
+
+
+        //-------------------------------------------------------------
+        // Methods - Private
+        //-------------------------------------------------------------
+
         /**
          * Validates a path mapping sent to the registration object. This method currently only checks for path parts
          * after a wildcard.
@@ -275,83 +400,34 @@ public class FilterHolder {
             }
             return true;
         }
-
-
-        @Override
-        public Collection<String> getUrlPatternMappings() {
-            return urlPatterns;
-        }
-
-        @Override
-        public void setAsyncSupported(boolean b) {
-            asyncSupported = b;
-        }
-
-        @Override
-        public String getName() {
-            return filterName;
-        }
-
-        @Override
-        public String getClassName() {
-            return filter.getClass().getName();
-        }
-
-        @Override
-        public boolean setInitParameter(String s, String s1) {
-            if (initParameters.get(s) != null) {
-                return false;
-            }
-            initParameters.put(s, s1);
-            return true;
-        }
-
-        @Override
-        public String getInitParameter(String s) {
-            return initParameters.get(s);
-        }
-
-        @Override
-        public Set<String> setInitParameters(Map<String, String> map) {
-            Set<String> conflicts = new LinkedHashSet<>();
-            for (String newParamKey : map.keySet()) {
-                if (initParameters.get(newParamKey) != null) {
-                    conflicts.add(newParamKey);
-                } else {
-                    initParameters.put(newParamKey, map.get(newParamKey));
-                }
-            }
-            return conflicts;
-        }
-
-        @Override
-        public Map<String, String> getInitParameters() {
-            return initParameters;
-        }
-
-        public List<DispatcherType> getDispatcherTypes() {
-            return dispatcherTypes;
-        }
     }
 
     /**
      * Default implementation of the <code>FilterConfig</code> object.
      */
     class Config implements FilterConfig {
+
+        //-------------------------------------------------------------
+        // Implementation - FilterConfig
+        //-------------------------------------------------------------
+
         @Override
         public String getFilterName() {
             return filterName;
         }
+
 
         @Override
         public ServletContext getServletContext() {
             return servletContext;
         }
 
+
         @Override
         public String getInitParameter(String s) {
             return initParameters.get(s);
         }
+
 
         @Override
         public Enumeration<String> getInitParameterNames() {

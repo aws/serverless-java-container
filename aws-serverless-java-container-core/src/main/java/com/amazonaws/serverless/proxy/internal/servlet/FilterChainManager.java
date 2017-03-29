@@ -29,6 +29,13 @@ import java.util.Map;
 public abstract class FilterChainManager<ServletContextType> {
 
     //-------------------------------------------------------------
+    // Variables - Protected
+    //-------------------------------------------------------------
+
+    protected static final String PATH_PART_SEPARATOR = "/";
+
+
+    //-------------------------------------------------------------
     // Variables - Private
     //-------------------------------------------------------------
 
@@ -36,13 +43,8 @@ public abstract class FilterChainManager<ServletContextType> {
     // event at a time per container
     private Map<TargetCacheKey, FilterChainHolder> filterCache = Collections.synchronizedMap(new HashMap<TargetCacheKey, FilterChainHolder>());
     private int filtersSize = -1;
-
-    //-------------------------------------------------------------
-    // Variables - Protected
-    //-------------------------------------------------------------
-
-    protected static final String PATH_PART_SEPARATOR = "/";
     protected ServletContextType servletContext;
+
 
     //-------------------------------------------------------------
     // Constructors
@@ -51,6 +53,7 @@ public abstract class FilterChainManager<ServletContextType> {
     protected FilterChainManager(ServletContextType context) {
         servletContext = context;
     }
+
 
     //-------------------------------------------------------------
     // Methods - Abstract
@@ -62,6 +65,7 @@ public abstract class FilterChainManager<ServletContextType> {
      * @return A Map of filter holders with the filter name as key and the filter holder object as value
      */
     protected abstract Map<String, FilterHolder> getFilterHolders();
+
 
     //-------------------------------------------------------------
     // Methods - Public
@@ -119,6 +123,7 @@ public abstract class FilterChainManager<ServletContextType> {
         return chainHolder;
     }
 
+
     //-------------------------------------------------------------
     // Methods - Protected
     //-------------------------------------------------------------
@@ -137,6 +142,7 @@ public abstract class FilterChainManager<ServletContextType> {
 
         return filterCache.get(key);
     }
+
 
     /**
      * Adds a filter chain to the local cache. The key for the filter chain in the cache is generated with the dispatcher
@@ -159,6 +165,7 @@ public abstract class FilterChainManager<ServletContextType> {
 
         filterCache.put(key, holder);
     }
+
 
     /**
      * Checks if a mapping path matches the target path of the request. The mapping path can include wildcards. For example,
@@ -209,29 +216,28 @@ public abstract class FilterChainManager<ServletContextType> {
         return true;
     }
 
+
+    //-------------------------------------------------------------
+    // Inner Class -
+    //-------------------------------------------------------------
+
     /**
      * Object used as a key for the filter chain cache. It contains a target path and dispatcher type property. It overrides
      * the default <code>hashCode</code> and <code>equals</code> methods to return a consistent hash for comparison.
      */
     protected static class TargetCacheKey {
+
+    //-------------------------------------------------------------
+    // Variables - Private
+    //-------------------------------------------------------------
+
         private String targetPath;
         private DispatcherType dispatcherType;
 
-        public String getTargetPath() {
-            return targetPath;
-        }
 
-        public void setTargetPath(String targetPath) {
-            this.targetPath = targetPath;
-        }
-
-        public DispatcherType getDispatcherType() {
-            return dispatcherType;
-        }
-
-        public void setDispatcherType(DispatcherType dispatcherType) {
-            this.dispatcherType = dispatcherType;
-        }
+    //-------------------------------------------------------------
+    // Methods - Public
+    //-------------------------------------------------------------
 
         /**
          * The hash code for a cache key is calculated using the target path and dispatcher type. First, the target path
@@ -263,6 +269,7 @@ public abstract class FilterChainManager<ServletContextType> {
             return hashString.hashCode();
         }
 
+
         @Override
         public boolean equals(Object key) {
             if (!key.getClass().isAssignableFrom(TargetCacheKey.class)) {
@@ -270,6 +277,30 @@ public abstract class FilterChainManager<ServletContextType> {
             } else {
                 return hashCode() == key.hashCode();
             }
+        }
+
+
+    //-------------------------------------------------------------
+    // Methods - Getter/Setter
+    //-------------------------------------------------------------
+
+        public String getTargetPath() {
+            return targetPath;
+        }
+
+
+        public void setTargetPath(String targetPath) {
+            this.targetPath = targetPath;
+        }
+
+
+        public DispatcherType getDispatcherType() {
+            return dispatcherType;
+        }
+
+
+        public void setDispatcherType(DispatcherType dispatcherType) {
+            this.dispatcherType = dispatcherType;
         }
     }
 }

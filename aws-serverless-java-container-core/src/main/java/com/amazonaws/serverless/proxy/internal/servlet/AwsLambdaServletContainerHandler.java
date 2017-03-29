@@ -35,8 +35,9 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
         extends LambdaContainerHandler<RequestType, ResponseType, ContainerRequestType, ContainerResponseType> {
 
     //-------------------------------------------------------------
-    // Variables - Protected
+    // Variables - Private
     //-------------------------------------------------------------
+
 
     private FilterChainManager filterChainManager;
 
@@ -59,9 +60,20 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
         super(requestReader, responseWriter, securityContextWriter, exceptionHandler);
     }
 
+
     //-------------------------------------------------------------
-    // Methods - Protected
+    // Methods - Getter/Setter
     //-------------------------------------------------------------
+
+    /**
+     * Returns the current ServletContext. If the framework implementation does not set the value for
+     * servlet context this method will return null.
+     * @return The initialized servlet context if the framework-specific implementation requires one, otherwise null
+     */
+    public ServletContext getServletContext() {
+        return servletContext;
+    }
+
 
     /**
      * Sets the ServletContext in the handler and initialized a new <code>FilterChainManager</code>
@@ -74,28 +86,6 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
         filterChainManager = new AwsFilterChainManager((AwsServletContext)context);
     }
 
-    /**
-     * Applies the filter chain in the request lifecycle
-     * @param request The Request object. This must be an implementation of HttpServletRequest
-     * @param response The response object. This must be an implementation of HttpServletResponse
-     */
-    protected void doFilter(ContainerRequestType request, ContainerResponseType response) throws IOException, ServletException {
-        FilterChainHolder chain = filterChainManager.getFilterChain(request);
-        chain.doFilter(request, response);
-    }
-
-    //-------------------------------------------------------------
-    // Methods - Public
-    //-------------------------------------------------------------
-
-    /**
-     * Returns the current ServletContext. If the framework implementation does not set the value for
-     * servlet context this method will return null.
-     * @return The initialized servlet context if the framework-specific implementation requires one, otherwise null
-     */
-    public ServletContext getServletContext() {
-        return servletContext;
-    }
 
     /**
      * You can use the <code>setStartupHandler</code> to intercept the ServletContext as the Spring application is
@@ -118,7 +108,32 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
         startupHandler = h;
     }
 
+
+    //-------------------------------------------------------------
+    // Methods - Protected
+    //-------------------------------------------------------------
+
+    /**
+     * Applies the filter chain in the request lifecycle
+     * @param request The Request object. This must be an implementation of HttpServletRequest
+     * @param response The response object. This must be an implementation of HttpServletResponse
+     */
+    protected void doFilter(ContainerRequestType request, ContainerResponseType response) throws IOException, ServletException {
+        FilterChainHolder chain = filterChainManager.getFilterChain(request);
+        chain.doFilter(request, response);
+    }
+
+
+    //-------------------------------------------------------------
+    // Inner Class -
+    //-------------------------------------------------------------
+
     public interface StartupHandler {
+
+        //-------------------------------------------------------------
+        // Methods - Public
+        //-------------------------------------------------------------
+
         void onStartup(ServletContext context);
     }
 }
