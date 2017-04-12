@@ -12,7 +12,11 @@
  */
 package com.amazonaws.serverless.proxy.internal.servlet;
 
-import javax.servlet.*;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;

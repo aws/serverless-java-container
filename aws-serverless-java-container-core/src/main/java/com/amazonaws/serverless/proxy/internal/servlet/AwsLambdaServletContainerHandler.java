@@ -12,7 +12,11 @@
  */
 package com.amazonaws.serverless.proxy.internal.servlet;
 
-import com.amazonaws.serverless.proxy.internal.*;
+import com.amazonaws.serverless.proxy.internal.ExceptionHandler;
+import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
+import com.amazonaws.serverless.proxy.internal.RequestReader;
+import com.amazonaws.serverless.proxy.internal.ResponseWriter;
+import com.amazonaws.serverless.proxy.internal.SecurityContextWriter;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -30,8 +34,8 @@ import java.io.IOException;
  * @param <ContainerResponseType>
  */
 public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType,
-        ContainerRequestType extends HttpServletRequest,
-        ContainerResponseType extends HttpServletResponse>
+                                                        ContainerRequestType extends HttpServletRequest,
+                                                        ContainerResponseType extends HttpServletResponse>
         extends LambdaContainerHandler<RequestType, ResponseType, ContainerRequestType, ContainerResponseType> {
 
     //-------------------------------------------------------------

@@ -12,7 +12,7 @@
  */
 package com.amazonaws.serverless.proxy.internal.servlet;
 
-import javax.servlet.*;
+import javax.servlet.DispatcherType;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.HashMap;
@@ -84,9 +84,6 @@ public abstract class FilterChainManager<ServletContextType> {
         String targetPath = request.getServletPath();
         DispatcherType type = request.getDispatcherType();
 
-        if (filtersSize == -1) {
-            getFilterHolders().size();
-        }
         // only return the cached result if the filter list hasn't changed in the meanwhile
         if (getFilterHolders().size() == filtersSize && getFilterChainCache(type, targetPath) != null) {
             return getFilterChainCache(type, targetPath);
@@ -252,19 +249,25 @@ public abstract class FilterChainManager<ServletContextType> {
          */
         @Override
         public int hashCode() {
-            if (targetPath == null || dispatcherType == null) {
-                return -1;
+            String hashPath = targetPath;
+            if (targetPath == null) {
+                hashPath = "/";
+            }
+
+            String hashDispatcher = "";
+            if (dispatcherType != null) {
+                hashDispatcher = dispatcherType.name();
             }
 
             // clean up path
-            String hashString = targetPath.trim();
+            String hashString = hashPath.trim();
             if (hashString.endsWith(PATH_PART_SEPARATOR)) {
                 hashString = hashString.substring(0, hashString.length() - 1);
             }
             if (!hashString.startsWith(PATH_PART_SEPARATOR)) {
                 hashString = PATH_PART_SEPARATOR + hashString;
             }
-            hashString += ":" + dispatcherType.name();
+            hashString += ":" + hashDispatcher;
 
             return hashString.hashCode();
         }

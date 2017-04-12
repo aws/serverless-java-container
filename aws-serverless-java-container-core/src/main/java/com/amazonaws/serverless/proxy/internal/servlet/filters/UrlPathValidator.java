@@ -32,6 +32,7 @@ public class UrlPathValidator implements Filter {
 
     public static final int DEFAULT_ERROR_CODE = 404;
     public static final Pattern PATH_PATTERN = Pattern.compile("^(/[-\\w:@&?=+,.!/~*'%$_;]*)?$");
+    public static final String PARAM_INVALID_STATUS_CODE = "invalid_status_code";
 
 
     //-------------------------------------------------------------
@@ -48,11 +49,12 @@ public class UrlPathValidator implements Filter {
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        if (filterConfig.getInitParameter("invalid_status_code") != null) {
-            String statusCode = filterConfig.getInitParameter("invalid_status_code");
+        if (filterConfig.getInitParameter(PARAM_INVALID_STATUS_CODE) != null) {
+            String statusCode = filterConfig.getInitParameter(PARAM_INVALID_STATUS_CODE);
             try {
                 invalidStatusCode = Integer.parseInt(statusCode);
             } catch (NumberFormatException e) {
+                // TODO: Log
                 invalidStatusCode = DEFAULT_ERROR_CODE;
             }
         }

@@ -44,7 +44,20 @@ import java.net.URLDecoder;
 import java.security.Principal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TreeMap;
+
 
 /**
  * Implementation of the <code>HttpServletRequest</code> interface that supports <code>AwsProxyRequest</code> object.
@@ -93,7 +106,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         if (cookieHeader == null) {
             return new Cookie[0];
         }
-        return this.parseCookies(cookieHeader);
+        return this.parseCookieHeaderValue(cookieHeader);
     }
 
 
@@ -233,21 +246,20 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     public boolean authenticate(HttpServletResponse httpServletResponse)
             throws IOException, ServletException {
-        // TODO: Throw not implemented
-        return false;
+        throw new UnsupportedOperationException();
     }
 
 
     @Override
     public void login(String s, String s1)
             throws ServletException {
-        // TODO: Throw not implemented
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void logout()
             throws ServletException {
-        // TODO: Throw not implemented
+        throw new UnsupportedOperationException();
     }
 
 
@@ -531,7 +543,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public Locale getLocale() {
-        List<AbstractMap.SimpleEntry<String, String>> values = this.parseHeaderValue(
+        List<Map.Entry<String, String>> values = this.parseHeaderValue(
                 getHeaderCaseInsensitive(HttpHeaders.ACCEPT_LANGUAGE)
         );
         if (values.size() == 0) {
@@ -543,14 +555,14 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public Enumeration<Locale> getLocales() {
-        List<AbstractMap.SimpleEntry<String, String>> values = this.parseHeaderValue(
+        List<Map.Entry<String, String>> values = this.parseHeaderValue(
                 getHeaderCaseInsensitive(HttpHeaders.ACCEPT_LANGUAGE)
         );
         List<Locale> locales = new ArrayList<>();
         if (values.size() == 0) {
             locales.add(Locale.getDefault());
         } else {
-            for (AbstractMap.SimpleEntry<String, String> locale : values) {
+            for (Map.Entry<String, String> locale : values) {
                 locales.add(new Locale(locale.getValue()));
             }
         }

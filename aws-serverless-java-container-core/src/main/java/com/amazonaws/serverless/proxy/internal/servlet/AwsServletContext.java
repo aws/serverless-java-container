@@ -35,7 +35,14 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.EventListener;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+
 
 /**
  * Basic implementation of the <code>ServletContext</code> object. Because this library is not a complete container
@@ -50,12 +57,13 @@ public class AwsServletContext
     // -------------------------------------------------------------
     public static final int SERVLET_API_MAJOR_VERSION = 3;
     public static final int SERVLET_API_MINOR_VERSION = 1;
+    public static final String SERVER_INFO = LambdaContainerHandler.SERVER_INFO + "/" + SERVLET_API_MAJOR_VERSION + "." + SERVLET_API_MINOR_VERSION;
 
 
     //-------------------------------------------------------------
     // Variables - Private
     //-------------------------------------------------------------
-    private static AwsServletContext instance;
+    private Map<String, FilterHolder> filters;
     private Context lambdaContext;
     private Map<String, Object> attributes;
     private Map<String, String> initParameters;
@@ -64,7 +72,7 @@ public class AwsServletContext
     //-------------------------------------------------------------
     // Variables - Private - Static
     //-------------------------------------------------------------
-    private Map<String, FilterHolder> filters;
+    private static AwsServletContext instance;
 
 
     //-------------------------------------------------------------
@@ -228,7 +236,7 @@ public class AwsServletContext
             try {
                 absPath = new File(fileUrl.toURI()).getAbsolutePath();
             } catch (URISyntaxException e) {
-                e.printStackTrace();
+                lambdaContext.getLogger().log("Error while looking for real path: " + s + "\n" + e.getMessage());
             }
         }
         return absPath;
@@ -237,7 +245,7 @@ public class AwsServletContext
 
     @Override
     public String getServerInfo() {
-        return LambdaContainerHandler.SERVER_INFO + "/" + SERVLET_API_MAJOR_VERSION + "." + SERVLET_API_MINOR_VERSION;
+        return SERVER_INFO;
     }
 
 
@@ -380,7 +388,7 @@ public class AwsServletContext
         } catch (ServletException e) {
             // TODO: There is no clear indication in the servlet specs on whether we should throw an exception here.
             // See JavaDoc here: http://docs.oracle.com/javaee/7/api/javax/servlet/ServletContext.html#addFilter-java.lang.String-java.lang.Class-
-            e.printStackTrace();
+            lambdaContext.getLogger().log("Could not register filter: " + e.getMessage());
         }
         return null;
     }
@@ -391,7 +399,7 @@ public class AwsServletContext
         try {
             return aClass.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
-            e.printStackTrace();
+            lambdaContext.getLogger().log("Could not initialize filter class " + aClass.getName() + "\n" + e.getMessage());
             throw new ServletException();
         }
     }

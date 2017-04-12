@@ -24,6 +24,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
+
 
 /**
  * Base HttpServletRequest object. This object exposes some utility methods to work with request values such as headers
@@ -52,8 +54,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     // Variables - Private
     //-------------------------------------------------------------
 
-    private Context lamdaContext;
-    private DispatcherType dispatcherType;
+    private Context lambdaContext;
     private Map<String, Object> attributes;
 
 
@@ -67,11 +68,8 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
      * @param lambdaContext The Lambda function context. This object is used for utility methods such as log
      */
     AwsHttpServletRequest(Context lambdaContext) {
-        lamdaContext = lambdaContext;
+        this.lambdaContext = lambdaContext;
         attributes = new HashMap<>();
-
-        // TODO: We are setting this to request by default
-        dispatcherType = DispatcherType.REQUEST;
     }
 
     //-------------------------------------------------------------
@@ -80,8 +78,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
 
     @Override
     public String getRequestedSessionId() {
-        // TODO: Throw not implemented
-        return null;
+        throw new UnsupportedOperationException();
     }
 
 
@@ -188,7 +185,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
 
     @Override
     public ServletContext getServletContext() {
-        return AwsServletContext.getInstance(lamdaContext);
+        return AwsServletContext.getInstance(lambdaContext);
     }
 
 
@@ -212,7 +209,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
 
     @Override
     public DispatcherType getDispatcherType() {
-        return dispatcherType;
+        return DispatcherType.REQUEST;
     }
 
 
@@ -225,30 +222,15 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
      * @param headerValue The string value of the HTTP Cookie header
      * @return An array of Cookie objects from the header
      */
-    protected Cookie[] parseCookies(String headerValue) {
-        List<Cookie> output = new ArrayList<>();
+    protected Cookie[] parseCookieHeaderValue(String headerValue) {
 
-        for (AbstractMap.SimpleEntry<String, String> entry : this.parseHeaderValue(headerValue)) {
-            if (entry.getKey() != null) {
-                output.add(new Cookie(entry.getKey(), entry.getValue()));
-            }
-        }
-        Cookie[] returnValue = new Cookie[output.size()];
-        return output.toArray(returnValue);
+        List<Map.Entry<String, String>> parsedHeaders = this.parseHeaderValue(headerValue);
+
+        return parsedHeaders.stream()
+                            .filter(e -> e.getKey() != null)
+                            .map(e -> new Cookie(e.getKey(), e.getValue()))
+                            .toArray(Cookie[]::new);
     }
-
-
-    protected String readPathInfo(String path, String resource) {
-        // TODO: Implement
-        return "/";
-    }
-
-
-    protected String readPathTranslated(String path) {
-        // TODO: Implement
-        return path;
-    }
-
 
     /**
      * Given a map of key/values query string parameters from API Gateway, creates a query string as it would have
@@ -257,31 +239,30 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
      * @return The generated query string for the URI
      */
     protected String generateQueryString(Map<String, String> parameters) {
-        String params = null;
-        if (parameters != null && parameters.size() > 0) {
-            params = "";
-            for (String key : parameters.keySet()) {
-                String separator = params.equals("") ? "?" : "&";
-                String queryStringKey = key;
-                String queryStringValue = parameters.get(key);
-                try {
-                    // if they were URLDecoded along the way we should re-encode them for the URI
-                    if (!URLEncoder.encode(queryStringKey, StandardCharsets.UTF_8.name()).equals(key)) {
-                        queryStringKey = URLEncoder.encode(queryStringKey, StandardCharsets.UTF_8.name());
-                    }
-                    if (!URLEncoder.encode(queryStringValue, StandardCharsets.UTF_8.name()).equals(queryStringValue)) {
-                        queryStringValue = URLEncoder.encode(queryStringValue, StandardCharsets.UTF_8.name());
-                    }
-                } catch (UnsupportedEncodingException e) {
-                    // TODO: Should we stop for the exception?
-                    lamdaContext.getLogger().log("Could not URLEncode: " + queryStringKey);
-                    e.printStackTrace();
-                }
-                params += separator + queryStringKey + "=" + queryStringValue;
-            }
+        if (parameters == null || parameters.size() == 0) {
+            return null;
         }
 
-        return params;
+        return parameters.keySet().stream()
+                .map(key -> {
+                    String newKey = key;
+                    String newValue = parameters.get(key);
+                    try {
+                        if (!URLEncoder.encode(newKey, StandardCharsets.UTF_8.name()).equals(newKey)) {
+                            newKey = URLEncoder.encode(key, StandardCharsets.UTF_8.name());
+                        }
+
+                        if (!URLEncoder.encode(newValue, StandardCharsets.UTF_8.name()).equals(newValue)) {
+                            newValue = URLEncoder.encode(newValue, StandardCharsets.UTF_8.name());
+                        }
+                    } catch (UnsupportedEncodingException e) {
+                        lambdaContext.getLogger().log("Could not URLEncode: " + newKey + "\n" + e.getLocalizedMessage());
+                        e.printStackTrace();
+
+                    }
+                    return newKey + "=" + newValue;
+                })
+                .collect(Collectors.joining("&"));
     }
 
 
@@ -291,20 +272,21 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
      * is populated. For example, The header <code>Accept: application/json; application/xml</code> will contain two
      * key value pairs with key null and the value set to application/json and application/xml respectively.
      *
-     * @param headerContent The string value for the HTTP header
+     * @param headerValue The string value for the HTTP header
      * @return A list of SimpleMapEntry objects with all of the possible values for the header.
      */
-    protected List<AbstractMap.SimpleEntry<String, String>> parseHeaderValue(String headerContent) {
-        List<AbstractMap.SimpleEntry<String, String>> values = new ArrayList<>();
-        if (headerContent != null) {
-            for (String kv : headerContent.split(HEADER_VALUE_SEPARATOR)) {
-                String[] kvSplit = kv.split(HEADER_KEY_VALUE_SEPARATOR);
+    protected List<Map.Entry<String, String>> parseHeaderValue(String headerValue) {
+        List<Map.Entry<String, String>> values = new ArrayList<>();
+        if (headerValue == null) {
+            return values;
+        }
+        for (String kv : headerValue.split(HEADER_VALUE_SEPARATOR)) {
+            String[] kvSplit = kv.split(HEADER_KEY_VALUE_SEPARATOR);
 
-                if (kvSplit.length != 2) {
-                    values.add(new AbstractMap.SimpleEntry<>(null, kv.trim()));
-                } else {
-                    values.add(new AbstractMap.SimpleEntry<>(kvSplit[0].trim(), kvSplit[1].trim()));
-                }
+            if (kvSplit.length != 2) {
+                values.add(new AbstractMap.SimpleEntry<>(null, kv.trim()));
+            } else {
+                values.add(new AbstractMap.SimpleEntry<>(kvSplit[0].trim(), kvSplit[1].trim()));
             }
         }
         return values;
