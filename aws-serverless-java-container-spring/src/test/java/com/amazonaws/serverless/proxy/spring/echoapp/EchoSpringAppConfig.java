@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 
@@ -36,4 +37,8 @@ public class EchoSpringAppConfig {
         return new MockLambdaContext();
     }
 
+    @Bean
+    public javax.validation.Validator localValidatorFactoryBean() {
+        return new LocalValidatorFactoryBean();
+    }
 }

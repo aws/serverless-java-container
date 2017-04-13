@@ -2,7 +2,7 @@ package com.amazonaws.serverless.proxy.spring.profile;
 
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyResponse;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyServletContext;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.spring.SpringLambdaContainerHandler;
@@ -34,7 +34,7 @@ public class SpringProfileTest {
 
     @Before
     public void clearServletContextCache() {
-        AwsProxyServletContext.clearServletContextCache();
+        AwsServletContext.clearServletContextCache();
     }
 
     @Test

@@ -13,7 +13,7 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
 
-import com.amazonaws.serverless.proxy.internal.model.AwsProxyRequest;
+import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import javax.servlet.Filter;
@@ -27,9 +27,11 @@ import javax.servlet.SessionCookieConfig;
 import javax.servlet.SessionTrackingMode;
 import javax.servlet.descriptor.JspConfigDescriptor;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -37,26 +39,31 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.EventListener;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
 
-public class AwsProxyServletContext
+/**
+ * Basic implementation of the <code>ServletContext</code> object. Because this library is not a complete container
+ * implementation the majority of methods in this object return a NotImplementedException or null. Supported properties
+ * are <code>initParameters</code>, <code>attributes</code>, and <code>filters</code>.
+ */
+public class AwsServletContext
         implements ServletContext {
 
     //-------------------------------------------------------------
-    // Constants
-    //-------------------------------------------------------------
-
-    private static final int SERVLET_API_MAJOR_VERSION = 3;
-    private static final int SERVLET_API_MINOR_VERSION = 1;
+    // Constants - Public
+    // -------------------------------------------------------------
+    public static final int SERVLET_API_MAJOR_VERSION = 3;
+    public static final int SERVLET_API_MINOR_VERSION = 1;
+    public static final String SERVER_INFO = LambdaContainerHandler.SERVER_INFO + "/" + SERVLET_API_MAJOR_VERSION + "." + SERVLET_API_MINOR_VERSION;
 
 
     //-------------------------------------------------------------
     // Variables - Private
     //-------------------------------------------------------------
-
-    private AwsProxyRequest awsProxyRequest;
+    private Map<String, FilterHolder> filters;
     private Context lambdaContext;
     private Map<String, Object> attributes;
     private Map<String, String> initParameters;
@@ -65,20 +72,19 @@ public class AwsProxyServletContext
     //-------------------------------------------------------------
     // Variables - Private - Static
     //-------------------------------------------------------------
-
-    private static AwsProxyServletContext instance;
+    private static AwsServletContext instance;
 
 
     //-------------------------------------------------------------
     // Constructors
     //-------------------------------------------------------------
 
-    private AwsProxyServletContext(AwsProxyRequest awsProxyRequest, Context lambdaContext) {
-        this.awsProxyRequest = awsProxyRequest;
+    private AwsServletContext(Context lambdaContext) {
         this.lambdaContext = lambdaContext;
 
         this.attributes = new HashMap<>();
         this.initParameters = new HashMap<>();
+        this.filters = new LinkedHashMap<>();
     }
 
 
@@ -87,9 +93,24 @@ public class AwsProxyServletContext
     //-------------------------------------------------------------
 
 
+    public static ServletContext getInstance(Context lambdaContext) {
+        if (instance == null) {
+            instance = new AwsServletContext(lambdaContext);
+        }
+
+        return instance;
+    }
+
+
+    public static void clearServletContextCache() {
+        instance = null;
+    }
+
+
     @Override
     public String getContextPath() {
-        return "/" + awsProxyRequest.getRequestContext().getStage();
+        // servlets are always at the root.
+        return "/";
     }
 
 
@@ -137,8 +158,9 @@ public class AwsProxyServletContext
 
     @Override
     public Set<String> getResourcePaths(String s) {
-        // TODO: Define a reader interface that we can implement for each container
-        return null;
+        // We do not know the resources from here, we'd need to get the list from the frameworks.
+        // TODO: Perhaps declare a new reader interface that can be implemented in framework-specific modules
+        throw new UnsupportedOperationException();
     }
 
 
@@ -156,12 +178,14 @@ public class AwsProxyServletContext
 
     @Override
     public RequestDispatcher getRequestDispatcher(String s) {
+        // TODO: This should be part of the reader interface described in the getResourcePaths method
         return null;
     }
 
 
     @Override
     public RequestDispatcher getNamedDispatcher(String s) {
+        // TODO: This should be part of the reader interface described in the getResourcePaths method
         return null;
     }
 
@@ -206,19 +230,28 @@ public class AwsProxyServletContext
 
     @Override
     public String getRealPath(String s) {
-        return null;
+        String absPath = null;
+        URL fileUrl = ClassLoader.getSystemResource(s);
+        if (fileUrl != null) {
+            try {
+                absPath = new File(fileUrl.toURI()).getAbsolutePath();
+            } catch (URISyntaxException e) {
+                lambdaContext.getLogger().log("Error while looking for real path: " + s + "\n" + e.getMessage());
+            }
+        }
+        return absPath;
     }
 
 
     @Override
     public String getServerInfo() {
-        return null;
+        return SERVER_INFO;
     }
 
 
     @Override
     public String getInitParameter(String s) {
-        return null;
+        return initParameters.get(s);
     }
 
 
@@ -262,80 +295,138 @@ public class AwsProxyServletContext
     @Override
     public String getServletContextName() {
         // TODO: This can also come from a reader interface
-        return null;
+        throw new UnsupportedOperationException();
     }
 
 
     @Override
     public ServletRegistration.Dynamic addServlet(String s, String s1) {
-        // TODO: Should we throw an unimplemented exception here?
-        return null;
+        log("Called addServlet: " + s1);
+        log("Implemented frameworks are responsible for registering servlets");
+        throw new UnsupportedOperationException();
     }
 
 
     @Override
     public ServletRegistration.Dynamic addServlet(String s, Servlet servlet) {
-        return null;
+        log("Called addServlet: " + servlet.getClass().getName());
+        log("Implemented frameworks are responsible for registering servlets");
+        throw new UnsupportedOperationException();
     }
 
 
     @Override
     public ServletRegistration.Dynamic addServlet(String s, Class<? extends Servlet> aClass) {
-        return null;
+        log("Called addServlet: " + aClass.getName());
+        log("Implemented frameworks are responsible for registering servlets");
+        throw new UnsupportedOperationException();
     }
 
 
     @Override
     public <T extends Servlet> T createServlet(Class<T> aClass) throws ServletException {
-        return null;
+        log("Called createServlet: " + aClass.getName());
+        log("Implemented frameworks are responsible for creating servlets");
+        throw new UnsupportedOperationException();
     }
 
 
     @Override
     public ServletRegistration getServletRegistration(String s) {
+        // TODO: This could come from the reader interface
         return null;
     }
 
 
     @Override
     public Map<String, ? extends ServletRegistration> getServletRegistrations() {
+        // TODO: This could come from the reader interface
         return null;
     }
 
 
     @Override
-    public FilterRegistration.Dynamic addFilter(String s, String s1) {
-        return null;
+    public FilterRegistration.Dynamic addFilter(String name, String filterClass) {
+        try {
+            Class<?> newFilterClass = getClassLoader().loadClass(filterClass);
+            if (!newFilterClass.isAssignableFrom(Filter.class)) {
+                throw new IllegalArgumentException(filterClass + " does not implement Filter");
+            }
+            @SuppressWarnings("unchecked")
+            Class<? extends Filter> filterCastClass = (Class<? extends Filter>)newFilterClass;
+
+            return addFilter(name, filterCastClass);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            throw new IllegalStateException("Filter class " + filterClass + " not found");
+        }
     }
 
 
     @Override
-    public FilterRegistration.Dynamic addFilter(String s, Filter filter) {
-        return null;
+    public FilterRegistration.Dynamic addFilter(String name, Filter filter) {
+        if (name == null || "".equals(name.trim()))
+            throw new IllegalArgumentException("Missing filter name");
+
+        // filter already exists, we do nothing
+        if (filters.containsKey(name)) {
+            return null;
+        }
+
+        FilterHolder newFilter = new FilterHolder(name, filter, this);
+
+        filters.put(newFilter.getFilterName(), newFilter);
+        return newFilter.getRegistration();
     }
 
 
     @Override
-    public FilterRegistration.Dynamic addFilter(String s, Class<? extends Filter> aClass) {
+    public FilterRegistration.Dynamic addFilter(String name, Class<? extends Filter> filterClass) {
+        try {
+            Filter newFilter = createFilter(filterClass);
+            return addFilter(name, newFilter);
+        } catch (ServletException e) {
+            // TODO: There is no clear indication in the servlet specs on whether we should throw an exception here.
+            // See JavaDoc here: http://docs.oracle.com/javaee/7/api/javax/servlet/ServletContext.html#addFilter-java.lang.String-java.lang.Class-
+            lambdaContext.getLogger().log("Could not register filter: " + e.getMessage());
+        }
         return null;
     }
 
 
     @Override
     public <T extends Filter> T createFilter(Class<T> aClass) throws ServletException {
-        return null;
+        try {
+            return aClass.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            lambdaContext.getLogger().log("Could not initialize filter class " + aClass.getName() + "\n" + e.getMessage());
+            throw new ServletException();
+        }
     }
 
 
     @Override
     public FilterRegistration getFilterRegistration(String s) {
-        return null;
+
+        if (!filters.containsKey(s)) {
+            return null;
+        }
+        return filters.get(s).getRegistration();
     }
 
 
     @Override
     public Map<String, ? extends FilterRegistration> getFilterRegistrations() {
-        return null;
+        Map<String, FilterRegistration> registrations = new LinkedHashMap<>();
+        for (String filter : filters.keySet()) {
+            registrations.put(filter, filters.get(filter).getRegistration());
+        }
+        return registrations;
+    }
+
+
+    Map<String, FilterHolder> getFilterHolders() {
+        return filters;
     }
 
 
@@ -395,7 +486,9 @@ public class AwsProxyServletContext
 
     @Override
     public ClassLoader getClassLoader() {
-        return null;
+        // for the time being we return the default class loader. We may want to let developers override this int the
+        // future.
+        return ClassLoader.getSystemClassLoader();
     }
 
 
@@ -408,21 +501,5 @@ public class AwsProxyServletContext
     @Override
     public String getVirtualServerName() {
         return null;
-    }
-
-    public String getStage() {
-        return awsProxyRequest.getRequestContext().getStage();
-    }
-
-    public static ServletContext getInstance(AwsProxyRequest request, Context lambdaContext) {
-        if (instance == null) {
-            instance = new AwsProxyServletContext(request, lambdaContext);
-        }
-
-        return instance;
-    }
-
-    public static void clearServletContextCache() {
-        instance = null;
     }
 }

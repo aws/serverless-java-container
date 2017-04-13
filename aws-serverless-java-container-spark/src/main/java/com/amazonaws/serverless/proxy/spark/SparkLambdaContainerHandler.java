@@ -16,10 +16,7 @@ import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.internal.*;
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyResponse;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletResponse;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequestReader;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
+import com.amazonaws.serverless.proxy.internal.servlet.*;
 import com.amazonaws.serverless.proxy.spark.embeddedserver.LambdaEmbeddedServer;
 import com.amazonaws.serverless.proxy.spark.embeddedserver.LambdaEmbeddedServerFactory;
 
@@ -57,7 +54,7 @@ import java.util.concurrent.CountDownLatch;
  * @param <RequestType> The request object used by the <code>RequestReader</code> implementation passed to the constructor
  * @param <ResponseType> The response object produced by the <code>ResponseWriter</code> implementation in the constructor
  */
-public class SparkLambdaContainerHandler<RequestType, ResponseType> extends LambdaContainerHandler<RequestType, ResponseType, AwsProxyHttpServletRequest, AwsHttpServletResponse> {
+public class SparkLambdaContainerHandler<RequestType, ResponseType> extends AwsLambdaServletContainerHandler<RequestType, ResponseType, AwsProxyHttpServletRequest, AwsHttpServletResponse> {
 
     //-------------------------------------------------------------
     // Constants
@@ -150,7 +147,15 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType> extends Lamb
             throws Exception {
         if (embeddedServer == null) {
             embeddedServer = LambdaEmbeddedServerFactory.getServerInstance();
+            servletContext = httpServletRequest.getServletContext();
+
+            // call the onStartup event if set to give developers a chance to set filters in the context
+            if (startupHandler != null) {
+                startupHandler.onStartup(this.servletContext);
+            }
         }
+
+        doFilter(httpServletRequest, httpServletResponse);
 
         embeddedServer.handle(httpServletRequest, httpServletResponse);
     }

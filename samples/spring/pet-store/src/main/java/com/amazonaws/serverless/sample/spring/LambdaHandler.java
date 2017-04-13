@@ -23,12 +23,10 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
  * Created by bulianis on 12/13/16.
  */
 public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyResponse> {
-    SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
-    boolean isinitialized = false;
+    private SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
 
     public AwsProxyResponse handleRequest(AwsProxyRequest awsProxyRequest, Context context) {
-        if (!isinitialized) {
-            isinitialized = true;
+        if (handler == null) {
             try {
                 handler = SpringLambdaContainerHandler.getAwsProxyHandler(PetStoreSpringAppConfig.class);
             } catch (ContainerInitializationException e) {
