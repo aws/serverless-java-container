@@ -6,12 +6,12 @@
     <name>AWS Serverless Java container support - Core</name>
     <description>Allows Java applications written for a servlet container to run in AWS Lambda</description>
     <url>https://aws.amazon.com/lambda</url>
-    <version>0.4-SNAPSHOT</version>
+    <version>0.4</version>
 
     <parent>
         <groupId>com.amazonaws.serverless</groupId>
         <artifactId>aws-serverless-java-container</artifactId>
-        <version>0.4-SNAPSHOT</version>
+        <version>0.4</version>
     </parent>
 
     <dependencies>
