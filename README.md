@@ -146,7 +146,7 @@ public String echoServletHeaders(@Context HttpServletRequest context) {
 You can register [`Filter`](https://docs.oracle.com/javaee/7/api/javax/servlet/Filter.html) implementations by implementing a `StartupsHandler` as defined in the `AwsLambdaServletContainerHandler` class. The `onStartup` methods receives a reference to the current `ServletContext`.
 
 ```java
-handler.setStartupHandler(c -> {
+handler.onStartup(c -> {
     FilterRegistration.Dynamic registration = c.addFilter("CustomHeaderFilter", CustomHeaderFilter.class);
     // update the registration to map to a path
     registration.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/*");

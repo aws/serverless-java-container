@@ -42,7 +42,6 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
     // Variables - Private
     //-------------------------------------------------------------
 
-
     private FilterChainManager filterChainManager;
 
     //-------------------------------------------------------------
@@ -92,7 +91,7 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
 
 
     /**
-     * You can use the <code>setStartupHandler</code> to intercept the ServletContext as the Spring application is
+     * You can use the <code>onStartup</code> to intercept the ServletContext as the Spring application is
      * initialized and inject custom values. The StartupHandler is called after the <code>onStartup</code> method
      * of the <code>LambdaSpringApplicationinitializer</code> implementation. For example, you can use this method to
      * add custom filters to the servlet context:
@@ -100,7 +99,7 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
      * <pre>
      * {@code
      *      handler = SpringLambdaContainerHandler.getAwsProxyHandler(EchoSpringAppConfig.class);
-     *      handler.setStartupHandler(c -> {
+     *      handler.onStartup(c -> {
      *      // the "c" parameter to this function is the initialized servlet context
      *      c.addFilter("CustomHeaderFilter", CustomHeaderFilter.class);
      *      });
@@ -108,7 +107,7 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
      * </pre>
      * @param h A lambda expression that implements the <code>StartupHandler</code> functional interface
      */
-    public void setStartupHandler(final StartupHandler h) {
+    public void onStartup(final StartupHandler h) {
         startupHandler = h;
     }
 

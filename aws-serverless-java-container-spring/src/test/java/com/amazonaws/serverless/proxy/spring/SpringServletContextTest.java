@@ -32,7 +32,7 @@ public class SpringServletContextTest {
         try {
             handler = SpringLambdaContainerHandler.getAwsProxyHandler(EchoSpringAppConfig.class);
             handler.setRefreshContext(true);
-            handler.setStartupHandler(c -> {
+            handler.onStartup(c -> {
                 FilterRegistration.Dynamic registration = c.addFilter("CustomHeaderFilter", CustomHeaderFilter.class);
                 // update the registration to map to a path
                 registration.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/*");
