@@ -1,4 +1,4 @@
-# Serverless Jersey example
+# Serverless Spark example
 A basic pet store written with the [Spark framework](http://sparkjava.com/). The `LambdaHandler` object is the main entry point for Lambda.
 
 The application can be deployed in an AWS account using the [Serverless Application Model](https://github.com/awslabs/serverless-application-model). The `sam.yaml` file in the root folder contains the application definition
@@ -36,7 +36,7 @@ $ aws cloudformation describe-stacks --stack-name ServerlessSparkSample
 {
     "Stacks": [
         {
-            "StackId": "arn:aws:cloudformation:us-west-2:xxxxxxxx:stack/JerseySample/xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx", 
+            "StackId": "arn:aws:cloudformation:us-west-2:xxxxxxxx:stack/SparkSample/xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx", 
             "Description": "Example Pet Store API written with spark with the aws-serverless-java-container library", 
             "Tags": [], 
             "Outputs": [
@@ -50,7 +50,7 @@ $ aws cloudformation describe-stacks --stack-name ServerlessSparkSample
             "Capabilities": [
                 "CAPABILITY_IAM"
             ], 
-            "StackName": "JerseySample", 
+            "StackName": "SparkSample", 
             "NotificationARNs": [], 
             "StackStatus": "UPDATE_COMPLETE"
         }
