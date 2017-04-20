@@ -38,8 +38,18 @@ import java.time.format.DateTimeFormatter;
  * </pre>
  */
 public class CognitoAuthorizerClaims {
+
+    //-------------------------------------------------------------
+    // Constants
+    //-------------------------------------------------------------
+
     // Mon Apr 17 23:12:49 UTC 2017
     static final DateTimeFormatter TOKEN_DATE_FORMATTER = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss zzz yyyy");
+
+
+    //-------------------------------------------------------------
+    // Variables - Private
+    //-------------------------------------------------------------
 
     @JsonProperty(value = "sub")
     private String subject;
@@ -59,7 +69,13 @@ public class CognitoAuthorizerClaims {
     private String exp;
     private String iat;
 
+
+    //-------------------------------------------------------------
+    // Methods - Getter/Setter
+    //-------------------------------------------------------------
+
     public String getSubject() { return this.subject; }
+
 
     public void setSubject(String subject) {
         this.subject = subject;

@@ -31,9 +31,30 @@ import java.util.Map;
  */
 public class ApiGatewayAuthorizerContext {
 
+    //-------------------------------------------------------------
+    // Variables - Private
+    //-------------------------------------------------------------
+
     private Map<String, String> contextProperties = new HashMap<>();
     private String principalId;
     private CognitoAuthorizerClaims claims;
+
+
+    //-------------------------------------------------------------
+    // Methods - Public
+    //-------------------------------------------------------------
+
+    @JsonAnyGetter
+    public String getContextValue(String key) {
+        return contextProperties.get(key);
+    }
+
+
+    @JsonAnySetter
+    public void setContextValue(String key, String value) {
+        contextProperties.put(key, value);
+    }
+
 
     //-------------------------------------------------------------
     // Methods - Getter/Setter
@@ -43,24 +64,16 @@ public class ApiGatewayAuthorizerContext {
         return principalId;
     }
 
+
     public void setPrincipalId(String principalId) {
         this.principalId = principalId;
-    }
-
-    @JsonAnyGetter
-    public String getContextValue(String key) {
-        return contextProperties.get(key);
-    }
-
-    @JsonAnySetter
-    public void setContextValue(String key, String value) {
-        contextProperties.put(key, value);
     }
 
 
     public CognitoAuthorizerClaims getClaims() {
         return claims;
     }
+
 
     public void setClaims(CognitoAuthorizerClaims claims) {
         this.claims = claims;
