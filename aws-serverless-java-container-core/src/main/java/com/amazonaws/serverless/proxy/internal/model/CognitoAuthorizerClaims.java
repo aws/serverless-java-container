@@ -59,7 +59,7 @@ public class CognitoAuthorizerClaims {
     private String exp;
     private String iat;
 
-    private String getSubject() { return this.subject; }
+    public String getSubject() { return this.subject; }
 
     public void setSubject(String subject) {
         this.subject = subject;
@@ -145,6 +145,12 @@ public class CognitoAuthorizerClaims {
         this.exp = expiration;
     }
 
+
+    /**
+     * Returns the expiration time for the token as a <code>ZonedDateTime</code> from the <code>exp</code> property
+     * of the token.
+     * @return The parsed expiration time for the token.
+     */
     public ZonedDateTime getExpirationTime() {
         return ZonedDateTime.from(TOKEN_DATE_FORMATTER.parse(getExp()));
     }
@@ -159,6 +165,12 @@ public class CognitoAuthorizerClaims {
         this.iat = issuedAt;
     }
 
+
+    /**
+     * Returns the parsed issued time for the token as a <code>ZonedDateTime</code> object. This is taken from the <code>iat</code>
+     * property of the token.
+     * @return The parsed issue time of the token
+     */
     public ZonedDateTime getIssueTime() {
         return ZonedDateTime.from((TOKEN_DATE_FORMATTER.parse(getIat())));
     }
