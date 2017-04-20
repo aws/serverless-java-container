@@ -174,7 +174,7 @@ public class AwsProxyRequestBuilder {
         }
         this.request.getRequestContext().getAuthorizer().setClaims(new CognitoAuthorizerClaims());
         this.request.getRequestContext().getAuthorizer().getClaims().setSubject(identityId);
-        
+
         return this;
     }
 
