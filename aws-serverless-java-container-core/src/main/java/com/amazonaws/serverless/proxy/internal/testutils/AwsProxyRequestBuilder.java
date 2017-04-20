@@ -16,6 +16,8 @@ import com.amazonaws.serverless.proxy.internal.model.ApiGatewayAuthorizerContext
 import com.amazonaws.serverless.proxy.internal.model.ApiGatewayRequestContext;
 import com.amazonaws.serverless.proxy.internal.model.ApiGatewayRequestIdentity;
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyRequest;
+import com.amazonaws.serverless.proxy.internal.model.CognitoAuthorizerClaims;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -167,6 +169,12 @@ public class AwsProxyRequestBuilder {
     public AwsProxyRequestBuilder cognitoUserPool(String identityId) {
         this.request.getRequestContext().getIdentity().setCognitoAuthenticationType("POOL");
         this.request.getRequestContext().getIdentity().setCognitoIdentityId(identityId);
+        if (this.request.getRequestContext().getAuthorizer() == null) {
+            this.request.getRequestContext().setAuthorizer(new ApiGatewayAuthorizerContext());
+        }
+        this.request.getRequestContext().getAuthorizer().setClaims(new CognitoAuthorizerClaims());
+        this.request.getRequestContext().getAuthorizer().getClaims().setSubject(identityId);
+        
         return this;
     }
 

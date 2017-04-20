@@ -90,7 +90,7 @@ public class AwsProxySecurityContext
 
 
     public String getAuthenticationScheme() {
-        if (event.getRequestContext().getAuthorizer().getClaims() != null && event.getRequestContext().getAuthorizer().getClaims().getSubject() != null) {
+        if (event.getRequestContext().getAuthorizer() != null && event.getRequestContext().getAuthorizer().getClaims() != null && event.getRequestContext().getAuthorizer().getClaims().getSubject() != null) {
             return AUTH_SCHEME_COGNITO_POOL;
         } else if (event.getRequestContext().getAuthorizer() != null) {
             return AUTH_SCHEME_CUSTOM;
