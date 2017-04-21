@@ -16,11 +16,16 @@ import com.amazonaws.serverless.proxy.internal.model.ApiGatewayAuthorizerContext
 import com.amazonaws.serverless.proxy.internal.model.ApiGatewayRequestContext;
 import com.amazonaws.serverless.proxy.internal.model.ApiGatewayRequestIdentity;
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyRequest;
+import com.amazonaws.serverless.proxy.internal.model.CognitoAuthorizerClaims;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 
 /**
@@ -156,7 +161,7 @@ public class AwsProxyRequestBuilder {
         if (this.request.getRequestContext().getAuthorizer() == null) {
             this.request.getRequestContext().setAuthorizer(new ApiGatewayAuthorizerContext());
         }
-        this.request.getRequestContext().getAuthorizer().put(key, value);
+        this.request.getRequestContext().getAuthorizer().setContextValue(key, value);
         return this;
     }
 
@@ -164,6 +169,12 @@ public class AwsProxyRequestBuilder {
     public AwsProxyRequestBuilder cognitoUserPool(String identityId) {
         this.request.getRequestContext().getIdentity().setCognitoAuthenticationType("POOL");
         this.request.getRequestContext().getIdentity().setCognitoIdentityId(identityId);
+        if (this.request.getRequestContext().getAuthorizer() == null) {
+            this.request.getRequestContext().setAuthorizer(new ApiGatewayAuthorizerContext());
+        }
+        this.request.getRequestContext().getAuthorizer().setClaims(new CognitoAuthorizerClaims());
+        this.request.getRequestContext().getAuthorizer().getClaims().setSubject(identityId);
+
         return this;
     }
 
@@ -206,6 +217,18 @@ public class AwsProxyRequestBuilder {
         }
 
         request.getHeaders().put("Host", serverName);
+        return this;
+    }
+
+    public AwsProxyRequestBuilder fromJsonString(String jsonContent)
+            throws IOException {
+        request = mapper.readValue(jsonContent, AwsProxyRequest.class);
+        return this;
+    }
+
+    public AwsProxyRequestBuilder fromJsonPath(String filePath)
+            throws IOException {
+        request = mapper.readValue(new File(filePath), AwsProxyRequest.class);
         return this;
     }
 

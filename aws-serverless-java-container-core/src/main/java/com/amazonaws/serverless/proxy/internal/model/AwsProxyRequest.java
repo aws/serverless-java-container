@@ -17,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Map;
 
 /**
- * Default implementation of the request object from an API GAteway AWS_PROXY integration
+ * Default implementation of the request object from an API Gateway AWS_PROXY integration
  */
 public class AwsProxyRequest {
 
@@ -152,7 +152,7 @@ public class AwsProxyRequest {
     }
 
 
-    public void setBase64Encoded(boolean base64Encoded) {
+    public void setIsBase64Encoded(boolean base64Encoded) {
         isBase64Encoded = base64Encoded;
     }
 }

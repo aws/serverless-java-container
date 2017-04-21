@@ -12,27 +12,70 @@
  */
 package com.amazonaws.serverless.proxy.internal.model;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+
 import java.util.HashMap;
+import java.util.Map;
+
 
 /**
- * Custom authorizer context object for the API Gateway request context.
+ * Context object used for custom authorizers and Cognito User Pool authorizers.
+ * <p>
+ *     Custom authorizers  populate the <code>principalId</code> field. All other custom values
+ *     returned by the authorizer are accessible via the <code>getContextValue</code> method.
+ * </p>
+ * <p>
+ *     Cognito User Pool authorizers populate the <pre>claims</pre> object.
+ * </p>
  */
-public class ApiGatewayAuthorizerContext extends HashMap<String, String> {
+public class ApiGatewayAuthorizerContext {
+
+    //-------------------------------------------------------------
+    // Variables - Private
+    //-------------------------------------------------------------
+
+    private Map<String, String> contextProperties = new HashMap<>();
+    private String principalId;
+    private CognitoAuthorizerClaims claims;
+
+
+    //-------------------------------------------------------------
+    // Methods - Public
+    //-------------------------------------------------------------
+
+    @JsonAnyGetter
+    public String getContextValue(String key) {
+        return contextProperties.get(key);
+    }
+
+
+    @JsonAnySetter
+    public void setContextValue(String key, String value) {
+        contextProperties.put(key, value);
+    }
+
 
     //-------------------------------------------------------------
     // Methods - Getter/Setter
     //-------------------------------------------------------------
 
     public String getPrincipalId() {
-        return get("principalId");
+        return principalId;
     }
 
 
     public void setPrincipalId(String principalId) {
-        put("principalId", principalId);
+        this.principalId = principalId;
     }
 
-    public String getContextValue(String key) {
-        return get(key);
+
+    public CognitoAuthorizerClaims getClaims() {
+        return claims;
+    }
+
+
+    public void setClaims(CognitoAuthorizerClaims claims) {
+        this.claims = claims;
     }
 }

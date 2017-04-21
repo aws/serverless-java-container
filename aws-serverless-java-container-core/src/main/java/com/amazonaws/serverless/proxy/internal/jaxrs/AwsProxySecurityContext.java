@@ -71,7 +71,7 @@ public class AwsProxySecurityContext
             } else if (getAuthenticationScheme().equals(AUTH_SCHEME_AWS_IAM)) {
                 return event.getRequestContext().getIdentity().getUserArn();
             } else if (getAuthenticationScheme().equals(AUTH_SCHEME_COGNITO_POOL)) {
-                return event.getRequestContext().getIdentity().getCognitoIdentityId();
+                return event.getRequestContext().getAuthorizer().getClaims().getSubject();
             }
 
             return null;
@@ -90,7 +90,7 @@ public class AwsProxySecurityContext
 
 
     public String getAuthenticationScheme() {
-        if (event.getRequestContext().getIdentity().getCognitoAuthenticationType() != null) {
+        if (event.getRequestContext().getAuthorizer() != null && event.getRequestContext().getAuthorizer().getClaims() != null && event.getRequestContext().getAuthorizer().getClaims().getSubject() != null) {
             return AUTH_SCHEME_COGNITO_POOL;
         } else if (event.getRequestContext().getAuthorizer() != null) {
             return AUTH_SCHEME_CUSTOM;

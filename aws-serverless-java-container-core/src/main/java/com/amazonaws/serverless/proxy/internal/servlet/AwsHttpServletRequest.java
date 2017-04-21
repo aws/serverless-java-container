@@ -280,6 +280,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         if (headerValue == null) {
             return values;
         }
+
         for (String kv : headerValue.split(HEADER_VALUE_SEPARATOR)) {
             String[] kvSplit = kv.split(HEADER_KEY_VALUE_SEPARATOR);
 

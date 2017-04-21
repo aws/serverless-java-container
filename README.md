@@ -1,4 +1,4 @@
-# Serverless Java container
+# Serverless Java container [![Build Status](https://travis-ci.org/awslabs/aws-serverless-java-container.svg?branch=master)](https://travis-ci.org/awslabs/aws-serverless-java-container) [![Help](http://img.shields.io/badge/help-gitter-E91E63.svg?style=flat-square)](https://gitter.im/awslabs/aws-serverless-java-container)
 The `aws-serverless-java-container` is collection of interfaces and their implementations that let you run Java application written with frameworks such as [Jersey](https://jersey.java.net/) or [Spark](http://sparkjava.com/) in [AWS Lambda](https://aws.amazon.com/lambda/).
 
 The library contains a core artifact called `aws-serverless-java-container-core` that defines the interfaces and base classes required as well as default implementation of the Java servlet `HttpServletRequest` and `HttpServletResponse`.
