@@ -15,7 +15,6 @@ package com.amazonaws.serverless.proxy.internal.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 
@@ -31,21 +30,13 @@ import java.time.format.DateTimeFormatter;
  *     "auth_time": "1492467169",
  *     "iss": "https://cognito-idp.us-east-2.amazonaws.com/us-east-2_Adx5ZHePg",
  *     "cognito:username": "sapessi",
- *     "exp": "Mon Apr 17 23:12:49 UTC 2017",
- *     "iat": "Mon Apr 17 22:12:49 UTC 2017",
+ *     "expiration": "Mon Apr 17 23:12:49 UTC 2017",
+ *     "issuedAt": "Mon Apr 17 22:12:49 UTC 2017",
  *     "email": "bulianis@amazon.com"
  * }
  * </pre>
  */
 public class CognitoAuthorizerClaims {
-
-    //-------------------------------------------------------------
-    // Constants
-    //-------------------------------------------------------------
-
-    // Mon Apr 17 23:12:49 UTC 2017
-    static final DateTimeFormatter TOKEN_DATE_FORMATTER = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss zzz yyyy");
-
 
     //-------------------------------------------------------------
     // Variables - Private
@@ -66,8 +57,10 @@ public class CognitoAuthorizerClaims {
     private boolean emailVerified;
     @JsonProperty(value = "auth_time")
     private Long authTime;
-    private String exp;
-    private String iat;
+    @JsonProperty(value = "exp")
+    private String expiration;
+    @JsonProperty(value = "iat")
+    private String issuedAt;
 
 
     //-------------------------------------------------------------
@@ -152,42 +145,22 @@ public class CognitoAuthorizerClaims {
     }
 
 
-    public String getExp() {
-        return exp;
+    public String getExpiration() {
+        return expiration;
     }
 
 
-    public void setExp(String expiration) {
-        this.exp = expiration;
+    public void setExpiration(String expiration) {
+        this.expiration = expiration;
     }
 
 
-    /**
-     * Returns the expiration time for the token as a <code>ZonedDateTime</code> from the <code>exp</code> property
-     * of the token.
-     * @return The parsed expiration time for the token.
-     */
-    public ZonedDateTime getExpirationTime() {
-        return ZonedDateTime.from(TOKEN_DATE_FORMATTER.parse(getExp()));
+    public String getIssuedAt() {
+        return issuedAt;
     }
 
 
-    public String getIat() {
-        return iat;
-    }
-
-
-    public void setIat(String issuedAt) {
-        this.iat = issuedAt;
-    }
-
-
-    /**
-     * Returns the parsed issued time for the token as a <code>ZonedDateTime</code> object. This is taken from the <code>iat</code>
-     * property of the token.
-     * @return The parsed issue time of the token
-     */
-    public ZonedDateTime getIssueTime() {
-        return ZonedDateTime.from((TOKEN_DATE_FORMATTER.parse(getIat())));
+    public void setIssuedAt(String issuedAt) {
+        this.issuedAt = issuedAt;
     }
 }

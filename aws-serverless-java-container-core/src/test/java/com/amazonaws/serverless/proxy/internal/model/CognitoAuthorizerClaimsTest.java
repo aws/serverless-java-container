@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 import static org.junit.Assert.*;
 
@@ -18,6 +19,7 @@ public class CognitoAuthorizerClaimsTest {
 
     private static final String EXP_TIME = "Mon Apr 17 23:12:49 UTC 2017";
     private static final String ISSUE_TIME = "Mon Apr 17 22:12:49 UTC 2017";
+    static final DateTimeFormatter TOKEN_DATE_FORMATTER = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss zzz yyyy");
 
     private static final String USER_POOLS_REQUEST = "{\n"
                                                      + "    \"resource\": \"/restaurants\",\n"
@@ -92,12 +94,12 @@ public class CognitoAuthorizerClaimsTest {
         try {
             AwsProxyRequest req = new AwsProxyRequestBuilder().fromJsonString(USER_POOLS_REQUEST).build();
 
-            assertEquals(EXP_TIME, req.getRequestContext().getAuthorizer().getClaims().getExp());
-            assertNotNull(req.getRequestContext().getAuthorizer().getClaims().getExp());
+            assertEquals(EXP_TIME, req.getRequestContext().getAuthorizer().getClaims().getExpiration());
+            assertNotNull(req.getRequestContext().getAuthorizer().getClaims().getExpiration());
 
-            ZonedDateTime expTime = ZonedDateTime.from(CognitoAuthorizerClaims.TOKEN_DATE_FORMATTER.parse(EXP_TIME));
-            ZonedDateTime issueTime = ZonedDateTime.from(CognitoAuthorizerClaims.TOKEN_DATE_FORMATTER.parse(ISSUE_TIME));
-            assertEquals(expTime, req.getRequestContext().getAuthorizer().getClaims().getExpirationTime());
+            ZonedDateTime expTime = ZonedDateTime.from(TOKEN_DATE_FORMATTER.parse(EXP_TIME));
+            ZonedDateTime issueTime = ZonedDateTime.from(TOKEN_DATE_FORMATTER.parse(ISSUE_TIME));
+            assertEquals(expTime, ZonedDateTime.from(TOKEN_DATE_FORMATTER.parse(req.getRequestContext().getAuthorizer().getClaims().getExpiration())));
 
             assertEquals(expTime, issueTime.plusHours(1));
         } catch (IOException e) {
