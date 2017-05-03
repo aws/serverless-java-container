@@ -10,11 +10,15 @@
  * OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package com.amazonaws.serverless.proxy.jersey;
+package com.amazonaws.serverless.proxy.jersey.factory;
 
 
+import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.proxy.internal.AwsProxySecurityContextWriter;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequestReader;
+import com.amazonaws.serverless.proxy.jersey.JerseyAwsProxyRequestReader;
+
 import org.glassfish.hk2.api.Factory;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,7 +33,7 @@ import javax.servlet.http.HttpServletRequest;
  *         .register(new AbstractBinder() {
  *             {@literal @}Override
  *             protected void configure() {
- *                 bindFactory(JerseyAwsProxyServletRequestFactory.class)
+ *                 bindFactory(AwsProxyServletRequestFactory.class)
  *                     .to(HttpServletRequest.class)
  *                     .in(RequestScoped.class);
  *            }
@@ -37,8 +41,10 @@ import javax.servlet.http.HttpServletRequest;
  * </code>
  * </pre>
  */
-public class JerseyAwsProxyServletRequestFactory
+public class AwsProxyServletRequestFactory
         implements Factory<HttpServletRequest> {
+
+    private static AwsProxyHttpServletRequestReader requestReader = new AwsProxyHttpServletRequestReader();
 
     //-------------------------------------------------------------
     // Implementation - Factory
@@ -46,13 +52,23 @@ public class JerseyAwsProxyServletRequestFactory
 
     @Override
     public HttpServletRequest provide() {
-        return new AwsProxyHttpServletRequest(JerseyAwsProxyRequestReader.getCurrentRequest(),
-                                              JerseyAwsProxyRequestReader.getCurrentLambdaContext(),
-                                              AwsProxySecurityContextWriter.getCurrentContext());
+        return getRequest();
     }
 
 
     @Override
     public void dispose(HttpServletRequest httpServletRequest) {
+    }
+
+    public static HttpServletRequest getRequest() {
+        try {
+            return requestReader.readRequest(JerseyAwsProxyRequestReader.getCurrentRequest(),
+                                             AwsProxySecurityContextWriter.getCurrentContext(),
+                                             JerseyAwsProxyRequestReader.getCurrentLambdaContext());
+        } catch (InvalidRequestEventException e) {
+            e.printStackTrace();
+            return null;
+        }
+
     }
 }

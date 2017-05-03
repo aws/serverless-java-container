@@ -142,12 +142,12 @@ public class JerseyAwsProxyRequestReader extends RequestReader<AwsProxyRequest, 
     // Methods - Package
     //-------------------------------------------------------------
 
-    static AwsProxyRequest getCurrentRequest() {
+    public static AwsProxyRequest getCurrentRequest() {
         return currentRequest;
     }
 
 
-    static Context getCurrentLambdaContext() {
+    public static Context getCurrentLambdaContext() {
         return currentLambdaContext;
     }
 }
