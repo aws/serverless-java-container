@@ -13,9 +13,9 @@
 package com.amazonaws.serverless.proxy.internal.model;
 
 
-import com.amazonaws.serverless.proxy.internal.serialization.CognitoAuthorizerClaimsDeserializer;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.time.format.DateTimeFormatter;
 
 
 /**
@@ -36,25 +36,31 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
  * }
  * </pre>
  */
-@JsonDeserialize(using = CognitoAuthorizerClaimsDeserializer.class)
 public class CognitoAuthorizerClaims {
 
     //-------------------------------------------------------------
     // Variables - Private
     //-------------------------------------------------------------
 
+    @JsonProperty(value = "sub")
     private String subject;
+    @JsonProperty(value = "aud")
     private String audience;
+    @JsonProperty(value = "iss")
     private String issuer;
+    @JsonProperty(value = "token_use")
     private String tokenUse;
+    @JsonProperty(value = "cognito:username")
     private String username;
     private String email;
+    @JsonProperty(value = "email_verified")
     private boolean emailVerified;
+    @JsonProperty(value = "auth_time")
     private Long authTime;
+    @JsonProperty(value = "exp")
     private String expiration;
+    @JsonProperty(value = "iat")
     private String issuedAt;
-    private String phoneNumber;
-    private boolean phoneNumberVerified;
 
 
     //-------------------------------------------------------------
@@ -156,25 +162,5 @@ public class CognitoAuthorizerClaims {
 
     public void setIssuedAt(String issuedAt) {
         this.issuedAt = issuedAt;
-    }
-
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-
-    public boolean isPhoneNumberVerified() {
-        return phoneNumberVerified;
-    }
-
-
-    public void setPhoneNumberVerified(boolean phoneNumberVerified) {
-        this.phoneNumberVerified = phoneNumberVerified;
     }
 }
