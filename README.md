@@ -18,7 +18,9 @@ To include the library in your Maven project, add the desired implementation to 
 The simplest way to run your application serverlessly is to configure [API Gateway](https://aws.amazon.com/api-gateway/) to use the
 [`AWS_PROXY`](http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-set-up-simple-proxy.html#api-gateway-set-up-lambda-proxy-integration-on-proxy-resource) integration type and
 configure your desired `LambdaContainerHandler` implementation to use `AwsProxyRequest`/`AwsProxyResponse` readers and writers. Both Spark and Jersey implementations provide static helper methods that
-pre-configure this for you.
+pre-configure this for you. 
+
+When using a Cognito User Pool authorizer, use the Lambda `RequestStreamHandler` instead of the POJO-based `RequestHandler` handler. An example of this is included at the bottom of this file. The POJO handler does not support Jackson annotations required for the `CognitoAuthorizerClaims` class. 
 
 ### Jersey support
 The library expects to receive a valid [JAX-RS](https://jax-rs-spec.java.net) application object. For the Jersey implementation this is the `ResourceConfig` object.
@@ -152,4 +154,37 @@ handler.onStartup(c -> {
     registration.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/*");
     // servlet name mappings are disabled and will throw an exception
 });
+```
+
+# Using the Lambda Stream handler
+By default, Lambda does not use Jackson annotations when marshalling and unmarhsalling JSON. This can cause issues when receiving requests that include the claims object from a Cognito User Pool authorizer. To support these type of requests, use Lambda's `RequestStreamHandler` interface instead of the POJO-based `RequestHandler`. This allows you to use a custom version of Jackson with support for annotations. 
+
+This library uses Jackson annotations in the `com.amazonaws.serverless.proxy.internal.model.CognitoAuthorizerClaims` object. The example below shows how to do this with a `SpringLambdaContainerHandler`, you can use the same methodology with all of the other implementations.
+
+```java
+public class StreamLambdaHandler implements RequestStreamHandler {
+    private SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+    private static ObjectMapper mapper = new ObjectMapper();
+
+    @Override
+    public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
+            throws IOException {
+        if (handler == null) {
+            try {
+                handler = SpringLambdaContainerHandler.getAwsProxyHandler(PetStoreSpringAppConfig.class);
+            } catch (ContainerInitializationException e) {
+                e.printStackTrace();
+                outputStream.close();
+            }
+        }
+
+        AwsProxyRequest request = mapper.readValue(inputStream, AwsProxyRequest.class);
+
+        AwsProxyResponse resp = handler.proxy(request, context);
+
+        mapper.writeValue(outputStream, resp);
+        // just in case it wasn't closed by the mapper
+        outputStream.close();
+    }
+}
 ```

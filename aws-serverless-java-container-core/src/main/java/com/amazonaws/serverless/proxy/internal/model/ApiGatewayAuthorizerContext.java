@@ -39,7 +39,6 @@ public class ApiGatewayAuthorizerContext {
     private String principalId;
     private CognitoAuthorizerClaims claims;
 
-
     //-------------------------------------------------------------
     // Methods - Public
     //-------------------------------------------------------------
