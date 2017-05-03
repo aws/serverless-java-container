@@ -91,25 +91,29 @@ public class AwsHttpServletResponse
 
     @Override
     public String encodeURL(String s) {
-        return URLEncoder.encode(s);
+        // We do not support session tracking using the URL right now, we do not encode urls
+        return s;
     }
 
 
     @Override
     public String encodeRedirectURL(String s) {
-        return URLEncoder.encode(s);
+        // Return the URL without changing it, we do not support session tracking using URLs
+        return s;
     }
 
 
     @Override
+    @Deprecated
     public String encodeUrl(String s) {
-        return URLEncoder.encode(s);
+        return this.encodeURL(s);
     }
 
 
     @Override
+    @Deprecated
     public String encodeRedirectUrl(String s) {
-        return URLEncoder.encode(s);
+        return this.encodeRedirectURL(s);
     }
 
 
