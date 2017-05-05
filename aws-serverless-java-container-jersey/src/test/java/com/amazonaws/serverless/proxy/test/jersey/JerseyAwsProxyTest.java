@@ -15,7 +15,9 @@ package com.amazonaws.serverless.proxy.test.jersey;
 
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyResponse;
-import com.amazonaws.serverless.proxy.jersey.JerseyAwsProxyServletRequestFactory;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
+import com.amazonaws.serverless.proxy.jersey.factory.AwsProxyServletContextFactory;
+import com.amazonaws.serverless.proxy.jersey.factory.AwsProxyServletRequestFactory;
 import com.amazonaws.serverless.proxy.jersey.JerseyLambdaContainerHandler;
 import com.amazonaws.serverless.proxy.test.jersey.model.MapResponseModel;
 import com.amazonaws.serverless.proxy.test.jersey.model.SingleValueModel;
@@ -31,6 +33,7 @@ import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.Test;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
@@ -52,8 +55,11 @@ public class JerseyAwsProxyTest {
                                                             .register(new AbstractBinder() {
                                                                 @Override
                                                                 protected void configure() {
-                                                                    bindFactory(JerseyAwsProxyServletRequestFactory.class)
+                                                                    bindFactory(AwsProxyServletRequestFactory.class)
                                                                             .to(HttpServletRequest.class)
+                                                                            .in(RequestScoped.class);
+                                                                    bindFactory(AwsProxyServletContextFactory.class)
+                                                                            .to(ServletContext.class)
                                                                             .in(RequestScoped.class);
                                                                 }
                                                             });
@@ -87,6 +93,16 @@ public class JerseyAwsProxyTest {
         assertEquals("application/json", output.getHeaders().get("Content-Type"));
 
         validateMapResponseModel(output);
+    }
+
+    @Test
+    public void context_serverInfo_correctContext() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/servlet-context", "GET").build();
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(200, output.getStatusCode());
+        assertEquals("application/json", output.getHeaders().get("Content-Type"));
+
+        validateSingleValueModel(output, AwsServletContext.SERVER_INFO);
     }
 
     @Test

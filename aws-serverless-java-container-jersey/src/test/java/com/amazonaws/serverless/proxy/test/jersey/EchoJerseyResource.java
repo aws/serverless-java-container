@@ -17,6 +17,7 @@ import com.amazonaws.serverless.proxy.internal.model.ApiGatewayRequestContext;
 import com.amazonaws.serverless.proxy.test.jersey.model.MapResponseModel;
 import com.amazonaws.serverless.proxy.test.jersey.model.SingleValueModel;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -55,6 +56,15 @@ public class EchoJerseyResource {
         }
 
         return headers;
+    }
+
+    @Path("/servlet-context") @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public SingleValueModel echoContextInformation(@Context ServletContext context) {
+        SingleValueModel singleValueModel = new SingleValueModel();
+        singleValueModel.setValue(context.getServerInfo());
+
+        return singleValueModel;
     }
 
     @Path("/query-string") @GET

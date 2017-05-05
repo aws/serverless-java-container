@@ -85,7 +85,7 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 }
 ```
 
-## Security context
+# Security context
 The `aws-serverless-java-container-core` contains a default implementation of the `SecurityContextWriter` that supports API Gateway's proxy integration. The generated security context uses the API Gateway `$context` object to establish the request security context. The context looks for the following values in order and returns the first matched type:
 
 1. Cognito My User Pools
@@ -98,7 +98,7 @@ The String values for these are exposed as static variables in the `AwsProxySecu
 2. `AUTH_SCHEME_CUSTOM`
 3. `AUTH_SCHEME_IAM`
 
-## Supporting other event types
+# Supporting other event types
 The `RequestReader` and `ResponseWriter` interfaces in the core package can be used to support event types and generate different responses. For example, ff you have configured mapping templates in
 API Gateway to create a custom event body or response you can create your own implementation of the `RequestReader` and `ResponseWriter` to handle these.
 
@@ -115,8 +115,8 @@ JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler =
                                        jaxRsApplication);
 ```
  
-## Jersey Servlet request
-The `aws-serverless-java-container-jersey` includes a Jersey factory class to produce `HttpServletRequest` objects for your methods. First, you will need to register the factory with your Jersey application.
+# Jersey Servlet injection
+The `aws-serverless-java-container-jersey` includes Jersey factory classes to produce `HttpServletRequest` and `ServletContext` objects for your methods. First, you will need to register the factory with your Jersey application.
 
 ```java
 ResourceConfig app = new ResourceConfig()
@@ -124,14 +124,17 @@ ResourceConfig app = new ResourceConfig()
     .register(new AbstractBinder() {
         @Override
         protected void configure() {
-            bindFactory(JerseyAwsProxyServletRequestFactory.class)
+            bindFactory(AwsProxyServletRequestFactory.class)
                 .to(HttpServletRequest.class)
+                .in(RequestScoped.class);
+            bindFactory(AwsProxyServletContextFactory.class)
+                .to(ServletContext.class)
                 .in(RequestScoped.class);
         }
     });
 ```
 
-Once the factory is registered, you can receive `HttpServletRequest` objects in your methods.
+Once the factory is registered, you can receive `HttpServletRequest` and `ServletContext` objects in your methods using the `@Context` annotation.
 
 ```java
 @Path("/my-servlet") @GET
