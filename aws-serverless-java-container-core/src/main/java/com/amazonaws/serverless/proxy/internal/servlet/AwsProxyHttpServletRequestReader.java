@@ -15,6 +15,7 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.proxy.internal.RequestReader;
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyRequest;
+import com.amazonaws.serverless.proxy.internal.model.ContainerConfig;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import javax.ws.rs.core.SecurityContext;
@@ -30,8 +31,9 @@ public class AwsProxyHttpServletRequestReader extends RequestReader<AwsProxyRequ
     //-------------------------------------------------------------
 
     @Override
-    public AwsProxyHttpServletRequest readRequest(AwsProxyRequest request, SecurityContext securityContext, Context lambdaContext)
+    public AwsProxyHttpServletRequest readRequest(AwsProxyRequest request, SecurityContext securityContext, Context lambdaContext, ContainerConfig config)
             throws InvalidRequestEventException {
+        request.setPath(stripBasePath(request.getPath(), config));
         AwsProxyHttpServletRequest servletRequest = new AwsProxyHttpServletRequest(request, lambdaContext, securityContext);
         servletRequest.setAttribute(API_GATEWAY_CONTEXT_PROPERTY, request.getRequestContext());
         servletRequest.setAttribute(API_GATEWAY_STAGE_VARS_PROPERTY, request.getStageVariables());

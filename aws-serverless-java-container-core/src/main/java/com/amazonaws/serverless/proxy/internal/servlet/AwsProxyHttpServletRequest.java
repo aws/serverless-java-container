@@ -380,7 +380,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     public ServletInputStream getInputStream() throws IOException {
         byte[] bodyBytes = request.getBody().getBytes();
         if (request.isBase64Encoded()) {
-            bodyBytes = Base64.getDecoder().decode(request.getBody());
+            bodyBytes = Base64.getMimeDecoder().decode(request.getBody());
         }
         ByteArrayInputStream requestBodyStream = new ByteArrayInputStream(bodyBytes);
         return new ServletInputStream() {

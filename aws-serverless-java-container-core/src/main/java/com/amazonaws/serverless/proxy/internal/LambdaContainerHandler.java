@@ -13,6 +13,7 @@
 package com.amazonaws.serverless.proxy.internal;
 
 
+import com.amazonaws.serverless.proxy.internal.model.ContainerConfig;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import javax.ws.rs.core.SecurityContext;
@@ -45,8 +46,9 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
     private SecurityContextWriter<RequestType> securityContextWriter;
     private ExceptionHandler<ResponseType> exceptionHandler;
 
-
     protected Context lambdaContext;
+
+    private ContainerConfig config = ContainerConfig.defaultConfig();
 
 
     //-------------------------------------------------------------
@@ -79,6 +81,11 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
     // Methods - Public
     //-------------------------------------------------------------
 
+    public void stripBasePath(String basePath) {
+        config.setStripBasePath(true);
+        config.setServiceBasePath(basePath);
+    }
+
     /**
      * Proxies requests to the underlying container given the incoming Lambda request. This method returns a populated
      * return object for the Lambda function.
@@ -93,7 +100,7 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
             SecurityContext securityContext = securityContextWriter.writeSecurityContext(request, context);
             CountDownLatch latch = new CountDownLatch(1);
             ContainerResponseType containerResponse = getContainerResponse(latch);
-            ContainerRequestType containerRequest = requestReader.readRequest(request, securityContext, context);
+            ContainerRequestType containerRequest = requestReader.readRequest(request, securityContext, context, config);
 
             handleRequest(containerRequest, containerResponse, context);
 

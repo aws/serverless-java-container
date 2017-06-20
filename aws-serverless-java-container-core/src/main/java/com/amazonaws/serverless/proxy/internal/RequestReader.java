@@ -14,6 +14,7 @@ package com.amazonaws.serverless.proxy.internal;
 
 
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
+import com.amazonaws.serverless.proxy.internal.model.ContainerConfig;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -67,9 +68,36 @@ public abstract class RequestReader<RequestType, ContainerRequestType> {
      * @return A valid request object for the underlying container
      * @throws InvalidRequestEventException This exception is thrown if anything goes wrong during the creation of the request object
      */
-    protected abstract ContainerRequestType readRequest(RequestType request, SecurityContext securityContext, Context lambdaContext)
+    protected abstract ContainerRequestType readRequest(RequestType request, SecurityContext securityContext, Context lambdaContext, ContainerConfig config)
             throws InvalidRequestEventException;
 
 
     protected abstract Class<? extends RequestType> getRequestClass();
+
+
+    //-------------------------------------------------------------
+    // Methods - Protected
+    //-------------------------------------------------------------
+
+    /**
+     * Strips the base path from the request path if the container configuration object requires it
+     * @param requestPath The incoming request path
+     * @param config The container configuration object
+     * @return The final request path
+     */
+    protected String stripBasePath(String requestPath, ContainerConfig config) {
+        if (!config.isStripBasePath()) {
+            return requestPath;
+        }
+
+        if (requestPath.startsWith(config.getServiceBasePath())) {
+            String newRequestPath = requestPath.replaceFirst(config.getServiceBasePath(), "");
+            if (!newRequestPath.startsWith("/")) {
+                newRequestPath = "/" + newRequestPath;
+            }
+            return newRequestPath;
+        }
+
+        return requestPath;
+    }
 }

@@ -3,6 +3,7 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyRequest;
+import com.amazonaws.serverless.proxy.internal.model.ContainerConfig;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.services.lambda.runtime.Context;
 import org.junit.Test;
@@ -31,7 +32,7 @@ public class AwsProxyHttpServletRequestReaderTest {
     public void readRequest_validAwsProxy_populatedRequest() {
         AwsProxyRequest request = new AwsProxyRequestBuilder().header(TEST_HEADER_KEY, TEST_HEADER_VALUE).build();
         try {
-            HttpServletRequest servletRequest = reader.readRequest(request, null, null);
+            HttpServletRequest servletRequest = reader.readRequest(request, null, null, ContainerConfig.defaultConfig());
             assertNotNull(servletRequest.getHeader(TEST_HEADER_KEY));
             assertEquals(TEST_HEADER_VALUE, servletRequest.getHeader(TEST_HEADER_KEY));
         } catch (InvalidRequestEventException e) {
