@@ -20,12 +20,15 @@ import com.amazonaws.serverless.proxy.internal.model.CognitoAuthorizerClaims;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.IOUtils;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Base64;
 import java.util.HashMap;
 
 /**
@@ -146,6 +149,12 @@ public class AwsProxyRequestBuilder {
         } else {
             throw new UnsupportedOperationException("Unsupported content type in request");
         }
+    }
+
+    public AwsProxyRequestBuilder binaryBody(InputStream is)
+            throws IOException {
+        this.request.setIsBase64Encoded(true);
+        return body(Base64.getMimeEncoder().encodeToString(IOUtils.toByteArray(is)));
     }
 
 

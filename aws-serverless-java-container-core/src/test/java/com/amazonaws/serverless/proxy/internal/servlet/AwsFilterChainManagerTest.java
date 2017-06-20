@@ -17,19 +17,20 @@ public class AwsFilterChainManagerTest {
 
     private static AwsFilterChainManager chainManager;
     private static Context lambdaContext = new MockLambdaContext();
+    private static ServletContext servletContext;
 
     @BeforeClass
     public static void setUp() {
-        ServletContext context = AwsServletContext.getInstance(lambdaContext);
+        servletContext = new AwsServletContext(lambdaContext, null);//AwsServletContext.getInstance(lambdaContext, null);
 
-        FilterRegistration.Dynamic reg = context.addFilter("Filter1", new MockFilter());
+        FilterRegistration.Dynamic reg = servletContext.addFilter("Filter1", new MockFilter());
         reg.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/first/second");
-        FilterRegistration.Dynamic reg2 = context.addFilter("Filter2", new MockFilter());
+        FilterRegistration.Dynamic reg2 = servletContext.addFilter("Filter2", new MockFilter());
         reg2.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/second/*");
-        FilterRegistration.Dynamic reg3 = context.addFilter("Filter3", new MockFilter());
+        FilterRegistration.Dynamic reg3 = servletContext.addFilter("Filter3", new MockFilter());
         reg3.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/third/fourth/*");
 
-        chainManager = new AwsFilterChainManager((AwsServletContext) context);
+        chainManager = new AwsFilterChainManager((AwsServletContext) servletContext);
     }
 
     @Test
@@ -106,6 +107,7 @@ public class AwsFilterChainManagerTest {
         AwsProxyHttpServletRequest req = new AwsProxyHttpServletRequest(
             new AwsProxyRequestBuilder("/first/second", "GET").build(), lambdaContext, null
         );
+        req.setServletContext(servletContext);
         FilterChainHolder fcHolder = chainManager.getFilterChain(req);
         assertEquals(1, fcHolder.filterCount());
         assertEquals("Filter1", fcHolder.getFilter(0).getFilterName());
@@ -130,6 +132,7 @@ public class AwsFilterChainManagerTest {
         AwsProxyHttpServletRequest req = new AwsProxyHttpServletRequest(
                 new AwsProxyRequestBuilder("/second/important", "GET").build(), lambdaContext, null
         );
+        req.setServletContext(servletContext);
         FilterRegistration.Dynamic reg = req.getServletContext().addFilter("Filter4", new MockFilter());
         reg.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/second/*");
         FilterChainHolder fcHolder = chainManager.getFilterChain(req);

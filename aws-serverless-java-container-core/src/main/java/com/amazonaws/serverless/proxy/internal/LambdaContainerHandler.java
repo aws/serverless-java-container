@@ -13,6 +13,7 @@
 package com.amazonaws.serverless.proxy.internal;
 
 
+import com.amazonaws.serverless.proxy.internal.model.ContainerConfig;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import javax.ws.rs.core.SecurityContext;
@@ -36,6 +37,7 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
 
     public static final String SERVER_INFO = "aws-serverless-java-container";
 
+
     //-------------------------------------------------------------
     // Variables - Private
     //-------------------------------------------------------------
@@ -44,6 +46,15 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
     private ResponseWriter<ContainerResponseType, ResponseType> responseWriter;
     private SecurityContextWriter<RequestType> securityContextWriter;
     private ExceptionHandler<ResponseType> exceptionHandler;
+
+    protected Context lambdaContext;
+
+
+    //-------------------------------------------------------------
+    // Variables - Private - Static
+    //-------------------------------------------------------------
+
+    private static ContainerConfig config = ContainerConfig.defaultConfig();
 
 
     //-------------------------------------------------------------
@@ -77,6 +88,19 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
     //-------------------------------------------------------------
 
     /**
+     * Configures the library to strip a base path from incoming requests before passing them on to the wrapped
+     * framework. This was added in response to issue #34 (https://github.com/awslabs/aws-serverless-java-container/issues/34).
+     * When creating a base path mapping for custom domain names in API Gateway we want to be able to strip the base path
+     * from the request - the underlying service may not recognize this path.
+     * @param basePath The base path to be stripped from the request
+     */
+    public void stripBasePath(String basePath) {
+        config.setStripBasePath(true);
+        config.setServiceBasePath(basePath);
+    }
+
+
+    /**
      * Proxies requests to the underlying container given the incoming Lambda request. This method returns a populated
      * return object for the Lambda function.
      *
@@ -85,11 +109,12 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
      * @return A valid response type
      */
     public ResponseType proxy(RequestType request, Context context) {
+        lambdaContext = context;
         try {
             SecurityContext securityContext = securityContextWriter.writeSecurityContext(request, context);
             CountDownLatch latch = new CountDownLatch(1);
             ContainerResponseType containerResponse = getContainerResponse(latch);
-            ContainerRequestType containerRequest = requestReader.readRequest(request, securityContext, context);
+            ContainerRequestType containerRequest = requestReader.readRequest(request, securityContext, context, config);
 
             handleRequest(containerRequest, containerResponse, context);
 
@@ -98,13 +123,22 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
             return responseWriter.writeResponse(containerResponse, context);
         } catch (Exception e) {
             context.getLogger().log("Error while handling request: " + e.getMessage());
-
-            /*for (StackTraceElement el : e.getStackTrace()) {
-                context.getLogger().log(el.toString());
-            }*/
             e.printStackTrace();
 
             return exceptionHandler.handle(e);
         }
+    }
+
+
+    //-------------------------------------------------------------
+    // Methods - Getter/Setter
+    //-------------------------------------------------------------
+
+    /**
+     * Returns the current container configuration object.
+     * @return
+     */
+    public static ContainerConfig getContainerConfig() {
+        return config;
     }
 }

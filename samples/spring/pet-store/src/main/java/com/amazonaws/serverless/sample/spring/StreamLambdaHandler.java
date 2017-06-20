@@ -15,9 +15,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 
-/**
- * Created by bulianis on 5/2/17.
- */
 public class StreamLambdaHandler implements RequestStreamHandler {
     private SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
     private static ObjectMapper mapper = new ObjectMapper();

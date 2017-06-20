@@ -16,6 +16,7 @@ package com.amazonaws.serverless.proxy.jersey;
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.proxy.internal.RequestReader;
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyRequest;
+import com.amazonaws.serverless.proxy.internal.model.ContainerConfig;
 import com.amazonaws.services.lambda.runtime.Context;
 import org.glassfish.jersey.internal.MapPropertiesDelegate;
 import org.glassfish.jersey.internal.PropertiesDelegate;
@@ -40,13 +41,6 @@ import java.util.Base64;
 public class JerseyAwsProxyRequestReader extends RequestReader<AwsProxyRequest, ContainerRequest> {
 
     //-------------------------------------------------------------
-    // Variables - Private
-    //-------------------------------------------------------------
-
-    private boolean useStageAsBasePath = false;
-
-
-    //-------------------------------------------------------------
     // Variables - Private - Static
     //-------------------------------------------------------------
 
@@ -69,14 +63,16 @@ public class JerseyAwsProxyRequestReader extends RequestReader<AwsProxyRequest, 
      * @throws InvalidRequestEventException When the method fails to parse the incoming request
      */
     @Override
-    public ContainerRequest readRequest(AwsProxyRequest request, SecurityContext securityContext, Context lambdaContext)
+    public ContainerRequest readRequest(AwsProxyRequest request, SecurityContext securityContext, Context lambdaContext, ContainerConfig config)
             throws InvalidRequestEventException {
         currentRequest = request;
         currentLambdaContext = lambdaContext;
 
+        request.setPath(stripBasePath(request.getPath(), config));
+
         URI basePathUri;
         URI requestPathUri;
-        String basePath = useStageAsBasePath ? request.getRequestContext().getStage() : "/";
+        String basePath = "/";
 
         try {
             basePathUri = new URI(basePath);
@@ -113,20 +109,6 @@ public class JerseyAwsProxyRequestReader extends RequestReader<AwsProxyRequest, 
 
         return requestContext;
     }
-
-
-    //-------------------------------------------------------------
-    // Methods - Getter/Setter
-    //-------------------------------------------------------------
-
-    /**
-     * Sets whether the stage name should be used as base path for the Jersey request. The default value for this property is <code>false</code>
-     * @param useStageAsBasePath True if the stage name should be included in the request path, false otherwise
-     */
-    public void setUseStageAsBasePath(boolean useStageAsBasePath) {
-        this.useStageAsBasePath = useStageAsBasePath;
-    }
-
 
     //-------------------------------------------------------------
     // Methods - Protected

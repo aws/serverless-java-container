@@ -188,6 +188,7 @@ public class AwsHttpServletResponse
 
 
     @Override
+    @Deprecated
     public void setStatus(int i, String s) {
         statusCode = i;
         statusMessage = s;

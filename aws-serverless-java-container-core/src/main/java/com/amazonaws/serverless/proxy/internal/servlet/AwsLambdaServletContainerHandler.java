@@ -17,9 +17,12 @@ import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.RequestReader;
 import com.amazonaws.serverless.proxy.internal.ResponseWriter;
 import com.amazonaws.serverless.proxy.internal.SecurityContextWriter;
+import com.amazonaws.services.lambda.runtime.Context;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -28,6 +31,8 @@ import java.io.IOException;
  * Abstract extension of the code <code>LambdaContainerHandler</code> object that adds protected variables for the
  * <code>ServletContext</code> and <code>FilterChainManager</code>. This object should be extended by the framework-specific
  * implementations that want to support the servlet 3.1 specs.
+ *
+ * Because Lambda only allows one event per container at a time, this object also acts as the <code>RequestDispatcher</code>
  * @param <RequestType>
  * @param <ResponseType>
  * @param <ContainerRequestType>
@@ -42,14 +47,13 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
     // Variables - Private
     //-------------------------------------------------------------
 
-    private FilterChainManager filterChainManager;
+    protected ServletContext servletContext;
 
     //-------------------------------------------------------------
     // Variables - Protected
     //-------------------------------------------------------------
-
-    protected ServletContext servletContext;
     protected StartupHandler startupHandler;
+    private FilterChainManager<AwsServletContext> filterChainManager;
 
 
     //-------------------------------------------------------------
@@ -61,6 +65,78 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
                                      SecurityContextWriter<RequestType> securityContextWriter,
                                      ExceptionHandler<ResponseType> exceptionHandler) {
         super(requestReader, responseWriter, securityContextWriter, exceptionHandler);
+    }
+
+    //-------------------------------------------------------------
+    // Methods - Public
+    //-------------------------------------------------------------
+
+    /**
+     * Fowards a request to the existing framework container. This is called by the <code>AwsProxyRequestDispatcher</code> object
+     * @param servletRequest The modified request object with the new request path
+     * @param servletResponse The original servlet response
+     * @throws ServletException
+     * @throws IOException
+     */
+    public void forward(ContainerRequestType servletRequest, ContainerResponseType servletResponse)
+            throws ServletException, IOException {
+        try {
+            handleRequest(servletRequest, servletResponse, lambdaContext);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ServletException(e);
+        }
+    }
+
+
+    /**
+     * Includes a request to the existing framework container. This is called by the <code>AwsProxyRequestDispatcher</code> object
+     * @param servletRequest The modified request object with the new request path
+     * @param servletResponse The original servlet response
+     * @throws ServletException
+     * @throws IOException
+     */
+    public void include(ContainerRequestType servletRequest, ContainerResponseType servletResponse)
+            throws ServletException, IOException {
+        try {
+           handleRequest(servletRequest, servletResponse, lambdaContext);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ServletException(e);
+        }
+    }
+
+
+    /**
+     * You can use the <code>onStartup</code> to intercept the ServletContext as the Spring application is
+     * initialized and inject custom values. The StartupHandler is called after the <code>onStartup</code> method
+     * of the <code>LambdaSpringApplicationinitializer</code> implementation. For example, you can use this method to
+     * add custom filters to the servlet context:
+     *
+     * <pre>
+     * {@code
+     *      handler = SpringLambdaContainerHandler.getAwsProxyHandler(EchoSpringAppConfig.class);
+     *      handler.onStartup(c -> {
+     *      // the "c" parameter to this function is the initialized servlet context
+     *      c.addFilter("CustomHeaderFilter", CustomHeaderFilter.class);
+     *      });
+     * }
+     * </pre>
+     * @param h A lambda expression that implements the <code>StartupHandler</code> functional interface
+     */
+    public void onStartup(final StartupHandler h) {
+        startupHandler = h;
+    }
+
+    @Override
+    protected void handleRequest(ContainerRequestType containerRequest, ContainerResponseType containerResponse, Context lambdaContext)
+            throws Exception {
+        // The servlet context should not be linked to a specific request object, only to the Lambda
+        // context so we only set it once.
+        // TODO: In the future, if we decide to support multiple servlets/contexts in an instance we only need to modify this method
+        if (getServletContext() == null) {
+            setServletContext(new AwsServletContext(lambdaContext, this));
+        }
     }
 
 
@@ -87,28 +163,6 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
         // We assume custom implementations of the RequestWriter for HttpServletRequest will reuse
         // the existing AwsServletContext object since it has no dependencies other than the Lambda context
         filterChainManager = new AwsFilterChainManager((AwsServletContext)context);
-    }
-
-
-    /**
-     * You can use the <code>onStartup</code> to intercept the ServletContext as the Spring application is
-     * initialized and inject custom values. The StartupHandler is called after the <code>onStartup</code> method
-     * of the <code>LambdaSpringApplicationinitializer</code> implementation. For example, you can use this method to
-     * add custom filters to the servlet context:
-     *
-     * <pre>
-     * {@code
-     *      handler = SpringLambdaContainerHandler.getAwsProxyHandler(EchoSpringAppConfig.class);
-     *      handler.onStartup(c -> {
-     *      // the "c" parameter to this function is the initialized servlet context
-     *      c.addFilter("CustomHeaderFilter", CustomHeaderFilter.class);
-     *      });
-     * }
-     * </pre>
-     * @param h A lambda expression that implements the <code>StartupHandler</code> functional interface
-     */
-    public void onStartup(final StartupHandler h) {
-        startupHandler = h;
     }
 
 

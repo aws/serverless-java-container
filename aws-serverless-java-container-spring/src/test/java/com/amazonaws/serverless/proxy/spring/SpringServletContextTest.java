@@ -12,10 +12,13 @@ import com.amazonaws.serverless.proxy.spring.echoapp.EchoSpringAppConfig;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.ValidatedUserModel;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
+import javax.ws.rs.core.MediaType;
+
 import java.util.EnumSet;
 
 import static org.junit.Assert.*;

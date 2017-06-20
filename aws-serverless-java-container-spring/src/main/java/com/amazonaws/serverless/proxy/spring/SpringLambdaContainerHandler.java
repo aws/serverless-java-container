@@ -117,20 +117,23 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
             throw new ContainerInitializationException(LambdaSpringApplicationInitializer.ERROR_NO_CONTEXT, null);
         }
 
+        // this method of the AwsLambdaServletContainerHandler sets the request context
+        super.handleRequest(containerRequest, containerResponse, lambdaContext);
+
         // wire up the application context on the first invocation
         if (!initialized) {
-            // The servlet context should not be linked to a specific request object, only to the Lambda
-            // context so we only set it once.
-            setServletContext(containerRequest.getServletContext());
-            initializer.onStartup(this.servletContext);
+
+            initializer.onStartup(getServletContext());
 
             // call the onStartup event if set to give developers a chance to set filters in the context
             if (startupHandler != null) {
-                startupHandler.onStartup(this.servletContext);
+                startupHandler.onStartup(getServletContext());
             }
 
             initialized = true;
         }
+
+        containerRequest.setServletContext(getServletContext());
 
         // process filters
         doFilter(containerRequest, containerResponse);
