@@ -100,7 +100,11 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Lam
     /**
      * Private constructor for a LambdaContainer. Sets the application object, sets the ApplicationHandler,
      * and initializes the application using the <code>onStartup</code> method.
-     * @param jaxRsApplication A Jersey application instance.
+     * @param requestReader A request reader instance
+     * @param responseWriter A response writer instance
+     * @param securityContextWriter A security context writer object
+     * @param exceptionHandler An exception handler
+     * @param jaxRsApplication The JaxRs application
      */
     public JerseyLambdaContainerHandler(RequestReader<RequestType, ContainerRequest> requestReader,
                                         ResponseWriter<JerseyResponseWriter, ResponseType> responseWriter,

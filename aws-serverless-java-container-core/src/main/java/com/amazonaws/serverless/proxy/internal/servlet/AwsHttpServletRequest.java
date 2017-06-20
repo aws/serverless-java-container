@@ -259,7 +259,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     /**
      * Given a map of key/values query string parameters from API Gateway, creates a query string as it would have
      * been in the original url.
-     * @param parameters A Map<String, String> of query string parameters
+     * @param parameters A Map&lt;String, String&gt; of query string parameters
      * @return The generated query string for the URI
      */
     protected String generateQueryString(Map<String, String> parameters) {

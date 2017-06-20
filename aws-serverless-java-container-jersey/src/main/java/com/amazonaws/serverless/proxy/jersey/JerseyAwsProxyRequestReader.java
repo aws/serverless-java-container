@@ -59,6 +59,7 @@ public class JerseyAwsProxyRequestReader extends RequestReader<AwsProxyRequest, 
      * @param request The incoming request object
      * @param securityContext A jax-rs SecurityContext object (@see com.amazonaws.serverless.proxy.internal.SecurityContextWriter)
      * @param lambdaContext The AWS Lambda context for the request
+     * @param config The container config object, this is passed in by the LambdaContainerHandler
      * @return A populated ContainerRequest object
      * @throws InvalidRequestEventException When the method fails to parse the incoming request
      */

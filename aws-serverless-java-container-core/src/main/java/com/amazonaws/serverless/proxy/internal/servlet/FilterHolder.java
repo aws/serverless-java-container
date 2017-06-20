@@ -130,7 +130,7 @@ public class FilterHolder {
 
     /**
      * The name associated with the filter
-     * @return
+     * @return The name for the filter
      */
     public String getFilterName() {
         return filterName;
@@ -144,7 +144,7 @@ public class FilterHolder {
 
     /**
      * The map of initialization parameters passed to the filter
-     * @return
+     * @return The Map of initialization parameters used for the filter
      */
     public Map<String, String> getInitParameters() {
         return initParameters;
@@ -153,7 +153,7 @@ public class FilterHolder {
 
     /**
      * The servlet context that initialized the filter
-     * @return
+     * @return The servlet context the filter was initialized on
      */
     public ServletContext getServletContext() {
         return servletContext;

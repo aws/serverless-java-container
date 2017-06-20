@@ -136,7 +136,7 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
 
     /**
      * Returns the current container configuration object.
-     * @return
+     * @return The container configuration object
      */
     public static ContainerConfig getContainerConfig() {
         return config;

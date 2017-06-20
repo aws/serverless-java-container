@@ -21,8 +21,6 @@ import com.amazonaws.services.lambda.runtime.Context;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -33,10 +31,10 @@ import java.io.IOException;
  * implementations that want to support the servlet 3.1 specs.
  *
  * Because Lambda only allows one event per container at a time, this object also acts as the <code>RequestDispatcher</code>
- * @param <RequestType>
- * @param <ResponseType>
- * @param <ContainerRequestType>
- * @param <ContainerResponseType>
+ * @param <RequestType> The expected request object. This is the model class that the event JSON is de-serialized to
+ * @param <ResponseType> The expected Lambda function response object. Responses from the container will be written to this model object
+ * @param <ContainerRequestType> The request type for the wrapped Java container
+ * @param <ContainerResponseType> The response or response writer type for the wrapped Java container
  */
 public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType,
                                                         ContainerRequestType extends HttpServletRequest,
@@ -174,6 +172,8 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
      * Applies the filter chain in the request lifecycle
      * @param request The Request object. This must be an implementation of HttpServletRequest
      * @param response The response object. This must be an implementation of HttpServletResponse
+     * @throws IOException
+     * @throws ServletException
      */
     protected void doFilter(ContainerRequestType request, ContainerResponseType response) throws IOException, ServletException {
         FilterChainHolder chain = filterChainManager.getFilterChain(request);

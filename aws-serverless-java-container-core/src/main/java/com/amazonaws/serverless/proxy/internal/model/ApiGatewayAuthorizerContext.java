@@ -21,13 +21,11 @@ import java.util.Map;
 
 /**
  * Context object used for custom authorizers and Cognito User Pool authorizers.
- * <p>
- *     Custom authorizers  populate the <code>principalId</code> field. All other custom values
- *     returned by the authorizer are accessible via the <code>getContextValue</code> method.
- * </p>
- * <p>
- *     Cognito User Pool authorizers populate the <pre>claims</pre> object.
- * </p>
+ *
+ * Custom authorizers  populate the <code>principalId</code> field. All other custom values
+ * returned by the authorizer are accessible via the <code>getContextValue</code> method.
+ *
+ * Cognito User Pool authorizers populate the <code>claims</code> object.
  */
 public class ApiGatewayAuthorizerContext {
 

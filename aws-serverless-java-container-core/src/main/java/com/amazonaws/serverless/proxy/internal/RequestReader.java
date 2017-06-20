@@ -65,6 +65,7 @@ public abstract class RequestReader<RequestType, ContainerRequestType> {
      * @param request The incoming request object
      * @param securityContext A jax-rs SecurityContext object (@see com.amazonaws.serverless.proxy.internal.SecurityContextWriter)
      * @param lambdaContext The AWS Lambda context for the request
+     * @param config The container configuration object. This is passed in by the LambdaContainerHandler.
      * @return A valid request object for the underlying container
      * @throws InvalidRequestEventException This exception is thrown if anything goes wrong during the creation of the request object
      */
