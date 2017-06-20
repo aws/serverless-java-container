@@ -53,4 +53,25 @@ public class RequestReaderTest {
         assertNotNull(finalPath);
         assertEquals(ORDERS_URL, finalPath);
     }
+
+    @Test
+    public void requestReader_doubleBasePath() {
+        ContainerConfig config = ContainerConfig.defaultConfig();
+        config.setStripBasePath(true);
+        config.setServiceBasePath(BASE_PATH_MAPPING);
+
+        String finalPath = requestReader.stripBasePath("/" + BASE_PATH_MAPPING + "/" + BASE_PATH_MAPPING, config);
+        assertNotNull(finalPath);
+        assertEquals("/" + BASE_PATH_MAPPING, finalPath);
+
+        finalPath = requestReader.stripBasePath("/custom/" + BASE_PATH_MAPPING, config);
+        assertNotNull(finalPath);
+        assertEquals("/custom/" + BASE_PATH_MAPPING, finalPath);
+
+        finalPath = requestReader.stripBasePath(BASE_PATH_MAPPING, config);
+        assertNotNull(finalPath);
+        // the request path does not start with a "/", the comparison in the method should fail
+        // and nothing should get replaced
+        assertEquals(BASE_PATH_MAPPING, finalPath);
+    }
 }

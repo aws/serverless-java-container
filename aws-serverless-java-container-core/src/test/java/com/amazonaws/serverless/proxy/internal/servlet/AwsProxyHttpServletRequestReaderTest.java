@@ -23,7 +23,7 @@ public class AwsProxyHttpServletRequestReaderTest {
 
     @Test
     public void readRequest_reflection_returnType() throws NoSuchMethodException {
-        Method readRequestMethod = AwsProxyHttpServletRequestReader.class.getMethod("readRequest", AwsProxyRequest.class, SecurityContext.class, Context.class);
+        Method readRequestMethod = AwsProxyHttpServletRequestReader.class.getMethod("readRequest", AwsProxyRequest.class, SecurityContext.class, Context.class, ContainerConfig.class);
 
         assertTrue(readRequestMethod.getReturnType() == AwsProxyHttpServletRequest.class);
     }

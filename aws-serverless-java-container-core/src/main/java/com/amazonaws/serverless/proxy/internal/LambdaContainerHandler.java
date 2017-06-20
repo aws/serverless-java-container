@@ -37,6 +37,7 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
 
     public static final String SERVER_INFO = "aws-serverless-java-container";
 
+
     //-------------------------------------------------------------
     // Variables - Private
     //-------------------------------------------------------------
@@ -48,7 +49,12 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
 
     protected Context lambdaContext;
 
-    private ContainerConfig config = ContainerConfig.defaultConfig();
+
+    //-------------------------------------------------------------
+    // Variables - Private - Static
+    //-------------------------------------------------------------
+
+    private static ContainerConfig config = ContainerConfig.defaultConfig();
 
 
     //-------------------------------------------------------------
@@ -81,10 +87,18 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
     // Methods - Public
     //-------------------------------------------------------------
 
+    /**
+     * Configures the library to strip a base path from incoming requests before passing them on to the wrapped
+     * framework. This was added in response to issue #34 (https://github.com/awslabs/aws-serverless-java-container/issues/34).
+     * When creating a base path mapping for custom domain names in API Gateway we want to be able to strip the base path
+     * from the request - the underlying service may not recognize this path.
+     * @param basePath The base path to be stripped from the request
+     */
     public void stripBasePath(String basePath) {
         config.setStripBasePath(true);
         config.setServiceBasePath(basePath);
     }
+
 
     /**
      * Proxies requests to the underlying container given the incoming Lambda request. This method returns a populated
@@ -113,5 +127,18 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
 
             return exceptionHandler.handle(e);
         }
+    }
+
+
+    //-------------------------------------------------------------
+    // Methods - Getter/Setter
+    //-------------------------------------------------------------
+
+    /**
+     * Returns the current container configuration object.
+     * @return
+     */
+    public static ContainerConfig getContainerConfig() {
+        return config;
     }
 }
