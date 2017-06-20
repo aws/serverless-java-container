@@ -46,6 +46,9 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
     private ExceptionHandler<ResponseType> exceptionHandler;
 
 
+    protected Context lambdaContext;
+
+
     //-------------------------------------------------------------
     // Constructors
     //-------------------------------------------------------------
@@ -85,6 +88,7 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
      * @return A valid response type
      */
     public ResponseType proxy(RequestType request, Context context) {
+        lambdaContext = context;
         try {
             SecurityContext securityContext = securityContextWriter.writeSecurityContext(request, context);
             CountDownLatch latch = new CountDownLatch(1);
@@ -98,10 +102,6 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
             return responseWriter.writeResponse(containerResponse, context);
         } catch (Exception e) {
             context.getLogger().log("Error while handling request: " + e.getMessage());
-
-            /*for (StackTraceElement el : e.getStackTrace()) {
-                context.getLogger().log(el.toString());
-            }*/
             e.printStackTrace();
 
             return exceptionHandler.handle(e);

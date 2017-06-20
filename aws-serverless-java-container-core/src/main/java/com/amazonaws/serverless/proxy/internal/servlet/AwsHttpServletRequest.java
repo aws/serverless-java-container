@@ -23,7 +23,13 @@ import javax.servlet.http.HttpSession;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -56,6 +62,9 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
 
     private Context lambdaContext;
     private Map<String, Object> attributes;
+    private ServletContext servletContext;
+
+    protected DispatcherType dispatcherType;
 
 
     //-------------------------------------------------------------
@@ -71,6 +80,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         this.lambdaContext = lambdaContext;
         attributes = new HashMap<>();
     }
+
 
     //-------------------------------------------------------------
     // Implementation - HttpServletRequest
@@ -119,6 +129,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
 
 
     @Override
+    @Deprecated
     public boolean isRequestedSessionIdFromUrl() {
         return false;
     }
@@ -185,7 +196,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
 
     @Override
     public ServletContext getServletContext() {
-        return AwsServletContext.getInstance(lambdaContext);
+        return servletContext;
     }
 
 
@@ -214,6 +225,19 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
 
 
     //-------------------------------------------------------------
+    // Methods - Getter/Setter
+    //-------------------------------------------------------------
+
+    public void setDispatcherType(DispatcherType type) {
+        dispatcherType = type;
+    }
+
+    public void setServletContext(ServletContext context) {
+        servletContext = context;
+    }
+
+
+    //-------------------------------------------------------------
     // Methods - Protected
     //-------------------------------------------------------------
 
@@ -223,7 +247,6 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
      * @return An array of Cookie objects from the header
      */
     protected Cookie[] parseCookieHeaderValue(String headerValue) {
-
         List<Map.Entry<String, String>> parsedHeaders = this.parseHeaderValue(headerValue);
 
         return parsedHeaders.stream()
@@ -231,6 +254,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
                             .map(e -> new Cookie(e.getKey(), e.getValue()))
                             .toArray(Cookie[]::new);
     }
+
 
     /**
      * Given a map of key/values query string parameters from API Gateway, creates a query string as it would have

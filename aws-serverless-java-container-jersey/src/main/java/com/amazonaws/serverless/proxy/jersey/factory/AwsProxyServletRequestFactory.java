@@ -17,6 +17,7 @@ import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.proxy.internal.AwsProxySecurityContextWriter;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequestReader;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
 import com.amazonaws.serverless.proxy.jersey.JerseyAwsProxyRequestReader;
 
 import org.glassfish.hk2.api.Factory;
@@ -62,9 +63,11 @@ public class AwsProxyServletRequestFactory
 
     public static HttpServletRequest getRequest() {
         try {
-            return requestReader.readRequest(JerseyAwsProxyRequestReader.getCurrentRequest(),
+            AwsProxyHttpServletRequest req =  requestReader.readRequest(JerseyAwsProxyRequestReader.getCurrentRequest(),
                                              AwsProxySecurityContextWriter.getCurrentContext(),
                                              JerseyAwsProxyRequestReader.getCurrentLambdaContext());
+            req.setServletContext(new AwsServletContext(JerseyAwsProxyRequestReader.getCurrentLambdaContext(), null));
+            return req;
         } catch (InvalidRequestEventException e) {
             e.printStackTrace();
             return null;

@@ -18,6 +18,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import javax.servlet.AsyncContext;
@@ -87,6 +88,10 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
         this.urlEncodedFormParameters = getFormUrlEncodedParametersMap();
         this.multipartFormParameters = getMultipartFormParametersMap();
+    }
+
+    public AwsProxyRequest getAwsProxyRequest() {
+        return this.request;
     }
 
 
@@ -579,11 +584,11 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public RequestDispatcher getRequestDispatcher(String s) {
-        return null;
+        return getServletContext().getRequestDispatcher(s);
     }
 
-
     @Override
+    @Deprecated
     public String getRealPath(String s) {
         // we are in an archive on a remote server
         return null;
@@ -655,7 +660,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
         Map<String, Part> output = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
-        ServletFileUpload upload = new ServletFileUpload();
+        ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
         try {
             List<FileItem> items = upload.parseRequest(this);
             for (FileItem item : items) {

@@ -67,6 +67,7 @@ public class AwsServletContext
     private Context lambdaContext;
     private Map<String, Object> attributes;
     private Map<String, String> initParameters;
+    private AwsLambdaServletContainerHandler containerHandler;
 
 
     //-------------------------------------------------------------
@@ -79,9 +80,9 @@ public class AwsServletContext
     // Constructors
     //-------------------------------------------------------------
 
-    private AwsServletContext(Context lambdaContext) {
+    public AwsServletContext(Context lambdaContext, AwsLambdaServletContainerHandler containerHandler) {
         this.lambdaContext = lambdaContext;
-
+        this.containerHandler = containerHandler;
         this.attributes = new HashMap<>();
         this.initParameters = new HashMap<>();
         this.filters = new LinkedHashMap<>();
@@ -91,16 +92,6 @@ public class AwsServletContext
     //-------------------------------------------------------------
     // Implementation - ServletContext
     //-------------------------------------------------------------
-
-
-    public static ServletContext getInstance(Context lambdaContext) {
-        if (instance == null) {
-            instance = new AwsServletContext(lambdaContext);
-        }
-
-        return instance;
-    }
-
 
     public static void clearServletContextCache() {
         instance = null;
@@ -178,33 +169,34 @@ public class AwsServletContext
 
     @Override
     public RequestDispatcher getRequestDispatcher(String s) {
-        // TODO: This should be part of the reader interface described in the getResourcePaths method
-        return null;
+        return new AwsProxyRequestDispatcher(s, containerHandler);
     }
 
 
     @Override
     public RequestDispatcher getNamedDispatcher(String s) {
-        // TODO: This should be part of the reader interface described in the getResourcePaths method
-        return null;
+        throw new UnsupportedOperationException();
     }
 
 
     @Override
+    @Deprecated
     public Servlet getServlet(String s) throws ServletException {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
 
     @Override
+    @Deprecated
     public Enumeration<Servlet> getServlets() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
 
     @Override
+    @Deprecated
     public Enumeration<String> getServletNames() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
 
@@ -215,6 +207,7 @@ public class AwsServletContext
 
 
     @Override
+    @Deprecated
     public void log(Exception e, String s) {
         lambdaContext.getLogger().log(s);
         lambdaContext.getLogger().log(e.getMessage());

@@ -17,6 +17,7 @@ import com.amazonaws.serverless.sample.spring.model.PetData;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import java.security.Principal;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -35,7 +36,8 @@ public class PetsController {
     }
 
     @RequestMapping(path = "/pets", method = RequestMethod.GET)
-    public Pet[] listPets(@RequestParam("limit") Optional<Integer> limit) {
+    public Pet[] listPets(@RequestParam("limit") Optional<Integer> limit, Principal principal) {
+        System.out.println(principal.getName());
         int queryLimit = 10;
         if (limit.isPresent()) {
             queryLimit = limit.get();

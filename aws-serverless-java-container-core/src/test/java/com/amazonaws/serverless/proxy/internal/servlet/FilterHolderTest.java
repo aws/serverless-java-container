@@ -12,7 +12,7 @@ public class FilterHolderTest {
 
     @Test
     public void annotation_filterRegistration_pathValidator() {
-        FilterHolder holder = new FilterHolder(new UrlPathValidator(), AwsServletContext.getInstance(lambdaContext));
+        FilterHolder holder = new FilterHolder(new UrlPathValidator(), new AwsServletContext(lambdaContext, null));
 
         assertTrue(holder.isAnnotated());
         assertNotEquals(UrlPathValidator.class.getName(), holder.getRegistration().getName());
