@@ -35,6 +35,7 @@ public class ApiGatewayRequestContext {
     private ApiGatewayRequestIdentity identity;
     private ApiGatewayAuthorizerContext authorizer;
     private String stage;
+    private String path;
 
 
     //-------------------------------------------------------------
@@ -118,6 +119,15 @@ public class ApiGatewayRequestContext {
 
     public void setStage(String stage) {
         this.stage = stage;
+    }
+    
+    public String getPath() {
+        return path;
+    }
+
+
+    public void setPath(String path) {
+        this.path = path;
     }
 
 
