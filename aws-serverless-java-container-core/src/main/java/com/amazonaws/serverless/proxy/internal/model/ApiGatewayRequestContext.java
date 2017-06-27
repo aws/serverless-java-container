@@ -12,6 +12,10 @@
  */
 package com.amazonaws.serverless.proxy.internal.model;
 
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+
 /**
  * The API Gateway request context object. This is used by the default implementation of the AWS_PROXY integration type.
  * All of the values are part of the API Gateway $context variable so this object could be reused with custom request
@@ -20,6 +24,7 @@ package com.amazonaws.serverless.proxy.internal.model;
  * @see AwsProxyRequest
  * @see com.amazonaws.serverless.proxy.internal.RequestReader
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ApiGatewayRequestContext {
 
     //-------------------------------------------------------------

@@ -13,12 +13,14 @@
 package com.amazonaws.serverless.proxy.internal.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.Map;
 
 /**
  * Default implementation of the request object from an API Gateway AWS_PROXY integration
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AwsProxyRequest {
 
     //-------------------------------------------------------------

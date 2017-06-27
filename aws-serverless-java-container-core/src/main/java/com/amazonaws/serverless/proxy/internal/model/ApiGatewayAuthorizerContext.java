@@ -14,6 +14,7 @@ package com.amazonaws.serverless.proxy.internal.model;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +28,7 @@ import java.util.Map;
  *
  * Cognito User Pool authorizers populate the <code>claims</code> object.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ApiGatewayAuthorizerContext {
 
     //-------------------------------------------------------------
