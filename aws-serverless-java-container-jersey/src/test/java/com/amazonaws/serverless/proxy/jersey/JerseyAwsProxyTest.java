@@ -10,7 +10,7 @@
  * OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package com.amazonaws.serverless.proxy.test.jersey;
+package com.amazonaws.serverless.proxy.jersey;
 
 
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyRequest;
@@ -18,9 +18,8 @@ import com.amazonaws.serverless.proxy.internal.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
 import com.amazonaws.serverless.proxy.jersey.factory.AwsProxyServletContextFactory;
 import com.amazonaws.serverless.proxy.jersey.factory.AwsProxyServletRequestFactory;
-import com.amazonaws.serverless.proxy.jersey.JerseyLambdaContainerHandler;
-import com.amazonaws.serverless.proxy.test.jersey.model.MapResponseModel;
-import com.amazonaws.serverless.proxy.test.jersey.model.SingleValueModel;
+import com.amazonaws.serverless.proxy.jersey.model.MapResponseModel;
+import com.amazonaws.serverless.proxy.jersey.model.SingleValueModel;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -51,7 +50,7 @@ public class JerseyAwsProxyTest {
 
 
     private static ObjectMapper objectMapper = new ObjectMapper();
-    private static ResourceConfig app = new ResourceConfig().packages("com.amazonaws.serverless.proxy.test.jersey")
+    private static ResourceConfig app = new ResourceConfig().packages("com.amazonaws.serverless.proxy.jersey")
                                                             .register(new AbstractBinder() {
                                                                 @Override
                                                                 protected void configure() {

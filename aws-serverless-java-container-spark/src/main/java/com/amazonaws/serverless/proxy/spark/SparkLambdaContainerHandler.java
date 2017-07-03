@@ -64,10 +64,10 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType> extends AwsL
 
 
     //-------------------------------------------------------------
-    // Variables - Private - Static
+    // Variables - Private
     //-------------------------------------------------------------
 
-    private static LambdaEmbeddedServer embeddedServer;
+    private LambdaEmbeddedServer embeddedServer;
 
 
     //-------------------------------------------------------------
@@ -145,13 +145,15 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType> extends AwsL
     @Override
     protected void handleRequest(AwsProxyHttpServletRequest httpServletRequest, AwsHttpServletResponse httpServletResponse, Context lambdaContext)
             throws Exception {
+        // this method of the AwsLambdaServletContainerHandler sets the request context
+        super.handleRequest(httpServletRequest, httpServletResponse, lambdaContext);
+
         if (embeddedServer == null) {
             embeddedServer = LambdaEmbeddedServerFactory.getServerInstance();
-            servletContext = httpServletRequest.getServletContext();
 
             // call the onStartup event if set to give developers a chance to set filters in the context
             if (startupHandler != null) {
-                startupHandler.onStartup(this.servletContext);
+                startupHandler.onStartup(getServletContext());
             }
         }
 

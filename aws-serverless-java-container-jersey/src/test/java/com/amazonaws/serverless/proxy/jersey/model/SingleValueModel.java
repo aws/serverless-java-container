@@ -10,30 +10,19 @@
  * OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package com.amazonaws.serverless.proxy.test.jersey.model;
-
-import java.util.HashMap;
-import java.util.Map;
+package com.amazonaws.serverless.proxy.jersey.model;
 
 /**
  * Request/response model
  */
-public class MapResponseModel {
-    private Map<String, String> values;
+public class SingleValueModel {
+    private String value;
 
-    public MapResponseModel() {
-        this.values = new HashMap<>();
+    public String getValue() {
+        return value;
     }
 
-    public void addValue(String key, String value) {
-        this.values.put(key, value);
-    }
-
-    public Map<String, String> getValues() {
-        return values;
-    }
-
-    public void setValues(Map<String, String> values) {
-        this.values = values;
+    public void setValue(String value) {
+        this.value = value;
     }
 }
