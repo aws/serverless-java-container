@@ -69,7 +69,12 @@ public class AwsProxySecurityContext
             if (getAuthenticationScheme().equals(AUTH_SCHEME_CUSTOM)) {
                 return event.getRequestContext().getAuthorizer().getPrincipalId();
             } else if (getAuthenticationScheme().equals(AUTH_SCHEME_AWS_IAM)) {
-                return event.getRequestContext().getIdentity().getUserArn();
+                // if we received credentials from Cognito Federated Identities then we return the identity id
+                if (event.getRequestContext().getIdentity().getCognitoIdentityId() != null) {
+                    return event.getRequestContext().getIdentity().getCognitoIdentityId();
+                } else { // otherwise the user arn from the credentials
+                    return event.getRequestContext().getIdentity().getUserArn();
+                }
             } else if (getAuthenticationScheme().equals(AUTH_SCHEME_COGNITO_POOL)) {
                 return event.getRequestContext().getAuthorizer().getClaims().getSubject();
             }

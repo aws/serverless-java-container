@@ -10,12 +10,12 @@
  * OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package com.amazonaws.serverless.proxy.test.jersey;
+package com.amazonaws.serverless.proxy.jersey;
 
 import com.amazonaws.serverless.proxy.internal.RequestReader;
 import com.amazonaws.serverless.proxy.internal.model.ApiGatewayRequestContext;
-import com.amazonaws.serverless.proxy.test.jersey.model.MapResponseModel;
-import com.amazonaws.serverless.proxy.test.jersey.model.SingleValueModel;
+import com.amazonaws.serverless.proxy.jersey.model.MapResponseModel;
+import com.amazonaws.serverless.proxy.jersey.model.SingleValueModel;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;

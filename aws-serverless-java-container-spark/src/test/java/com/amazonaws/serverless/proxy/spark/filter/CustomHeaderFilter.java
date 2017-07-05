@@ -1,4 +1,4 @@
-package com.amazonaws.serverless.proxy.spring.echoapp;
+package com.amazonaws.serverless.proxy.spark.filter;
 
 
 import javax.servlet.Filter;
