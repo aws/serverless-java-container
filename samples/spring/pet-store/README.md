@@ -1,4 +1,4 @@
-# Serverless Jersey example
+# Serverless Spring example
 A basic pet store written with the [Spring framework](https://projects.spring.io/spring-framework/). The `LambdaHandler` object is the main entry point for Lambda.
 
 The application can be deployed in an AWS account using the [Serverless Application Model](https://github.com/awslabs/serverless-application-model). The `sam.yaml` file in the root folder contains the application definition
