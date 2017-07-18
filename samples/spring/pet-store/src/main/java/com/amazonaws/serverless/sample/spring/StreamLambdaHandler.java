@@ -28,6 +28,7 @@ public class StreamLambdaHandler implements RequestStreamHandler {
             } catch (ContainerInitializationException e) {
                 e.printStackTrace();
                 outputStream.close();
+                return;
             }
         }
 
