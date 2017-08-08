@@ -180,7 +180,7 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Lam
     //-------------------------------------------------------------
 
     @Override
-    protected JerseyResponseWriter getContainerResponse(CountDownLatch latch) {
+    protected JerseyResponseWriter getContainerResponse(ContainerRequest request, CountDownLatch latch) {
         return new JerseyResponseWriter(latch);
     }
 

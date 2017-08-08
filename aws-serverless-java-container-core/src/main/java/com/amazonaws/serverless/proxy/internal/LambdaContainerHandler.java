@@ -76,7 +76,7 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
     // Methods - Abstract
     //-------------------------------------------------------------
 
-    protected abstract ContainerResponseType getContainerResponse(CountDownLatch latch);
+    protected abstract ContainerResponseType getContainerResponse(ContainerRequestType request, CountDownLatch latch);
 
 
     protected abstract void handleRequest(ContainerRequestType containerRequest, ContainerResponseType containerResponse, Context lambdaContext)
@@ -113,8 +113,8 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
         try {
             SecurityContext securityContext = securityContextWriter.writeSecurityContext(request, context);
             CountDownLatch latch = new CountDownLatch(1);
-            ContainerResponseType containerResponse = getContainerResponse(latch);
             ContainerRequestType containerRequest = requestReader.readRequest(request, securityContext, context, config);
+            ContainerResponseType containerResponse = getContainerResponse(containerRequest, latch);
 
             handleRequest(containerRequest, containerResponse, context);
 

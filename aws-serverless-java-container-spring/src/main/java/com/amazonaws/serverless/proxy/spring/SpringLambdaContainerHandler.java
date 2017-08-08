@@ -99,8 +99,8 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
     }
 
     @Override
-    protected AwsHttpServletResponse getContainerResponse(CountDownLatch latch) {
-        return new AwsHttpServletResponse(latch);
+    protected AwsHttpServletResponse getContainerResponse(AwsProxyHttpServletRequest request, CountDownLatch latch) {
+        return new AwsHttpServletResponse(request, latch);
     }
 
     public void activateSpringProfiles(String... profiles) throws ContainerInitializationException {

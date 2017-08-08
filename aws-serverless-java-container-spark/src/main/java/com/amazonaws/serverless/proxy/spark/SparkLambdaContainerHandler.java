@@ -137,8 +137,8 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType> extends AwsL
     //-------------------------------------------------------------
 
     @Override
-    protected AwsHttpServletResponse getContainerResponse(CountDownLatch latch) {
-        return new AwsHttpServletResponse(latch);
+    protected AwsHttpServletResponse getContainerResponse(AwsProxyHttpServletRequest request, CountDownLatch latch) {
+        return new AwsHttpServletResponse(request, latch);
     }
 
 

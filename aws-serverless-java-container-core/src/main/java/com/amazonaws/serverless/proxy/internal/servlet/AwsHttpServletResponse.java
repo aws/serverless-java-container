@@ -21,7 +21,6 @@ import javax.ws.rs.core.MultivaluedHashMap;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
@@ -38,8 +37,8 @@ public class AwsHttpServletResponse
     // Constants
     //-------------------------------------------------------------
 
-    private static final String HEADER_DATE_FORMAT = "EEE, d MMM yyyy HH:mm:ss z";
-
+    static final String HEADER_DATE_PATTERN = "EEE, d MMM yyyy HH:mm:ss z";
+    static final String COOKIE_DEFAULT_TIME_ZONE = "GMT";
 
     //-------------------------------------------------------------
     // Variables - Private
@@ -51,6 +50,7 @@ public class AwsHttpServletResponse
     private String responseBody;
     private ByteArrayOutputStream bodyOutputStream = new ByteArrayOutputStream();
     private CountDownLatch writersCountDownLatch;
+    private AwsHttpServletRequest request;
     private boolean isCommitted = false;
 
 
@@ -63,8 +63,9 @@ public class AwsHttpServletResponse
      * function while the response is asynchronously written by the underlying container/application
      * @param latch A latch used to inform the <code>ContainerHandler</code> that we are done receiving the response data
      */
-    public AwsHttpServletResponse(CountDownLatch latch) {
+    public AwsHttpServletResponse(AwsHttpServletRequest req, CountDownLatch latch) {
         writersCountDownLatch = latch;
+        request = req;
     }
 
 
@@ -79,6 +80,25 @@ public class AwsHttpServletResponse
         if (cookie.getPath() != null) {
             cookieData += "; Path=" + cookie.getPath();
         }
+        if (cookie.getSecure()) {
+            cookieData += "; Secure";
+        }
+        if (cookie.isHttpOnly()) {
+            cookieData += "; HttpOnly";
+        }
+        if (cookie.getDomain() != null && !"".equals(cookie.getDomain().trim())) {
+            cookieData += "; Domain=" + cookie.getDomain();
+        }
+        cookieData += "; Max-Age=" + cookie.getMaxAge();
+
+        // we always set the timezone to GMT
+        TimeZone gmtTimeZone = TimeZone.getTimeZone(COOKIE_DEFAULT_TIME_ZONE);
+        Calendar currentTimestamp = Calendar.getInstance(gmtTimeZone);
+        currentTimestamp.add(Calendar.SECOND, cookie.getMaxAge());
+        SimpleDateFormat cookieDateFormatter = new SimpleDateFormat(HEADER_DATE_PATTERN);
+        cookieDateFormatter.setTimeZone(gmtTimeZone);
+        cookieData += "; Expires=" + cookieDateFormatter.format(currentTimestamp.getTime());
+
         setHeader(HttpHeaders.SET_COOKIE, cookieData, false);
     }
 
@@ -141,7 +161,7 @@ public class AwsHttpServletResponse
 
     @Override
     public void setDateHeader(String s, long l) {
-        SimpleDateFormat sdf = new SimpleDateFormat(HEADER_DATE_FORMAT);
+        SimpleDateFormat sdf = new SimpleDateFormat(HEADER_DATE_PATTERN);
         Date responseDate = new Date();
         responseDate.setTime(l);
         setHeader(s, sdf.format(responseDate), true);
@@ -150,7 +170,7 @@ public class AwsHttpServletResponse
 
     @Override
     public void addDateHeader(String s, long l) {
-        SimpleDateFormat sdf = new SimpleDateFormat(HEADER_DATE_FORMAT);
+        SimpleDateFormat sdf = new SimpleDateFormat(HEADER_DATE_PATTERN);
         Date responseDate = new Date();
         responseDate.setTime(l);
         setHeader(s, sdf.format(responseDate), false);
