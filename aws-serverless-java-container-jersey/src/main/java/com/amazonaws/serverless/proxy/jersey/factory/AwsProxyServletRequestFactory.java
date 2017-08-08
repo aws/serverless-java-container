@@ -23,6 +23,8 @@ import com.amazonaws.serverless.proxy.jersey.JerseyAwsProxyRequestReader;
 import com.amazonaws.serverless.proxy.jersey.JerseyLambdaContainerHandler;
 
 import org.glassfish.hk2.api.Factory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -48,6 +50,7 @@ public class AwsProxyServletRequestFactory
         implements Factory<HttpServletRequest> {
 
     private static AwsProxyHttpServletRequestReader requestReader = new AwsProxyHttpServletRequestReader();
+    private static Logger log = LoggerFactory.getLogger(AwsProxyServletRequestFactory.class);
 
     //-------------------------------------------------------------
     // Implementation - Factory
@@ -69,10 +72,10 @@ public class AwsProxyServletRequestFactory
                                                                         AwsProxySecurityContextWriter.getCurrentContext(),
                                                                         JerseyAwsProxyRequestReader.getCurrentLambdaContext(),
                                                                         JerseyLambdaContainerHandler.getContainerConfig());
-            req.setServletContext(new AwsServletContext(JerseyAwsProxyRequestReader.getCurrentLambdaContext(), null));
+            req.setServletContext(new AwsServletContext(null));
             return req;
         } catch (InvalidRequestEventException e) {
-            e.printStackTrace();
+            log.error("Invalid request event", e);
             return null;
         }
 

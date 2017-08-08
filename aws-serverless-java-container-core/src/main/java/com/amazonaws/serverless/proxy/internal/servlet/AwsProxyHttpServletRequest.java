@@ -20,6 +20,8 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.ReadListener;
@@ -75,6 +77,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     private SecurityContext securityContext;
     private Map<String, List<String>> urlEncodedFormParameters;
     private Map<String, Part> multipartFormParameters;
+    private Logger log = LoggerFactory.getLogger(AwsProxyHttpServletRequest.class);
 
 
     //-------------------------------------------------------------
@@ -125,7 +128,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         try {
             return dateFormatter.parse(dateString).getTime();
         } catch (ParseException e) {
-            e.printStackTrace();
+            log.error("Could not parse date header", e);
             return new Date().getTime();
         }
     }
@@ -405,7 +408,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
                 try {
                     listener.onDataAvailable();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    log.error("Data not available on input stream", e);
                 }
             }
 
@@ -682,8 +685,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
                 output.put(item.getFieldName(), newPart);
             }
         } catch (FileUploadException e) {
-            // TODO: Should we swallaw this?
-            e.printStackTrace();
+            log.error("Could not read multipart upload file", e);
         }
         return output;
     }
@@ -701,7 +703,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         try {
             rawBodyContent = URLDecoder.decode(request.getBody(), DEFAULT_CHARACTER_ENCODING);
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            log.warn("Could not decode body content - proceeding as if it was already decoded", e);
             rawBodyContent = request.getBody();
         }
 

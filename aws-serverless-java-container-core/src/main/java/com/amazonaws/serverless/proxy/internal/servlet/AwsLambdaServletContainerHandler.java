@@ -19,6 +19,9 @@ import com.amazonaws.serverless.proxy.internal.ResponseWriter;
 import com.amazonaws.serverless.proxy.internal.SecurityContextWriter;
 import com.amazonaws.services.lambda.runtime.Context;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -46,6 +49,7 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
     //-------------------------------------------------------------
 
     protected ServletContext servletContext;
+    private Logger log = LoggerFactory.getLogger(AwsLambdaServletContainerHandler.class);
 
     //-------------------------------------------------------------
     // Variables - Protected
@@ -81,7 +85,7 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
         try {
             handleRequest(servletRequest, servletResponse, lambdaContext);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Could not forward request", e);
             throw new ServletException(e);
         }
     }
@@ -99,7 +103,7 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
         try {
            handleRequest(servletRequest, servletResponse, lambdaContext);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Could not include request", e);
             throw new ServletException(e);
         }
     }
@@ -133,7 +137,7 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
         // context so we only set it once.
         // TODO: In the future, if we decide to support multiple servlets/contexts in an instance we only need to modify this method
         if (getServletContext() == null) {
-            setServletContext(new AwsServletContext(lambdaContext, this));
+            setServletContext(new AwsServletContext(this));
         }
     }
 

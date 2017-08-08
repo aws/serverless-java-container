@@ -12,6 +12,9 @@
  */
 package com.amazonaws.serverless.proxy.internal.servlet.filters;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
@@ -40,6 +43,7 @@ public class UrlPathValidator implements Filter {
     //-------------------------------------------------------------
 
     private int invalidStatusCode;
+    private Logger log = LoggerFactory.getLogger(UrlPathValidator.class);
 
 
     //-------------------------------------------------------------
@@ -54,7 +58,7 @@ public class UrlPathValidator implements Filter {
             try {
                 invalidStatusCode = Integer.parseInt(statusCode);
             } catch (NumberFormatException e) {
-                // TODO: Log
+                log.error("Could not parse status code from filter config", e);
                 invalidStatusCode = DEFAULT_ERROR_CODE;
             }
         }

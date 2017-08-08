@@ -14,6 +14,9 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.services.lambda.runtime.Context;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.servlet.AsyncContext;
 import javax.servlet.DispatcherType;
 import javax.servlet.ServletContext;
@@ -65,6 +68,8 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     private ServletContext servletContext;
 
     protected DispatcherType dispatcherType;
+
+    private Logger log = LoggerFactory.getLogger(AwsHttpServletRequest.class);
 
 
     //-------------------------------------------------------------
@@ -280,8 +285,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
                             newValue = URLEncoder.encode(newValue, StandardCharsets.UTF_8.name());
                         }
                     } catch (UnsupportedEncodingException e) {
-                        lambdaContext.getLogger().log("Could not URLEncode: " + newKey + "\n" + e.getLocalizedMessage());
-                        e.printStackTrace();
+                        log.error("Could not URLEncode: " + newKey, e);
 
                     }
                     return newKey + "=" + newValue;

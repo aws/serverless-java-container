@@ -16,6 +16,9 @@ package com.amazonaws.serverless.proxy.internal;
 import com.amazonaws.serverless.proxy.internal.model.ContainerConfig;
 import com.amazonaws.services.lambda.runtime.Context;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.ws.rs.core.SecurityContext;
 
 import java.util.concurrent.CountDownLatch;
@@ -49,6 +52,8 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
 
     protected Context lambdaContext;
 
+    private Logger log = LoggerFactory.getLogger(LambdaContainerHandler.class);
+
 
     //-------------------------------------------------------------
     // Variables - Private - Static
@@ -65,6 +70,7 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
                                      ResponseWriter<ContainerResponseType, ResponseType> responseWriter,
                                      SecurityContextWriter<RequestType> securityContextWriter,
                                      ExceptionHandler<ResponseType> exceptionHandler) {
+        log.info("Starting Lambda Container Handler");
         this.requestReader = requestReader;
         this.responseWriter = responseWriter;
         this.securityContextWriter = securityContextWriter;
@@ -95,6 +101,7 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
      * @param basePath The base path to be stripped from the request
      */
     public void stripBasePath(String basePath) {
+        log.debug("Setting framework to strip base path: " + basePath);
         config.setStripBasePath(true);
         config.setServiceBasePath(basePath);
     }
@@ -122,8 +129,7 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
 
             return responseWriter.writeResponse(containerResponse, context);
         } catch (Exception e) {
-            context.getLogger().log("Error while handling request: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error while handling request", e);
 
             return exceptionHandler.handle(e);
         }

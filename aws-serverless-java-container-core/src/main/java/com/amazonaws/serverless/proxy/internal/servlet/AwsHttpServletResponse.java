@@ -12,6 +12,9 @@
  */
 package com.amazonaws.serverless.proxy.internal.servlet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
 import javax.servlet.http.Cookie;
@@ -52,6 +55,8 @@ public class AwsHttpServletResponse
     private CountDownLatch writersCountDownLatch;
     private AwsHttpServletRequest request;
     private boolean isCommitted = false;
+
+    private Logger log = LoggerFactory.getLogger(AwsHttpServletResponse.class);
 
 
     //-------------------------------------------------------------
@@ -275,7 +280,7 @@ public class AwsHttpServletResponse
                     try {
                         writeListener.onWritePossible();
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        log.error("Output stream is not writable", e);
                     }
 
                     listener = writeListener;
@@ -288,6 +293,7 @@ public class AwsHttpServletResponse
                 try {
                     bodyOutputStream.write(b);
                 } catch (Exception e) {
+                    log.error("Cannot write to output stream", e);
                     listener.onError(e);
                 }
             }
