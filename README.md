@@ -62,6 +62,25 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 #### Spring Profiles
 You can enable Spring Profiles (as defined with the `@Profile` annotation) by using the `SpringLambdaContainerHandler.activateSpringProfiles(String...)` method - common drivers of this might be the AWS Lambda stage that you're deployed under, or stage variables.  See [@Profile documentation](http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/context/annotation/Profile.html) for details.
 
+#### Spring Boot
+You can also use this framework to start Spring Boot applications inside Lambda. The framework does not recognize classes annotated with `@SpringBootApplication` automatically. However, you can wrap the Spring Boot application class in a regular `ConfigurableWebApplicationContext` object. In your handler class, instead of initializing the `SpringLambdaContainerHandler` with the Spring Boot application class, initialize another context and set the Spring Boot app as a parent:
+
+```java
+SpringApplication springBootApplication = new SpringApplication(SpringBootApplication.class);
+springBootApplication.setWebEnvironment(false);
+springBootApplication.setBannerMode(Banner.Mode.OFF);
+
+// create a new empty context and set the spring boot application as a parent of it
+ConfigurableWebApplicationContext wrappingContext = new AnnotationConfigWebApplicationContext();
+wrappingContext.setParent(springBootApplication.run());
+
+// now we can initialize the framework with the wrapping context
+SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = 
+    SpringLambdaContainerHandler.getAwsProxyHandler(wrappingContext);
+```    
+
+When using Spring Boot, make sure to configure the shade plugin in your pom file to exclude the embedded container and all unnecessary libraries to reduce the size of your built jar.
+
 ### Spark support
 The library also supports applications written with the [Spark framework](http://sparkjava.com/). When using the library with Spark, it's important to initialize the `SparkLambdaContainerHandler` before defining routes.
 
