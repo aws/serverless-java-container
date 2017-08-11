@@ -4,7 +4,7 @@
     <groupId>com.amazonaws.serverless</groupId>
     <artifactId>aws-serverless-java-container</artifactId>
     <packaging>pom</packaging>
-    <version>0.6-SNAPSHOT</version>
+    <version>0.6</version>
     <name>AWS Serverless Java container</name>
 
     <!-- https://mvnrepository.com/artifact/org.sonatype.oss/oss-parent -->
@@ -60,7 +60,7 @@
                             <id>enforce</id>
                             <configuration>
                                 <rules>
-                                    <dependencyConvergence/>
+                                    <dependencyConvergence />
                                 </rules>
                             </configuration>
                             <goals>
