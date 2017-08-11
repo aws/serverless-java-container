@@ -21,6 +21,9 @@ import com.amazonaws.serverless.proxy.spark.embeddedserver.LambdaEmbeddedServer;
 import com.amazonaws.serverless.proxy.spark.embeddedserver.LambdaEmbeddedServerFactory;
 
 import com.amazonaws.services.lambda.runtime.Context;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import spark.Service;
 import spark.Spark;
 import spark.embeddedserver.EmbeddedServers;
@@ -68,6 +71,7 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType> extends AwsL
     //-------------------------------------------------------------
 
     private LambdaEmbeddedServer embeddedServer;
+    private Logger log = LoggerFactory.getLogger(SparkLambdaContainerHandler.class);
 
 
     //-------------------------------------------------------------
@@ -117,16 +121,12 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType> extends AwsL
             // remove Jetty from embedded servers
             EmbeddedServers.class.getDeclaredMethod("initialize");
         } catch (NoSuchFieldException e) {
-            e.printStackTrace();
             throw new ContainerInitializationException("Cannot find embeddedServerIdentifier field in Service class", e);
         } catch (NoSuchMethodException e) {
-            e.printStackTrace();
             throw new ContainerInitializationException("Cannot find getInstance method in Spark class", e);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
             throw new ContainerInitializationException("Cannot access getInstance method in Spark class", e);
         } catch (InvocationTargetException e) {
-            e.printStackTrace();
             throw new ContainerInitializationException("Cannot invoke getInstance method in Spark class", e);
         }
     }
@@ -137,8 +137,8 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType> extends AwsL
     //-------------------------------------------------------------
 
     @Override
-    protected AwsHttpServletResponse getContainerResponse(CountDownLatch latch) {
-        return new AwsHttpServletResponse(latch);
+    protected AwsHttpServletResponse getContainerResponse(AwsProxyHttpServletRequest request, CountDownLatch latch) {
+        return new AwsHttpServletResponse(request, latch);
     }
 
 

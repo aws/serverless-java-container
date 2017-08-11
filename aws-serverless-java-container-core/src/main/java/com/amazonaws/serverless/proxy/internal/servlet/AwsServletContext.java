@@ -16,6 +16,9 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.services.lambda.runtime.Context;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.servlet.Filter;
 import javax.servlet.FilterRegistration;
 import javax.servlet.RequestDispatcher;
@@ -64,10 +67,10 @@ public class AwsServletContext
     // Variables - Private
     //-------------------------------------------------------------
     private Map<String, FilterHolder> filters;
-    private Context lambdaContext;
     private Map<String, Object> attributes;
     private Map<String, String> initParameters;
     private AwsLambdaServletContainerHandler containerHandler;
+    private Logger log = LoggerFactory.getLogger(AwsServletContext.class);
 
 
     //-------------------------------------------------------------
@@ -80,8 +83,7 @@ public class AwsServletContext
     // Constructors
     //-------------------------------------------------------------
 
-    public AwsServletContext(Context lambdaContext, AwsLambdaServletContainerHandler containerHandler) {
-        this.lambdaContext = lambdaContext;
+    public AwsServletContext(AwsLambdaServletContainerHandler containerHandler) {
         this.containerHandler = containerHandler;
         this.attributes = new HashMap<>();
         this.initParameters = new HashMap<>();
@@ -141,7 +143,7 @@ public class AwsServletContext
         try {
             return Files.probeContentType(Paths.get(s));
         } catch (IOException e) {
-            e.printStackTrace();
+            log.warn("Could not find content type for filter", e);
             return null;
         }
     }
@@ -202,22 +204,20 @@ public class AwsServletContext
 
     @Override
     public void log(String s) {
-        lambdaContext.getLogger().log(s);
+        log.info(s);
     }
 
 
     @Override
     @Deprecated
     public void log(Exception e, String s) {
-        lambdaContext.getLogger().log(s);
-        lambdaContext.getLogger().log(e.getMessage());
+        log.error(s, e);
     }
 
 
     @Override
     public void log(String s, Throwable throwable) {
-        lambdaContext.getLogger().log(s);
-        lambdaContext.getLogger().log(throwable.getMessage());
+        log.error(s, throwable);
     }
 
 
@@ -229,7 +229,7 @@ public class AwsServletContext
             try {
                 absPath = new File(fileUrl.toURI()).getAbsolutePath();
             } catch (URISyntaxException e) {
-                lambdaContext.getLogger().log("Error while looking for real path: " + s + "\n" + e.getMessage());
+                log.error("Error while looking for real path: " + s, e);
             }
         }
         return absPath;
@@ -350,7 +350,7 @@ public class AwsServletContext
 
             return addFilter(name, filterCastClass);
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            log.error("Could not find filter class", e);
             throw new IllegalStateException("Filter class " + filterClass + " not found");
         }
     }
@@ -381,7 +381,7 @@ public class AwsServletContext
         } catch (ServletException e) {
             // TODO: There is no clear indication in the servlet specs on whether we should throw an exception here.
             // See JavaDoc here: http://docs.oracle.com/javaee/7/api/javax/servlet/ServletContext.html#addFilter-java.lang.String-java.lang.Class-
-            lambdaContext.getLogger().log("Could not register filter: " + e.getMessage());
+            log.error("Could not register filter: ", e);
         }
         return null;
     }
@@ -392,7 +392,7 @@ public class AwsServletContext
         try {
             return aClass.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
-            lambdaContext.getLogger().log("Could not initialize filter class " + aClass.getName() + "\n" + e.getMessage());
+            log.error("Could not initialize filter class " + aClass.getName(), e);
             throw new ServletException();
         }
     }

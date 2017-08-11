@@ -19,16 +19,20 @@ import com.amazonaws.serverless.proxy.spring.SpringLambdaContainerHandler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyResponse> {
     private SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+    private Logger log = LoggerFactory.getLogger(LambdaHandler.class);
 
     public AwsProxyResponse handleRequest(AwsProxyRequest awsProxyRequest, Context context) {
         if (handler == null) {
             try {
                 handler = SpringLambdaContainerHandler.getAwsProxyHandler(PetStoreSpringAppConfig.class);
             } catch (ContainerInitializationException e) {
-                e.printStackTrace();
+                log.error("Cannot initialize spring handler", e);
                 return null;
             }
         }

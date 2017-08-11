@@ -9,6 +9,8 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,6 +20,7 @@ import java.io.OutputStream;
 public class StreamLambdaHandler implements RequestStreamHandler {
     private SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
     private static ObjectMapper mapper = new ObjectMapper();
+    private Logger log = LoggerFactory.getLogger(StreamLambdaHandler.class);
 
     @Override
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
@@ -26,7 +29,7 @@ public class StreamLambdaHandler implements RequestStreamHandler {
             try {
                 handler = SpringLambdaContainerHandler.getAwsProxyHandler(PetStoreSpringAppConfig.class);
             } catch (ContainerInitializationException e) {
-                e.printStackTrace();
+                log.error("Cannot initialize Spring container", e);
                 outputStream.close();
             }
         }

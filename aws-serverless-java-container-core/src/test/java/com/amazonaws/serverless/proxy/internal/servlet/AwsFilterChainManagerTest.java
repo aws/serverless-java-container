@@ -21,7 +21,7 @@ public class AwsFilterChainManagerTest {
 
     @BeforeClass
     public static void setUp() {
-        servletContext = new AwsServletContext(lambdaContext, null);//AwsServletContext.getInstance(lambdaContext, null);
+        servletContext = new AwsServletContext( null);//AwsServletContext.getInstance(lambdaContext, null);
 
         FilterRegistration.Dynamic reg = servletContext.addFilter("Filter1", new MockFilter());
         reg.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/first/second");

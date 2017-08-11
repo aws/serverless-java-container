@@ -17,6 +17,8 @@ import com.amazonaws.serverless.proxy.internal.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.model.ErrorModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -36,6 +38,8 @@ import java.util.Map;
  */
 public class AwsProxyExceptionHandler
         implements ExceptionHandler<AwsProxyResponse> {
+
+    private Logger log = LoggerFactory.getLogger(AwsProxyExceptionHandler.class);
 
     //-------------------------------------------------------------
     // Constants
@@ -93,7 +97,7 @@ public class AwsProxyExceptionHandler
         try {
             return objectMapper.writeValueAsString(new ErrorModel(message));
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            log.error("Could not produce error JSON", e);
             return "{ \"message\": \"" + message + "\" }";
         }
     }

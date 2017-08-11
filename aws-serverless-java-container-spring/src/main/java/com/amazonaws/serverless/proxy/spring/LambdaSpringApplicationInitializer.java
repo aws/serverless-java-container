@@ -12,6 +12,8 @@
  */
 package com.amazonaws.serverless.proxy.spring;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -57,6 +59,8 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
 
     // The current response is used to release the latch when Spring emits the request handled event
     private HttpServletResponse currentResponse;
+
+    private Logger log = LoggerFactory.getLogger(LambdaSpringApplicationInitializer.class);
 
     /**
      * Creates a new instance of the WebApplicationInitializer
@@ -119,7 +123,7 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
                 try {
                     currentResponse.flushBuffer();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    log.error("Could not flush response buffer", e);
                     throw new RuntimeException("Could not flush response buffer", e);
                 }
             }

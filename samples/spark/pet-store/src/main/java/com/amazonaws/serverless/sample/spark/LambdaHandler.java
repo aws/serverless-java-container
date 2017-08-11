@@ -22,7 +22,8 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.log4j.LambdaAppender;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
 import java.util.UUID;
@@ -35,17 +36,17 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
     private ObjectMapper objectMapper = new ObjectMapper();
     private boolean isInitialized = false;
     private SparkLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+    private Logger log = LoggerFactory.getLogger(LambdaHandler.class);
 
     @Override
     public AwsProxyResponse handleRequest(AwsProxyRequest awsProxyRequest, Context context) {
         if (!isInitialized) {
             isInitialized = true;
             try {
-                Logger.getRootLogger().addAppender(new LambdaAppender());
                 handler = SparkLambdaContainerHandler.getAwsProxyHandler();
                 defineResources();
             } catch (ContainerInitializationException e) {
-                e.printStackTrace();
+                log.error("Cannot initialize Spark application", e);
                 return null;
             }
         }

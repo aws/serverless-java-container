@@ -1,5 +1,7 @@
 package com.amazonaws.serverless.proxy.spark.embeddedserver;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import spark.embeddedserver.EmbeddedServer;
 import spark.embeddedserver.jetty.websocket.WebSocketHandlerWrapper;
 import spark.http.matching.MatcherFilter;
@@ -26,6 +28,7 @@ public class LambdaEmbeddedServer
     private MatcherFilter sparkFilter;
     private StaticFilesConfiguration staticFilesConfiguration;
     private boolean hasMultipleHandler;
+    private Logger log = LoggerFactory.getLogger(LambdaEmbeddedServer.class);
 
 
     //-------------------------------------------------------------
@@ -64,7 +67,7 @@ public class LambdaEmbeddedServer
                                     Optional<Integer> webSocketIdleTimeoutMillis) {
         // Swallowing this exception to prevent Spark from getting stuck
         // throw new UnsupportedOperationException();
-        System.out.println("Spark called configureWebSockets. However, web sockets are not supported");
+        log.info("Spark called configureWebSockets. However, web sockets are not supported");
     }
 
 
