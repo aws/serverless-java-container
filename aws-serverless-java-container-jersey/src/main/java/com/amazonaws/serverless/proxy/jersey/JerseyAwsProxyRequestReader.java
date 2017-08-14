@@ -21,8 +21,12 @@ import com.amazonaws.services.lambda.runtime.Context;
 import org.glassfish.jersey.internal.MapPropertiesDelegate;
 import org.glassfish.jersey.internal.PropertiesDelegate;
 import org.glassfish.jersey.server.ContainerRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriBuilder;
+
 import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -46,6 +50,8 @@ public class JerseyAwsProxyRequestReader extends RequestReader<AwsProxyRequest, 
 
     private static AwsProxyRequest currentRequest;
     private static Context currentLambdaContext;
+
+    private Logger log = LoggerFactory.getLogger(JerseyAwsProxyRequestReader.class);
 
 
     //-------------------------------------------------------------
@@ -78,14 +84,20 @@ public class JerseyAwsProxyRequestReader extends RequestReader<AwsProxyRequest, 
         try {
             basePathUri = new URI(basePath);
         } catch (URISyntaxException e) {
+            log.error("Could not read base path URI", e);
             throw new InvalidRequestEventException("Error while generating base path URI: " + basePath, e);
         }
 
-        try {
-            requestPathUri = new URI(request.getQueryString() == null ? request.getPath() : request.getPath() + request.getQueryString());
-        } catch (URISyntaxException e) {
-            throw new InvalidRequestEventException("Error while generating request path URI: " + request.getPath(), e);
+
+        UriBuilder uriBuilder = UriBuilder.fromPath(request.getPath());
+
+        if (request.getQueryStringParameters() != null) {
+            for (String paramKey : request.getQueryStringParameters().keySet()) {
+                uriBuilder = uriBuilder.queryParam(paramKey, request.getQueryStringParameters().get(paramKey));
+            }
         }
+
+        requestPathUri = uriBuilder.build();
 
         PropertiesDelegate apiGatewayProperties = new MapPropertiesDelegate();
         apiGatewayProperties.setProperty(API_GATEWAY_CONTEXT_PROPERTY, request.getRequestContext());

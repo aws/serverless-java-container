@@ -73,6 +73,7 @@ public class AwsProxyExceptionHandler
 
     @Override
     public AwsProxyResponse handle(Throwable ex) {
+        log.error("Called exception handler for:", ex);
         if (ex instanceof InvalidRequestEventException) {
             return new AwsProxyResponse(500, headers, getErrorJson(INTERNAL_SERVER_ERROR));
         } else {
