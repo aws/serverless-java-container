@@ -12,6 +12,8 @@
  */
 package com.amazonaws.serverless.proxy.internal.servlet;
 
+import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -410,7 +412,22 @@ public class AwsHttpServletResponse
     Map<String, String> getAwsResponseHeaders() {
         Map<String, String> responseHeaders = new HashMap<>();
         for (String header : getHeaderNames()) {
-            responseHeaders.put(header, headers.getFirst(header));
+            // special behavior for set cookie
+            // RFC 2109 allows for a comma separated list of cookies in one Set-Cookie header: https://tools.ietf.org/html/rfc2109
+            if (header.equals(HttpHeaders.SET_COOKIE) && LambdaContainerHandler.getContainerConfig().isConsolidateSetCookieHeaders()) {
+                StringBuilder cookieHeader = new StringBuilder();
+                for (String cookieValue : headers.get(header)) {
+                    if (cookieHeader.length() > 0) {
+                        cookieHeader.append(",");
+                    }
+
+                    cookieHeader.append(" ").append(cookieValue);
+                }
+
+                responseHeaders.put(header, cookieHeader.toString());
+            } else {
+                responseHeaders.put(header, headers.getFirst(header));
+            }
         }
 
         return responseHeaders;

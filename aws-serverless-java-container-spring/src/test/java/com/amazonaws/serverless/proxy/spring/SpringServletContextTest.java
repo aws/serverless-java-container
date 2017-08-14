@@ -7,12 +7,15 @@ import com.amazonaws.serverless.proxy.internal.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
+import com.amazonaws.serverless.proxy.spring.echoapp.ContextResource;
 import com.amazonaws.serverless.proxy.spring.echoapp.CustomHeaderFilter;
 import com.amazonaws.serverless.proxy.spring.echoapp.EchoSpringAppConfig;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.ValidatedUserModel;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
@@ -96,6 +99,35 @@ public class SpringServletContextTest {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(HttpStatus.BAD_REQUEST.value(), output.getStatusCode());
+    }
+
+    @Test
+    public void exception_populatedException_annotationValuesMappedCorrectly() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/context/exception", "GET")
+                                          .stage(STAGE)
+                                          .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                                          .build();
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+
+        assertEquals(409, output.getStatusCode());
+        assertTrue(output.getBody().contains(ContextResource.EXCEPTION_REASON));
+    }
+
+    @Test
+    public void cookie_injectInResponse_expectCustomSetCookie() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/context/cookie", "GET")
+                                          .stage(STAGE)
+                                          .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                                          .build();
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+
+
+        assertEquals(200, output.getStatusCode());
+        assertTrue(output.getHeaders().containsKey(HttpHeaders.SET_COOKIE));
+        assertTrue(output.getHeaders().get(HttpHeaders.SET_COOKIE).contains(ContextResource.COOKIE_NAME + "=" + ContextResource.COOKIE_VALUE));
+        assertTrue(output.getHeaders().get(HttpHeaders.SET_COOKIE).contains(ContextResource.COOKIE_DOMAIN));
     }
 }
 
