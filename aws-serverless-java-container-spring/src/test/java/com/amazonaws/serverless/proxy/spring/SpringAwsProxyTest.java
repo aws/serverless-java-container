@@ -221,6 +221,21 @@ public class SpringAwsProxyTest {
         validateSingleValueModel(output, "https://api.myserver.com/prod/echo/request-Url");
     }
 
+    @Test
+    public void request_encodedPath_returnsDecodedPath() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/encoded-request-uri/Some%20Thing", "GET")
+                                          .scheme("https")
+                                          .serverName("api.myserver.com")
+                                          .stage("prod")
+                                          .build();
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(200, output.getStatusCode());
+
+        validateSingleValueModel(output, "Some Thing");
+
+    }
+
     private void validateMapResponseModel(AwsProxyResponse output) {
         try {
             MapResponseModel response = objectMapper.readValue(output.getBody(), MapResponseModel.class);

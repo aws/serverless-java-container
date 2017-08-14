@@ -5,10 +5,12 @@ package com.amazonaws.serverless.proxy.internal.model;
  * Configuration paramters used by the <code>RequestReader</code> and <code>ResponseWriter</code> objects.
  */
 public class ContainerConfig {
+    public static final String DEFAULT_URI_ENCODING = "UTF-8";
 
     public static ContainerConfig defaultConfig() {
         ContainerConfig configuration = new ContainerConfig();
         configuration.setStripBasePath(false);
+        configuration.setUriEncoding(DEFAULT_URI_ENCODING);
 
         return configuration;
     }
@@ -19,6 +21,7 @@ public class ContainerConfig {
 
     private String serviceBasePath;
     private boolean stripBasePath;
+    private String uriEncoding;
 
 
     //-------------------------------------------------------------
@@ -53,4 +56,12 @@ public class ContainerConfig {
     }
 
 
+    public String getUriEncoding() {
+        return uriEncoding;
+    }
+
+
+    public void setUriEncoding(String uriEncoding) {
+        this.uriEncoding = uriEncoding;
+    }
 }

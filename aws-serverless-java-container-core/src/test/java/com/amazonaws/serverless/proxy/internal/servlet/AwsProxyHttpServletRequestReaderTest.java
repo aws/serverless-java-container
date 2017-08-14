@@ -20,6 +20,8 @@ public class AwsProxyHttpServletRequestReaderTest {
 
     private static final String TEST_HEADER_KEY = "x-test";
     private static final String TEST_HEADER_VALUE = "header";
+    private static final String ENCODED_REQUEST_PATH = "/foo/bar/Some%20Thing";
+    private static final String DECODED_REQUEST_PATH = "/foo/bar/Some Thing";
 
     @Test
     public void readRequest_reflection_returnType() throws NoSuchMethodException {
@@ -39,5 +41,20 @@ public class AwsProxyHttpServletRequestReaderTest {
             e.printStackTrace();
             fail("Could not read request");
         }
+    }
+
+    @Test
+    public void readRequest_urlDecode_expectDecodedPath() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder(ENCODED_REQUEST_PATH, "GET").build();
+        try {
+            HttpServletRequest servletRequest = reader.readRequest(request, null, null, ContainerConfig.defaultConfig());
+            assertNotNull(servletRequest);
+            assertEquals(DECODED_REQUEST_PATH, servletRequest.getPathInfo());
+            assertEquals(ENCODED_REQUEST_PATH, servletRequest.getRequestURI());
+        } catch (InvalidRequestEventException e) {
+            e.printStackTrace();
+            fail("Could not read request");
+        }
+
     }
 }

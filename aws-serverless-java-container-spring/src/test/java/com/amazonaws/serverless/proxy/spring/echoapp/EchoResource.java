@@ -110,4 +110,12 @@ public class EchoResource {
         return valueModel;
     }
 
+    @RequestMapping(path = "/encoded-request-uri/{encoded-var}", method = RequestMethod.GET)
+    public SingleValueModel echoEncodedRequestUri(@PathVariable("encoded-var") String encodedVar) {
+        SingleValueModel valueModel = new SingleValueModel();
+        valueModel.setValue(encodedVar);
+
+        return valueModel;
+    }
+
 }
