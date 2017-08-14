@@ -13,9 +13,12 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
 import javax.servlet.DispatcherType;
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,13 +29,13 @@ import java.util.Map;
  * For example, the Spring implementation creates the ServletContext when the application is initialized the first time
  * and creates a FitlerChainManager to execute its filters for each request.
  */
-public abstract class FilterChainManager<ServletContextType> {
+public abstract class FilterChainManager<ServletContextType extends ServletContext> {
 
     //-------------------------------------------------------------
     // Variables - Protected
     //-------------------------------------------------------------
 
-    protected static final String PATH_PART_SEPARATOR = "/";
+    static final String PATH_PART_SEPARATOR = "/";
 
 
     //-------------------------------------------------------------
@@ -41,7 +44,7 @@ public abstract class FilterChainManager<ServletContextType> {
 
     // we use the synchronizedMap because we do not expect high concurrency on this object. Lambda only allows one
     // event at a time per container
-    private Map<TargetCacheKey, FilterChainHolder> filterCache = Collections.synchronizedMap(new HashMap<TargetCacheKey, FilterChainHolder>());
+    private Map<TargetCacheKey, List<FilterHolder>> filterCache = Collections.synchronizedMap(new HashMap<TargetCacheKey, List<FilterHolder>>());
     private int filtersSize = -1;
     protected ServletContextType servletContext;
 
@@ -50,7 +53,7 @@ public abstract class FilterChainManager<ServletContextType> {
     // Constructors
     //-------------------------------------------------------------
 
-    protected FilterChainManager(ServletContextType context) {
+    FilterChainManager(ServletContextType context) {
         servletContext = context;
     }
 
@@ -80,7 +83,7 @@ public abstract class FilterChainManager<ServletContextType> {
      * @param request The incoming servlet request
      * @return A <code>FilterChainHolder</code> object that can be used to apply the filters to the request
      */
-    public FilterChainHolder getFilterChain(final HttpServletRequest request) {
+    FilterChainHolder getFilterChain(final HttpServletRequest request) {
         String targetPath = request.getServletPath();
         DispatcherType type = request.getDispatcherType();
 
@@ -127,17 +130,22 @@ public abstract class FilterChainManager<ServletContextType> {
 
     /**
      * Retrieves a filter chain from the cache. The cache is lazily loaded as filter chains are requested. If the chain
-     * is not available in the cache, the method returns null.
+     * is not available in the cache, the method returns null. This method returns a new instance of FilterChainHolder
+     * initialized with the cached list of {@link FilterHolder} objects
      * @param type The dispatcher type for the incoming request
      * @param targetPath The request path - this is extracted with the <code>getPath</code> method of the request object
      * @return A populated FilterChainHolder
      */
-    protected FilterChainHolder getFilterChainCache(final DispatcherType type, final String targetPath) {
+    private FilterChainHolder getFilterChainCache(final DispatcherType type, final String targetPath) {
         TargetCacheKey key = new TargetCacheKey();
         key.setDispatcherType(type);
         key.setTargetPath(targetPath);
 
-        return filterCache.get(key);
+        if (!filterCache.containsKey(key)) {
+            return null;
+        }
+
+        return new FilterChainHolder(filterCache.get(key));
     }
 
 
@@ -150,7 +158,7 @@ public abstract class FilterChainManager<ServletContextType> {
      * @param targetPath The target path in the API
      * @param holder The FilterChainHolder object to save in the cache
      */
-    protected void putFilterChainCache(final DispatcherType type, final String targetPath, final FilterChainHolder holder) {
+    private void putFilterChainCache(final DispatcherType type, final String targetPath, final FilterChainHolder holder) {
         TargetCacheKey key = new TargetCacheKey();
         key.setDispatcherType(type);
         key.setTargetPath(targetPath);
@@ -159,8 +167,8 @@ public abstract class FilterChainManager<ServletContextType> {
         if (key.hashCode() == -1) {
             return;
         }
+        filterCache.put(key, holder.getFilters());
 
-        filterCache.put(key, holder);
     }
 
 
@@ -171,7 +179,7 @@ public abstract class FilterChainManager<ServletContextType> {
      * @param mapping The mapping path stored in the filter registration
      * @return true if the given mapping path can apply to the target, false otherwise.
      */
-    protected boolean pathMatches(final String target, final String mapping) {
+    boolean pathMatches(final String target, final String mapping) {
         // easiest case, they are exactly the same
         if (target.toLowerCase().equals(mapping.toLowerCase())) {
             return true;
@@ -275,11 +283,7 @@ public abstract class FilterChainManager<ServletContextType> {
 
         @Override
         public boolean equals(Object key) {
-            if (!key.getClass().isAssignableFrom(TargetCacheKey.class)) {
-                return false;
-            } else {
-                return hashCode() == key.hashCode();
-            }
+            return key.getClass().isAssignableFrom(TargetCacheKey.class) && hashCode() == key.hashCode();
         }
 
 
@@ -287,22 +291,12 @@ public abstract class FilterChainManager<ServletContextType> {
     // Methods - Getter/Setter
     //-------------------------------------------------------------
 
-        public String getTargetPath() {
-            return targetPath;
-        }
-
-
-        public void setTargetPath(String targetPath) {
+        void setTargetPath(String targetPath) {
             this.targetPath = targetPath;
         }
 
 
-        public DispatcherType getDispatcherType() {
-            return dispatcherType;
-        }
-
-
-        public void setDispatcherType(DispatcherType dispatcherType) {
+        void setDispatcherType(DispatcherType dispatcherType) {
             this.dispatcherType = dispatcherType;
         }
     }

@@ -5,19 +5,26 @@ import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.services.lambda.runtime.Context;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.*;
 
 import java.io.IOException;
 import java.util.EnumSet;
+import java.util.concurrent.CountDownLatch;
 
 import static org.junit.Assert.*;
 
 public class AwsFilterChainManagerTest {
+    private static final String REQUEST_CUSTOM_ATTRIBUTE_NAME = "X-Custom-Attribute";
+    private static final String REQUEST_CUSTOM_ATTRIBUTE_VALUE = "CustomAttrValue";
 
     private static AwsFilterChainManager chainManager;
     private static Context lambdaContext = new MockLambdaContext();
     private static ServletContext servletContext;
+
+    private Logger log = LoggerFactory.getLogger(AwsFilterChainManagerTest.class);
 
     @BeforeClass
     public static void setUp() {
@@ -128,6 +135,76 @@ public class AwsFilterChainManagerTest {
     }
 
     @Test
+    public void filterChain_matchMultipleTimes_expectSameMatch() {
+        AwsProxyHttpServletRequest req = new AwsProxyHttpServletRequest(
+             new AwsProxyRequestBuilder("/first/second", "GET").build(), lambdaContext, null
+        );
+        req.setServletContext(servletContext);
+        FilterChainHolder fcHolder = chainManager.getFilterChain(req);
+        assertEquals(1, fcHolder.filterCount());
+        assertEquals("Filter1", fcHolder.getFilter(0).getFilterName());
+
+        AwsProxyHttpServletRequest req2 = new AwsProxyHttpServletRequest(
+             new AwsProxyRequestBuilder("/first/second", "GET").build(), lambdaContext, null
+        );
+        req.setServletContext(servletContext);
+        FilterChainHolder fcHolder2 = chainManager.getFilterChain(req2);
+        assertEquals(1, fcHolder2.filterCount());
+        assertEquals("Filter1", fcHolder2.getFilter(0).getFilterName());
+    }
+
+    @Test
+    public void filerChain_executeMultipleFilters_expectRunEachTime() {
+        AwsProxyHttpServletRequest req = new AwsProxyHttpServletRequest(
+            new AwsProxyRequestBuilder("/first/second", "GET").build(), lambdaContext, null
+        );
+        req.setServletContext(servletContext);
+        FilterChainHolder fcHolder = chainManager.getFilterChain(req);
+        assertEquals(1, fcHolder.filterCount());
+        assertEquals("Filter1", fcHolder.getFilter(0).getFilterName());
+        AwsHttpServletResponse resp = new AwsHttpServletResponse(req, new CountDownLatch(1));
+
+        try {
+            fcHolder.doFilter(req, resp);
+        } catch (IOException e) {
+            fail("IO Exception while executing filters");
+            e.printStackTrace();
+        } catch (ServletException e) {
+            fail("Servlet exception while executing filters");
+            e.printStackTrace();
+        }
+
+        assertTrue(req.getAttribute(REQUEST_CUSTOM_ATTRIBUTE_NAME) != null);
+        assertEquals(REQUEST_CUSTOM_ATTRIBUTE_VALUE, req.getAttribute(REQUEST_CUSTOM_ATTRIBUTE_NAME));
+
+        log.debug("Starting second request");
+
+        AwsProxyHttpServletRequest req2 = new AwsProxyHttpServletRequest(
+            new AwsProxyRequestBuilder("/first/second", "GET").build(), lambdaContext, null
+        );
+        req2.setServletContext(servletContext);
+        FilterChainHolder fcHolder2 = chainManager.getFilterChain(req2);
+        assertEquals(1, fcHolder2.filterCount());
+        assertEquals("Filter1", fcHolder2.getFilter(0).getFilterName());
+        assertEquals(-1, fcHolder2.currentFilter);
+
+        AwsHttpServletResponse resp2 = new AwsHttpServletResponse(req, new CountDownLatch(1));
+
+        try {
+            fcHolder2.doFilter(req2, resp2);
+        } catch (IOException e) {
+            fail("IO Exception while executing filters");
+            e.printStackTrace();
+        } catch (ServletException e) {
+            fail("Servlet exception while executing filters");
+            e.printStackTrace();
+        }
+
+        assertTrue(req2.getAttribute(REQUEST_CUSTOM_ATTRIBUTE_NAME) != null);
+        assertEquals(REQUEST_CUSTOM_ATTRIBUTE_VALUE, req2.getAttribute(REQUEST_CUSTOM_ATTRIBUTE_NAME));
+    }
+
+    @Test
     public void filterChain_getFilterChain_multipleFilters() {
         AwsProxyHttpServletRequest req = new AwsProxyHttpServletRequest(
                 new AwsProxyRequestBuilder("/second/important", "GET").build(), lambdaContext, null
@@ -159,6 +236,7 @@ public class AwsFilterChainManagerTest {
         @Override
         public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
             System.out.println("DoFilter");
+            servletRequest.setAttribute(REQUEST_CUSTOM_ATTRIBUTE_NAME, REQUEST_CUSTOM_ATTRIBUTE_VALUE);
             filterChain.doFilter(servletRequest, servletResponse);
         }
 
