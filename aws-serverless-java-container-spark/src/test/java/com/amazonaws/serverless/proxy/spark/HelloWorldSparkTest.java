@@ -75,7 +75,7 @@ public class HelloWorldSparkTest {
         assertEquals(200, response.getStatusCode());
         assertTrue(response.getHeaders().containsKey(HttpHeaders.SET_COOKIE));
         // we compare against 4 because the expiration date of the cookies will also contain a string
-        assertEquals(4, response.getHeaders().get(HttpHeaders.SET_COOKIE).split(",").length);
+        assertEquals(2, response.getHeaders().get(HttpHeaders.SET_COOKIE).split(",").length);
         assertTrue(response.getHeaders().get(HttpHeaders.SET_COOKIE).contains(COOKIE_NAME + "=" + COOKIE_VALUE));
         assertTrue(response.getHeaders().get(HttpHeaders.SET_COOKIE).contains(COOKIE_NAME + "2=" + COOKIE_VALUE + "2"));
         assertTrue(response.getHeaders().get(HttpHeaders.SET_COOKIE).contains(COOKIE_DOMAIN));

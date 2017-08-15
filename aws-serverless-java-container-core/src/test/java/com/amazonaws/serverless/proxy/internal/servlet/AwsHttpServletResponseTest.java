@@ -128,6 +128,17 @@ public class AwsHttpServletResponseTest {
         assertEquals(dateFormat.format(testExpiration.getTime()), dateFormat.format(expiration.getTime()));
     }
 
+    @Test
+    public void cookie_addCookieWithoutMaxAge_expectNoExpires() {
+        AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
+        Cookie simpleCookie = new Cookie(COOKIE_NAME, COOKIE_VALUE);
+        resp.addCookie(simpleCookie);
+
+        String cookieHeader = resp.getHeader(HttpHeaders.SET_COOKIE);
+        assertNotNull(cookieHeader);
+        assertFalse(cookieHeader.contains("Expires"));
+    }
+
     private int getMaxAge(String header) {
         Matcher ageMatcher = MAX_AGE_PATTERN.matcher(header);
         assertTrue(ageMatcher.find());

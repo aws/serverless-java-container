@@ -98,13 +98,15 @@ public class AwsHttpServletResponse
         }
         cookieData += "; Max-Age=" + cookie.getMaxAge();
 
-        // we always set the timezone to GMT
-        TimeZone gmtTimeZone = TimeZone.getTimeZone(COOKIE_DEFAULT_TIME_ZONE);
-        Calendar currentTimestamp = Calendar.getInstance(gmtTimeZone);
-        currentTimestamp.add(Calendar.SECOND, cookie.getMaxAge());
-        SimpleDateFormat cookieDateFormatter = new SimpleDateFormat(HEADER_DATE_PATTERN);
-        cookieDateFormatter.setTimeZone(gmtTimeZone);
-        cookieData += "; Expires=" + cookieDateFormatter.format(currentTimestamp.getTime());
+        if (cookie.getMaxAge() > 0) {
+            // we always set the timezone to GMT
+            TimeZone gmtTimeZone = TimeZone.getTimeZone(COOKIE_DEFAULT_TIME_ZONE);
+            Calendar currentTimestamp = Calendar.getInstance(gmtTimeZone);
+            currentTimestamp.add(Calendar.SECOND, cookie.getMaxAge());
+            SimpleDateFormat cookieDateFormatter = new SimpleDateFormat(HEADER_DATE_PATTERN);
+            cookieDateFormatter.setTimeZone(gmtTimeZone);
+            cookieData += "; Expires=" + cookieDateFormatter.format(currentTimestamp.getTime());
+        }
 
         setHeader(HttpHeaders.SET_COOKIE, cookieData, false);
     }
