@@ -104,6 +104,16 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 }
 ```
 
+If you configure an [`initExceptionHandler` method](http://sparkjava.com/documentation#stopping-the-server), make sure that you call `System.exit` at the end of the method. This framework keeps a `CountDownLatch` on the request
+and unless you forcefully exit from the thread, the Lambda function will hang waiting for a latch that is never released.
+
+```java
+initExceptionHandler((e) -> {
+    LOG.error("ignite failed", e);
+    System.exit(100);
+});
+```
+
 # Security context
 The `aws-serverless-java-container-core` contains a default implementation of the `SecurityContextWriter` that supports API Gateway's proxy integration. The generated security context uses the API Gateway `$context` object to establish the request security context. The context looks for the following values in order and returns the first matched type:
 

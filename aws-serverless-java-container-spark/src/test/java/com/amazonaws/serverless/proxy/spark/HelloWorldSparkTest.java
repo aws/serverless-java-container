@@ -7,8 +7,10 @@ import com.amazonaws.serverless.proxy.internal.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import spark.Spark;
 
 import javax.servlet.http.Cookie;
 import javax.ws.rs.core.HttpHeaders;
@@ -22,10 +24,10 @@ public class HelloWorldSparkTest {
     private static final String CUSTOM_HEADER_VALUE = "My Header Value";
     private static final String BODY_TEXT_RESPONSE = "Hello World";
 
-    public static final String COOKIE_NAME = "MyCookie";
-    public static final String COOKIE_VALUE = "CookieValue";
-    public static final String COOKIE_DOMAIN = "mydomain.com";
-    public static final String COOKIE_PATH = "/";
+    private static final String COOKIE_NAME = "MyCookie";
+    private static final String COOKIE_VALUE = "CookieValue";
+    private static final String COOKIE_DOMAIN = "mydomain.com";
+    private static final String COOKIE_PATH = "/";
 
     private static SparkLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
 
@@ -40,6 +42,11 @@ public class HelloWorldSparkTest {
             e.printStackTrace();
             fail();
         }
+    }
+
+    @AfterClass
+    public static void stopSpark() {
+        Spark.stop();
     }
 
     @Test
