@@ -96,9 +96,10 @@ public class AwsHttpServletResponse
         if (cookie.getDomain() != null && !"".equals(cookie.getDomain().trim())) {
             cookieData += "; Domain=" + cookie.getDomain();
         }
-        cookieData += "; Max-Age=" + cookie.getMaxAge();
 
         if (cookie.getMaxAge() > 0) {
+            cookieData += "; Max-Age=" + cookie.getMaxAge();
+
             // we always set the timezone to GMT
             TimeZone gmtTimeZone = TimeZone.getTimeZone(COOKIE_DEFAULT_TIME_ZONE);
             Calendar currentTimestamp = Calendar.getInstance(gmtTimeZone);
