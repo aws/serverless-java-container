@@ -78,11 +78,8 @@ public class AwsHttpServletResponseTest {
         String cookieHeader = resp.getHeader(HttpHeaders.SET_COOKIE);
         System.out.println("Cookie string: " + cookieHeader);
         assertNotNull(cookieHeader);
-        assertTrue(cookieHeader.contains("; Max-Age="));
+        assertFalse(cookieHeader.contains("Max-Age="));
         assertTrue(cookieHeader.contains(COOKIE_NAME + "=" + COOKIE_VALUE));
-
-        int maxAge = getMaxAge(cookieHeader);
-        assertEquals(-1, maxAge);
     }
 
     @Test
