@@ -78,11 +78,8 @@ public class AwsHttpServletResponseTest {
         String cookieHeader = resp.getHeader(HttpHeaders.SET_COOKIE);
         System.out.println("Cookie string: " + cookieHeader);
         assertNotNull(cookieHeader);
-        assertTrue(cookieHeader.contains("; Max-Age="));
+        assertFalse(cookieHeader.contains("Max-Age="));
         assertTrue(cookieHeader.contains(COOKIE_NAME + "=" + COOKIE_VALUE));
-
-        int maxAge = getMaxAge(cookieHeader);
-        assertEquals(-1, maxAge);
     }
 
     @Test
@@ -126,6 +123,17 @@ public class AwsHttpServletResponseTest {
         System.out.println("Test date: " + dateFormat.format(testExpiration.getTime()));
         // we need to compare strings because the millis time will be off
         assertEquals(dateFormat.format(testExpiration.getTime()), dateFormat.format(expiration.getTime()));
+    }
+
+    @Test
+    public void cookie_addCookieWithoutMaxAge_expectNoExpires() {
+        AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
+        Cookie simpleCookie = new Cookie(COOKIE_NAME, COOKIE_VALUE);
+        resp.addCookie(simpleCookie);
+
+        String cookieHeader = resp.getHeader(HttpHeaders.SET_COOKIE);
+        assertNotNull(cookieHeader);
+        assertFalse(cookieHeader.contains("Expires"));
     }
 
     private int getMaxAge(String header) {

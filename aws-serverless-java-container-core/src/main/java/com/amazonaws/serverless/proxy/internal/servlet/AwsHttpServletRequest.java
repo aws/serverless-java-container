@@ -12,6 +12,7 @@
  */
 package com.amazonaws.serverless.proxy.internal.servlet;
 
+import com.amazonaws.serverless.proxy.internal.model.ContainerConfig;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import org.slf4j.Logger;
@@ -24,6 +25,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
@@ -319,5 +321,16 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
             }
         }
         return values;
+    }
+
+    protected String decodeRequestPath(String requestPath, ContainerConfig config) {
+        try {
+            return URLDecoder.decode(requestPath, config.getUriEncoding());
+        } catch (UnsupportedEncodingException ex) {
+            log.error("Could not URL decode the request path, configured encoding not supported: " + config.getUriEncoding(), ex);
+            // we do not fail at this.
+            return requestPath;
+        }
+
     }
 }

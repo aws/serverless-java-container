@@ -13,9 +13,13 @@
 package com.amazonaws.serverless.proxy.jersey;
 
 
+import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
+
 import org.glassfish.jersey.server.ContainerException;
 import org.glassfish.jersey.server.ContainerResponse;
 import org.glassfish.jersey.server.spi.ContainerResponseWriter;
+
+import javax.ws.rs.core.HttpHeaders;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -79,7 +83,18 @@ class JerseyResponseWriter
 
         for (final Map.Entry<String, List<String>> e : containerResponse.getStringHeaders().entrySet()) {
             for (final String value : e.getValue()) {
-                headers.put(e.getKey(), value);
+                // special case for set cookies
+                // RFC 2109 allows for a comma separated list of cookies in one Set-Cookie header: https://tools.ietf.org/html/rfc2109
+                if (e.getKey().equals(HttpHeaders.SET_COOKIE)) {
+                    if (headers.containsKey(e.getKey()) && LambdaContainerHandler.getContainerConfig().isConsolidateSetCookieHeaders()) {
+                        headers.put(e.getKey(), headers.get(e.getKey()) + ", " + value);
+                    } else {
+                        headers.put(e.getKey(), containerResponse.getStringHeaders().getFirst(e.getKey()));
+                        break;
+                    }
+                } else {
+                    headers.put(e.getKey(), value);
+                }
             }
         }
 

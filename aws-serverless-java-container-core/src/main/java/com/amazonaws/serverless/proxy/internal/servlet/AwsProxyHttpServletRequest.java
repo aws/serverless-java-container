@@ -13,6 +13,7 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
 
+import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyRequest;
 import com.amazonaws.services.lambda.runtime.Context;
 
@@ -184,7 +185,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         if (!pathInfo.startsWith("/")) {
             pathInfo = "/" + pathInfo;
         }
-        return pathInfo;
+        return decodeRequestPath(pathInfo, LambdaContainerHandler.getContainerConfig());
     }
 
 
@@ -248,7 +249,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getServletPath() {
-        return request.getPath();
+        return decodeRequestPath(request.getPath(), LambdaContainerHandler.getContainerConfig());
     }
 
     @Override

@@ -47,6 +47,9 @@ public class JerseyAwsProxyTest {
     private static final String CUSTOM_HEADER_KEY = "x-custom-header";
     private static final String CUSTOM_HEADER_VALUE = "my-custom-value";
     private static final String AUTHORIZER_PRINCIPAL_ID = "test-principal-" + UUID.randomUUID().toString();
+    private static final String QUERY_STRING_KEY = "identifier";
+    private static final String QUERY_STRING_NON_ENCODED_VALUE = "Space Test";
+    private static final String QUERY_STRING_ENCODED_VALUE = "Space%20Test";
 
 
     private static ObjectMapper objectMapper = new ObjectMapper();
@@ -116,6 +119,34 @@ public class JerseyAwsProxyTest {
         assertEquals("application/json", output.getHeaders().get("Content-Type"));
 
         validateMapResponseModel(output);
+    }
+
+    @Test
+    public void queryString_notEncoded_echo() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/query-string", "GET")
+                                          .json()
+                                          .queryString(QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE)
+                                          .build();
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(200, output.getStatusCode());
+        assertEquals("application/json", output.getHeaders().get("Content-Type"));
+
+        validateMapResponseModel(output, QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE);
+    }
+
+    @Test
+    public void queryString_encoded_echo() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/query-string", "GET")
+                                          .json()
+                                          .queryString(QUERY_STRING_KEY, QUERY_STRING_ENCODED_VALUE)
+                                          .build();
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(200, output.getStatusCode());
+        assertEquals("application/json", output.getHeaders().get("Content-Type"));
+
+        validateMapResponseModel(output, QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE);
     }
 
     @Test
@@ -215,10 +246,14 @@ public class JerseyAwsProxyTest {
     }
 
     private void validateMapResponseModel(AwsProxyResponse output) {
+        validateMapResponseModel(output, CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE);
+    }
+
+    private void validateMapResponseModel(AwsProxyResponse output, String key, String value) {
         try {
             MapResponseModel response = objectMapper.readValue(output.getBody(), MapResponseModel.class);
-            assertNotNull(response.getValues().get(CUSTOM_HEADER_KEY));
-            assertEquals(CUSTOM_HEADER_VALUE, response.getValues().get(CUSTOM_HEADER_KEY));
+            assertNotNull(response.getValues().get(key));
+            assertEquals(value, response.getValues().get(key));
         } catch (IOException e) {
             fail("Exception while parsing response body: " + e.getMessage());
             e.printStackTrace();
