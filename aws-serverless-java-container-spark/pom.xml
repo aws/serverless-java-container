@@ -15,7 +15,7 @@
     </parent>
 
     <properties>
-        <spark.version>2.5.3</spark.version>
+        <spark.version>2.6.0</spark.version>
     </properties>
 
     <dependencies>
@@ -31,20 +31,13 @@
             <groupId>com.sparkjava</groupId>
             <artifactId>spark-core</artifactId>
             <version>${spark.version}</version>
+            <!-- excluding slf4j from spark because it includes 1.7.13, the framework already pulls in 1.7.25 -->
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-api</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/junit/junit -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 

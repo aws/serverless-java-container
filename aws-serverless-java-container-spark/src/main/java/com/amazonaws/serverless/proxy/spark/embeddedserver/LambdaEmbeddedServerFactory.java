@@ -14,6 +14,21 @@ public class LambdaEmbeddedServerFactory implements EmbeddedServerFactory {
     private static LambdaEmbeddedServer embeddedServer;
 
 
+    /**
+     * Empty constructor, applications should always use this constructor.
+     */
+    public LambdaEmbeddedServerFactory() {}
+
+
+    /**
+     * Constructor used in unit tests to inject a mocked embedded server
+     * @param server The mocked server
+     */
+    public LambdaEmbeddedServerFactory(LambdaEmbeddedServer server) {
+        embeddedServer = server;
+    }
+
+
     //-------------------------------------------------------------
     // Implementation - EmbeddedServerFactory
     //-------------------------------------------------------------
