@@ -31,6 +31,7 @@ public class StreamLambdaHandler implements RequestStreamHandler {
             } catch (ContainerInitializationException e) {
                 log.error("Cannot initialize Spring container", e);
                 outputStream.close();
+                throw new RuntimeException(e);
             }
         }
 
