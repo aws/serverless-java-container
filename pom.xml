@@ -4,7 +4,7 @@
     <groupId>com.amazonaws.serverless</groupId>
     <artifactId>aws-serverless-java-container</artifactId>
     <packaging>pom</packaging>
-    <version>0.7-SNAPSHOT</version>
+    <version>0.7</version>
     <name>AWS Serverless Java container</name>
 
     <!-- https://mvnrepository.com/artifact/org.sonatype.oss/oss-parent -->
