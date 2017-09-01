@@ -13,6 +13,7 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
 import javax.servlet.DispatcherType;
+import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
@@ -81,18 +82,19 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
      *
      * This method currently does not filter on servlet name because the library assumes we are using a single servlet.
      * @param request The incoming servlet request
+     * @param servlet The final servlet in the filter chain (if any)
      * @return A <code>FilterChainHolder</code> object that can be used to apply the filters to the request
      */
-    FilterChainHolder getFilterChain(final HttpServletRequest request) {
+    FilterChainHolder getFilterChain(final HttpServletRequest request, Servlet servlet) {
         String targetPath = request.getServletPath();
         DispatcherType type = request.getDispatcherType();
 
         // only return the cached result if the filter list hasn't changed in the meanwhile
-        if (getFilterHolders().size() == filtersSize && getFilterChainCache(type, targetPath) != null) {
-            return getFilterChainCache(type, targetPath);
+        if (getFilterHolders().size() == filtersSize && getFilterChainCache(type, targetPath, servlet) != null) {
+            return getFilterChainCache(type, targetPath, servlet);
         }
 
-        FilterChainHolder chainHolder = new FilterChainHolder();
+        FilterChainHolder chainHolder = new FilterChainHolder(servlet);
 
         Map<String, FilterHolder> registrations = getFilterHolders();
         if (registrations == null || registrations.size() == 0) {
@@ -134,9 +136,10 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
      * initialized with the cached list of {@link FilterHolder} objects
      * @param type The dispatcher type for the incoming request
      * @param targetPath The request path - this is extracted with the <code>getPath</code> method of the request object
+     * @param servlet Servlet to put at the end of the chain (optional).
      * @return A populated FilterChainHolder
      */
-    private FilterChainHolder getFilterChainCache(final DispatcherType type, final String targetPath) {
+    private FilterChainHolder getFilterChainCache(final DispatcherType type, final String targetPath, Servlet servlet) {
         TargetCacheKey key = new TargetCacheKey();
         key.setDispatcherType(type);
         key.setTargetPath(targetPath);
@@ -145,7 +148,7 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
             return null;
         }
 
-        return new FilterChainHolder(filterCache.get(key));
+        return new FilterChainHolder(filterCache.get(key), servlet);
     }
 
 

@@ -15,10 +15,8 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,6 +28,7 @@ import java.util.List;
  * during a request lifecycle
  */
 public class FilterChainHolder implements FilterChain {
+    private final Servlet servlet;
 
     //-------------------------------------------------------------
     // Variables - Private
@@ -47,19 +46,22 @@ public class FilterChainHolder implements FilterChain {
 
     /**
      * Creates a new empty <code>FilterChainHolder</code>
+     * @param servlet
      */
-    FilterChainHolder() {
-        this(new ArrayList<>());
+    FilterChainHolder(Servlet servlet) {
+        this(new ArrayList<>(), servlet);
     }
 
 
     /**
      * Creates a new instance of a filter chain holder
      * @param allFilters A populated list of <code>FilterHolder</code> objects
+     * @param servlet
      */
-    FilterChainHolder(List<FilterHolder> allFilters) {
+    FilterChainHolder(List<FilterHolder> allFilters, Servlet servlet) {
         filters = allFilters;
         resetHolder();
+        this.servlet = servlet;
     }
 
 
@@ -70,9 +72,19 @@ public class FilterChainHolder implements FilterChain {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse) throws IOException, ServletException {
         currentFilter++;
-        if (filters == null || filters.size() == 0 || currentFilter > filters.size() - 1) {
+        if (filters == null || filters.size() == 0 ) {
             log.debug("Could not find filters to execute, returning");
             return;
+        } else if (currentFilter > filters.size() - 1) {
+            if (null != servlet) {
+                log.debug("Starting servlet {}", servlet);
+                servlet.service(servletRequest, servletResponse);
+                log.debug("Executed servlet {}", servlet);
+                return;
+            } else {
+                log.debug("No more filters");
+                return;
+            }
         }
         // TODO: We do not check for async filters here
 
@@ -82,9 +94,12 @@ public class FilterChainHolder implements FilterChain {
         if (!holder.isFilterInitialized()) {
             holder.init();
         }
-        log.debug("Starting filter " + holder.getFilterName());
+        log.debug("Starting {} {} : filter {}-{} {}", servletRequest.getDispatcherType(), ((HttpServletRequest) servletRequest).getRequestURI(),
+                currentFilter, holder.getFilterName(), holder.getFilter());
         holder.getFilter().doFilter(servletRequest, servletResponse, this);
-        log.debug("Executed filter " + holder.getFilterName());
+        log.debug("Executed {} {} : filter {}-{} {}", servletRequest.getDispatcherType(), ((HttpServletRequest) servletRequest).getRequestURI(),
+                currentFilter, holder.getFilterName(), holder.getFilter());
+        currentFilter--;
     }
 
 
@@ -143,5 +158,10 @@ public class FilterChainHolder implements FilterChain {
      */
     private void resetHolder() {
         currentFilter = -1;
+    }
+
+    @Override
+    public String toString() {
+        return "filters=" + filters + ", servlet=" + servlet;
     }
 }

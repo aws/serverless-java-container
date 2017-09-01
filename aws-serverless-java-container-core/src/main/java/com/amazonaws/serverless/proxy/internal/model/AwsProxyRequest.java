@@ -15,6 +15,7 @@ package com.amazonaws.serverless.proxy.internal.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -31,7 +32,7 @@ public class AwsProxyRequest {
     private String resource;
     private ApiGatewayRequestContext requestContext;
     private Map<String, String> queryStringParameters;
-    private Map<String, String> headers;
+    private Map<String, String> headers = new HashMap<>(); // avoid NPE
     private Map<String, String> pathParameters;
     private String httpMethod;
     private Map<String, String> stageVariables;
@@ -105,7 +106,11 @@ public class AwsProxyRequest {
 
 
     public void setHeaders(Map<String, String> headers) {
-        this.headers = headers;
+        if (null != headers) {
+            this.headers = headers;
+        } else {
+            this.headers.clear();
+        }
     }
 
 

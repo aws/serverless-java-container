@@ -22,6 +22,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -176,11 +177,13 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
      * Applies the filter chain in the request lifecycle
      * @param request The Request object. This must be an implementation of HttpServletRequest
      * @param response The response object. This must be an implementation of HttpServletResponse
+     * @param servlet Servlet at the end of the chain (optional).
      * @throws IOException
      * @throws ServletException
      */
-    protected void doFilter(ContainerRequestType request, ContainerResponseType response) throws IOException, ServletException {
-        FilterChainHolder chain = filterChainManager.getFilterChain(request);
+    protected void doFilter(ContainerRequestType request, ContainerResponseType response, Servlet servlet) throws IOException, ServletException {
+        FilterChainHolder chain = filterChainManager.getFilterChain(request, servlet);
+        log.debug("FilterChainHolder.doFilter {}", chain);
         chain.doFilter(request, response);
     }
 

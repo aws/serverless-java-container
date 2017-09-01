@@ -62,10 +62,12 @@ public class AwsProxyRequestBuilder {
         this.mapper = new ObjectMapper();
 
         this.request = new AwsProxyRequest();
+        this.request.setHeaders(new HashMap<>()); // avoid NPE
         this.request.setHttpMethod(httpMethod);
         this.request.setPath(path);
         this.request.setQueryStringParameters(new HashMap<>());
         this.request.setRequestContext(new ApiGatewayRequestContext());
+        this.request.getRequestContext().setRequestId("test-invoke-request");
         this.request.getRequestContext().setStage("test");
         ApiGatewayRequestIdentity identity = new ApiGatewayRequestIdentity();
         identity.setSourceIp("127.0.0.1");

@@ -196,9 +196,13 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     }
 
 
+    /**
+     * In AWS API Gateway, stage is never given as part of the path.
+     * @return
+     */
     @Override
     public String getContextPath() {
-        return request.getRequestContext().getStage();
+        return "";
     }
 
 
@@ -228,7 +232,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getRequestURI() {
-        return request.getPath();
+        return (getContextPath().isEmpty() ? "" : "/" + getContextPath()) + request.getPath();
     }
 
 

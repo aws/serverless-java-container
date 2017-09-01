@@ -164,7 +164,7 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType> extends AwsL
             }
         }
 
-        doFilter(httpServletRequest, httpServletResponse);
+        doFilter(httpServletRequest, httpServletResponse, null);
 
         embeddedServer.handle(httpServletRequest, httpServletResponse);
     }
