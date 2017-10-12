@@ -35,7 +35,7 @@ public class SparkLambdaContainerHandlerTest {
             e.printStackTrace();
             fail();
         }
-        
+
         handler.onStartup(c -> {
             if (c == null) {
                 System.out.println("Null servlet context");

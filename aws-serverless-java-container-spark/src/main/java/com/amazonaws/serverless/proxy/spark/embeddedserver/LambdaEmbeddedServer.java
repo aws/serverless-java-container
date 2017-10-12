@@ -38,6 +38,9 @@ public class LambdaEmbeddedServer
         applicationRoutes = routes;
         staticFilesConfiguration = filesConfig;
         hasMultipleHandler = multipleHandlers;
+
+        // try to initialize the filter here.
+        sparkFilter = new MatcherFilter(applicationRoutes, staticFilesConfiguration, true, hasMultipleHandler);
     }
 
 
@@ -48,7 +51,10 @@ public class LambdaEmbeddedServer
     public int ignite(String s, int i, SslStores sslStores, int i1, int i2, int i3)
             throws Exception {
         log.info("Starting Spark server, ignoring port and host");
-        sparkFilter = new MatcherFilter(applicationRoutes, staticFilesConfiguration, false, hasMultipleHandler);
+        // if not initialized yet
+        if (sparkFilter == null) {
+            sparkFilter = new MatcherFilter(applicationRoutes, staticFilesConfiguration, true, hasMultipleHandler);
+        }
 
         return i;
     }
