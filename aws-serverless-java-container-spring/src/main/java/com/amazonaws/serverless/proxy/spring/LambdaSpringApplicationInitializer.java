@@ -27,6 +27,7 @@ import org.springframework.web.context.support.ServletRequestHandledEvent;
 import org.springframework.web.servlet.DispatcherServlet;
 
 import javax.servlet.*;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -42,7 +43,7 @@ import java.util.*;
  * `currentResponse` private property to the value of the new `HttpServletResponse` object. This is used to intercept
  * Spring notifications for the `ServletRequestHandledEvent` and call the flush method to release the latch.
  */
-public class LambdaSpringApplicationInitializer implements WebApplicationInitializer {
+public class LambdaSpringApplicationInitializer extends HttpServlet implements WebApplicationInitializer {
     public static final String ERROR_NO_CONTEXT = "No application context or configuration classes provided";
 
     private static final String DEFAULT_SERVLET_NAME = "aws-servless-java-container";
@@ -98,6 +99,15 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
         dispatcherServlet.service(request, response);
     }
 
+
+    /**
+     * Gets the initialized Spring dispatcher servlet instance.
+     * @return
+     */
+    public Servlet getDispatcherServlet() {
+        return dispatcherServlet;
+    }
+
     public List<String> getSpringProfiles() {
         return Collections.unmodifiableList(springProfiles);
     }
@@ -149,6 +159,18 @@ public class LambdaSpringApplicationInitializer implements WebApplicationInitial
         for (ServletContextListener listener : contextListeners) {
             listener.contextInitialized(new ServletContextEvent(context));
         }
+    }
+
+
+    ///////////////////////////////////////////////////////////////
+    // HttpServlet implementation                                //
+    // This is used to pass the initializer to the filter chain  //
+    // to handle requests                                        //
+    ///////////////////////////////////////////////////////////////
+
+    @Override
+    public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
+        dispatch((HttpServletRequest)req, (HttpServletResponse)res);
     }
 
     /**

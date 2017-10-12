@@ -9,6 +9,7 @@ import spark.route.Routes;
 import spark.ssl.SslStores;
 import spark.staticfiles.StaticFilesConfiguration;
 
+import javax.servlet.Filter;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -94,5 +95,14 @@ public class LambdaEmbeddedServer
     public void handle(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
         sparkFilter.doFilter(request, response, null);
+    }
+
+
+    /**
+     * Returns the initialized instance of the main Spark filter.
+     * @return The spark filter instance.
+     */
+    public Filter getSparkFilter() {
+        return sparkFilter;
     }
 }

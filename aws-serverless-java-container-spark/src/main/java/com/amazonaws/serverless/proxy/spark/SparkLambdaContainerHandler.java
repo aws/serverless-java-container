@@ -29,9 +29,13 @@ import spark.Spark;
 import spark.embeddedserver.EmbeddedServerFactory;
 import spark.embeddedserver.EmbeddedServers;
 
+import javax.servlet.DispatcherType;
+import javax.servlet.FilterRegistration;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.EnumSet;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -162,10 +166,12 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType> extends AwsL
             if (startupHandler != null) {
                 startupHandler.onStartup(getServletContext());
             }
+
+            // manually add the spark filter to the chain. This should the last one and match all uris
+            FilterRegistration.Dynamic sparkRegistration = getServletContext().addFilter("SparkFilter", embeddedServer.getSparkFilter());
+            sparkRegistration.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/*");
         }
 
         doFilter(httpServletRequest, httpServletResponse, null);
-
-        embeddedServer.handle(httpServletRequest, httpServletResponse);
     }
 }

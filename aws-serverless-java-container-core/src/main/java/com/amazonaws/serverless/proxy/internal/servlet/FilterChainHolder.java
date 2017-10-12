@@ -28,7 +28,6 @@ import java.util.List;
  * during a request lifecycle
  */
 public class FilterChainHolder implements FilterChain {
-    private final Servlet servlet;
 
     //-------------------------------------------------------------
     // Variables - Private
@@ -46,22 +45,19 @@ public class FilterChainHolder implements FilterChain {
 
     /**
      * Creates a new empty <code>FilterChainHolder</code>
-     * @param servlet
      */
-    FilterChainHolder(Servlet servlet) {
-        this(new ArrayList<>(), servlet);
+    FilterChainHolder() {
+        this(new ArrayList<>());
     }
 
 
     /**
      * Creates a new instance of a filter chain holder
      * @param allFilters A populated list of <code>FilterHolder</code> objects
-     * @param servlet
      */
-    FilterChainHolder(List<FilterHolder> allFilters, Servlet servlet) {
+    FilterChainHolder(List<FilterHolder> allFilters) {
         filters = allFilters;
         resetHolder();
-        this.servlet = servlet;
     }
 
 
@@ -72,34 +68,27 @@ public class FilterChainHolder implements FilterChain {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse) throws IOException, ServletException {
         currentFilter++;
-        if (filters == null || filters.size() == 0 ) {
-            log.debug("Could not find filters to execute, returning");
-            return;
-        } else if (currentFilter > filters.size() - 1) {
-            if (null != servlet) {
-                log.debug("Starting servlet {}", servlet);
-                servlet.service(servletRequest, servletResponse);
-                log.debug("Executed servlet {}", servlet);
-                return;
-            } else {
-                log.debug("No more filters");
-                return;
-            }
-        }
         // TODO: We do not check for async filters here
 
-        FilterHolder holder = filters.get(currentFilter);
+        // if we still have filters, keep running through the chain
+        if (currentFilter <= filters.size() - 1) {
+            FilterHolder holder = filters.get(currentFilter);
 
-        // lazily initialize filters when they are needed
-        if (!holder.isFilterInitialized()) {
-            holder.init();
+            // lazily initialize filters when they are needed
+            if (!holder.isFilterInitialized()) {
+                holder.init();
+            }
+            log.debug("Starting {} {} : filter {}-{} {}", servletRequest.getDispatcherType(), ((HttpServletRequest) servletRequest).getRequestURI(),
+                      currentFilter, holder.getFilterName(), holder.getFilter());
+            holder.getFilter().doFilter(servletRequest, servletResponse, this);
+            log.debug("Executed {} {} : filter {}-{} {}", servletRequest.getDispatcherType(), ((HttpServletRequest) servletRequest).getRequestURI(),
+                      currentFilter, holder.getFilterName(), holder.getFilter());
         }
-        log.debug("Starting {} {} : filter {}-{} {}", servletRequest.getDispatcherType(), ((HttpServletRequest) servletRequest).getRequestURI(),
-                currentFilter, holder.getFilterName(), holder.getFilter());
-        holder.getFilter().doFilter(servletRequest, servletResponse, this);
-        log.debug("Executed {} {} : filter {}-{} {}", servletRequest.getDispatcherType(), ((HttpServletRequest) servletRequest).getRequestURI(),
-                currentFilter, holder.getFilterName(), holder.getFilter());
-        currentFilter--;
+
+        // if for some reason the response wasn't flushed yet, we force it here.
+        if (!servletResponse.isCommitted()) {
+            servletResponse.flushBuffer();
+        }
     }
 
 
@@ -162,6 +151,6 @@ public class FilterChainHolder implements FilterChain {
 
     @Override
     public String toString() {
-        return "filters=" + filters + ", servlet=" + servlet;
+        return "filters=" + filters;
     }
 }

@@ -6,6 +6,7 @@ import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.spring.echoapp.EchoSpringAppConfig;
+import com.amazonaws.serverless.proxy.spring.echoapp.UnauthenticatedFilter;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.MapResponseModel;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.SingleValueModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -137,6 +138,18 @@ public class SpringAwsProxyTest {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(405, output.getStatusCode());
+    }
+
+    @Test
+    public void error_unauthenticatedCall_filterStepsRequest() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/status-code", "GET")
+                                          .header(UnauthenticatedFilter.HEADER_NAME, "1")
+                                          .json()
+                                          .queryString("status", "201")
+                                          .build();
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(401, output.getStatusCode());
     }
 
     @Test

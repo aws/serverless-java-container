@@ -135,8 +135,6 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
         containerRequest.setServletContext(getServletContext());
 
         // process filters
-        doFilter(containerRequest, containerResponse, null);
-        // invoke servlet
-        initializer.dispatch(containerRequest, containerResponse);
+        doFilter(containerRequest, containerResponse, initializer);
     }
 }

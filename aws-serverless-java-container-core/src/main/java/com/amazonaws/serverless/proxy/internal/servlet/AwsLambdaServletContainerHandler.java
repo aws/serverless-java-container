@@ -22,6 +22,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.FilterChain;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -168,6 +169,10 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
         filterChainManager = new AwsFilterChainManager((AwsServletContext)context);
     }
 
+    protected FilterChain getFilterChain(ContainerRequestType req, Servlet servlet) {
+        return filterChainManager.getFilterChain(req, servlet);
+    }
+
 
     //-------------------------------------------------------------
     // Methods - Protected
@@ -182,11 +187,10 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
      * @throws ServletException
      */
     protected void doFilter(ContainerRequestType request, ContainerResponseType response, Servlet servlet) throws IOException, ServletException {
-        FilterChainHolder chain = filterChainManager.getFilterChain(request, servlet);
+        FilterChain chain = getFilterChain(request, servlet);
         log.debug("FilterChainHolder.doFilter {}", chain);
         chain.doFilter(request, response);
     }
-
 
     //-------------------------------------------------------------
     // Inner Class -
