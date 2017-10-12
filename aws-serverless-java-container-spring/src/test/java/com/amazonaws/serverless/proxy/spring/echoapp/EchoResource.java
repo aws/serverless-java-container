@@ -102,7 +102,7 @@ public class EchoResource {
         return valueModel;
     }
 
-    @RequestMapping(path = "/request-Url", method = RequestMethod.GET)
+    @RequestMapping(path = "/request-url", method = RequestMethod.GET)
     public SingleValueModel echoRequestURL(HttpServletRequest request) {
         SingleValueModel valueModel = new SingleValueModel();
         valueModel.setValue(request.getRequestURL().toString());
