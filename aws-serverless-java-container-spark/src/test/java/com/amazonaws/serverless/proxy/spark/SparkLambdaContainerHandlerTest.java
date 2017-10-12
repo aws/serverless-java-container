@@ -9,6 +9,7 @@ import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.spark.filter.CustomHeaderFilter;
 
 import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import spark.Spark;
 
@@ -34,7 +35,7 @@ public class SparkLambdaContainerHandlerTest {
             e.printStackTrace();
             fail();
         }
-
+        
         handler.onStartup(c -> {
             if (c == null) {
                 System.out.println("Null servlet context");
@@ -64,7 +65,7 @@ public class SparkLambdaContainerHandlerTest {
         Spark.stop();
     }
 
-    private void configureRoutes() {
+    private static void configureRoutes() {
         get("/header-filter", (req, res) -> {
             res.status(200);
             return RESPONSE_BODY_TEXT;
