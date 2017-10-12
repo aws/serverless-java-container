@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Service;
 import spark.Spark;
+import spark.embeddedserver.EmbeddedServerFactory;
 import spark.embeddedserver.EmbeddedServers;
 
 import java.lang.reflect.Field;
@@ -91,7 +92,8 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType> extends AwsL
         return new SparkLambdaContainerHandler<>(new AwsProxyHttpServletRequestReader(),
                                                  new AwsProxyHttpServletResponseWriter(),
                                                  new AwsProxySecurityContextWriter(),
-                                                 new AwsProxyExceptionHandler());
+                                                 new AwsProxyExceptionHandler(),
+                                                 new LambdaEmbeddedServerFactory());
     }
 
 
@@ -102,31 +104,34 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType> extends AwsL
     public SparkLambdaContainerHandler(RequestReader<RequestType, AwsProxyHttpServletRequest> requestReader,
                                        ResponseWriter<AwsHttpServletResponse, ResponseType> responseWriter,
                                        SecurityContextWriter<RequestType> securityContextWriter,
-                                       ExceptionHandler<ResponseType> exceptionHandler)
+                                       ExceptionHandler<ResponseType> exceptionHandler,
+                                       EmbeddedServerFactory embeddedServerFactory)
             throws ContainerInitializationException {
         super(requestReader, responseWriter, securityContextWriter, exceptionHandler);
 
-        EmbeddedServers.add(LAMBDA_EMBEDDED_SERVER_CODE, new LambdaEmbeddedServerFactory());
+        EmbeddedServers.add(LAMBDA_EMBEDDED_SERVER_CODE, embeddedServerFactory);
 
         // TODO: This is pretty bad but we are not given access to the embeddedServerIdentifier property of the
         // Service object
         try {
+            log.debug("Changing visibility of getInstance method and embeddedServerIdentifier properties");
             Method serviceInstanceMethod = Spark.class.getDeclaredMethod("getInstance");
             serviceInstanceMethod.setAccessible(true);
             Service sparkService = (Service) serviceInstanceMethod.invoke(null);
             Field serverIdentifierField = Service.class.getDeclaredField("embeddedServerIdentifier");
             serverIdentifierField.setAccessible(true);
             serverIdentifierField.set(sparkService, LAMBDA_EMBEDDED_SERVER_CODE);
-
-            // remove Jetty from embedded servers
-            EmbeddedServers.class.getDeclaredMethod("initialize");
         } catch (NoSuchFieldException e) {
+            log.error("Could not fine embeddedServerIdentifier field in Service class", e);
             throw new ContainerInitializationException("Cannot find embeddedServerIdentifier field in Service class", e);
         } catch (NoSuchMethodException e) {
+            log.error("Could not find getInstance method in Spark class", e);
             throw new ContainerInitializationException("Cannot find getInstance method in Spark class", e);
         } catch (IllegalAccessException e) {
+            log.error("Could not access getInstance method in Spark class", e);
             throw new ContainerInitializationException("Cannot access getInstance method in Spark class", e);
         } catch (InvocationTargetException e) {
+            log.error("Could not invoke getInstance method in Spark class", e);
             throw new ContainerInitializationException("Cannot invoke getInstance method in Spark class", e);
         }
     }
@@ -145,10 +150,12 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType> extends AwsL
     @Override
     protected void handleRequest(AwsProxyHttpServletRequest httpServletRequest, AwsHttpServletResponse httpServletResponse, Context lambdaContext)
             throws Exception {
+
         // this method of the AwsLambdaServletContainerHandler sets the request context
         super.handleRequest(httpServletRequest, httpServletResponse, lambdaContext);
 
         if (embeddedServer == null) {
+            log.debug("First request, getting new server instance");
             embeddedServer = LambdaEmbeddedServerFactory.getServerInstance();
 
             // call the onStartup event if set to give developers a chance to set filters in the context
@@ -157,7 +164,7 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType> extends AwsL
             }
         }
 
-        doFilter(httpServletRequest, httpServletResponse);
+        doFilter(httpServletRequest, httpServletResponse, null);
 
         embeddedServer.handle(httpServletRequest, httpServletResponse);
     }

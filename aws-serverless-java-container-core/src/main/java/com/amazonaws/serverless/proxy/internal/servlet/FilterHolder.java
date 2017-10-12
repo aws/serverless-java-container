@@ -29,7 +29,7 @@ public class FilterHolder {
     //-------------------------------------------------------------
 
     private Filter filter;
-    private FilterConfig filterConfig;
+    private FilterConfig filterConfig = new Config();
     private Registration registration;
     private String filterName;
     private Map<String, String> initParameters;

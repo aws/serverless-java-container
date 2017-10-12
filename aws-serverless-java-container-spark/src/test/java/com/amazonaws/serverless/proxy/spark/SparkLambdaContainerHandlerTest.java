@@ -8,7 +8,9 @@ import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.spark.filter.CustomHeaderFilter;
 
+import org.junit.AfterClass;
 import org.junit.Test;
+import spark.Spark;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
@@ -55,6 +57,11 @@ public class SparkLambdaContainerHandlerTest {
         assertEquals(CustomHeaderFilter.HEADER_VALUE, response.getHeaders().get(CustomHeaderFilter.HEADER_NAME));
         assertEquals(RESPONSE_BODY_TEXT, response.getBody());
 
+    }
+
+    @AfterClass
+    public static void stopSpark() {
+        Spark.stop();
     }
 
     private void configureRoutes() {

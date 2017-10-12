@@ -12,6 +12,8 @@
  */
 package com.amazonaws.serverless.proxy.internal.servlet;
 
+import com.amazonaws.serverless.proxy.internal.RequestReader;
+import com.amazonaws.serverless.proxy.internal.model.ApiGatewayRequestContext;
 import com.amazonaws.serverless.proxy.internal.model.ContainerConfig;
 import com.amazonaws.services.lambda.runtime.Context;
 
@@ -24,6 +26,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionContext;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -68,6 +71,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     private Context lambdaContext;
     private Map<String, Object> attributes;
     private ServletContext servletContext;
+    private AwsHttpSession session;
 
     protected DispatcherType dispatcherType;
 
@@ -101,13 +105,17 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
 
     @Override
     public HttpSession getSession(boolean b) {
-        return null;
+        if (b && null == this.session) {
+            ApiGatewayRequestContext requestContext = (ApiGatewayRequestContext) getAttribute(RequestReader.API_GATEWAY_CONTEXT_PROPERTY);
+            this.session = new AwsHttpSession(requestContext.getRequestId());
+        }
+        return this.session;
     }
 
 
     @Override
     public HttpSession getSession() {
-        return null;
+        return this.session;
     }
 
 

@@ -115,21 +115,21 @@ public class AwsFilterChainManagerTest {
             new AwsProxyRequestBuilder("/first/second", "GET").build(), lambdaContext, null
         );
         req.setServletContext(servletContext);
-        FilterChainHolder fcHolder = chainManager.getFilterChain(req);
+        FilterChainHolder fcHolder = chainManager.getFilterChain(req, null);
         assertEquals(1, fcHolder.filterCount());
         assertEquals("Filter1", fcHolder.getFilter(0).getFilterName());
 
         req = new AwsProxyHttpServletRequest(
                 new AwsProxyRequestBuilder("/second/mime", "GET").build(), lambdaContext, null
         );
-        fcHolder = chainManager.getFilterChain(req);
+        fcHolder = chainManager.getFilterChain(req, null);
         assertEquals(1, fcHolder.filterCount());
         assertEquals("Filter2", fcHolder.getFilter(0).getFilterName());
 
         req = new AwsProxyHttpServletRequest(
                 new AwsProxyRequestBuilder("/second/mime/third", "GET").build(), lambdaContext, null
         );
-        fcHolder = chainManager.getFilterChain(req);
+        fcHolder = chainManager.getFilterChain(req, null);
         assertEquals(1, fcHolder.filterCount());
         assertEquals("Filter2", fcHolder.getFilter(0).getFilterName());
     }
@@ -140,7 +140,7 @@ public class AwsFilterChainManagerTest {
              new AwsProxyRequestBuilder("/first/second", "GET").build(), lambdaContext, null
         );
         req.setServletContext(servletContext);
-        FilterChainHolder fcHolder = chainManager.getFilterChain(req);
+        FilterChainHolder fcHolder = chainManager.getFilterChain(req, null);
         assertEquals(1, fcHolder.filterCount());
         assertEquals("Filter1", fcHolder.getFilter(0).getFilterName());
 
@@ -148,7 +148,7 @@ public class AwsFilterChainManagerTest {
              new AwsProxyRequestBuilder("/first/second", "GET").build(), lambdaContext, null
         );
         req.setServletContext(servletContext);
-        FilterChainHolder fcHolder2 = chainManager.getFilterChain(req2);
+        FilterChainHolder fcHolder2 = chainManager.getFilterChain(req2, null);
         assertEquals(1, fcHolder2.filterCount());
         assertEquals("Filter1", fcHolder2.getFilter(0).getFilterName());
     }
@@ -159,7 +159,7 @@ public class AwsFilterChainManagerTest {
             new AwsProxyRequestBuilder("/first/second", "GET").build(), lambdaContext, null
         );
         req.setServletContext(servletContext);
-        FilterChainHolder fcHolder = chainManager.getFilterChain(req);
+        FilterChainHolder fcHolder = chainManager.getFilterChain(req, null);
         assertEquals(1, fcHolder.filterCount());
         assertEquals("Filter1", fcHolder.getFilter(0).getFilterName());
         AwsHttpServletResponse resp = new AwsHttpServletResponse(req, new CountDownLatch(1));
@@ -183,7 +183,7 @@ public class AwsFilterChainManagerTest {
             new AwsProxyRequestBuilder("/first/second", "GET").build(), lambdaContext, null
         );
         req2.setServletContext(servletContext);
-        FilterChainHolder fcHolder2 = chainManager.getFilterChain(req2);
+        FilterChainHolder fcHolder2 = chainManager.getFilterChain(req2, null);
         assertEquals(1, fcHolder2.filterCount());
         assertEquals("Filter1", fcHolder2.getFilter(0).getFilterName());
         assertEquals(-1, fcHolder2.currentFilter);
@@ -212,14 +212,14 @@ public class AwsFilterChainManagerTest {
         req.setServletContext(servletContext);
         FilterRegistration.Dynamic reg = req.getServletContext().addFilter("Filter4", new MockFilter());
         reg.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/second/*");
-        FilterChainHolder fcHolder = chainManager.getFilterChain(req);
+        FilterChainHolder fcHolder = chainManager.getFilterChain(req, null);
         assertEquals(2, fcHolder.filterCount());
         assertEquals("Filter2", fcHolder.getFilter(0).getFilterName());
         assertEquals("Filter4", fcHolder.getFilter(1).getFilterName());
 
         reg = req.getServletContext().addFilter("Filter5", new MockFilter());
         reg.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), false, "/second/*");
-        fcHolder = chainManager.getFilterChain(req);
+        fcHolder = chainManager.getFilterChain(req, null);
         assertEquals(3, fcHolder.filterCount());
         assertEquals("Filter2", fcHolder.getFilter(0).getFilterName());
         assertEquals("Filter4", fcHolder.getFilter(1).getFilterName());

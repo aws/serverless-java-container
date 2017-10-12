@@ -10,7 +10,7 @@ To include the library in your Maven project, add the desired implementation to 
 <dependency>
     <groupId>com.amazonaws.serverless</groupId>
     <artifactId>aws-serverless-java-container-jersey</artifactId>
-    <version>0.6</version>
+    <version>0.7</version>
 </dependency>
 ```
 
@@ -102,6 +102,16 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
         get("/hello", (req, res) -> "Hello World");
     }
 }
+```
+
+If you configure an [`initExceptionHandler` method](http://sparkjava.com/documentation#stopping-the-server), make sure that you call `System.exit` at the end of the method. This framework keeps a `CountDownLatch` on the request
+and unless you forcefully exit from the thread, the Lambda function will hang waiting for a latch that is never released.
+
+```java
+initExceptionHandler((e) -> {
+    LOG.error("ignite failed", e);
+    System.exit(100);
+});
 ```
 
 # Security context

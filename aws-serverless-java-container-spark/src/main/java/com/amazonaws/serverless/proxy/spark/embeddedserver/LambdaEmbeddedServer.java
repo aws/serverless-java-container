@@ -15,7 +15,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CountDownLatch;
 
 public class LambdaEmbeddedServer
         implements EmbeddedServer {
@@ -45,19 +44,14 @@ public class LambdaEmbeddedServer
     //-------------------------------------------------------------
     // Implementation - EmbeddedServer
     //-------------------------------------------------------------
-
     @Override
-    public int ignite(String host,
-                      int port,
-                      SslStores sslStores,
-                      CountDownLatch countDownLatch,
-                      int maxThreads,
-                      int minThreads,
-                      int threadIdleTimeoutMillis) {
+    public int ignite(String s, int i, SslStores sslStores, int i1, int i2, int i3)
+            throws Exception {
+        log.info("Starting Spark server, ignoring port and host");
         sparkFilter = new MatcherFilter(applicationRoutes, staticFilesConfiguration, false, hasMultipleHandler);
         sparkFilter.init(null);
 
-        countDownLatch.countDown();
+        //countDownLatch.countDown();
 
         return 0;
     }
@@ -72,9 +66,23 @@ public class LambdaEmbeddedServer
 
 
     @Override
-    public void extinguish() {
+    public void join()
+            throws InterruptedException {
+        log.info("Called join method, nothing to do here since Lambda only runs a single event per container");
     }
 
+
+    @Override
+    public void extinguish() {
+        log.info("Called extinguish method, nothing to do here.");
+    }
+
+
+    @Override
+    public int activeThreadCount() {
+        log.debug("Called activeThreadCount, since Lambda only runs one event per container we always return 1");
+        return 1;
+    }
 
     //-------------------------------------------------------------
     // Methods - Public
@@ -82,7 +90,6 @@ public class LambdaEmbeddedServer
 
     public void handle(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
-        //RouteMatch route = applicationRoutes.find(HttpMethod.get(request.requestMethod()), request.contextPath(), "*/*");
         sparkFilter.doFilter(request, response, null);
     }
 }
