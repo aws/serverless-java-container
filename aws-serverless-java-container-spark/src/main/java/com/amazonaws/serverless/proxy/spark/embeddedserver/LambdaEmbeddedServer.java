@@ -49,11 +49,11 @@ public class LambdaEmbeddedServer
             throws Exception {
         log.info("Starting Spark server, ignoring port and host");
         sparkFilter = new MatcherFilter(applicationRoutes, staticFilesConfiguration, false, hasMultipleHandler);
-        sparkFilter.init(null);
+        //sparkFilter.init(null);
 
         //countDownLatch.countDown();
 
-        return 0;
+        return i;
     }
 
 
