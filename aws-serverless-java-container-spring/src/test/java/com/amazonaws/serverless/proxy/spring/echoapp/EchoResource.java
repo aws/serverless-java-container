@@ -110,6 +110,17 @@ public class EchoResource {
         return valueModel;
     }
 
+    @RequestMapping(path = "/request-body", method = RequestMethod.POST)
+    public SingleValueModel helloForPopulatedBody(@RequestBody(required = false) String input) {
+        SingleValueModel valueModel = new SingleValueModel();
+        System.out.println("Input: \"" + input + "\"");
+        if (input != null && !"null".equals(input)) {
+            valueModel.setValue("true");
+        }
+
+        return valueModel;
+    }
+
     @RequestMapping(path = "/encoded-request-uri/{encoded-var}", method = RequestMethod.GET)
     public SingleValueModel echoEncodedRequestUri(@PathVariable("encoded-var") String encodedVar) {
         SingleValueModel valueModel = new SingleValueModel();

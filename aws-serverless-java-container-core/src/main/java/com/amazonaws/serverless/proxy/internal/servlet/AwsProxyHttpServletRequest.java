@@ -386,6 +386,9 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public ServletInputStream getInputStream() throws IOException {
+        if (request.getBody() == null) {
+            return null;
+        }
         byte[] bodyBytes = request.getBody().getBytes();
         if (request.isBase64Encoded()) {
             bodyBytes = Base64.getMimeDecoder().decode(request.getBody());

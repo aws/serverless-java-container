@@ -190,6 +190,34 @@ public class SpringAwsProxyTest {
     }
 
     @Test
+    public void injectBody_populatedResponse_noException() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/request-body", "POST")
+                                          .body("This is a populated body")
+                                          .build();
+
+        AwsProxyResponse response = handler.proxy(request, lambdaContext);
+        assertNotNull(response.getBody());
+        try {
+            SingleValueModel output = objectMapper.readValue(response.getBody(), SingleValueModel.class);
+            assertEquals("true", output.getValue());
+        } catch (IOException e) {
+            e.printStackTrace();
+            fail();
+        }
+
+        AwsProxyRequest emptyReq = new AwsProxyRequestBuilder("/echo/request-body", "POST")
+                                          .build();
+        AwsProxyResponse emptyResp = handler.proxy(emptyReq, lambdaContext);
+        try {
+            SingleValueModel output = objectMapper.readValue(emptyResp.getBody(), SingleValueModel.class);
+            assertEquals(null, output.getValue());
+        } catch (IOException e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
+    @Test
     public void servletRequestEncoding_acceptEncoding_okStatusCode() {
         SingleValueModel singleValueModel = new SingleValueModel();
         singleValueModel.setValue(CUSTOM_HEADER_VALUE);
