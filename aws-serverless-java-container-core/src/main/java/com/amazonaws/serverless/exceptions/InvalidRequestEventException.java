@@ -22,4 +22,8 @@ public class InvalidRequestEventException extends Exception {
     public InvalidRequestEventException(String message, Exception e) {
         super(message, e);
     }
+
+    public InvalidRequestEventException(String message) {
+        super(message);
+    }
 }

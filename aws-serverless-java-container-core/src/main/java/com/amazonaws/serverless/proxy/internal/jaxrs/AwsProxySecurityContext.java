@@ -13,6 +13,7 @@
 package com.amazonaws.serverless.proxy.internal.jaxrs;
 
 import com.amazonaws.serverless.proxy.internal.model.AwsProxyRequest;
+import com.amazonaws.serverless.proxy.internal.model.CognitoAuthorizerClaims;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import javax.ws.rs.core.SecurityContext;
@@ -61,26 +62,33 @@ public class AwsProxySecurityContext
     //-------------------------------------------------------------
 
     public Principal getUserPrincipal() {
-        return () -> {
-            if (getAuthenticationScheme() == null) {
-                return null;
-            }
+        if (getAuthenticationScheme() == null) {
+            return () -> null;
+        }
 
-            if (getAuthenticationScheme().equals(AUTH_SCHEME_CUSTOM)) {
-                return event.getRequestContext().getAuthorizer().getPrincipalId();
-            } else if (getAuthenticationScheme().equals(AUTH_SCHEME_AWS_IAM)) {
-                // if we received credentials from Cognito Federated Identities then we return the identity id
-                if (event.getRequestContext().getIdentity().getCognitoIdentityId() != null) {
-                    return event.getRequestContext().getIdentity().getCognitoIdentityId();
-                } else { // otherwise the user arn from the credentials
-                    return event.getRequestContext().getIdentity().getUserArn();
+        if (getAuthenticationScheme().equals(AUTH_SCHEME_CUSTOM) || getAuthenticationScheme().equals(AUTH_SCHEME_AWS_IAM)) {
+            return () -> {
+                if (getAuthenticationScheme().equals(AUTH_SCHEME_CUSTOM)) {
+                    return event.getRequestContext().getAuthorizer().getPrincipalId();
+                } else if (getAuthenticationScheme().equals(AUTH_SCHEME_AWS_IAM)) {
+                    // if we received credentials from Cognito Federated Identities then we return the identity id
+                    if (event.getRequestContext().getIdentity().getCognitoIdentityId() != null) {
+                        return event.getRequestContext().getIdentity().getCognitoIdentityId();
+                    } else { // otherwise the user arn from the credentials
+                        return event.getRequestContext().getIdentity().getUserArn();
+                    }
                 }
-            } else if (getAuthenticationScheme().equals(AUTH_SCHEME_COGNITO_POOL)) {
-                return event.getRequestContext().getAuthorizer().getClaims().getSubject();
-            }
 
-            return null;
-        };
+                // return null if we couldn't find a valid scheme
+                return null;
+            };
+        }
+
+        if (getAuthenticationScheme().equals(AUTH_SCHEME_COGNITO_POOL)) {
+            return new CognitoUserPoolPrincipal(event.getRequestContext().getAuthorizer().getClaims());
+        }
+
+        throw new RuntimeException("Cannot recognize authorization scheme in event");
     }
 
 
@@ -103,6 +111,29 @@ public class AwsProxySecurityContext
             return AUTH_SCHEME_AWS_IAM;
         } else {
             return null;
+        }
+    }
+
+
+    /**
+     * Custom object for request authorized with a Cognito User Pool authorizer. By casting the Principal
+     * object to this you can extract the Claims object included in the token.
+     */
+    public class CognitoUserPoolPrincipal implements Principal {
+
+        private CognitoAuthorizerClaims claims;
+
+        CognitoUserPoolPrincipal(CognitoAuthorizerClaims c) {
+            claims = c;
+        }
+
+        @Override
+        public String getName() {
+            return claims.getSubject();
+        }
+
+        public CognitoAuthorizerClaims getClaims() {
+            return claims;
         }
     }
 }

@@ -189,6 +189,12 @@ public class AwsProxyRequestBuilder {
         return this;
     }
 
+    public AwsProxyRequestBuilder claim(String claim, String value) {
+        this.request.getRequestContext().getAuthorizer().getClaims().setClaim(claim, value);
+
+        return this;
+    }
+
 
     public AwsProxyRequestBuilder cognitoIdentity(String identityId, String identityPoolId) {
         this.request.getRequestContext().getIdentity().setCognitoAuthenticationType("IDENTITY");

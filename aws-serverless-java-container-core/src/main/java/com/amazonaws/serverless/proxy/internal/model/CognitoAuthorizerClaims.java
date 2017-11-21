@@ -13,10 +13,14 @@
 package com.amazonaws.serverless.proxy.internal.model;
 
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -44,6 +48,8 @@ public class CognitoAuthorizerClaims {
     // Variables - Private
     //-------------------------------------------------------------
 
+    private Map<String, String> claims = new HashMap<>();
+
     @JsonProperty(value = "sub")
     private String subject;
     @JsonProperty(value = "aud")
@@ -68,6 +74,16 @@ public class CognitoAuthorizerClaims {
     //-------------------------------------------------------------
     // Methods - Getter/Setter
     //-------------------------------------------------------------
+
+    @JsonAnyGetter
+    public String getClaim(String claim) {
+        return claims.get(claim);
+    }
+
+    @JsonAnySetter
+    public void setClaim(String claim, String value) {
+        claims.put(claim, value);
+    }
 
     public String getSubject() { return this.subject; }
 
