@@ -56,6 +56,7 @@ public class LambdaEmbeddedServer
         if (sparkFilter == null) {
             sparkFilter = new MatcherFilter(applicationRoutes, staticFilesConfiguration, true, hasMultipleHandler);
         }
+        sparkFilter.init(null);
 
         return i;
     }
