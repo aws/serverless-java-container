@@ -93,6 +93,9 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
     public AwsProxyResponse handleRequest(AwsProxyRequest awsProxyRequest, Context context) {
         if (!initialized) {
             defineRoutes();
+            // it's important to call the awaitInitialization method not to run into race 
+            // conditions as routes are loaded asynchronously
+            Spark.awaitInitialization();
             initialized = true;
         }
         return handler.proxy(awsProxyRequest, context);
