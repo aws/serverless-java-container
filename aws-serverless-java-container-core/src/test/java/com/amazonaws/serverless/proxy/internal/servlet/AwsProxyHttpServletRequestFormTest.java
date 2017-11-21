@@ -7,12 +7,14 @@ import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.entity.EntityBuilder;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.junit.Test;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 
 import java.io.IOException;
 import java.util.Random;
@@ -29,6 +31,8 @@ public class AwsProxyHttpServletRequestFormTest {
     private static final String PART_VALUE_2 = "value2";
     private static final String FILE_KEY = "file_upload_1";
 
+    private static final String ENCODED_VALUE = "test123a%3D1%262@3";
+
     private static final HttpEntity MULTIPART_FORM_DATA = MultipartEntityBuilder.create()
                                                                                 .addTextBody(PART_KEY_1, PART_VALUE_1)
                                                                                 .addTextBody(PART_KEY_2, PART_VALUE_2)
@@ -43,6 +47,24 @@ public class AwsProxyHttpServletRequestFormTest {
                                                                                   .addTextBody(PART_KEY_2, PART_VALUE_2)
                                                                                   .addBinaryBody(FILE_KEY, FILE_BYTES)
                                                                                   .build();
+    private static final String ENCODED_FORM_ENTITY = PART_KEY_1 + "=" + ENCODED_VALUE + "&" + PART_KEY_2 + "=" + PART_VALUE_2;
+
+    @Test
+    public void postForm_getParam_getEncodedFullValue() {
+        try {
+            AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/form", "POST")
+                                                   .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED)
+                                                   .body(ENCODED_FORM_ENTITY)
+                                                   .build();
+
+            HttpServletRequest request = new AwsProxyHttpServletRequest(proxyRequest, null, null);
+            assertNotNull(request.getParts());
+            assertEquals("test123a=1&2@3", request.getParameter(PART_KEY_1));
+        } catch (IOException | ServletException e) {
+            fail(e.getMessage());
+        }
+    }
+
     @Test
     public void postForm_getParts_parsing() {
         try {
