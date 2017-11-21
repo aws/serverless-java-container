@@ -37,7 +37,7 @@ public class HelloWorldSparkTest {
             handler = SparkLambdaContainerHandler.getAwsProxyHandler();
 
             configureRoutes();
-
+            Spark.awaitInitialization();
         } catch (RuntimeException | ContainerInitializationException e) {
             e.printStackTrace();
             fail();

@@ -44,7 +44,7 @@ public class InitExceptionHandlerTest {
                                                       serverFactory);
 
             configureRoutes();
-
+            Spark.awaitInitialization();
         } catch (Exception e) {
             e.printStackTrace();
             fail("Error while mocking server");

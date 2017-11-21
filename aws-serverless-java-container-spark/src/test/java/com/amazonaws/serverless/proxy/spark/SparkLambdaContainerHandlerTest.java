@@ -50,6 +50,8 @@ public class SparkLambdaContainerHandlerTest {
 
         configureRoutes();
 
+        Spark.awaitInitialization();
+
         AwsProxyRequest req = new AwsProxyRequestBuilder().method("GET").path("/header-filter").build();
         AwsProxyResponse response = handler.proxy(req, new MockLambdaContext());
 
@@ -84,6 +86,7 @@ public class SparkLambdaContainerHandlerTest {
         });
 
         configureRoutes();
+        Spark.awaitInitialization();
 
         // first we test without the custom header, we expect request processing to complete
         // successfully
