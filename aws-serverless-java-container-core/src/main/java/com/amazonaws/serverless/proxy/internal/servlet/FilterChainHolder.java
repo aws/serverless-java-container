@@ -15,10 +15,8 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -70,21 +68,27 @@ public class FilterChainHolder implements FilterChain {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse) throws IOException, ServletException {
         currentFilter++;
-        if (filters == null || filters.size() == 0 || currentFilter > filters.size() - 1) {
-            log.debug("Could not find filters to execute, returning");
-            return;
-        }
         // TODO: We do not check for async filters here
 
-        FilterHolder holder = filters.get(currentFilter);
+        // if we still have filters, keep running through the chain
+        if (currentFilter <= filters.size() - 1) {
+            FilterHolder holder = filters.get(currentFilter);
 
-        // lazily initialize filters when they are needed
-        if (!holder.isFilterInitialized()) {
-            holder.init();
+            // lazily initialize filters when they are needed
+            if (!holder.isFilterInitialized()) {
+                holder.init();
+            }
+            log.debug("Starting {} {} : filter {}-{} {}", servletRequest.getDispatcherType(), ((HttpServletRequest) servletRequest).getRequestURI(),
+                      currentFilter, holder.getFilterName(), holder.getFilter());
+            holder.getFilter().doFilter(servletRequest, servletResponse, this);
+            log.debug("Executed {} {} : filter {}-{} {}", servletRequest.getDispatcherType(), ((HttpServletRequest) servletRequest).getRequestURI(),
+                      currentFilter, holder.getFilterName(), holder.getFilter());
         }
-        log.debug("Starting filter " + holder.getFilterName());
-        holder.getFilter().doFilter(servletRequest, servletResponse, this);
-        log.debug("Executed filter " + holder.getFilterName());
+
+        // if for some reason the response wasn't flushed yet, we force it here.
+        if (!servletResponse.isCommitted()) {
+            servletResponse.flushBuffer();
+        }
     }
 
 
@@ -143,5 +147,10 @@ public class FilterChainHolder implements FilterChain {
      */
     private void resetHolder() {
         currentFilter = -1;
+    }
+
+    @Override
+    public String toString() {
+        return "filters=" + filters;
     }
 }

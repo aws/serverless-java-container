@@ -196,9 +196,13 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     }
 
 
+    /**
+     * In AWS API Gateway, stage is never given as part of the path.
+     * @return
+     */
     @Override
     public String getContextPath() {
-        return request.getRequestContext().getStage();
+        return "";
     }
 
 
@@ -228,7 +232,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getRequestURI() {
-        return request.getPath();
+        return (getContextPath().isEmpty() ? "" : "/" + getContextPath()) + request.getPath();
     }
 
 
@@ -382,6 +386,9 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public ServletInputStream getInputStream() throws IOException {
+        if (request.getBody() == null) {
+            return null;
+        }
         byte[] bodyBytes = request.getBody().getBytes();
         if (request.isBase64Encoded()) {
             bodyBytes = Base64.getMimeDecoder().decode(request.getBody());
@@ -700,13 +707,8 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         if (!contentType.startsWith(MediaType.APPLICATION_FORM_URLENCODED) || !getMethod().toLowerCase().equals("post")) {
             return new HashMap<>();
         }
-        String rawBodyContent;
-        try {
-            rawBodyContent = URLDecoder.decode(request.getBody(), DEFAULT_CHARACTER_ENCODING);
-        } catch (UnsupportedEncodingException e) {
-            log.warn("Could not decode body content - proceeding as if it was already decoded", e);
-            rawBodyContent = request.getBody();
-        }
+
+        String rawBodyContent = request.getBody();
 
         Map<String, List<String>> output = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (String parameter : rawBodyContent.split(FORM_DATA_SEPARATOR)) {
@@ -718,10 +720,19 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             if (output.containsKey(parameterKeyValue[0])) {
                 values = output.get(parameterKeyValue[0]);
             }
-            values.add(parameterKeyValue[1]);
-            output.put(parameterKeyValue[0], values);
+            values.add(decodeValueIfEncoded(parameterKeyValue[1]));
+            output.put(decodeValueIfEncoded(parameterKeyValue[0]), values);
         }
 
         return output;
+    }
+
+    private String decodeValueIfEncoded(String value) {
+        try {
+            return URLDecoder.decode(value, DEFAULT_CHARACTER_ENCODING);
+        } catch (UnsupportedEncodingException e) {
+            log.warn("Could not decode body content - proceeding as if it was already decoded", e);
+            return value;
+        }
     }
 }

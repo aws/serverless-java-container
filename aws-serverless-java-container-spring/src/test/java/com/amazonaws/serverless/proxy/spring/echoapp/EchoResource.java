@@ -102,10 +102,21 @@ public class EchoResource {
         return valueModel;
     }
 
-    @RequestMapping(path = "/request-Url", method = RequestMethod.GET)
+    @RequestMapping(path = "/request-url", method = RequestMethod.GET)
     public SingleValueModel echoRequestURL(HttpServletRequest request) {
         SingleValueModel valueModel = new SingleValueModel();
         valueModel.setValue(request.getRequestURL().toString());
+
+        return valueModel;
+    }
+
+    @RequestMapping(path = "/request-body", method = RequestMethod.POST)
+    public SingleValueModel helloForPopulatedBody(@RequestBody(required = false) String input) {
+        SingleValueModel valueModel = new SingleValueModel();
+        System.out.println("Input: \"" + input + "\"");
+        if (input != null && !"null".equals(input)) {
+            valueModel.setValue("true");
+        }
 
         return valueModel;
     }

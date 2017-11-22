@@ -21,7 +21,6 @@ import com.amazonaws.services.lambda.runtime.Context;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
-import javax.servlet.ServletContext;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 
@@ -136,8 +135,6 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
         containerRequest.setServletContext(getServletContext());
 
         // process filters
-        doFilter(containerRequest, containerResponse);
-        // invoke servlet
-        initializer.dispatch(containerRequest, containerResponse);
+        doFilter(containerRequest, containerResponse, initializer);
     }
 }

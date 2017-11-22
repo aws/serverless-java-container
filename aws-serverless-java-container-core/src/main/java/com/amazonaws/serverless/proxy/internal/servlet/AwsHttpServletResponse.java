@@ -53,6 +53,7 @@ public class AwsHttpServletResponse
     private int statusCode;
     private String statusMessage;
     private String responseBody;
+    private PrintWriter writer;
     private ByteArrayOutputStream bodyOutputStream = new ByteArrayOutputStream();
     private CountDownLatch writersCountDownLatch;
     private AwsHttpServletRequest request;
@@ -316,7 +317,10 @@ public class AwsHttpServletResponse
 
     @Override
     public PrintWriter getWriter() throws IOException {
-        return new PrintWriter(bodyOutputStream);
+        if (null == writer) {
+            writer = new PrintWriter(bodyOutputStream);
+        }
+        return writer;
     }
 
 
@@ -358,7 +362,11 @@ public class AwsHttpServletResponse
 
     @Override
     public void flushBuffer() throws IOException {
+        if (null != writer) {
+            writer.flush();
+        }
         responseBody = new String(bodyOutputStream.toByteArray());
+        log.debug("Response buffer flushed with {} bytes, latch={}", responseBody.length(), writersCountDownLatch.getCount());
         isCommitted = true;
         writersCountDownLatch.countDown();
     }

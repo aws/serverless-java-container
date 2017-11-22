@@ -6,6 +6,7 @@ import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.spring.echoapp.EchoSpringAppConfig;
+import com.amazonaws.serverless.proxy.spring.echoapp.UnauthenticatedFilter;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.MapResponseModel;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.SingleValueModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -140,6 +141,18 @@ public class SpringAwsProxyTest {
     }
 
     @Test
+    public void error_unauthenticatedCall_filterStepsRequest() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/status-code", "GET")
+                                          .header(UnauthenticatedFilter.HEADER_NAME, "1")
+                                          .json()
+                                          .queryString("status", "201")
+                                          .build();
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(401, output.getStatusCode());
+    }
+
+    @Test
     public void responseBody_responseWriter_validBody() throws JsonProcessingException {
         SingleValueModel singleValueModel = new SingleValueModel();
         singleValueModel.setValue(CUSTOM_HEADER_VALUE);
@@ -177,6 +190,34 @@ public class SpringAwsProxyTest {
     }
 
     @Test
+    public void injectBody_populatedResponse_noException() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/request-body", "POST")
+                                          .body("This is a populated body")
+                                          .build();
+
+        AwsProxyResponse response = handler.proxy(request, lambdaContext);
+        assertNotNull(response.getBody());
+        try {
+            SingleValueModel output = objectMapper.readValue(response.getBody(), SingleValueModel.class);
+            assertEquals("true", output.getValue());
+        } catch (IOException e) {
+            e.printStackTrace();
+            fail();
+        }
+
+        AwsProxyRequest emptyReq = new AwsProxyRequestBuilder("/echo/request-body", "POST")
+                                          .build();
+        AwsProxyResponse emptyResp = handler.proxy(emptyReq, lambdaContext);
+        try {
+            SingleValueModel output = objectMapper.readValue(emptyResp.getBody(), SingleValueModel.class);
+            assertEquals(null, output.getValue());
+        } catch (IOException e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
+    @Test
     public void servletRequestEncoding_acceptEncoding_okStatusCode() {
         SingleValueModel singleValueModel = new SingleValueModel();
         singleValueModel.setValue(CUSTOM_HEADER_VALUE);
@@ -209,16 +250,16 @@ public class SpringAwsProxyTest {
 
     @Test
     public void request_requestURL() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/request-Url", "GET")
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/request-url", "GET")
                 .scheme("https")
                 .serverName("api.myserver.com")
                 .stage("prod")
                 .build();
-
+        handler.stripBasePath("");
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
 
-        validateSingleValueModel(output, "https://api.myserver.com/prod/echo/request-Url");
+        validateSingleValueModel(output, "https://api.myserver.com/echo/request-url");
     }
 
     @Test

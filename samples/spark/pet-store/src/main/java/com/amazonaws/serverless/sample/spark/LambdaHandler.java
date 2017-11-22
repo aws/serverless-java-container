@@ -24,6 +24,7 @@ import com.amazonaws.services.lambda.runtime.log4j.LambdaAppender;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import spark.Spark;
 
 import javax.ws.rs.core.Response;
 import java.util.UUID;
@@ -45,6 +46,7 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
             try {
                 handler = SparkLambdaContainerHandler.getAwsProxyHandler();
                 defineResources();
+                Spark.awaitInitialization();
             } catch (ContainerInitializationException e) {
                 log.error("Cannot initialize Spark application", e);
                 return null;

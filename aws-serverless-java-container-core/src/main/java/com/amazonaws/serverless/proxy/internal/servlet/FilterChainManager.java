@@ -13,9 +13,17 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
 import javax.servlet.DispatcherType;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -81,21 +89,25 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
      *
      * This method currently does not filter on servlet name because the library assumes we are using a single servlet.
      * @param request The incoming servlet request
+     * @param servlet The final servlet in the filter chain (if any)
      * @return A <code>FilterChainHolder</code> object that can be used to apply the filters to the request
      */
-    FilterChainHolder getFilterChain(final HttpServletRequest request) {
+    FilterChainHolder getFilterChain(final HttpServletRequest request, Servlet servlet) {
         String targetPath = request.getServletPath();
         DispatcherType type = request.getDispatcherType();
 
         // only return the cached result if the filter list hasn't changed in the meanwhile
-        if (getFilterHolders().size() == filtersSize && getFilterChainCache(type, targetPath) != null) {
-            return getFilterChainCache(type, targetPath);
+        if (getFilterHolders().size() == filtersSize && getFilterChainCache(type, targetPath, servlet) != null) {
+            return getFilterChainCache(type, targetPath, servlet);
         }
 
         FilterChainHolder chainHolder = new FilterChainHolder();
 
         Map<String, FilterHolder> registrations = getFilterHolders();
         if (registrations == null || registrations.size() == 0) {
+            if (servlet != null) {
+                chainHolder.addFilter(new FilterHolder(new ServletExecutionFilter(servlet), servletContext));
+            }
             return chainHolder;
         }
         for (String name : registrations.keySet()) {
@@ -113,6 +125,10 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
 
             // TODO: We do not allow programmatic registration of servlets so we never check for servlet name
             // we assume we only ever have one servlet.
+        }
+
+        if (servlet != null) {
+            chainHolder.addFilter(new FilterHolder(new ServletExecutionFilter(servlet), servletContext));
         }
 
         putFilterChainCache(type, targetPath, chainHolder);
@@ -134,9 +150,10 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
      * initialized with the cached list of {@link FilterHolder} objects
      * @param type The dispatcher type for the incoming request
      * @param targetPath The request path - this is extracted with the <code>getPath</code> method of the request object
+     * @param servlet Servlet to put at the end of the chain (optional).
      * @return A populated FilterChainHolder
      */
-    private FilterChainHolder getFilterChainCache(final DispatcherType type, final String targetPath) {
+    private FilterChainHolder getFilterChainCache(final DispatcherType type, final String targetPath, Servlet servlet) {
         TargetCacheKey key = new TargetCacheKey();
         key.setDispatcherType(type);
         key.setTargetPath(targetPath);
@@ -298,6 +315,36 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
 
         void setDispatcherType(DispatcherType dispatcherType) {
             this.dispatcherType = dispatcherType;
+        }
+    }
+
+    private class ServletExecutionFilter implements Filter {
+
+        private FilterConfig config;
+        private Servlet handlerServlet;
+
+        public ServletExecutionFilter(Servlet handler) {
+            handlerServlet = handler;
+        }
+
+        @Override
+        public void init(FilterConfig filterConfig)
+                throws ServletException {
+            config = filterConfig;
+        }
+
+
+        @Override
+        public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
+                throws IOException, ServletException {
+            handlerServlet.service(servletRequest, servletResponse);
+            filterChain.doFilter(servletRequest, servletResponse);
+        }
+
+
+        @Override
+        public void destroy() {
+
         }
     }
 }

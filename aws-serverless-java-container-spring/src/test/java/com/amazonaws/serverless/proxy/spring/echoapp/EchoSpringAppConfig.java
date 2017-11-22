@@ -13,6 +13,11 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 
+import javax.servlet.DispatcherType;
+import javax.servlet.FilterRegistration;
+
+import java.util.EnumSet;
+
 
 @Configuration
 @ComponentScan("com.amazonaws.serverless.proxy.spring.echoapp")
@@ -26,6 +31,12 @@ public class EchoSpringAppConfig {
     public SpringLambdaContainerHandler springLambdaContainerHandler() throws ContainerInitializationException {
         SpringLambdaContainerHandler handler = SpringLambdaContainerHandler.getAwsProxyHandler(applicationContext);
         handler.setRefreshContext(false);
+        handler.onStartup(c -> {
+            FilterRegistration.Dynamic registration = c.addFilter("UnauthenticatedFilter", UnauthenticatedFilter.class);
+            // update the registration to map to a path
+            registration.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/echo/*");
+            // servlet name mappings are disabled and will throw an exception
+        });
 
         return handler;
     }

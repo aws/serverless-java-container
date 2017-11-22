@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -141,9 +142,16 @@ public class AwsServletContext
     @Override
     public String getMimeType(String s) {
         try {
-            return Files.probeContentType(Paths.get(s));
+
+            if (s.startsWith("file:")) { // Support paths such as file:/D:/something/hello.txt
+                return Files.probeContentType(Paths.get(URI.create(s)));
+            } else if (s.startsWith("/")) { // Support paths such as file:/D:/something/hello.txt
+                    return Files.probeContentType(Paths.get(URI.create("file://" + s)));
+            } else {
+                return Files.probeContentType(Paths.get(s));
+            }
         } catch (IOException e) {
-            log.warn("Could not find content type for filter", e);
+            log.warn("Could not find content type for file {}", s, e);
             return null;
         }
     }
@@ -364,6 +372,8 @@ public class AwsServletContext
         // filter already exists, we do nothing
         if (filters.containsKey(name)) {
             return null;
+        } else {
+            log.debug("Adding filter '{}' from {}", name, filter);
         }
 
         FilterHolder newFilter = new FilterHolder(name, filter, this);
@@ -376,6 +386,7 @@ public class AwsServletContext
     @Override
     public FilterRegistration.Dynamic addFilter(String name, Class<? extends Filter> filterClass) {
         try {
+            log.debug("Adding filter '{}' from {}", name, filterClass.getName());
             Filter newFilter = createFilter(filterClass);
             return addFilter(name, newFilter);
         } catch (ServletException e) {
