@@ -162,6 +162,10 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType> extends AwsL
             log.debug("First request, getting new server instance");
             embeddedServer = LambdaEmbeddedServerFactory.getServerInstance();
 
+            // adding this call to make sure that the framework is fully initialized. This should address a race
+            // condition and solve GitHub issue #71.
+            Spark.awaitInitialization();
+
             // call the onStartup event if set to give developers a chance to set filters in the context
             if (startupHandler != null) {
                 startupHandler.onStartup(getServletContext());
@@ -170,10 +174,6 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType> extends AwsL
             // manually add the spark filter to the chain. This should the last one and match all uris
             FilterRegistration.Dynamic sparkRegistration = getServletContext().addFilter("SparkFilter", embeddedServer.getSparkFilter());
             sparkRegistration.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/*");
-
-            // adding this call to make sure that the framework is fully initialized. This should address a race
-            // condition and solve GitHub issue #71.
-            Spark.awaitInitialization();
         }
 
         doFilter(httpServletRequest, httpServletResponse, null);
