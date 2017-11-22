@@ -36,7 +36,7 @@ import java.util.concurrent.CountDownLatch;
  * object behind the scenes to proxy requests. The default implementation leverages the `AwsProxyHttpServletRequest` and
  * `AwsHttpServletResponse` implemented in the `aws-serverless-java-container-core` package.
  *
- * Important: Make sure to add {@link LambdaFlushResponseListener} in your SpringBootServletInitializer subclass configure().
+ * Important: Make sure to add <code>LambdaFlushResponseListener</code> in your SpringBootServletInitializer subclass configure().
  *
  * @param <RequestType> The incoming event type
  * @param <ResponseType> The expected return type
@@ -53,7 +53,7 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
      * Creates a default SpringLambdaContainerHandler initialized with the `AwsProxyRequest` and `AwsProxyResponse` objects
      * @param springBootInitializer {@code SpringBootServletInitializer} class
      * @return An initialized instance of the `SpringLambdaContainerHandler`
-     * @throws ContainerInitializationException
+     * @throws ContainerInitializationException If an error occurs while initializing the Spring framework
      */
     public static SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(Class<? extends WebApplicationInitializer> springBootInitializer)
             throws ContainerInitializationException {
@@ -73,7 +73,8 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
      * @param responseWriter An implementation of `ResponseWriter`
      * @param securityContextWriter An implementation of `SecurityContextWriter`
      * @param exceptionHandler An implementation of `ExceptionHandler`
-     * @throws ContainerInitializationException
+     * @param springBootInitializer {@code SpringBootServletInitializer} class
+     * @throws ContainerInitializationException If an error occurs while initializing the Spring framework
      */
     public SpringBootLambdaContainerHandler(RequestReader<RequestType, AwsProxyHttpServletRequest> requestReader,
                                             ResponseWriter<AwsHttpServletResponse, ResponseType> responseWriter,

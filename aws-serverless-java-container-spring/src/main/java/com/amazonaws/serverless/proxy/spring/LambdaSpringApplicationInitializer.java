@@ -88,10 +88,10 @@ public class LambdaSpringApplicationInitializer extends HttpServlet implements W
 
     /**
      * Given a request and response objects, triggers the filters set in the servlet context and
-     * @param request
-     * @param response
-     * @throws ServletException
-     * @throws IOException
+     * @param request The incoming request
+     * @param response The response object Spring should write to.
+     * @throws ServletException When an error occurs during processing or of the request
+     * @throws IOException When an error occurs while writing the response
      */
     public void dispatch(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -102,7 +102,7 @@ public class LambdaSpringApplicationInitializer extends HttpServlet implements W
 
     /**
      * Gets the initialized Spring dispatcher servlet instance.
-     * @return
+     * @return The Spring dispatcher servlet
      */
     public Servlet getDispatcherServlet() {
         return dispatcherServlet;
