@@ -160,11 +160,15 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType> extends AwsL
 
         if (embeddedServer == null) {
             log.debug("First request, getting new server instance");
-            embeddedServer = LambdaEmbeddedServerFactory.getServerInstance();
+
+            // trying to call init in case the embedded server had not been initialized.
+            Spark.init();
 
             // adding this call to make sure that the framework is fully initialized. This should address a race
             // condition and solve GitHub issue #71.
             Spark.awaitInitialization();
+
+            embeddedServer = LambdaEmbeddedServerFactory.getServerInstance();
 
             // call the onStartup event if set to give developers a chance to set filters in the context
             if (startupHandler != null) {

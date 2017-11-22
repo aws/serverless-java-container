@@ -166,7 +166,7 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
         servletContext = context;
         // We assume custom implementations of the RequestWriter for HttpServletRequest will reuse
         // the existing AwsServletContext object since it has no dependencies other than the Lambda context
-        filterChainManager = new AwsFilterChainManager((AwsServletContext)context);
+        filterChainManager = new AwsFilterChainManager((AwsServletContext)servletContext);
     }
 
     protected FilterChain getFilterChain(ContainerRequestType req, Servlet servlet) {
