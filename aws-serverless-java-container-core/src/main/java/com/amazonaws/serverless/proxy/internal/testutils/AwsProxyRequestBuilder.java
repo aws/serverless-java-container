@@ -12,11 +12,11 @@
  */
 package com.amazonaws.serverless.proxy.internal.testutils;
 
-import com.amazonaws.serverless.proxy.internal.model.ApiGatewayAuthorizerContext;
-import com.amazonaws.serverless.proxy.internal.model.ApiGatewayRequestContext;
-import com.amazonaws.serverless.proxy.internal.model.ApiGatewayRequestIdentity;
-import com.amazonaws.serverless.proxy.internal.model.AwsProxyRequest;
-import com.amazonaws.serverless.proxy.internal.model.CognitoAuthorizerClaims;
+import com.amazonaws.serverless.proxy.model.ApiGatewayAuthorizerContext;
+import com.amazonaws.serverless.proxy.model.ApiGatewayRequestContext;
+import com.amazonaws.serverless.proxy.model.ApiGatewayRequestIdentity;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
+import com.amazonaws.serverless.proxy.model.CognitoAuthorizerClaims;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

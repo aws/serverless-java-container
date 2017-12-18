@@ -10,8 +10,10 @@
  * OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package com.amazonaws.serverless.proxy.internal.model;
+package com.amazonaws.serverless.proxy.model;
 
+
+import com.amazonaws.serverless.proxy.RequestReader;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -21,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * all of the properties declared in the $context.identity API Gateway object so could be re-used for other implemnetations
  *
  * @see AwsProxyRequest
- * @see com.amazonaws.serverless.proxy.internal.RequestReader
+ * @see RequestReader
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ApiGatewayRequestIdentity {

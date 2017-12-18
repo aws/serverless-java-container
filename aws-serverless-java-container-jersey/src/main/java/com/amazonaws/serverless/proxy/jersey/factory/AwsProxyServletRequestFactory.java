@@ -14,8 +14,7 @@ package com.amazonaws.serverless.proxy.jersey.factory;
 
 
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
-import com.amazonaws.serverless.proxy.internal.AwsProxySecurityContextWriter;
-import com.amazonaws.serverless.proxy.internal.model.ContainerConfig;
+import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequestReader;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;

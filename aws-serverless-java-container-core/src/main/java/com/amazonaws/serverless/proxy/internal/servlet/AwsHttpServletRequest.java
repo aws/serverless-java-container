@@ -12,9 +12,9 @@
  */
 package com.amazonaws.serverless.proxy.internal.servlet;
 
-import com.amazonaws.serverless.proxy.internal.RequestReader;
-import com.amazonaws.serverless.proxy.internal.model.ApiGatewayRequestContext;
-import com.amazonaws.serverless.proxy.internal.model.ContainerConfig;
+import com.amazonaws.serverless.proxy.RequestReader;
+import com.amazonaws.serverless.proxy.model.ApiGatewayRequestContext;
+import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import org.slf4j.Logger;
@@ -26,7 +26,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionContext;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;

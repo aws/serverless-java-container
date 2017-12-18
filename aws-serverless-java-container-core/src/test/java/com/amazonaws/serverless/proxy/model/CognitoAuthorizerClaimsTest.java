@@ -1,21 +1,27 @@
-package com.amazonaws.serverless.proxy.internal.model;
+package com.amazonaws.serverless.proxy.model;
 
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 
 import org.junit.Test;
 
 import java.io.IOException;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 import static org.junit.Assert.*;
 
-public class ApiGatewayAuthorizerContextTest {
-    private static final String FIELD_NAME_1 = "CUSTOM_FIELD_1";
-    private static final String FIELD_NAME_2 = "CUSTOM_FIELD_2";
-    private static final String FIELD_VALUE_1 = "VALUE_1";
-    private static final String FIELD_VALUE_2 = "VALUE_2";
-    private static final String PRINCIPAL = "xxxxx";
+public class CognitoAuthorizerClaimsTest {
 
-    private static final String AUTHORIZER_REQUEST = "{\n"
+    private static final String USERNAME = "test_username";
+    private static final String SUB = "42df3b02-29f1-4779-a3e5-eff92ff280b2";
+    private static final String AUD = "2k3no2j1rjjbqaskc4bk0ub29b";
+    private static final String EMAIL = "testemail@test.com";
+
+    private static final String EXP_TIME = "Mon Apr 17 23:12:49 UTC 2017";
+    private static final String ISSUE_TIME = "Mon Apr 17 22:12:49 UTC 2017";
+    static final DateTimeFormatter TOKEN_DATE_FORMATTER = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss zzz yyyy");
+
+    private static final String USER_POOLS_REQUEST = "{\n"
                                                      + "    \"resource\": \"/restaurants\",\n"
                                                      + "    \"path\": \"/restaurants\",\n"
                                                      + "    \"httpMethod\": \"GET\",\n"
@@ -32,9 +38,18 @@ public class ApiGatewayAuthorizerContextTest {
                                                      + "        \"resourceId\": \"xxxxx\",\n"
                                                      + "        \"stage\": \"dev\",\n"
                                                      + "        \"authorizer\": {\n"
-                                                     + "            \"principalId\": \"" + PRINCIPAL + "\",\n"
-                                                     + "            \"" + FIELD_NAME_1 + "\": \"" + FIELD_VALUE_1 + "\","
-                                                     + "            \"" + FIELD_NAME_2 + "\": \"" + FIELD_VALUE_2 + "\""
+                                                     + "            \"claims\": {\n"
+                                                     + "                \"sub\": \"" + SUB + "\",\n"
+                                                     + "                \"aud\": \"" + AUD + "\",\n"
+                                                     + "                \"email_verified\": \"true\",\n"
+                                                     + "                \"token_use\": \"id\",\n"
+                                                     + "                \"auth_time\": \"1492467169\",\n"
+                                                     + "                \"iss\": \"https://cognito-idp.us-east-2.amazonaws.com/us-east-2_xxXXxxXX\",\n"
+                                                     + "                \"cognito:username\": \"" + USERNAME + "\",\n"
+                                                     + "                \"exp\": \"" + EXP_TIME + "\",\n"
+                                                     + "                \"iat\": \"" + ISSUE_TIME + "\",\n"
+                                                     + "                \"email\": \"" + EMAIL + "\"\n"
+                                                     + "            }\n"
                                                      + "        },\n"
                                                      + "        \"requestId\": \"ad0a33ba-23bc-11e7-9b7d-235a67eb05bd\",\n"
                                                      + "        \"identity\": {\n"
@@ -59,17 +74,34 @@ public class ApiGatewayAuthorizerContextTest {
                                                      + "    \"isBase64Encoded\": false\n"
                                                      + "}";
 
-    @Test
-    public void authorizerContext_serialize_customValues() {
-        try {
-            AwsProxyRequest req = new AwsProxyRequestBuilder().fromJsonString(AUTHORIZER_REQUEST).build();
 
-            assertNotNull(req.getRequestContext().getAuthorizer().getContextValue(FIELD_NAME_1));
-            assertNotNull(req.getRequestContext().getAuthorizer().getContextValue(FIELD_NAME_2));
-            assertEquals(FIELD_VALUE_1, req.getRequestContext().getAuthorizer().getContextValue(FIELD_NAME_1));
-            assertEquals(FIELD_VALUE_2, req.getRequestContext().getAuthorizer().getContextValue(FIELD_NAME_2));
-            assertEquals(PRINCIPAL, req.getRequestContext().getAuthorizer().getPrincipalId());
-            assertNull(req.getRequestContext().getAuthorizer().getContextValue("principalId"));
+    @Test
+    public void claims_serialize_validJsonString() {
+        try {
+            AwsProxyRequest req = new AwsProxyRequestBuilder().fromJsonString(USER_POOLS_REQUEST).build();
+
+            assertEquals(USERNAME, req.getRequestContext().getAuthorizer().getClaims().getUsername());
+            assertEquals(EMAIL, req.getRequestContext().getAuthorizer().getClaims().getEmail());
+            assertTrue(req.getRequestContext().getAuthorizer().getClaims().isEmailVerified());
+        } catch (IOException e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
+    @Test
+    public void claims_dateParse_issueTime() {
+        try {
+            AwsProxyRequest req = new AwsProxyRequestBuilder().fromJsonString(USER_POOLS_REQUEST).build();
+
+            assertEquals(EXP_TIME, req.getRequestContext().getAuthorizer().getClaims().getExpiration());
+            assertNotNull(req.getRequestContext().getAuthorizer().getClaims().getExpiration());
+
+            ZonedDateTime expTime = ZonedDateTime.from(TOKEN_DATE_FORMATTER.parse(EXP_TIME));
+            ZonedDateTime issueTime = ZonedDateTime.from(TOKEN_DATE_FORMATTER.parse(ISSUE_TIME));
+            assertEquals(expTime, ZonedDateTime.from(TOKEN_DATE_FORMATTER.parse(req.getRequestContext().getAuthorizer().getClaims().getExpiration())));
+
+            assertEquals(expTime, issueTime.plusHours(1));
         } catch (IOException e) {
             e.printStackTrace();
             fail();

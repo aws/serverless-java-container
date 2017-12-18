@@ -12,11 +12,11 @@
  */
 package com.amazonaws.serverless.proxy.internal.servlet;
 
-import com.amazonaws.serverless.proxy.internal.ExceptionHandler;
+import com.amazonaws.serverless.proxy.ExceptionHandler;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
-import com.amazonaws.serverless.proxy.internal.RequestReader;
-import com.amazonaws.serverless.proxy.internal.ResponseWriter;
-import com.amazonaws.serverless.proxy.internal.SecurityContextWriter;
+import com.amazonaws.serverless.proxy.RequestReader;
+import com.amazonaws.serverless.proxy.ResponseWriter;
+import com.amazonaws.serverless.proxy.SecurityContextWriter;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import org.slf4j.Logger;

@@ -1,7 +1,7 @@
 package com.amazonaws.serverless.proxy.spring.echoapp;
 
-import com.amazonaws.serverless.proxy.internal.RequestReader;
-import com.amazonaws.serverless.proxy.internal.model.ApiGatewayRequestContext;
+import com.amazonaws.serverless.proxy.RequestReader;
+import com.amazonaws.serverless.proxy.model.ApiGatewayRequestContext;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.MapResponseModel;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.SingleValueModel;
 import org.springframework.beans.factory.annotation.Autowired;

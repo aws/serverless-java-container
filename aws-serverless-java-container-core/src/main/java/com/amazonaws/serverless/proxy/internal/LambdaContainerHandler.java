@@ -13,7 +13,11 @@
 package com.amazonaws.serverless.proxy.internal;
 
 
-import com.amazonaws.serverless.proxy.internal.model.ContainerConfig;
+import com.amazonaws.serverless.proxy.model.ContainerConfig;
+import com.amazonaws.serverless.proxy.ExceptionHandler;
+import com.amazonaws.serverless.proxy.RequestReader;
+import com.amazonaws.serverless.proxy.ResponseWriter;
+import com.amazonaws.serverless.proxy.SecurityContextWriter;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import org.slf4j.Logger;
