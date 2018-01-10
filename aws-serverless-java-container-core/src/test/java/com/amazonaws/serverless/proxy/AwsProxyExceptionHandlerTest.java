@@ -1,8 +1,9 @@
-package com.amazonaws.serverless.proxy.internal;
+package com.amazonaws.serverless.proxy;
 
 
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.exceptions.InvalidResponseObjectException;
+import com.amazonaws.serverless.proxy.AwsProxyExceptionHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.ErrorModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
