@@ -13,7 +13,7 @@
 package com.amazonaws.serverless.proxy.jersey;
 
 
-import com.amazonaws.serverless.proxy.internal.AwsProxyExceptionHandler;
+import com.amazonaws.serverless.proxy.AwsProxyExceptionHandler;
 import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
 import com.amazonaws.serverless.proxy.ExceptionHandler;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
