@@ -5,6 +5,7 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
+import com.amazonaws.serverless.proxy.spring.echoapp.EchoResource;
 import com.amazonaws.serverless.proxy.spring.echoapp.EchoSpringAppConfig;
 import com.amazonaws.serverless.proxy.spring.echoapp.UnauthenticatedFilter;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.MapResponseModel;
@@ -275,6 +276,26 @@ public class SpringAwsProxyTest {
 
         validateSingleValueModel(output, "Some Thing");
 
+    }
+
+    @Test
+    public void contextPath_generateLink_returnsCorrectPath() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/generate-uri", "GET")
+                                          .scheme("https")
+                                          .serverName("api.myserver.com")
+                                          .stage("prod")
+                                          .build();
+        SpringLambdaContainerHandler.getContainerConfig().setUseStageAsServletContext(true);
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(200, output.getStatusCode());
+        System.out.println("Response: " + output.getBody());
+
+        String expectedUri = "https://api.myserver.com/prod/echo/encoded-request-uri/" + EchoResource.TEST_GENERATE_URI;
+
+        validateSingleValueModel(output, expectedUri);
+
+        SpringLambdaContainerHandler.getContainerConfig().setUseStageAsServletContext(false);
     }
 
     private void validateMapResponseModel(AwsProxyResponse output) {

@@ -34,6 +34,7 @@ import org.junit.Test;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Response;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -53,7 +54,7 @@ public class JerseyAwsProxyTest {
 
 
     private static ObjectMapper objectMapper = new ObjectMapper();
-    private static ResourceConfig app = new ResourceConfig().packages("com.amazonaws.serverless.proxy.jersey")
+    private static ResourceConfig app = new ResourceConfig().packages("com.amazonaws.serverless.proxy.jersey", "com.amazonaws.serverless.proxy.jersey.providers")
                                                             .register(new AbstractBinder() {
                                                                 @Override
                                                                 protected void configure() {
@@ -243,6 +244,16 @@ public class JerseyAwsProxyTest {
         AwsProxyResponse response = handler.proxy(request, lambdaContext);
         assertNotNull(response.getBody());
         assertTrue(Base64.isBase64(response.getBody()));
+    }
+
+    @Test
+    public void exception_mapException_mapToNotImplemented() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/exception", "GET").build();
+
+        AwsProxyResponse response = handler.proxy(request, lambdaContext);
+        assertNotNull(response.getBody());
+        assertEquals(EchoJerseyResource.EXCEPTION_MESSAGE, response.getBody());
+        assertEquals(Response.Status.NOT_IMPLEMENTED.getStatusCode(), response.getStatusCode());
     }
 
     private void validateMapResponseModel(AwsProxyResponse output) {

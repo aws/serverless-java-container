@@ -104,7 +104,7 @@ public class AwsServletContext
     @Override
     public String getContextPath() {
         // servlets are always at the root.
-        return "/";
+        return "";
     }
 
 

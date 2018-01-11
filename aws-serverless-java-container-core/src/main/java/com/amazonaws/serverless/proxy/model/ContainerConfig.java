@@ -1,6 +1,9 @@
 package com.amazonaws.serverless.proxy.model;
 
 
+import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
+
+
 /**
  * Configuration parameters for the framework
  */
@@ -12,6 +15,7 @@ public class ContainerConfig {
         configuration.setStripBasePath(false);
         configuration.setUriEncoding(DEFAULT_URI_ENCODING);
         configuration.setConsolidateSetCookieHeaders(true);
+        configuration.setUseStageAsServletContext(false);
 
         return configuration;
     }
@@ -24,19 +28,29 @@ public class ContainerConfig {
     private boolean stripBasePath;
     private String uriEncoding;
     private boolean consolidateSetCookieHeaders;
+    private boolean useStageAsServletContext;
 
 
     //-------------------------------------------------------------
     // Methods - Getter/Setter
     //-------------------------------------------------------------
 
+
+    /**
+     * Returns the base path configured in the container. This configuration variable is used in conjuction with {@link #setStripBasePath(boolean)} to route
+     * the request. When requesting the context path from an HttpServletRequest: {@link AwsProxyHttpServletRequest#getContextPath()} this base path is added
+     * to the context even though it was initially stripped for the purpose of routing the request. We decided to add it to the context to address GitHub issue
+     * #84 and allow framework's link builders to it.
+     *
+     * @return The base path configured for the container
+     */
     public String getServiceBasePath() {
         return serviceBasePath;
     }
 
 
     /**
-     * Configures a base path  that can be strippped from the request path before passing it to the frameowkr-specific implementation. This can be used to
+     * Configures a base path  that can be stripped from the request path before passing it to the framework-specific implementation. This can be used to
      * remove API Gateway's base path mappings from the request.
      * @param serviceBasePath The base path mapping to be removed.
      */
@@ -98,5 +112,23 @@ public class ContainerConfig {
      */
     public void setConsolidateSetCookieHeaders(boolean consolidateSetCookieHeaders) {
         this.consolidateSetCookieHeaders = consolidateSetCookieHeaders;
+    }
+
+
+    /**
+     * Tells whether the stage name passed in the request should be added to the context path: {@link AwsProxyHttpServletRequest#getContextPath()}.
+     * @return true if the stage will be included in the context path, false otherwise.
+     */
+    public boolean isUseStageAsServletContext() {
+        return useStageAsServletContext;
+    }
+
+
+    /**
+     * Sets whether the API Gateway stage name should be included in the servlet context path.
+     * @param useStageAsServletContext true if you want the stage to appear as the root of the context path, false otherwise.
+     */
+    public void setUseStageAsServletContext(boolean useStageAsServletContext) {
+        this.useStageAsServletContext = useStageAsServletContext;
     }
 }

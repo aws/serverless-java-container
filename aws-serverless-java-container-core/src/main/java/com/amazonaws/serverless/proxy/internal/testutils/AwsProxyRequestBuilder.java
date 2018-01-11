@@ -12,6 +12,7 @@
  */
 package com.amazonaws.serverless.proxy.internal.testutils;
 
+import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.ApiGatewayAuthorizerContext;
 import com.amazonaws.serverless.proxy.model.ApiGatewayRequestContext;
 import com.amazonaws.serverless.proxy.model.ApiGatewayRequestIdentity;
@@ -41,8 +42,6 @@ public class AwsProxyRequestBuilder {
     //-------------------------------------------------------------
 
     private AwsProxyRequest request;
-    private ObjectMapper mapper;
-
 
     //-------------------------------------------------------------
     // Constructors
@@ -59,7 +58,6 @@ public class AwsProxyRequestBuilder {
 
 
     public AwsProxyRequestBuilder(String path, String httpMethod) {
-        this.mapper = new ObjectMapper();
 
         this.request = new AwsProxyRequest();
         this.request.setHeaders(new HashMap<>()); // avoid NPE
@@ -144,7 +142,7 @@ public class AwsProxyRequestBuilder {
     public AwsProxyRequestBuilder body(Object body) {
         if (request.getHeaders() != null && request.getHeaders().get(HttpHeaders.CONTENT_TYPE).equals(MediaType.APPLICATION_JSON)) {
             try {
-                return body(mapper.writeValueAsString(body));
+                return body(LambdaContainerHandler.getObjectMapper().writeValueAsString(body));
             } catch (JsonProcessingException e) {
                 throw new UnsupportedOperationException("Could not serialize object: " + e.getMessage());
             }
@@ -239,13 +237,13 @@ public class AwsProxyRequestBuilder {
 
     public AwsProxyRequestBuilder fromJsonString(String jsonContent)
             throws IOException {
-        request = mapper.readValue(jsonContent, AwsProxyRequest.class);
+        request = LambdaContainerHandler.getObjectMapper().readValue(jsonContent, AwsProxyRequest.class);
         return this;
     }
 
     public AwsProxyRequestBuilder fromJsonPath(String filePath)
             throws IOException {
-        request = mapper.readValue(new File(filePath), AwsProxyRequest.class);
+        request = LambdaContainerHandler.getObjectMapper().readValue(new File(filePath), AwsProxyRequest.class);
         return this;
     }
 

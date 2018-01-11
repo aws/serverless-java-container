@@ -12,14 +12,22 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+
+import java.net.URI;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Random;
+
+import static org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder.fromMethodCall;
+import static org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder.on;
+
 
 @RestController
 @EnableWebMvc
 @RequestMapping("/echo")
 public class EchoResource {
+    public static final String TEST_GENERATE_URI = "test";
+
     @Autowired
     ServletContext servletContext;
 
@@ -125,6 +133,17 @@ public class EchoResource {
     public SingleValueModel echoEncodedRequestUri(@PathVariable("encoded-var") String encodedVar) {
         SingleValueModel valueModel = new SingleValueModel();
         valueModel.setValue(encodedVar);
+
+        return valueModel;
+    }
+
+    @RequestMapping(path = "/generate-uri", method = RequestMethod.GET)
+    public SingleValueModel echoGeneratedResourceLink() {
+        SingleValueModel valueModel = new SingleValueModel();
+
+        URI personUri = fromMethodCall(on(EchoResource.class).echoEncodedRequestUri(TEST_GENERATE_URI)).build().toUri();
+
+        valueModel.setValue(personUri.toString());
 
         return valueModel;
     }
