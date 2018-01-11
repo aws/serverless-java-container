@@ -88,13 +88,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     //-------------------------------------------------------------
 
     public AwsProxyHttpServletRequest(AwsProxyRequest awsProxyRequest, Context lambdaContext, SecurityContext awsSecurityContext) {
-        super(lambdaContext);
-        this.request = awsProxyRequest;
-        this.securityContext = awsSecurityContext;
-        this.config = ContainerConfig.defaultConfig();
-
-        this.urlEncodedFormParameters = getFormUrlEncodedParametersMap();
-        this.multipartFormParameters = getMultipartFormParametersMap();
+        this(awsProxyRequest, lambdaContext, awsSecurityContext, ContainerConfig.defaultConfig());
     }
 
     public AwsProxyHttpServletRequest(AwsProxyRequest awsProxyRequest, Context lambdaContext, SecurityContext awsSecurityContext, ContainerConfig config) {
@@ -506,7 +500,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
         if (request.getQueryStringParameters() != null) {
             for (Map.Entry<String, String> entry : request.getQueryStringParameters().entrySet()) {
-                if (params.containsKey(entry.getKey())) {
+                if (params.containsKey(entry.getKey()) && !params.get(entry.getKey()).contains(entry.getValue())) {
                     params.get(entry.getKey()).add(entry.getValue());
                 } else {
                     List<String> valueList = new ArrayList<>();
