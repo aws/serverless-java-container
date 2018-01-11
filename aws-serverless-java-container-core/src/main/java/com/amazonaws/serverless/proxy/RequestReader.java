@@ -10,19 +10,14 @@
  * OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package com.amazonaws.serverless.proxy.internal;
+package com.amazonaws.serverless.proxy;
 
 
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
-import com.amazonaws.serverless.proxy.internal.model.ContainerConfig;
+import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.services.lambda.runtime.Context;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import javax.ws.rs.core.SecurityContext;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 
 /**
@@ -63,13 +58,13 @@ public abstract class RequestReader<RequestType, ContainerRequestType> {
     /**
      * Reads the incoming event object and produces a populated request for the underlying container
      * @param request The incoming request object
-     * @param securityContext A jax-rs SecurityContext object (@see com.amazonaws.serverless.proxy.internal.SecurityContextWriter)
+     * @param securityContext A jax-rs SecurityContext object (@see com.amazonaws.serverless.proxy.SecurityContextWriter)
      * @param lambdaContext The AWS Lambda context for the request
      * @param config The container configuration object. This is passed in by the LambdaContainerHandler.
      * @return A valid request object for the underlying container
      * @throws InvalidRequestEventException This exception is thrown if anything goes wrong during the creation of the request object
      */
-    protected abstract ContainerRequestType readRequest(RequestType request, SecurityContext securityContext, Context lambdaContext, ContainerConfig config)
+    public abstract ContainerRequestType readRequest(RequestType request, SecurityContext securityContext, Context lambdaContext, ContainerConfig config)
             throws InvalidRequestEventException;
 
 

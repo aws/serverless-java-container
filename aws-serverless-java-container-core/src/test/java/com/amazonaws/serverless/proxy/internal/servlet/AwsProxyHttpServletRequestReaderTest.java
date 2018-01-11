@@ -2,8 +2,8 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
-import com.amazonaws.serverless.proxy.internal.model.AwsProxyRequest;
-import com.amazonaws.serverless.proxy.internal.model.ContainerConfig;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
+import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.services.lambda.runtime.Context;
 import org.junit.Test;

@@ -12,11 +12,15 @@
  */
 package com.amazonaws.serverless.exceptions;
 
+
+import com.amazonaws.serverless.proxy.ResponseWriter;
+
+
 /**
  * This exception is thrown when the ContainerHandler cannot transform the Container response into a valid return value
  * for the Lambda function. This exception is thrown by implementing sub-classes of <code>ResponseWriter</code>
  *
- * @see com.amazonaws.serverless.proxy.internal.ResponseWriter
+ * @see ResponseWriter
  */
 public class InvalidResponseObjectException extends Exception {
     public InvalidResponseObjectException(String message, Exception e) {

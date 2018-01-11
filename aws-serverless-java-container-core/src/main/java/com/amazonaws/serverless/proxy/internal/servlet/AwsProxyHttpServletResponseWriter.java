@@ -14,11 +14,10 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 
 import com.amazonaws.serverless.exceptions.InvalidResponseObjectException;
-import com.amazonaws.serverless.proxy.internal.ResponseWriter;
-import com.amazonaws.serverless.proxy.internal.model.AwsProxyResponse;
+import com.amazonaws.serverless.proxy.ResponseWriter;
+import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
 
-import java.io.IOException;
 import java.util.Base64;
 
 /**

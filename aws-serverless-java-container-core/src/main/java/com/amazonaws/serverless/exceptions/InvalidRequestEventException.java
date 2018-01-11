@@ -12,11 +12,15 @@
  */
 package com.amazonaws.serverless.exceptions;
 
+
+import com.amazonaws.serverless.proxy.RequestReader;
+
+
 /**
  * This exception is thrown when the ContainerHandler fails to parse a request object or input stream into the
  * object required by the Container. The exception is thrown by implementing sub-classes of <code>RequestReader</code>
  *
- * @see com.amazonaws.serverless.proxy.internal.RequestReader
+ * @see RequestReader
  */
 public class InvalidRequestEventException extends Exception {
     public InvalidRequestEventException(String message, Exception e) {

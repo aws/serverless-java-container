@@ -13,8 +13,8 @@
 package com.amazonaws.serverless.proxy.jersey;
 
 
-import com.amazonaws.serverless.proxy.internal.model.AwsProxyRequest;
-import com.amazonaws.serverless.proxy.internal.model.AwsProxyResponse;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
+import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
 import com.amazonaws.serverless.proxy.jersey.factory.AwsProxyServletContextFactory;
 import com.amazonaws.serverless.proxy.jersey.factory.AwsProxyServletRequestFactory;

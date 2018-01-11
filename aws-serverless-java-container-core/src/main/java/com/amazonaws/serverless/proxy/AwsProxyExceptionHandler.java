@@ -10,11 +10,12 @@
  * OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package com.amazonaws.serverless.proxy.internal;
+package com.amazonaws.serverless.proxy;
 
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
-import com.amazonaws.serverless.proxy.internal.model.AwsProxyResponse;
-import com.amazonaws.serverless.proxy.internal.model.ErrorModel;
+import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
+import com.amazonaws.serverless.proxy.model.ErrorModel;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -34,7 +35,7 @@ import java.util.Map;
  * Returns application/json messages with a status code of 500 when the RequestReader failed to read the incoming event.
  * For all other exceptions returns a 502. Responses are populated with a JSON object containing a message property.
  *
- * @see com.amazonaws.serverless.proxy.internal.ExceptionHandler
+ * @see ExceptionHandler
  */
 public class AwsProxyExceptionHandler
         implements ExceptionHandler<AwsProxyResponse> {

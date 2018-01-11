@@ -13,13 +13,20 @@
 package com.amazonaws.serverless.proxy.spring;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
-import com.amazonaws.serverless.proxy.internal.*;
-import com.amazonaws.serverless.proxy.internal.model.AwsProxyRequest;
-import com.amazonaws.serverless.proxy.internal.model.AwsProxyResponse;
+import com.amazonaws.serverless.proxy.AwsProxyExceptionHandler;
+import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
+import com.amazonaws.serverless.proxy.ExceptionHandler;
+import com.amazonaws.serverless.proxy.RequestReader;
+import com.amazonaws.serverless.proxy.ResponseWriter;
+import com.amazonaws.serverless.proxy.SecurityContextWriter;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
+import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.*;
 import com.amazonaws.services.lambda.runtime.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.web.SpringServletContainerInitializer;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.WebApplicationContext;
@@ -27,7 +34,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.servlet.DispatcherServlet;
 
 import javax.servlet.*;
-import javax.servlet.http.HttpServletResponse;
+
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
@@ -42,9 +49,9 @@ import java.util.concurrent.CountDownLatch;
  * @param <ResponseType> The expected return type
  */
 public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends AwsLambdaServletContainerHandler<RequestType, ResponseType, AwsProxyHttpServletRequest, AwsHttpServletResponse> {
-    static ThreadLocal<HttpServletResponse> currentResponse = new ThreadLocal<>();
     private final Class<? extends WebApplicationInitializer> springBootInitializer;
     private static final Logger log = LoggerFactory.getLogger(SpringBootLambdaContainerHandler.class);
+    private String[] springProfiles = null;
 
     // State vars
     private boolean initialized;
@@ -86,6 +93,12 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
         this.springBootInitializer = springBootInitializer;
     }
 
+    public void activateSpringProfiles(String... profiles) {
+        springProfiles = profiles;
+        // force a re-initialization
+        initialized = false;
+    }
+
     @Override
     protected AwsHttpServletResponse getContainerResponse(AwsProxyHttpServletRequest request, CountDownLatch latch) {
         return new AwsHttpServletResponse(request, latch);
@@ -104,23 +117,23 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
             LinkedHashSet<Class<?>> webAppInitializers = new LinkedHashSet<>();
             webAppInitializers.add(springBootInitializer);
             springServletContainerInitializer.onStartup(webAppInitializers, getServletContext());
+
+            if (springProfiles != null && springProfiles.length > 0) {
+                ConfigurableEnvironment springEnv = new StandardEnvironment();
+                springEnv.setActiveProfiles(springProfiles);
+                
+            }
+
             initialized = true;
         }
 
         containerRequest.setServletContext(getServletContext());
 
-        currentResponse.set(containerResponse);
-        try {
-            WebApplicationContext applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
-            DispatcherServlet dispatcherServlet = applicationContext.getBean("dispatcherServlet", DispatcherServlet.class);
-            // process filters & invoke servlet
-            log.debug("Process filters & invoke servlet: {}", dispatcherServlet);
-            doFilter(containerRequest, containerResponse, dispatcherServlet);
-        } finally {
-            // call the flush method to release the latch
-            SpringBootLambdaContainerHandler.currentResponse.remove();
-            currentResponse.remove();
-        }
+        WebApplicationContext applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
+
+        DispatcherServlet dispatcherServlet = applicationContext.getBean("dispatcherServlet", DispatcherServlet.class);
+        // process filters & invoke servlet
+        doFilter(containerRequest, containerResponse, dispatcherServlet);
     }
 
     private class SpringBootAwsServletContext extends AwsServletContext {

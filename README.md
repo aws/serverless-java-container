@@ -194,7 +194,7 @@ handler.onStartup(c -> {
 # Using the Lambda Stream handler
 By default, Lambda does not use Jackson annotations when marshalling and unmarhsalling JSON. This can cause issues when receiving requests that include the claims object from a Cognito User Pool authorizer. To support these type of requests, use Lambda's `RequestStreamHandler` interface instead of the POJO-based `RequestHandler`. This allows you to use a custom version of Jackson with support for annotations. 
 
-This library uses Jackson annotations in the `com.amazonaws.serverless.proxy.internal.model.CognitoAuthorizerClaims` object. The example below shows how to do this with a `SpringLambdaContainerHandler`, you can use the same methodology with all of the other implementations.
+This library uses Jackson annotations in the `com.amazonaws.serverless.proxy.model.CognitoAuthorizerClaims` object. The example below shows how to do this with a `SpringLambdaContainerHandler`, you can use the same methodology with all of the other implementations.
 
 ```java
 public class StreamLambdaHandler implements RequestStreamHandler {

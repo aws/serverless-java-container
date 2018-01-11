@@ -2,8 +2,8 @@ package com.amazonaws.serverless.proxy.spark;
 
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
-import com.amazonaws.serverless.proxy.internal.AwsProxyExceptionHandler;
-import com.amazonaws.serverless.proxy.internal.AwsProxySecurityContextWriter;
+import com.amazonaws.serverless.proxy.AwsProxyExceptionHandler;
+import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequestReader;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
 import com.amazonaws.serverless.proxy.spark.embeddedserver.LambdaEmbeddedServer;

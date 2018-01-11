@@ -10,7 +10,7 @@
  * OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package com.amazonaws.serverless.proxy.internal;
+package com.amazonaws.serverless.proxy;
 
 
 import com.amazonaws.serverless.exceptions.InvalidResponseObjectException;
@@ -44,7 +44,7 @@ public abstract class ResponseWriter<ContainerResponseType, ResponseType> {
      * @return A valid return value for the Lambda function
      * @throws InvalidResponseObjectException When the implementation cannot read the container response object
      */
-    protected abstract ResponseType writeResponse(ContainerResponseType containerResponse, Context lambdaContext)
+    public abstract ResponseType writeResponse(ContainerResponseType containerResponse, Context lambdaContext)
             throws InvalidResponseObjectException;
 
     /**

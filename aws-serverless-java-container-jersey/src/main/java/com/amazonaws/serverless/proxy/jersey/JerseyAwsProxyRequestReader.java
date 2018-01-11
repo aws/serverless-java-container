@@ -14,9 +14,9 @@ package com.amazonaws.serverless.proxy.jersey;
 
 
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
-import com.amazonaws.serverless.proxy.internal.RequestReader;
-import com.amazonaws.serverless.proxy.internal.model.AwsProxyRequest;
-import com.amazonaws.serverless.proxy.internal.model.ContainerConfig;
+import com.amazonaws.serverless.proxy.RequestReader;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
+import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.services.lambda.runtime.Context;
 import org.glassfish.jersey.internal.MapPropertiesDelegate;
 import org.glassfish.jersey.internal.PropertiesDelegate;
@@ -63,7 +63,7 @@ public class JerseyAwsProxyRequestReader extends RequestReader<AwsProxyRequest, 
      * <code>ContainerRequest</code> object.
      *
      * @param request The incoming request object
-     * @param securityContext A jax-rs SecurityContext object (@see com.amazonaws.serverless.proxy.internal.SecurityContextWriter)
+     * @param securityContext A jax-rs SecurityContext object (@see com.amazonaws.serverless.proxy.SecurityContextWriter)
      * @param lambdaContext The AWS Lambda context for the request
      * @param config The container config object, this is passed in by the LambdaContainerHandler
      * @return A populated ContainerRequest object

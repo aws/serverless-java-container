@@ -1,4 +1,4 @@
-package com.amazonaws.serverless.proxy.internal.model;
+package com.amazonaws.serverless.proxy.model;
 
 
 /**

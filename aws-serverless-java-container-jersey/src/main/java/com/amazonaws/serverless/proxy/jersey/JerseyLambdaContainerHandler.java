@@ -13,15 +13,15 @@
 package com.amazonaws.serverless.proxy.jersey;
 
 
-import com.amazonaws.serverless.proxy.internal.AwsProxyExceptionHandler;
-import com.amazonaws.serverless.proxy.internal.AwsProxySecurityContextWriter;
-import com.amazonaws.serverless.proxy.internal.ExceptionHandler;
+import com.amazonaws.serverless.proxy.AwsProxyExceptionHandler;
+import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
+import com.amazonaws.serverless.proxy.ExceptionHandler;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
-import com.amazonaws.serverless.proxy.internal.RequestReader;
-import com.amazonaws.serverless.proxy.internal.ResponseWriter;
-import com.amazonaws.serverless.proxy.internal.SecurityContextWriter;
-import com.amazonaws.serverless.proxy.internal.model.AwsProxyRequest;
-import com.amazonaws.serverless.proxy.internal.model.AwsProxyResponse;
+import com.amazonaws.serverless.proxy.RequestReader;
+import com.amazonaws.serverless.proxy.ResponseWriter;
+import com.amazonaws.serverless.proxy.SecurityContextWriter;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
+import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import org.glassfish.jersey.server.ApplicationHandler;
