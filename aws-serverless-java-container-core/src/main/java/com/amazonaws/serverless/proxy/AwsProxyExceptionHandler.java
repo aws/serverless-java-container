@@ -76,6 +76,10 @@ public class AwsProxyExceptionHandler
     @Override
     public AwsProxyResponse handle(Throwable ex) {
         log.error("Called exception handler for:", ex);
+
+        // adding a print stack trace in case we have no appender or we are running inside SAM local, where need the
+        // output to go to the stderr.
+        ex.printStackTrace();
         if (ex instanceof InvalidRequestEventException) {
             return new AwsProxyResponse(500, headers, getErrorJson(INTERNAL_SERVER_ERROR));
         } else {

@@ -25,10 +25,11 @@
             <version>[0.1,)</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/io.symphonia/lambda-logging -->
         <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-lambda-java-core</artifactId>
-            <version>1.1.0</version>
+            <groupId>io.symphonia</groupId>
+            <artifactId>lambda-logging</artifactId>
+            <version>1.0.0</version>
         </dependency>
     </dependencies>
 
