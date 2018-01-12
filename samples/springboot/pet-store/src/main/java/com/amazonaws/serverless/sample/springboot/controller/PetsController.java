@@ -10,45 +10,50 @@
  * OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package com.amazonaws.serverless.sample.jersey;
+package com.amazonaws.serverless.sample.springboot.controller;
 
-import com.amazonaws.serverless.sample.jersey.model.Pet;
-import com.amazonaws.serverless.sample.jersey.model.PetData;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import com.amazonaws.serverless.sample.springboot.model.Pet;
+import com.amazonaws.serverless.sample.springboot.model.PetData;
+
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+
+import java.security.Principal;
+import java.util.Optional;
 import java.util.UUID;
 
-@Path("/pets")
-public class PetsResource {
 
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response createPet(final Pet newPet) {
+@RestController
+@EnableWebMvc
+public class PetsController {
+    @RequestMapping(path = "/pets", method = RequestMethod.POST)
+    public Pet createPet(@RequestBody Pet newPet) {
         if (newPet.getName() == null || newPet.getBreed() == null) {
-            return Response.status(400).entity(new Error("Invalid name or breed")).build();
+            return null;
         }
 
         Pet dbPet = newPet;
         dbPet.setId(UUID.randomUUID().toString());
-        return Response.status(200).entity(dbPet).build();
+        return dbPet;
     }
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Pet[] listPets(@QueryParam("limit") int limit) {
-        if (limit < 1) {
-            limit = 10;
+    @RequestMapping(path = "/pets", method = RequestMethod.GET)
+    public Pet[] listPets(@RequestParam("limit") Optional<Integer> limit, Principal principal) {
+        System.out.println(principal.getName());
+        int queryLimit = 10;
+        if (limit.isPresent()) {
+            queryLimit = limit.get();
         }
 
-        Pet[] outputPets = new Pet[limit];
+        Pet[] outputPets = new Pet[queryLimit];
 
-        for (int i = 0; i < limit; i++) {
+        for (int i = 0; i < queryLimit; i++) {
             Pet newPet = new Pet();
             newPet.setId(UUID.randomUUID().toString());
             newPet.setName(PetData.getRandomName());
@@ -60,9 +65,8 @@ public class PetsResource {
         return outputPets;
     }
 
-    @Path("/{petId}") @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Pet getPetDetails() {
+    @RequestMapping(path = "/pets/{petId}", method = RequestMethod.GET)
+    public Pet listPets() {
         Pet newPet = new Pet();
         newPet.setId(UUID.randomUUID().toString());
         newPet.setBreed(PetData.getRandomBreed());
@@ -70,4 +74,5 @@ public class PetsResource {
         newPet.setName(PetData.getRandomName());
         return newPet;
     }
+
 }

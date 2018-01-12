@@ -15,6 +15,7 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
+import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import org.apache.commons.fileupload.FileItem;
@@ -79,6 +80,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     private Map<String, List<String>> urlEncodedFormParameters;
     private Map<String, Part> multipartFormParameters;
     private Logger log = LoggerFactory.getLogger(AwsProxyHttpServletRequest.class);
+    private ContainerConfig config;
 
 
     //-------------------------------------------------------------
@@ -86,9 +88,14 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     //-------------------------------------------------------------
 
     public AwsProxyHttpServletRequest(AwsProxyRequest awsProxyRequest, Context lambdaContext, SecurityContext awsSecurityContext) {
+        this(awsProxyRequest, lambdaContext, awsSecurityContext, ContainerConfig.defaultConfig());
+    }
+
+    public AwsProxyHttpServletRequest(AwsProxyRequest awsProxyRequest, Context lambdaContext, SecurityContext awsSecurityContext, ContainerConfig config) {
         super(lambdaContext);
         this.request = awsProxyRequest;
         this.securityContext = awsSecurityContext;
+        this.config = config;
 
         this.urlEncodedFormParameters = getFormUrlEncodedParametersMap();
         this.multipartFormParameters = getMultipartFormParametersMap();
@@ -181,10 +188,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getPathInfo() {
-        String pathInfo = getServletPath().replace(getContextPath(), "");
-        if (!pathInfo.startsWith("/")) {
-            pathInfo = "/" + pathInfo;
-        }
+        String pathInfo = cleanUri(request.getPath()); //getServletPath().replace(getContextPath(), "");
         return decodeRequestPath(pathInfo, LambdaContainerHandler.getContainerConfig());
     }
 
@@ -196,13 +200,18 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     }
 
 
-    /**
-     * In AWS API Gateway, stage is never given as part of the path.
-     * @return
-     */
     @Override
     public String getContextPath() {
-        return "";
+        if (config.isUseStageAsServletContext()) {
+            String contextPath = cleanUri(request.getRequestContext().getStage());
+            if (config.getServiceBasePath() != null) {
+                contextPath += cleanUri(config.getServiceBasePath());
+            }
+
+            return contextPath;
+        } else {
+            return "" + (config.getServiceBasePath() != null ? cleanUri(config.getServiceBasePath()) : "");
+        }
     }
 
 
@@ -232,7 +241,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getRequestURI() {
-        return (getContextPath().isEmpty() ? "" : "/" + getContextPath()) + request.getPath();
+        return cleanUri(getContextPath()) + cleanUri(request.getPath());
     }
 
 
@@ -240,12 +249,8 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     public StringBuffer getRequestURL() {
         String url = "";
         url += getServerName();
-        url += "/";
-        url += getContextPath();
-        url += "/";
-        url += request.getPath();
-
-        url = url.replaceAll("/+", "/");
+        url += cleanUri(getContextPath());
+        url += cleanUri(request.getPath());
 
         return new StringBuffer(getScheme() + "://" + url);
     }
@@ -253,7 +258,8 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getServletPath() {
-        return decodeRequestPath(request.getPath(), LambdaContainerHandler.getContainerConfig());
+        // we always work on the root path
+        return "";
     }
 
     @Override
@@ -494,7 +500,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
         if (request.getQueryStringParameters() != null) {
             for (Map.Entry<String, String> entry : request.getQueryStringParameters().entrySet()) {
-                if (params.containsKey(entry.getKey())) {
+                if (params.containsKey(entry.getKey()) && !params.get(entry.getKey()).contains(entry.getValue())) {
                     params.get(entry.getKey()).add(entry.getValue());
                 } else {
                     List<String> valueList = new ArrayList<>();
@@ -653,15 +659,15 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
 
     private String[] getFormBodyParameterCaseInsensitive(String key) {
-            List<String> values = urlEncodedFormParameters.get(key);
-            if (values != null) {
-                String[] valuesArray = new String[values.size()];
-                valuesArray = values.toArray(valuesArray);
-                return valuesArray;
-            } else {
-                return null;
-            }
+        List<String> values = urlEncodedFormParameters.get(key);
+        if (values != null) {
+            String[] valuesArray = new String[values.size()];
+            valuesArray = values.toArray(valuesArray);
+            return valuesArray;
+        } else {
+            return null;
         }
+    }
 
 
     private Map<String, Part> getMultipartFormParametersMap() {
@@ -696,6 +702,22 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             log.error("Could not read multipart upload file", e);
         }
         return output;
+    }
+
+    private String cleanUri(String uri) {
+        String finalUri = uri;
+
+        if (!finalUri.startsWith("/")) {
+            finalUri = "/" + finalUri;
+        }
+
+        if (finalUri.endsWith(("/"))) {
+            finalUri = finalUri.substring(0, finalUri.length() - 1);
+        }
+
+        finalUri = finalUri.replaceAll("/+", "/");
+
+        return finalUri;
     }
 
 

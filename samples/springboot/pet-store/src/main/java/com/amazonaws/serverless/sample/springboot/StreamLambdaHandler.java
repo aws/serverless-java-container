@@ -1,11 +1,11 @@
-package com.amazonaws.serverless.sample.spring;
+package com.amazonaws.serverless.sample.springboot;
 
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
-import com.amazonaws.serverless.proxy.spring.SpringLambdaContainerHandler;
+import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 
@@ -18,7 +18,7 @@ import java.io.OutputStream;
 
 
 public class StreamLambdaHandler implements RequestStreamHandler {
-    private SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+    private SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
     private Logger log = LoggerFactory.getLogger(StreamLambdaHandler.class);
 
     @Override
@@ -26,7 +26,7 @@ public class StreamLambdaHandler implements RequestStreamHandler {
             throws IOException {
         if (handler == null) {
             try {
-                handler = SpringLambdaContainerHandler.getAwsProxyHandler(PetStoreSpringAppConfig.class);
+                handler = SpringBootLambdaContainerHandler.getAwsProxyHandler(Application.class);
             } catch (ContainerInitializationException e) {
                 log.error("Cannot initialize Spring container", e);
                 outputStream.close();

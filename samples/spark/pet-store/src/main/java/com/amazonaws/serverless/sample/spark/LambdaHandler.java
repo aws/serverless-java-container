@@ -16,25 +16,14 @@ import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spark.SparkLambdaContainerHandler;
-import com.amazonaws.serverless.sample.spark.model.Pet;
-import com.amazonaws.serverless.sample.spark.model.PetData;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Spark;
 
-import javax.ws.rs.core.Response;
-import java.util.UUID;
-
-import static spark.Spark.before;
-import static spark.Spark.get;
-import static spark.Spark.post;
-
 public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyResponse> {
-    private ObjectMapper objectMapper = new ObjectMapper();
     private boolean isInitialized = false;
     private SparkLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
     private Logger log = LoggerFactory.getLogger(LambdaHandler.class);
@@ -45,7 +34,7 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
             isInitialized = true;
             try {
                 handler = SparkLambdaContainerHandler.getAwsProxyHandler();
-                defineResources();
+                SparkResources.defineResources();
                 Spark.awaitInitialization();
             } catch (ContainerInitializationException e) {
                 log.error("Cannot initialize Spark application", e);
@@ -53,53 +42,5 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
             }
         }
         return handler.proxy(awsProxyRequest, context);
-    }
-
-    private void defineResources() {
-        before((request, response) -> response.type("application/json"));
-
-        post("/pets", (req, res) -> {
-            Pet newPet = objectMapper.readValue(req.body(), Pet.class);
-            if (newPet.getName() == null || newPet.getBreed() == null) {
-                return Response.status(400).entity(new Error("Invalid name or breed")).build();
-            }
-
-            Pet dbPet = newPet;
-            dbPet.setId(UUID.randomUUID().toString());
-
-            res.status(200);
-            return dbPet;
-        }, new JsonTransformer());
-
-        get("/pets", (req, res) -> {
-            int limit = 10;
-            if (req.queryParams("limit") != null) {
-                limit = Integer.parseInt(req.queryParams("limit"));
-            }
-
-            Pet[] outputPets = new Pet[limit];
-
-            for (int i = 0; i < limit; i++) {
-                Pet newPet = new Pet();
-                newPet.setId(UUID.randomUUID().toString());
-                newPet.setName(PetData.getRandomName());
-                newPet.setBreed(PetData.getRandomBreed());
-                newPet.setDateOfBirth(PetData.getRandomDoB());
-                outputPets[i] = newPet;
-            }
-
-            res.status(200);
-            return outputPets;
-        }, new JsonTransformer());
-
-        get("/pets/:petId", (req, res) -> {
-            Pet newPet = new Pet();
-            newPet.setId(UUID.randomUUID().toString());
-            newPet.setBreed(PetData.getRandomBreed());
-            newPet.setDateOfBirth(PetData.getRandomDoB());
-            newPet.setName(PetData.getRandomName());
-            res.status(200);
-            return newPet;
-        }, new JsonTransformer());
     }
 }

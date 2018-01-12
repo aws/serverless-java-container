@@ -93,7 +93,7 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
      * @return A <code>FilterChainHolder</code> object that can be used to apply the filters to the request
      */
     FilterChainHolder getFilterChain(final HttpServletRequest request, Servlet servlet) {
-        String targetPath = request.getServletPath();
+        String targetPath = request.getRequestURI();
         DispatcherType type = request.getDispatcherType();
 
         // only return the cached result if the filter list hasn't changed in the meanwhile

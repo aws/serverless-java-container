@@ -34,6 +34,8 @@ import java.util.Random;
 @Path("/echo")
 public class EchoJerseyResource {
 
+    public static final String EXCEPTION_MESSAGE = "Fake exception";
+
     @Path("/headers") @GET
     @Produces(MediaType.APPLICATION_JSON)
     public MapResponseModel echoHeaders(@Context ContainerRequestContext context) {
@@ -54,7 +56,6 @@ public class EchoJerseyResource {
             String headerName = headerNames.nextElement();
             headers.addValue(headerName, context.getHeader(headerName));
         }
-
         return headers;
     }
 
@@ -126,5 +127,10 @@ public class EchoJerseyResource {
         new Random().nextBytes(b);
 
         return Response.ok(b).build();
+    }
+
+    @Path("/exception") @GET
+    public Response throwException() {
+        throw new UnsupportedOperationException(EXCEPTION_MESSAGE);
     }
 }

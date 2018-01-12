@@ -11,6 +11,7 @@ import javax.ws.rs.core.MediaType;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -42,6 +43,9 @@ public class AwsProxyHttpServletRequestTest {
             .cookie(FORM_PARAM_TEST, FORM_PARAM_NAME_VALUE).build();
     private static final AwsProxyRequest REQUEST_MALFORMED_COOKIE = new AwsProxyRequestBuilder("/hello", "GET")
             .header(HttpHeaders.COOKIE, QUERY_STRING_NAME_VALUE).build();
+    private static final AwsProxyRequest REQUEST_MULTIPLE_FORM_AND_QUERY = new AwsProxyRequestBuilder("/hello", "POST")
+            .form(FORM_PARAM_NAME, FORM_PARAM_NAME_VALUE)
+            .queryString(FORM_PARAM_TEST, QUERY_STRING_NAME_VALUE).build();
 
     private static final AwsProxyRequest REQUEST_NULL_QUERY_STRING;
     static {
@@ -176,5 +180,26 @@ public class AwsProxyHttpServletRequestTest {
         assertNotNull(request);
         assertEquals(1, parameterNames.size());
         assertTrue(parameterNames.contains(FORM_PARAM_NAME));
+    }
+
+    @Test
+    public void queryParameter_getParameterMap_avoidDuplicationOnMultipleCalls() {
+        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_MULTIPLE_FORM_AND_QUERY, null, null);
+
+        Map<String, String[]> params = request.getParameterMap();
+        assertNotNull(params);
+        assertEquals(2, params.size());
+        assertNotNull(params.get(FORM_PARAM_NAME));
+        assertEquals(1, params.get(FORM_PARAM_NAME).length);
+        assertNotNull(params.get(FORM_PARAM_TEST));
+        assertEquals(1, params.get(FORM_PARAM_TEST).length);
+
+        params = request.getParameterMap();
+        assertNotNull(params);
+        assertEquals(2, params.size());
+        assertNotNull(params.get(FORM_PARAM_NAME));
+        assertEquals(1, params.get(FORM_PARAM_NAME).length);
+        assertNotNull(params.get(FORM_PARAM_TEST));
+        assertEquals(1, params.get(FORM_PARAM_TEST).length);
     }
 }

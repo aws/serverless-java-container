@@ -1,20 +1,11 @@
-/*
- * Copyright 2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance
- * with the License. A copy of the License is located at
- *
- * http://aws.amazon.com/apache2.0/
- *
- * or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
- * OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
- * and limitations under the License.
- */
-package com.amazonaws.serverless.sample.spring;
+package com.amazonaws.serverless.sample.springboot;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.HandlerAdapter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.HandlerMapping;
@@ -26,9 +17,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 
-@Configuration
-@ComponentScan("com.amazonaws.serverless.sample.spring")
-public class PetStoreSpringAppConfig {
+@SpringBootApplication
+@ComponentScan(basePackages = "com.amazonaws.serverless.sample.springboot.controller")
+public class Application extends SpringBootServletInitializer {
+
+    // silence console logging
+    @Value("${logging.level.root:OFF}")
+    String message = "";
+
     /*
      * Create required HandlerMapping, to avoid several default HandlerMapping instances being created
      */
@@ -61,5 +57,9 @@ public class PetStoreSpringAppConfig {
                 return null;
             }
         };
+    }
+
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
     }
 }

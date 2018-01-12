@@ -20,6 +20,7 @@ import com.amazonaws.serverless.proxy.ResponseWriter;
 import com.amazonaws.serverless.proxy.SecurityContextWriter;
 import com.amazonaws.services.lambda.runtime.Context;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,6 +65,8 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
     //-------------------------------------------------------------
 
     private static ContainerConfig config = ContainerConfig.defaultConfig();
+    private static ObjectMapper objectMapper;
+
 
 
     //-------------------------------------------------------------
@@ -96,6 +99,13 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
     //-------------------------------------------------------------
     // Methods - Public
     //-------------------------------------------------------------
+
+    public static ObjectMapper getObjectMapper() {
+        if (objectMapper == null) {
+            objectMapper = new ObjectMapper();
+        }
+        return objectMapper;
+    }
 
     /**
      * Configures the library to strip a base path from incoming requests before passing them on to the wrapped

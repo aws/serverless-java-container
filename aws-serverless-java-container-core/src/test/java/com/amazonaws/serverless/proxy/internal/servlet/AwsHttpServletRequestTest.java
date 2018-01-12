@@ -3,6 +3,8 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
+import com.amazonaws.serverless.proxy.model.ContainerConfig;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
@@ -28,9 +30,11 @@ public class AwsHttpServletRequestTest {
 
     private static final MockLambdaContext mockContext = new MockLambdaContext();
 
+    private static ContainerConfig config = ContainerConfig.defaultConfig();
+
     @Test
     public void headers_parseHeaderValue_multiValue() {
-        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(contentTypeRequest, mockContext, null);
+        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(contentTypeRequest, mockContext, null, config);
         // I'm also using this to double-check that I can get a header ignoring case
         List<Map.Entry<String, String>> values = request.parseHeaderValue(request.getHeader("content-type"));
 
@@ -44,7 +48,7 @@ public class AwsHttpServletRequestTest {
 
     @Test
     public void headers_parseHeaderValue_validMultipleCookie() {
-        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(validCookieRequest, mockContext, null);
+        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(validCookieRequest, mockContext, null, config);
         List<Map.Entry<String, String>> values = request.parseHeaderValue(request.getHeader(HttpHeaders.COOKIE));
 
         assertEquals(2, values.size());
@@ -56,7 +60,7 @@ public class AwsHttpServletRequestTest {
 
     @Test
     public void headers_parseHeaderValue_complexAccept() {
-        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(complexAcceptHeader, mockContext, null);
+        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(complexAcceptHeader, mockContext, null, config);
         List<Map.Entry<String, String>> values = request.parseHeaderValue(request.getHeader(HttpHeaders.ACCEPT));
 
         try {
@@ -69,7 +73,7 @@ public class AwsHttpServletRequestTest {
 
     @Test
     public void queyrString_generateQueryString_validQuery() {
-        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(queryString, mockContext, null);
+        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(queryString, mockContext, null, config);
 
         String parsedString = request.generateQueryString(queryString.getQueryStringParameters());
         assertEquals("one=two&three=four", parsedString);

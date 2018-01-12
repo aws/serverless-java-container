@@ -13,11 +13,14 @@
 package com.amazonaws.serverless.proxy;
 
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
+import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.ErrorModel;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonValueFormat;
+import com.fasterxml.jackson.databind.ser.std.JsonValueSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,8 +58,6 @@ public class AwsProxyExceptionHandler
     //-------------------------------------------------------------
 
     private static Map<String, String> headers = new HashMap<>();
-    private static ObjectMapper objectMapper = new ObjectMapper();
-
 
     //-------------------------------------------------------------
     // Constructors
@@ -75,6 +76,10 @@ public class AwsProxyExceptionHandler
     @Override
     public AwsProxyResponse handle(Throwable ex) {
         log.error("Called exception handler for:", ex);
+
+        // adding a print stack trace in case we have no appender or we are running inside SAM local, where need the
+        // output to go to the stderr.
+        ex.printStackTrace();
         if (ex instanceof InvalidRequestEventException) {
             return new AwsProxyResponse(500, headers, getErrorJson(INTERNAL_SERVER_ERROR));
         } else {
@@ -87,7 +92,7 @@ public class AwsProxyExceptionHandler
     public void handle(Throwable ex, OutputStream stream) throws IOException {
         AwsProxyResponse response = handle(ex);
 
-        objectMapper.writeValue(stream, response);
+        LambdaContainerHandler.getObjectMapper().writeValue(stream, response);
     }
 
 
@@ -96,8 +101,9 @@ public class AwsProxyExceptionHandler
     //-------------------------------------------------------------
 
     String getErrorJson(String message) {
+
         try {
-            return objectMapper.writeValueAsString(new ErrorModel(message));
+            return LambdaContainerHandler.getObjectMapper().writeValueAsString(new ErrorModel(message));
         } catch (JsonProcessingException e) {
             log.error("Could not produce error JSON", e);
             return "{ \"message\": \"" + message + "\" }";

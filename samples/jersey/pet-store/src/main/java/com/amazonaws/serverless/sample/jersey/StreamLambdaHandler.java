@@ -1,16 +1,15 @@
-package com.amazonaws.serverless.sample.spring;
+package com.amazonaws.serverless.sample.jersey;
 
 
-import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
+import com.amazonaws.serverless.proxy.jersey.JerseyLambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
-import com.amazonaws.serverless.proxy.spring.SpringLambdaContainerHandler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.glassfish.jersey.jackson.JacksonFeature;
+import org.glassfish.jersey.server.ResourceConfig;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,21 +17,15 @@ import java.io.OutputStream;
 
 
 public class StreamLambdaHandler implements RequestStreamHandler {
-    private SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
-    private Logger log = LoggerFactory.getLogger(StreamLambdaHandler.class);
+    private final ResourceConfig jerseyApplication = new ResourceConfig()
+                                                             .packages("com.amazonaws.serverless.sample.jersey")
+                                                             .register(JacksonFeature.class);
+    private final JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler
+            = JerseyLambdaContainerHandler.getAwsProxyHandler(jerseyApplication);
 
     @Override
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
             throws IOException {
-        if (handler == null) {
-            try {
-                handler = SpringLambdaContainerHandler.getAwsProxyHandler(PetStoreSpringAppConfig.class);
-            } catch (ContainerInitializationException e) {
-                log.error("Cannot initialize Spring container", e);
-                outputStream.close();
-                throw new RuntimeException(e);
-            }
-        }
 
         AwsProxyRequest request = LambdaContainerHandler.getObjectMapper().readValue(inputStream, AwsProxyRequest.class);
 

@@ -5,7 +5,7 @@ Resources:
   PetStoreFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: com.amazonaws.serverless.sample.jersey.LambdaHandler::handleRequest
+      Handler: com.amazonaws.serverless.sample.jersey.StreamLambdaHandler::handleRequest
       Runtime: java8
       CodeUri: target/serverless-jersey-example-1.0-SNAPSHOT.jar
       MemorySize: 512
