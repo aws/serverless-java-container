@@ -113,7 +113,9 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
 
         // wire up the application context on the first invocation
         if (!initialized) {
-            System.setProperty("spring.profiles.active", String.join(",", springProfiles));
+            if (springProfiles != null && springProfiles.length > 0) {
+                System.setProperty("spring.profiles.active", String.join(",", springProfiles));
+            }
             SpringServletContainerInitializer springServletContainerInitializer = new SpringServletContainerInitializer();
             LinkedHashSet<Class<?>> webAppInitializers = new LinkedHashSet<>();
             webAppInitializers.add(springBootInitializer);
