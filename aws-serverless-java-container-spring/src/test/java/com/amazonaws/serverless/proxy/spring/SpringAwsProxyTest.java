@@ -193,6 +193,7 @@ public class SpringAwsProxyTest {
     @Test
     public void injectBody_populatedResponse_noException() {
         AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/request-body", "POST")
+                                          .header(HttpHeaders.CONTENT_TYPE, "text/plain")
                                           .body("This is a populated body")
                                           .build();
 

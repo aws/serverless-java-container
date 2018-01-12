@@ -13,11 +13,11 @@
 package com.amazonaws.serverless.proxy.jersey;
 
 
+import com.amazonaws.serverless.proxy.jersey.factory.AwsProxyServletContextFactory;
+import com.amazonaws.serverless.proxy.jersey.factory.AwsProxyServletRequestFactory;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
-import com.amazonaws.serverless.proxy.jersey.factory.AwsProxyServletContextFactory;
-import com.amazonaws.serverless.proxy.jersey.factory.AwsProxyServletRequestFactory;
 import com.amazonaws.serverless.proxy.jersey.model.MapResponseModel;
 import com.amazonaws.serverless.proxy.jersey.model.SingleValueModel;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
@@ -28,6 +28,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.logging.LoggingFeature;
 import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.Test;
@@ -55,17 +56,19 @@ public class JerseyAwsProxyTest {
 
     private static ObjectMapper objectMapper = new ObjectMapper();
     private static ResourceConfig app = new ResourceConfig().packages("com.amazonaws.serverless.proxy.jersey", "com.amazonaws.serverless.proxy.jersey.providers")
-                                                            .register(new AbstractBinder() {
-                                                                @Override
-                                                                protected void configure() {
-                                                                    bindFactory(AwsProxyServletRequestFactory.class)
-                                                                            .to(HttpServletRequest.class)
-                                                                            .in(RequestScoped.class);
-                                                                    bindFactory(AwsProxyServletContextFactory.class)
-                                                                            .to(ServletContext.class)
-                                                                            .in(RequestScoped.class);
-                                                                }
-                                                            });
+            .register(LoggingFeature.class)
+            .register(new AbstractBinder() {
+                @Override
+                protected void configure() {
+                    bindFactory(AwsProxyServletRequestFactory.class)
+                            .to(HttpServletRequest.class)
+                            .in(RequestScoped.class);
+                    bindFactory(AwsProxyServletContextFactory.class)
+                            .to(ServletContext.class)
+                            .in(RequestScoped.class);
+                }
+            })
+            .property(LoggingFeature.LOGGING_FEATURE_VERBOSITY_SERVER, LoggingFeature.Verbosity.PAYLOAD_ANY);
     private static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = JerseyLambdaContainerHandler.getAwsProxyHandler(app);
 
     private static Context lambdaContext = new MockLambdaContext();

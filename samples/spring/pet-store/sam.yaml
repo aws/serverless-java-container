@@ -10,7 +10,7 @@ Resources:
       CodeUri: target/serverless-spring-example-1.0-SNAPSHOT.jar
       MemorySize: 512
       Policies: AWSLambdaBasicExecutionRole
-      Timeout: 20
+      Timeout: 30
       Events:
         GetResource:
           Type: Api

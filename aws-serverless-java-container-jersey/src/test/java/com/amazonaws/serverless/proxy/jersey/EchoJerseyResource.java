@@ -56,7 +56,6 @@ public class EchoJerseyResource {
             String headerName = headerNames.nextElement();
             headers.addValue(headerName, context.getHeader(headerName));
         }
-
         return headers;
     }
 
