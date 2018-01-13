@@ -19,9 +19,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Context;
 
 import static com.amazonaws.serverless.proxy.jersey.JerseyHandlerFilter.JERSEY_SERVLET_REQUEST_PROPERTY;
+import static com.amazonaws.serverless.proxy.jersey.JerseyHandlerFilter.JERSEY_SERVLET_RESPONSE_PROPERTY;
 
 
 /**
@@ -42,23 +44,23 @@ import static com.amazonaws.serverless.proxy.jersey.JerseyHandlerFilter.JERSEY_S
  * </code>
  * </pre>
  */
-public class AwsProxyServletRequestFactory
-        implements Factory<HttpServletRequest> {
+public class AwsProxyServletResponseFactory
+        implements Factory<HttpServletResponse> {
 
     @Context ContainerRequest currentRequest;
-    private static Logger log = LoggerFactory.getLogger(AwsProxyServletRequestFactory.class);
+    private static Logger log = LoggerFactory.getLogger(AwsProxyServletResponseFactory.class);
 
     //-------------------------------------------------------------
     // Implementation - Factory
     //-------------------------------------------------------------
 
     @Override
-    public HttpServletRequest provide() {
-        return (HttpServletRequest)currentRequest.getProperty(JERSEY_SERVLET_REQUEST_PROPERTY);
+    public HttpServletResponse provide() {
+        return (HttpServletResponse)currentRequest.getProperty(JERSEY_SERVLET_RESPONSE_PROPERTY);
     }
 
 
     @Override
-    public void dispose(HttpServletRequest httpServletRequest) {
+    public void dispose(HttpServletResponse httpServletRequest) {
     }
 }

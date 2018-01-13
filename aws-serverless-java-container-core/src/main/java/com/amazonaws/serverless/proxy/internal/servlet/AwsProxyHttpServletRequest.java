@@ -79,7 +79,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     private SecurityContext securityContext;
     private Map<String, List<String>> urlEncodedFormParameters;
     private Map<String, Part> multipartFormParameters;
-    private Logger log = LoggerFactory.getLogger(AwsProxyHttpServletRequest.class);
+    private static Logger log = LoggerFactory.getLogger(AwsProxyHttpServletRequest.class);
     private ContainerConfig config;
 
 
@@ -749,9 +749,13 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         return output;
     }
 
-    private String decodeValueIfEncoded(String value) {
+    public static String decodeValueIfEncoded(String value) {
+        if (value == null) {
+            return null;
+        }
+
         try {
-            return URLDecoder.decode(value, DEFAULT_CHARACTER_ENCODING);
+            return URLDecoder.decode(value, LambdaContainerHandler.getContainerConfig().getUriEncoding());
         } catch (UnsupportedEncodingException e) {
             log.warn("Could not decode body content - proceeding as if it was already decoded", e);
             return value;

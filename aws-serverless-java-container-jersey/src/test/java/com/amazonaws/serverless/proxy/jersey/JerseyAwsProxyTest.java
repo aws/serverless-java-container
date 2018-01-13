@@ -15,6 +15,7 @@ package com.amazonaws.serverless.proxy.jersey;
 
 import com.amazonaws.serverless.proxy.jersey.factory.AwsProxyServletContextFactory;
 import com.amazonaws.serverless.proxy.jersey.factory.AwsProxyServletRequestFactory;
+import com.amazonaws.serverless.proxy.jersey.factory.AwsProxyServletResponseFactory;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
@@ -35,6 +36,7 @@ import org.junit.Test;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Response;
 
 import java.io.IOException;
@@ -65,6 +67,9 @@ public class JerseyAwsProxyTest {
                             .in(RequestScoped.class);
                     bindFactory(AwsProxyServletContextFactory.class)
                             .to(ServletContext.class)
+                            .in(RequestScoped.class);
+                    bindFactory(AwsProxyServletResponseFactory.class)
+                            .to(HttpServletResponse.class)
                             .in(RequestScoped.class);
                 }
             })
@@ -102,9 +107,23 @@ public class JerseyAwsProxyTest {
     }
 
     @Test
+    public void context_servletResponse_setCustomHeader() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/servlet-response", "GET")
+                                          .json()
+                                          .build();
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(200, output.getStatusCode());
+        assertTrue(output.getHeaders().containsKey(EchoJerseyResource.SERVLET_RESP_HEADER_KEY));
+    }
+
+    @Test
     public void context_serverInfo_correctContext() {
         AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/servlet-context", "GET").build();
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        for (String header : output.getHeaders().keySet()) {
+            System.out.println(header + ": " + output.getHeaders().get(header));
+        }
         assertEquals(200, output.getStatusCode());
         assertEquals("application/json", output.getHeaders().get("Content-Type"));
 

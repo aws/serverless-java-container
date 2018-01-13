@@ -185,6 +185,8 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType> extends AwsL
             sparkRegistration.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/*");
         }
 
+        httpServletRequest.setServletContext(getServletContext());
+
         doFilter(httpServletRequest, httpServletResponse, null);
     }
 }

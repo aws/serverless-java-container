@@ -13,17 +13,18 @@
 package com.amazonaws.serverless.proxy.jersey;
 
 
-import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
-
 import org.glassfish.jersey.server.ContainerException;
 import org.glassfish.jersey.server.ContainerResponse;
 import org.glassfish.jersey.server.spi.ContainerResponseWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.HttpHeaders;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.InternalServerErrorException;
 
-import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -35,18 +36,16 @@ import java.util.concurrent.TimeUnit;
  * <code>AwsProxyResponse</code> object. The response object is passed in the constructor alongside an <code>ExceptionHandler</code>
  * instance.
  */
-class JerseyResponseWriter
+class JerseyServletResponseWriter
         implements ContainerResponseWriter {
 
     //-------------------------------------------------------------
     // Variables - Private
     //-------------------------------------------------------------
 
-    private CountDownLatch responseMutex;
-    private Map<String, String> headers;
-    private int statusCode;
-    private ByteArrayOutputStream responseBody;
-
+    private HttpServletResponse servletResponse;
+    private Logger log = LoggerFactory.getLogger(JerseyServletResponseWriter.class);
+    private CountDownLatch jerseyLatch;
 
     //-------------------------------------------------------------
     // Constructors
@@ -54,11 +53,11 @@ class JerseyResponseWriter
 
     /**
      * Creates a new response writer.
-     * @param latch The latch object is used to synchronize the response request handling and response generation for
-     *              AWS Lambda
+     * @param resp The current ServletResponse from the container
      */
-    JerseyResponseWriter(CountDownLatch latch) {
-        this.responseMutex = latch;
+    public JerseyServletResponseWriter(ServletResponse resp, CountDownLatch latch) {
+        servletResponse = (HttpServletResponse)resp;
+        jerseyLatch = latch;
     }
 
 
@@ -75,74 +74,57 @@ class JerseyResponseWriter
      */
     public OutputStream writeResponseStatusAndHeaders(long contentLength, ContainerResponse containerResponse)
             throws ContainerException {
-        statusCode = containerResponse.getStatusInfo().getStatusCode();
-
-        if (headers == null) {
-            headers = new HashMap<>();
-        }
-
+        servletResponse.setStatus(containerResponse.getStatusInfo().getStatusCode());
         for (final Map.Entry<String, List<String>> e : containerResponse.getStringHeaders().entrySet()) {
             for (final String value : e.getValue()) {
-                // special case for set cookies
-                // RFC 2109 allows for a comma separated list of cookies in one Set-Cookie header: https://tools.ietf.org/html/rfc2109
-                if (e.getKey().equals(HttpHeaders.SET_COOKIE)) {
-                    if (headers.containsKey(e.getKey()) && LambdaContainerHandler.getContainerConfig().isConsolidateSetCookieHeaders()) {
-                        headers.put(e.getKey(), headers.get(e.getKey()) + ", " + value);
-                    } else {
-                        headers.put(e.getKey(), containerResponse.getStringHeaders().getFirst(e.getKey()));
-                        break;
-                    }
-                } else {
-                    headers.put(e.getKey(), value);
-                }
+                servletResponse.setHeader(e.getKey(), value);
             }
         }
-
-        responseBody = new ByteArrayOutputStream();
-
-        return responseBody;
+        try {
+            return servletResponse.getOutputStream();
+        } catch (IOException e) {
+            log.error("Could not get servlet response output stream", e);
+            throw new InternalServerErrorException("Could not get servlet response output stream", e);
+        }
     }
 
 
     public boolean suspend(long l, TimeUnit timeUnit, TimeoutHandler timeoutHandler) {
+        log.debug("Suspend");
         return false;
     }
 
 
     public void setSuspendTimeout(long l, TimeUnit timeUnit) throws IllegalStateException {
+        log.debug("SuspectTimeout");
     }
 
 
     public void commit() {
-        responseMutex.countDown();
+        try {
+            log.debug("commit");
+            jerseyLatch.countDown();
+            servletResponse.flushBuffer();
+        } catch (IOException e) {
+            log.error("Could not commit response", e);
+            throw new InternalServerErrorException(e);
+        }
     }
 
 
     public void failure(Throwable throwable) {
-        responseMutex.countDown();
+        try {
+            log.error("failure", throwable);
+            jerseyLatch.countDown();
+            servletResponse.flushBuffer();
+        } catch (IOException e) {
+            log.error("Could not fail response", e);
+            throw new InternalServerErrorException(e);
+        }
     }
 
 
     public boolean enableResponseBuffering() {
         return false;
-    }
-
-
-    //-------------------------------------------------------------
-    // Methods - Package
-    //-------------------------------------------------------------
-
-    Map<String, String> getHeaders() {
-        return headers;
-    }
-
-
-    int getStatusCode() {
-        return statusCode;
-    }
-
-
-    ByteArrayOutputStream getResponseBody() {
-        return responseBody;
     }
 }
