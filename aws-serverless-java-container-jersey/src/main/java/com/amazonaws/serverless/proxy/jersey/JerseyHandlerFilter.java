@@ -48,18 +48,17 @@ public class JerseyHandlerFilter implements Filter, Container {
     private Application app;
     private Logger log = LoggerFactory.getLogger(JerseyHandlerFilter.class);
 
-    public JerseyHandlerFilter(Application jaxApplication) {
-        Timer.start("JERSEY_FILTER_INIT");
+    JerseyHandlerFilter(Application jaxApplication) {
+        Timer.start("JERSEY_FILTER_CONSTRUCTOR");
         app = jaxApplication;
 
         jersey = new ApplicationHandler(app);
         jersey.onStartup(this);
-        Timer.stop("JERSEY_FILTER_INIT");
+        Timer.stop("JERSEY_FILTER_CONSTRUCTOR");
     }
 
     @Override
-    public void init(FilterConfig filterConfig)
-            throws ServletException {
+    public void init(FilterConfig filterConfig) {
         log.info("Initialize Jersey application handler");
     }
 
@@ -97,6 +96,7 @@ public class JerseyHandlerFilter implements Filter, Container {
     // servlet implementation
     @SuppressFBWarnings({ "SERVLET_HEADER", "SERVLET_QUERY_STRING" })
     private ContainerRequest servletRequestToContainerRequest(ServletRequest request) {
+        Timer.start("JERSEY_SERVLET_REQUEST_TO_CONTAINER");
         URI basePathUri;
         URI requestPathUri;
         String basePath = "/";
@@ -131,7 +131,7 @@ public class JerseyHandlerFilter implements Filter, Container {
                 (SecurityContext)servletRequest.getAttribute(JAX_SECURITY_CONTEXT_PROPERTY),
                 apiGatewayProperties);
 
-        InputStream requestInputStream = null;
+        InputStream requestInputStream;
         try {
             requestInputStream = servletRequest.getInputStream();
             if (requestInputStream != null) {
@@ -147,7 +147,7 @@ public class JerseyHandlerFilter implements Filter, Container {
             String headerKey = headerNames.nextElement();
             requestContext.header(headerKey, servletRequest.getHeader(headerKey));
         }
-
+        Timer.stop("JERSEY_SERVLET_REQUEST_TO_CONTAINER");
         return requestContext;
     }
 
@@ -175,12 +175,14 @@ public class JerseyHandlerFilter implements Filter, Container {
      */
     @Override
     public void reload() {
+        Timer.start("JERSEY_RELOAD_DEFAULT");
         jersey.onShutdown(this);
 
         jersey = new ApplicationHandler(app);
 
         jersey.onReload(this);
         jersey.onStartup(this);
+        Timer.stop("JERSEY_RELOAD_DEFAULT");
     }
 
 
@@ -191,6 +193,7 @@ public class JerseyHandlerFilter implements Filter, Container {
      */
     @Override
     public void reload(ResourceConfig resourceConfig) {
+        Timer.start("JERSEY_RELOAD_CONFIG");
         jersey.onShutdown(this);
 
         app = resourceConfig;
@@ -198,5 +201,6 @@ public class JerseyHandlerFilter implements Filter, Container {
 
         jersey.onReload(this);
         jersey.onStartup(this);
+        Timer.stop("JERSEY_RELOAD_CONFIG");
     }
 }

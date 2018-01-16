@@ -14,6 +14,7 @@ package com.amazonaws.serverless.proxy.jersey;
 
 
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
+import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.glassfish.jersey.server.ContainerException;
@@ -78,6 +79,7 @@ class JerseyServletResponseWriter
     @SuppressFBWarnings("HTTP_RESPONSE_SPLITTING") // suppress this because headers are sanitized in the setHeader method of the servlet response
     public OutputStream writeResponseStatusAndHeaders(long contentLength, ContainerResponse containerResponse)
             throws ContainerException {
+        Timer.start("JERSEY_WRITE_RESPONSE");
         servletResponse.setStatus(containerResponse.getStatusInfo().getStatusCode());
         for (final Map.Entry<String, List<String>> e : containerResponse.getStringHeaders().entrySet()) {
             for (final String value : e.getValue()) {
@@ -85,11 +87,14 @@ class JerseyServletResponseWriter
             }
         }
         try {
+            Timer.stop("JERSEY_WRITE_RESPONSE");
             return servletResponse.getOutputStream();
         } catch (IOException e) {
             log.error("Could not get servlet response output stream", e);
+            Timer.stop("JERSEY_WRITE_RESPONSE");
             throw new InternalServerErrorException("Could not get servlet response output stream", e);
         }
+
     }
 
 

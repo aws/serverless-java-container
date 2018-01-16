@@ -12,6 +12,8 @@
  */
 package com.amazonaws.serverless.proxy.spring;
 
+import com.amazonaws.serverless.proxy.internal.testutils.Timer;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,6 +129,7 @@ public class LambdaSpringApplicationInitializer extends HttpServlet implements W
 
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
+        Timer.start("SPRING_INITIALIZER_ONSTARTUP");
         if (springProfiles != null) {
             applicationContext.getEnvironment().setActiveProfiles(springProfiles.toArray(new String[0]));
         }
@@ -163,6 +166,7 @@ public class LambdaSpringApplicationInitializer extends HttpServlet implements W
         dispatcherServlet.init(dispatcherConfig);
 
         notifyStartListeners(servletContext);
+        Timer.stop("SPRING_INITIALIZER_ONSTARTUP");
     }
 
     private void notifyStartListeners(ServletContext context) {
@@ -180,6 +184,8 @@ public class LambdaSpringApplicationInitializer extends HttpServlet implements W
 
     @Override
     public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
+        Timer.start("SPRING_INITIALIZER_SERVICE");
+        Timer.start("SPRING_INITIALIZER_SERVICE_CAST");
         if (!(req instanceof HttpServletRequest)) {
             throw new ServletException("Cannot service request that is not instance of HttpServletRequest");
         }
@@ -187,7 +193,9 @@ public class LambdaSpringApplicationInitializer extends HttpServlet implements W
         if (!(res instanceof HttpServletResponse)) {
             throw new ServletException("Cannot work with response that is not instance of HttpServletResponse");
         }
+        Timer.stop("SPRING_INITIALIZER_SERVICE_CAST");
         dispatch((HttpServletRequest)req, (HttpServletResponse)res);
+        Timer.stop("SPRING_INITIALIZER_SERVICE");
     }
 
     /**

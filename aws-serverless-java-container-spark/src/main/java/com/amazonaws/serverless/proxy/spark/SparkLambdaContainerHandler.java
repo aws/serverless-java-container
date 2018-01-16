@@ -20,6 +20,7 @@ import com.amazonaws.serverless.proxy.ExceptionHandler;
 import com.amazonaws.serverless.proxy.RequestReader;
 import com.amazonaws.serverless.proxy.ResponseWriter;
 import com.amazonaws.serverless.proxy.SecurityContextWriter;
+import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.*;
@@ -32,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Service;
 import spark.Spark;
-import spark.embeddedserver.EmbeddedServerFactory;
 import spark.embeddedserver.EmbeddedServers;
 
 import javax.servlet.DispatcherType;
@@ -42,7 +42,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.EnumSet;
@@ -126,6 +125,7 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType>
                                        LambdaEmbeddedServerFactory embeddedServerFactory)
             throws ContainerInitializationException {
         super(requestReader, responseWriter, securityContextWriter, exceptionHandler);
+        Timer.start("SPARK_CONTAINER_HANDLER_CONSTRUCTOR");
 
         EmbeddedServers.add(LAMBDA_EMBEDDED_SERVER_CODE, embeddedServerFactory);
         this.lambdaServerFactory = embeddedServerFactory;
@@ -155,8 +155,10 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType>
             } else {
                 log.error("Unknown exception while modifying Spark class", e.getException());
             }
+            Timer.stop("SPARK_CONTAINER_HANDLER_CONSTRUCTOR");
             throw new ContainerInitializationException("Could not initialize Spark server", e.getException());
         }
+        Timer.stop("SPARK_CONTAINER_HANDLER_CONSTRUCTOR");
     }
 
     //-------------------------------------------------------------
@@ -173,11 +175,12 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType>
     @Override
     protected void handleRequest(AwsProxyHttpServletRequest httpServletRequest, AwsHttpServletResponse httpServletResponse, Context lambdaContext)
             throws Exception {
-
+        Timer.start("SPARK_HANDLE_REQUEST");
         // this method of the AwsLambdaServletContainerHandler sets the request context
         super.handleRequest(httpServletRequest, httpServletResponse, lambdaContext);
 
         if (embeddedServer == null) {
+            Timer.start("SPARK_COLD_START");
             log.debug("First request, getting new server instance");
 
             // trying to call init in case the embedded server had not been initialized.
@@ -197,10 +200,12 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType>
             // manually add the spark filter to the chain. This should the last one and match all uris
             FilterRegistration.Dynamic sparkRegistration = getServletContext().addFilter("SparkFilter", embeddedServer.getSparkFilter());
             sparkRegistration.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/*");
+            Timer.stop("SPARK_COLD_START");
         }
 
         httpServletRequest.setServletContext(getServletContext());
 
         doFilter(httpServletRequest, httpServletResponse, null);
+        Timer.stop("SPARK_HANDLE_REQUEST");
     }
 }

@@ -15,6 +15,7 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.exceptions.InvalidResponseObjectException;
 import com.amazonaws.serverless.proxy.ResponseWriter;
+import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
 
@@ -33,6 +34,7 @@ public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpSer
     @Override
     public AwsProxyResponse writeResponse(AwsHttpServletResponse containerResponse, Context lambdaContext)
             throws InvalidResponseObjectException {
+        Timer.start("SERVLET_RESPONSE_WRITE");
         AwsProxyResponse awsProxyResponse = new AwsProxyResponse();
         if (containerResponse.getAwsResponseBodyString() != null) {
             String responseString;
@@ -53,7 +55,7 @@ public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpSer
         } else {
             awsProxyResponse.setStatusCode(containerResponse.getStatus());
         }
-
+        Timer.stop("SERVLET_RESPONSE_WRITE");
         return awsProxyResponse;
     }
 }

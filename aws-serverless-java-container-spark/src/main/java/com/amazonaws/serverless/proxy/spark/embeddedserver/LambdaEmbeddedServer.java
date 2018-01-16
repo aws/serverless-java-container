@@ -1,5 +1,8 @@
 package com.amazonaws.serverless.proxy.spark.embeddedserver;
 
+import com.amazonaws.serverless.exceptions.ContainerInitializationException;
+import com.amazonaws.serverless.proxy.internal.testutils.Timer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.embeddedserver.EmbeddedServer;
@@ -10,10 +13,6 @@ import spark.ssl.SslStores;
 import spark.staticfiles.StaticFilesConfiguration;
 
 import javax.servlet.Filter;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
@@ -36,12 +35,14 @@ public class LambdaEmbeddedServer
     //-------------------------------------------------------------
 
     LambdaEmbeddedServer(Routes routes, StaticFilesConfiguration filesConfig, boolean multipleHandlers) {
+        Timer.start("SPARK_EMBEDDED_SERVER_CONSTRUCTOR");
         applicationRoutes = routes;
         staticFilesConfiguration = filesConfig;
         hasMultipleHandler = multipleHandlers;
 
         // try to initialize the filter here.
         sparkFilter = new MatcherFilter(applicationRoutes, staticFilesConfiguration, true, hasMultipleHandler);
+        Timer.stop("SPARK_EMBEDDED_SERVER_CONSTRUCTOR");
     }
 
 
@@ -50,14 +51,15 @@ public class LambdaEmbeddedServer
     //-------------------------------------------------------------
     @Override
     public int ignite(String s, int i, SslStores sslStores, int i1, int i2, int i3)
-            throws Exception {
+            throws ContainerInitializationException {
+        Timer.start("SPARK_EMBEDDED_IGNITE");
         log.info("Starting Spark server, ignoring port and host");
         // if not initialized yet
         if (sparkFilter == null) {
             sparkFilter = new MatcherFilter(applicationRoutes, staticFilesConfiguration, true, hasMultipleHandler);
         }
         sparkFilter.init(null);
-
+        Timer.stop("SPARK_EMBEDDED_IGNITE");
         return i;
     }
 
@@ -71,8 +73,7 @@ public class LambdaEmbeddedServer
 
 
     @Override
-    public void join()
-            throws InterruptedException {
+    public void join() {
         log.info("Called join method, nothing to do here since Lambda only runs a single event per container");
     }
 
@@ -92,12 +93,6 @@ public class LambdaEmbeddedServer
     //-------------------------------------------------------------
     // Methods - Public
     //-------------------------------------------------------------
-
-    public void handle(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException {
-        sparkFilter.doFilter(request, response, null);
-    }
-
 
     /**
      * Returns the initialized instance of the main Spark filter.

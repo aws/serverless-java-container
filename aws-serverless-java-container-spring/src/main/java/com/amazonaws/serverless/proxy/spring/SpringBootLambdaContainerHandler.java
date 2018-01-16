@@ -19,6 +19,7 @@ import com.amazonaws.serverless.proxy.ExceptionHandler;
 import com.amazonaws.serverless.proxy.RequestReader;
 import com.amazonaws.serverless.proxy.ResponseWriter;
 import com.amazonaws.serverless.proxy.SecurityContextWriter;
+import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.*;
@@ -90,7 +91,9 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
                                             Class<? extends WebApplicationInitializer> springBootInitializer)
             throws ContainerInitializationException {
         super(requestReader, responseWriter, securityContextWriter, exceptionHandler);
+        Timer.start("SPRINGBOOT_CONTAINER_HANDLER_CONSTRUCTOR");
         this.springBootInitializer = springBootInitializer;
+        Timer.stop("SPRINGBOOT_CONTAINER_HANDLER_CONSTRUCTOR");
     }
 
     public void activateSpringProfiles(String... profiles) {
@@ -107,12 +110,14 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
     @Override
     protected void handleRequest(AwsProxyHttpServletRequest containerRequest, AwsHttpServletResponse containerResponse, Context lambdaContext) throws Exception {
         // this method of the AwsLambdaServletContainerHandler sets the servlet context
+        Timer.start("SPRINGBOOT_HANDLE_REQUEST");
         if (getServletContext() == null) {
             setServletContext(new SpringBootAwsServletContext());
         }
 
         // wire up the application context on the first invocation
         if (!initialized) {
+            Timer.start("SPRINGBOOT_COLD_START");
             if (springProfiles != null && springProfiles.length > 0) {
                 System.setProperty("spring.profiles.active", String.join(",", springProfiles));
             }
@@ -128,6 +133,7 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
             }
 
             initialized = true;
+            Timer.stop("SPRINGBOOT_COLD_START");
         }
 
         containerRequest.setServletContext(getServletContext());
@@ -137,6 +143,7 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
         DispatcherServlet dispatcherServlet = applicationContext.getBean("dispatcherServlet", DispatcherServlet.class);
         // process filters & invoke servlet
         doFilter(containerRequest, containerResponse, dispatcherServlet);
+        Timer.stop("SPRINGBOOT_HANDLE_REQUEST");
     }
 
     private class SpringBootAwsServletContext extends AwsServletContext {

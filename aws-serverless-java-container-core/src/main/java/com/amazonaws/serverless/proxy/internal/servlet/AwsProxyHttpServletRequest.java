@@ -15,6 +15,7 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
+import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -663,7 +664,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         if (!ServletFileUpload.isMultipartContent(this)) { // isMultipartContent also checks the content type
             return new HashMap<>();
         }
-
+        Timer.start("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
         Map<String, Part> output = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
         ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
@@ -689,8 +690,10 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
                 output.put(item.getFieldName(), newPart);
             }
         } catch (FileUploadException e) {
+            Timer.stop("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
             log.error("Could not read multipart upload file", e);
         }
+        Timer.stop("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
         return output;
     }
 
@@ -720,7 +723,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         if (!contentType.startsWith(MediaType.APPLICATION_FORM_URLENCODED) || !getMethod().toLowerCase(Locale.ENGLISH).equals("post")) {
             return new HashMap<>();
         }
-
+        Timer.start("SERVLET_REQUEST_GET_FORM_PARAMS");
         String rawBodyContent = request.getBody();
 
         Map<String, List<String>> output = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -736,7 +739,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             values.add(decodeValueIfEncoded(parameterKeyValue[1]));
             output.put(decodeValueIfEncoded(parameterKeyValue[0]), values);
         }
-
+        Timer.stop("SERVLET_REQUEST_GET_FORM_PARAMS");
         return output;
     }
 

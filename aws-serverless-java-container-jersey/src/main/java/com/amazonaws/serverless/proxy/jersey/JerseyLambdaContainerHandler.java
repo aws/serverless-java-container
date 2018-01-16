@@ -123,11 +123,11 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
                                         Application jaxRsApplication) {
 
         super(requestReader, responseWriter, securityContextWriter, exceptionHandler);
-        Timer.start("JERSEY_START_TIMER");
+        Timer.start("JERSEY_CONTAINER_CONSTRUCTOR");
         this.jaxRsApplication = jaxRsApplication;
         this.initialized = false;
         this.jerseyFilter = new JerseyHandlerFilter(this.jaxRsApplication);
-        Timer.stop("JERSEY_START_TIMER");
+        Timer.stop("JERSEY_CONTAINER_CONSTRUCTOR");
     }
 
     //-------------------------------------------------------------
@@ -148,7 +148,7 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
         super.handleRequest(httpServletRequest, httpServletResponse, lambdaContext);
 
         if (!initialized) {
-            Timer.start("JERSEY_INITIALIZATION");
+            Timer.start("JERSEY_COLD_START_INIT");
             // call the onStartup event if set to give developers a chance to set filters in the context
             if (startupHandler != null) {
                 startupHandler.onStartup(getServletContext());
@@ -159,7 +159,7 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
             jerseyFilterReg.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/*");
 
             initialized = true;
-            Timer.stop("JERSEY_INITIALIZATION");
+            Timer.stop("JERSEY_COLD_START_INIT");
         }
 
         httpServletRequest.setServletContext(getServletContext());
