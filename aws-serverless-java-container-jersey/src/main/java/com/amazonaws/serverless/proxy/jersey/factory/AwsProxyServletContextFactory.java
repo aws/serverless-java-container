@@ -18,6 +18,7 @@ import org.glassfish.jersey.server.ContainerRequest;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.core.Context;
 
 import static com.amazonaws.serverless.proxy.jersey.JerseyHandlerFilter.JERSEY_SERVLET_REQUEST_PROPERTY;
@@ -47,14 +48,12 @@ public class AwsProxyServletContextFactory implements Factory<ServletContext> {
     @Override
     public ServletContext provide() {
         HttpServletRequest req = (HttpServletRequest)currentRequest.getProperty(JERSEY_SERVLET_REQUEST_PROPERTY);
+
         if (req == null) {
-            System.out.println("req is null");
+            throw new InternalServerErrorException("Could not find servlet request in context");
         }
-        System.out.println(req.getPathInfo());
+
         ServletContext ctx = req.getServletContext();
-        if (ctx == null) {
-            System.out.println("ServletContext is null");
-        }
         return ctx;
     }
 

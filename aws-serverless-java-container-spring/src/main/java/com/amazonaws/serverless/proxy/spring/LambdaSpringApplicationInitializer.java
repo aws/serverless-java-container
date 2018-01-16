@@ -12,6 +12,7 @@
  */
 package com.amazonaws.serverless.proxy.spring;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEvent;
@@ -43,25 +44,34 @@ import java.util.*;
  * `currentResponse` private property to the value of the new `HttpServletResponse` object. This is used to intercept
  * Spring notifications for the `ServletRequestHandledEvent` and call the flush method to release the latch.
  */
+@SuppressFBWarnings("MTIA_SUSPECT_SERVLET_INSTANCE_FIELD") // we assume we are running in a "single threaded" environment - AWS Lambda
 public class LambdaSpringApplicationInitializer extends HttpServlet implements WebApplicationInitializer {
     public static final String ERROR_NO_CONTEXT = "No application context or configuration classes provided";
 
     private static final String DEFAULT_SERVLET_NAME = "aws-servless-java-container";
 
+    private static final long serialVersionUID = 42L;
+
+    // all of these variables are declared as volatile for correctness, technically this class is an implementation of
+    // HttpServlet and could live in a multi-threaded environment. Because the library runs inside AWS Lambda, we can
+    // assume we will be in a single-threaded environment.
+
     // Configuration variables that can be passed in
-    private ConfigurableWebApplicationContext applicationContext;
-    private boolean refreshContext = true;
-    private List<ServletContextListener> contextListeners;
-    private List<String> springProfiles;
+    @SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
+    private transient volatile ConfigurableWebApplicationContext applicationContext;
+    private volatile boolean refreshContext = true;
+    @SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
+    private transient volatile List<ServletContextListener> contextListeners;
+    private volatile ArrayList<String> springProfiles;
 
     // Dynamically instantiated properties
-    private ServletConfig dispatcherConfig;
-    private DispatcherServlet dispatcherServlet;
+    private volatile DispatcherServlet dispatcherServlet;
 
     // The current response is used to release the latch when Spring emits the request handled event
-    private HttpServletResponse currentResponse;
+    private transient volatile HttpServletResponse currentResponse;
 
-    private Logger log = LoggerFactory.getLogger(LambdaSpringApplicationInitializer.class);
+    @SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
+    private transient Logger log = LoggerFactory.getLogger(LambdaSpringApplicationInitializer.class);
 
     /**
      * Creates a new instance of the WebApplicationInitializer
@@ -99,7 +109,6 @@ public class LambdaSpringApplicationInitializer extends HttpServlet implements W
         dispatcherServlet.service(request, response);
     }
 
-
     /**
      * Gets the initialized Spring dispatcher servlet instance.
      * @return The Spring dispatcher servlet
@@ -123,7 +132,8 @@ public class LambdaSpringApplicationInitializer extends HttpServlet implements W
         }
         applicationContext.setServletContext(servletContext);
 
-        dispatcherConfig = new DefaultDispatcherConfig(servletContext);
+
+        DefaultDispatcherConfig dispatcherConfig = new DefaultDispatcherConfig(servletContext);
         applicationContext.setServletConfig(dispatcherConfig);
 
         // Configure the listener for the request handled events. All we do here is release the latch
@@ -170,6 +180,13 @@ public class LambdaSpringApplicationInitializer extends HttpServlet implements W
 
     @Override
     public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
+        if (!(req instanceof HttpServletRequest)) {
+            throw new ServletException("Cannot service request that is not instance of HttpServletRequest");
+        }
+
+        if (!(res instanceof HttpServletResponse)) {
+            throw new ServletException("Cannot work with response that is not instance of HttpServletResponse");
+        }
         dispatch((HttpServletRequest)req, (HttpServletResponse)res);
     }
 

@@ -12,6 +12,10 @@
  */
 package com.amazonaws.serverless.proxy.internal.servlet;
 
+import com.amazonaws.serverless.proxy.internal.SecurityUtils;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import javax.servlet.http.Part;
 import javax.ws.rs.core.MultivaluedHashMap;
 import java.io.ByteArrayInputStream;
@@ -19,6 +23,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.Collections;
+
 
 public class AwsProxyRequestPart
         implements Part {
@@ -40,7 +46,7 @@ public class AwsProxyRequestPart
     //-------------------------------------------------------------
 
     public AwsProxyRequestPart(byte[] content) {
-        this.content = content;
+        this.content = content.clone();
     }
 
 
@@ -79,9 +85,11 @@ public class AwsProxyRequestPart
     }
 
 
+    @SuppressFBWarnings("PATH_TRAVERSAL_OUT")
     @Override
     public void write(String s) throws IOException {
-        FileOutputStream fos = new FileOutputStream(s);
+        String canonicalFilePath = SecurityUtils.getValidFilePath(s);
+        FileOutputStream fos = new FileOutputStream(canonicalFilePath);
         try {
             fos.write(content);
         } finally {
@@ -98,18 +106,27 @@ public class AwsProxyRequestPart
 
     @Override
     public String getHeader(String s) {
+        if (headers == null) {
+            return null;
+        }
         return headers.getFirst(s);
     }
 
 
     @Override
     public Collection<String> getHeaders(String s) {
+        if (headers == null) {
+            return Collections.EMPTY_LIST;
+        }
         return headers.get(s);
     }
 
 
     @Override
     public Collection<String> getHeaderNames() {
+        if (headers == null) {
+            return Collections.EMPTY_LIST;
+        }
         return headers.keySet();
     }
 

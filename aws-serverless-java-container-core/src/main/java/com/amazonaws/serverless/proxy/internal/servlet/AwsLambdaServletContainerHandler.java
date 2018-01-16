@@ -188,7 +188,6 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
      */
     protected void doFilter(ContainerRequestType request, ContainerResponseType response, Servlet servlet) throws IOException, ServletException {
         FilterChain chain = getFilterChain(request, servlet);
-        log.debug("FilterChainHolder.doFilter {}", chain);
         chain.doFilter(request, response);
     }
 

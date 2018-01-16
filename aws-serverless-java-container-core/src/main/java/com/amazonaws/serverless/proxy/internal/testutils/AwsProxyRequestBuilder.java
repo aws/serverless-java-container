@@ -21,6 +21,7 @@ import com.amazonaws.serverless.proxy.model.CognitoAuthorizerClaims;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.io.IOUtils;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -241,6 +242,7 @@ public class AwsProxyRequestBuilder {
         return this;
     }
 
+    @SuppressFBWarnings("PATH_TRAVERSAL_IN")
     public AwsProxyRequestBuilder fromJsonPath(String filePath)
             throws IOException {
         request = LambdaContainerHandler.getObjectMapper().readValue(new File(filePath), AwsProxyRequest.class);

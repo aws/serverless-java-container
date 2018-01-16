@@ -4,6 +4,7 @@ package com.amazonaws.serverless.proxy.jersey;
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.glassfish.jersey.internal.MapPropertiesDelegate;
 import org.glassfish.jersey.internal.PropertiesDelegate;
 import org.glassfish.jersey.server.ApplicationHandler;
@@ -30,6 +31,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Enumeration;
+import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 
 import static com.amazonaws.serverless.proxy.RequestReader.API_GATEWAY_CONTEXT_PROPERTY;
@@ -88,6 +90,9 @@ public class JerseyHandlerFilter implements Filter, Container {
         jersey.onShutdown(this);
     }
 
+    // suppressing warnings because I expect headers and query strings to be checked by the underlying
+    // servlet implementation
+    @SuppressFBWarnings({ "SERVLET_HEADER", "SERVLET_QUERY_STRING" })
     private ContainerRequest servletRequestToContainerRequest(ServletRequest request) {
         URI basePathUri;
         URI requestPathUri;
@@ -119,7 +124,7 @@ public class JerseyHandlerFilter implements Filter, Container {
         ContainerRequest requestContext = new ContainerRequest(
                 basePathUri,
                 requestPathUri,
-                servletRequest.getMethod().toUpperCase(),
+                servletRequest.getMethod().toUpperCase(Locale.ENGLISH),
                 (SecurityContext)servletRequest.getAttribute(JAX_SECURITY_CONTEXT_PROPERTY),
                 apiGatewayProperties);
 

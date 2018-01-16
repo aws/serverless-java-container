@@ -14,8 +14,9 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
-import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -140,18 +141,19 @@ public class AwsServletContext
 
 
     @Override
+    @SuppressFBWarnings("PATH_TRAVERSAL_IN") // suppressing because we are using the getValidFilePath
     public String getMimeType(String s) {
         try {
-
+            String validatedPath = SecurityUtils.getValidFilePath(s);
             if (s.startsWith("file:")) { // Support paths such as file:/D:/something/hello.txt
-                return Files.probeContentType(Paths.get(URI.create(s)));
+                return Files.probeContentType(Paths.get(URI.create(validatedPath)));
             } else if (s.startsWith("/")) { // Support paths such as file:/D:/something/hello.txt
-                    return Files.probeContentType(Paths.get(URI.create("file://" + s)));
+                    return Files.probeContentType(Paths.get(URI.create("file://" + validatedPath)));
             } else {
-                return Files.probeContentType(Paths.get(s));
+                return Files.probeContentType(Paths.get(validatedPath));
             }
         } catch (IOException e) {
-            log.warn("Could not find content type for file {}", s, e);
+            log.warn("Could not find content type for file:  " + SecurityUtils.encode(s), e);
             return null;
         }
     }
@@ -167,13 +169,13 @@ public class AwsServletContext
 
     @Override
     public URL getResource(String s) throws MalformedURLException {
-        return getClass().getResource(s);
+        return AwsServletContext.class.getResource(s);
     }
 
 
     @Override
     public InputStream getResourceAsStream(String s) {
-        return getClass().getResourceAsStream(s);
+        return AwsServletContext.class.getResourceAsStream(s);
     }
 
 
@@ -212,20 +214,20 @@ public class AwsServletContext
 
     @Override
     public void log(String s) {
-        log.info(s);
+        log.info(SecurityUtils.encode(s));
     }
 
 
     @Override
     @Deprecated
     public void log(Exception e, String s) {
-        log.error(s, e);
+        log.error(SecurityUtils.encode(s), e);
     }
 
 
     @Override
     public void log(String s, Throwable throwable) {
-        log.error(s, throwable);
+        log.error(SecurityUtils.encode(s), throwable);
     }
 
 
@@ -237,7 +239,7 @@ public class AwsServletContext
             try {
                 absPath = new File(fileUrl.toURI()).getAbsolutePath();
             } catch (URISyntaxException e) {
-                log.error("Error while looking for real path: " + s, e);
+                log.error("Error while looking for real path: {}", SecurityUtils.encode(s), SecurityUtils.encode(e.getMessage()));
             }
         }
         return absPath;
@@ -373,7 +375,7 @@ public class AwsServletContext
         if (filters.containsKey(name)) {
             return null;
         } else {
-            log.debug("Adding filter '{}' from {}", name, filter);
+            log.debug("Adding filter '{}' from {}", SecurityUtils.encode(name), SecurityUtils.encode(filter.toString()));
         }
 
         FilterHolder newFilter = new FilterHolder(name, filter, this);
@@ -386,7 +388,7 @@ public class AwsServletContext
     @Override
     public FilterRegistration.Dynamic addFilter(String name, Class<? extends Filter> filterClass) {
         try {
-            log.debug("Adding filter '{}' from {}", name, filterClass.getName());
+            log.debug("Adding filter '{}' from {}", SecurityUtils.encode(name), SecurityUtils.encode(filterClass.getName()));
             Filter newFilter = createFilter(filterClass);
             return addFilter(name, newFilter);
         } catch (ServletException e) {
@@ -422,9 +424,10 @@ public class AwsServletContext
     @Override
     public Map<String, ? extends FilterRegistration> getFilterRegistrations() {
         Map<String, FilterRegistration> registrations = new LinkedHashMap<>();
-        for (String filter : filters.keySet()) {
-            registrations.put(filter, filters.get(filter).getRegistration());
+        for (Map.Entry<String, FilterHolder> entry : filters.entrySet()) {
+            registrations.put(entry.getKey(), entry.getValue().getRegistration());
         }
+
         return registrations;
     }
 

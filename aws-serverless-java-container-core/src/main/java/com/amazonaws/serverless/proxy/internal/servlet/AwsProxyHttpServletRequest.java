@@ -14,10 +14,12 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
+import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.services.lambda.runtime.Context;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -43,9 +45,11 @@ import javax.ws.rs.core.SecurityContext;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -82,14 +86,15 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     private static Logger log = LoggerFactory.getLogger(AwsProxyHttpServletRequest.class);
     private ContainerConfig config;
 
-
     //-------------------------------------------------------------
     // Constructors
     //-------------------------------------------------------------
 
+
     public AwsProxyHttpServletRequest(AwsProxyRequest awsProxyRequest, Context lambdaContext, SecurityContext awsSecurityContext) {
         this(awsProxyRequest, lambdaContext, awsSecurityContext, ContainerConfig.defaultConfig());
     }
+
 
     public AwsProxyHttpServletRequest(AwsProxyRequest awsProxyRequest, Context lambdaContext, SecurityContext awsSecurityContext, ContainerConfig config) {
         super(lambdaContext);
@@ -101,14 +106,15 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         this.multipartFormParameters = getMultipartFormParametersMap();
     }
 
+
     public AwsProxyRequest getAwsProxyRequest() {
         return this.request;
     }
 
-
     //-------------------------------------------------------------
     // Implementation - HttpServletRequest
     //-------------------------------------------------------------
+
 
     @Override
     public String getAuthType() {
@@ -239,6 +245,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         return securityContext.getUserPrincipal();
     }
 
+
     @Override
     public String getRequestURI() {
         return cleanUri(getContextPath()) + cleanUri(request.getPath());
@@ -262,6 +269,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         return "";
     }
 
+
     @Override
     public boolean authenticate(HttpServletResponse httpServletResponse)
             throws IOException, ServletException {
@@ -274,6 +282,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             throws ServletException {
         throw new UnsupportedOperationException();
     }
+
 
     @Override
     public void logout()
@@ -302,10 +311,10 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         return null;
     }
 
-
     //-------------------------------------------------------------
     // Implementation - ServletRequest
     //-------------------------------------------------------------
+
 
     @Override
     public String getCharacterEncoding() {
@@ -335,7 +344,8 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
 
     @Override
-    public void setCharacterEncoding(String s) throws UnsupportedEncodingException {
+    public void setCharacterEncoding(String s)
+            throws UnsupportedEncodingException {
         String currentContentType = request.getHeaders().get(HttpHeaders.CONTENT_TYPE);
         if (currentContentType == null) {
             request.getHeaders().put(
@@ -364,6 +374,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         }
     }
 
+
     @Override
     public int getContentLength() {
         String headerValue = getHeaderCaseInsensitive(HttpHeaders.CONTENT_LENGTH);
@@ -391,51 +402,19 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
 
     @Override
-    public ServletInputStream getInputStream() throws IOException {
+    public ServletInputStream getInputStream()
+            throws IOException {
         if (request.getBody() == null) {
             return null;
         }
-        byte[] bodyBytes = request.getBody().getBytes();
+        byte[] bodyBytes = null;
         if (request.isBase64Encoded()) {
             bodyBytes = Base64.getMimeDecoder().decode(request.getBody());
+        } else {
+            bodyBytes = request.getBody().getBytes(StandardCharsets.UTF_8);
         }
         ByteArrayInputStream requestBodyStream = new ByteArrayInputStream(bodyBytes);
-        return new ServletInputStream() {
-
-            private ReadListener listener;
-
-            @Override
-            public boolean isFinished() {
-                return true;
-            }
-
-
-            @Override
-            public boolean isReady() {
-                return true;
-            }
-
-
-            @Override
-            public void setReadListener(ReadListener readListener) {
-                listener = readListener;
-                try {
-                    listener.onDataAvailable();
-                } catch (IOException e) {
-                    log.error("Data not available on input stream", e);
-                }
-            }
-
-
-            @Override
-            public int read() throws IOException {
-                int readByte = requestBodyStream.read();
-                if (requestBodyStream.available() == 0 && listener != null) {
-                    listener.onAllDataRead();
-                }
-                return readByte;
-            }
-        };
+        return new AwsServletInputStream(requestBodyStream);
     }
 
 
@@ -480,7 +459,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         }
 
         if (values.size() == 0) {
-            return null;
+            return new String[0];
         } else {
             String[] valuesArray = new String[values.size()];
             valuesArray = values.toArray(valuesArray);
@@ -535,6 +514,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         return headerValue;
     }
 
+
     @Override
     public String getServerName() {
         String name = getHeaderCaseInsensitive(HttpHeaders.HOST);
@@ -544,6 +524,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         }
         return name;
     }
+
 
     @Override
     public BufferedReader getReader()
@@ -562,6 +543,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     public String getRemoteHost() {
         return getHeaderCaseInsensitive(HttpHeaders.HOST);
     }
+
 
     @Override
     public Locale getLocale() {
@@ -604,6 +586,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         return getServletContext().getRequestDispatcher(s);
     }
 
+
     @Override
     @Deprecated
     public String getRealPath(String s) {
@@ -611,19 +594,23 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         return null;
     }
 
+
     @Override
     public int getRemotePort() {
         return 0;
     }
 
+
     @Override
-    public AsyncContext startAsync() throws IllegalStateException {
+    public AsyncContext startAsync()
+            throws IllegalStateException {
         return null;
     }
 
 
     @Override
-    public AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse) throws IllegalStateException {
+    public AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse)
+            throws IllegalStateException {
         return null;
     }
 
@@ -631,12 +618,13 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     // Methods - Private
     //-------------------------------------------------------------
 
+
     private String getHeaderCaseInsensitive(String key) {
         if (request.getHeaders() == null) {
             return null;
         }
         for (String requestHeaderKey : request.getHeaders().keySet()) {
-            if (key.toLowerCase().equals(requestHeaderKey.toLowerCase())) {
+            if (key.toLowerCase(Locale.ENGLISH).equals(requestHeaderKey.toLowerCase(Locale.ENGLISH))) {
                 return request.getHeaders().get(requestHeaderKey);
             }
         }
@@ -650,7 +638,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         }
 
         for (String requestParamKey : request.getQueryStringParameters().keySet()) {
-            if (key.toLowerCase().equals(requestParamKey.toLowerCase())) {
+            if (key.toLowerCase(Locale.ENGLISH).equals(requestParamKey.toLowerCase(Locale.ENGLISH))) {
                 return request.getQueryStringParameters().get(requestParamKey);
             }
         }
@@ -665,11 +653,12 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             valuesArray = values.toArray(valuesArray);
             return valuesArray;
         } else {
-            return null;
+            return new String[0];
         }
     }
 
 
+    @SuppressFBWarnings("FILE_UPLOAD_FILENAME")
     private Map<String, Part> getMultipartFormParametersMap() {
         if (!ServletFileUpload.isMultipartContent(this)) { // isMultipartContent also checks the content type
             return new HashMap<>();
@@ -681,8 +670,9 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         try {
             List<FileItem> items = upload.parseRequest(this);
             for (FileItem item : items) {
+                String fileName = SecurityUtils.getValidFilePath(item.getName(), true);
                 AwsProxyRequestPart newPart = new AwsProxyRequestPart(item.get());
-                newPart.setName(item.getName());
+                newPart.setName(fileName);
                 newPart.setSubmittedFileName(item.getFieldName());
                 newPart.setContentType(item.getContentType());
                 newPart.setSize(item.getSize());
@@ -703,6 +693,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         }
         return output;
     }
+
 
     private String cleanUri(String uri) {
         String finalUri = uri;
@@ -726,7 +717,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         if (contentType == null) {
             return new HashMap<>();
         }
-        if (!contentType.startsWith(MediaType.APPLICATION_FORM_URLENCODED) || !getMethod().toLowerCase().equals("post")) {
+        if (!contentType.startsWith(MediaType.APPLICATION_FORM_URLENCODED) || !getMethod().toLowerCase(Locale.ENGLISH).equals("post")) {
             return new HashMap<>();
         }
 
@@ -749,6 +740,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         return output;
     }
 
+
     public static String decodeValueIfEncoded(String value) {
         if (value == null) {
             return null;
@@ -760,5 +752,51 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             log.warn("Could not decode body content - proceeding as if it was already decoded", e);
             return value;
         }
+    }
+
+
+    public static class AwsServletInputStream extends ServletInputStream {
+
+        private InputStream bodyStream;
+        private ReadListener listener;
+
+        public AwsServletInputStream(InputStream body) {
+            bodyStream = body;
+        }
+
+
+        @Override
+        public boolean isFinished() {
+            return true;
+        }
+
+
+        @Override
+        public boolean isReady() {
+            return true;
+        }
+
+
+        @Override
+        public void setReadListener(ReadListener readListener) {
+            listener = readListener;
+            try {
+                listener.onDataAvailable();
+            } catch (IOException e) {
+                log.error("Data not available on input stream", e);
+            }
+        }
+
+
+        @Override
+        public int read()
+                throws IOException {
+            int readByte = bodyStream.read();
+            if (bodyStream.available() == 0 && listener != null) {
+                listener.onAllDataRead();
+            }
+            return readByte;
+        }
+
     }
 }

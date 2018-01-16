@@ -13,6 +13,9 @@
 package com.amazonaws.serverless.proxy.jersey;
 
 
+import com.amazonaws.serverless.proxy.internal.SecurityUtils;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.glassfish.jersey.server.ContainerException;
 import org.glassfish.jersey.server.ContainerResponse;
 import org.glassfish.jersey.server.spi.ContainerResponseWriter;
@@ -72,6 +75,7 @@ class JerseyServletResponseWriter
      * @return An OutputStream for Jersey to write the response body to
      * @throws ContainerException default Jersey declaration
      */
+    @SuppressFBWarnings("HTTP_RESPONSE_SPLITTING") // suppress this because headers are sanitized in the setHeader method of the servlet response
     public OutputStream writeResponseStatusAndHeaders(long contentLength, ContainerResponse containerResponse)
             throws ContainerException {
         servletResponse.setStatus(containerResponse.getStatusInfo().getStatusCode());

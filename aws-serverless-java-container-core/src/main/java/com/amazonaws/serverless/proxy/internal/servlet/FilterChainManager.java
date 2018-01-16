@@ -12,6 +12,8 @@
  */
 package com.amazonaws.serverless.proxy.internal.servlet;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -27,6 +29,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -110,8 +113,8 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
             }
             return chainHolder;
         }
-        for (String name : registrations.keySet()) {
-            FilterHolder holder = registrations.get(name);
+        for (Map.Entry<String, FilterHolder> entry : registrations.entrySet()) {
+            FilterHolder holder = entry.getValue();
             // we only check the dispatcher type if it's not empty. Otherwise we assume it's a REQUEST as per section 6.2.5
             // of servlet specs
             if (holder.getRegistration().getDispatcherTypes().size() > 0 && !holder.getRegistration().getDispatcherTypes().contains(type)) {
@@ -198,7 +201,7 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
      */
     boolean pathMatches(final String target, final String mapping) {
         // easiest case, they are exactly the same
-        if (target.toLowerCase().equals(mapping.toLowerCase())) {
+        if (target.toLowerCase(Locale.ENGLISH).equals(mapping.toLowerCase(Locale.ENGLISH))) {
             return true;
         }
 
@@ -300,7 +303,14 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
 
         @Override
         public boolean equals(Object key) {
-            return key.getClass().isAssignableFrom(TargetCacheKey.class) && hashCode() == key.hashCode();
+            if (key == null) {
+                return false;
+            }
+            if (key.getClass().equals(this.getClass())) {
+                return this.hashCode() == key.hashCode();
+            }
+
+            return false;
         }
 
 
@@ -318,6 +328,7 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
         }
     }
 
+    @SuppressFBWarnings("URF_UNREAD_FIELD")
     private class ServletExecutionFilter implements Filter {
 
         private FilterConfig config;

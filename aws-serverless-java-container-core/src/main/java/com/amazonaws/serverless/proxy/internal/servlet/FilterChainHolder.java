@@ -12,6 +12,7 @@
  */
 package com.amazonaws.serverless.proxy.internal.servlet;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +66,7 @@ public class FilterChainHolder implements FilterChain {
     // Implementation - FilterChain
     //-------------------------------------------------------------
 
+    @SuppressFBWarnings("CRLF_INJECTION_LOGS")
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse) throws IOException, ServletException {
         currentFilter++;
@@ -78,11 +80,11 @@ public class FilterChainHolder implements FilterChain {
             if (!holder.isFilterInitialized()) {
                 holder.init();
             }
-            log.debug("Starting {} {} : filter {}-{} {}", servletRequest.getDispatcherType(), ((HttpServletRequest) servletRequest).getRequestURI(),
-                      currentFilter, holder.getFilterName(), holder.getFilter());
+            log.debug("Starting {}: filter {}-{}", servletRequest.getDispatcherType(),
+                      currentFilter, holder.getFilterName());
             holder.getFilter().doFilter(servletRequest, servletResponse, this);
-            log.debug("Executed {} {} : filter {}-{} {}", servletRequest.getDispatcherType(), ((HttpServletRequest) servletRequest).getRequestURI(),
-                      currentFilter, holder.getFilterName(), holder.getFilter());
+            log.debug("Executed {}: filter {}-{}", servletRequest.getDispatcherType(),
+                      currentFilter, holder.getFilterName());
         }
 
         // if for some reason the response wasn't flushed yet, we force it here.

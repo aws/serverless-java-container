@@ -38,7 +38,6 @@ public class AwsHttpSession implements HttpSession {
         if (null == id) {
             throw new RuntimeException("HTTP session id (from request ID) cannot be null");
         }
-        log.debug("Creating session " + id);
         this.id = id;
         attributes = new HashMap<>();
         creationTime = Instant.now().getEpochSecond();
