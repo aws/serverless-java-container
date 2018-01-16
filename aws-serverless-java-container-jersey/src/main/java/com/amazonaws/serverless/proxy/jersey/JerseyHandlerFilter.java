@@ -1,8 +1,8 @@
 package com.amazonaws.serverless.proxy.jersey;
 
 
-import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
+import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.glassfish.jersey.internal.MapPropertiesDelegate;
@@ -49,22 +49,25 @@ public class JerseyHandlerFilter implements Filter, Container {
     private Logger log = LoggerFactory.getLogger(JerseyHandlerFilter.class);
 
     public JerseyHandlerFilter(Application jaxApplication) {
+        Timer.start("JERSEY_FILTER_INIT");
         app = jaxApplication;
+
+        jersey = new ApplicationHandler(app);
+        jersey.onStartup(this);
+        Timer.stop("JERSEY_FILTER_INIT");
     }
 
     @Override
     public void init(FilterConfig filterConfig)
             throws ServletException {
         log.info("Initialize Jersey application handler");
-        jersey = new ApplicationHandler(app);
-        jersey.onStartup(this);
     }
 
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
             throws IOException, ServletException {
-        log.debug("Called Jersey filter");
+        Timer.start("JERSEY_FILTER_DOFILTER");
         // we use a latch to make the processing inside Jersey synchronous
         CountDownLatch jerseyLatch = new CountDownLatch(1);
 
@@ -80,7 +83,7 @@ public class JerseyHandlerFilter implements Filter, Container {
             log.error("Interrupted while processing request", e);
             throw new InternalServerErrorException(e);
         }
-
+        Timer.stop("JERSEY_FILTER_DOFILTER");
         filterChain.doFilter(servletRequest, servletResponse);
     }
 

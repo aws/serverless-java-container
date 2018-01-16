@@ -25,6 +25,7 @@ import com.amazonaws.serverless.proxy.internal.servlet.AwsLambdaServletContainer
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequestReader;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
+import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 
@@ -120,11 +121,13 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
                                         SecurityContextWriter<RequestType> securityContextWriter,
                                         ExceptionHandler<ResponseType> exceptionHandler,
                                         Application jaxRsApplication) {
-        super(requestReader, responseWriter, securityContextWriter, exceptionHandler);
 
+        super(requestReader, responseWriter, securityContextWriter, exceptionHandler);
+        Timer.start("JERSEY_START_TIMER");
         this.jaxRsApplication = jaxRsApplication;
         this.initialized = false;
         this.jerseyFilter = new JerseyHandlerFilter(this.jaxRsApplication);
+        Timer.stop("JERSEY_START_TIMER");
     }
 
     //-------------------------------------------------------------
@@ -140,10 +143,12 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
     protected void handleRequest(AwsProxyHttpServletRequest httpServletRequest, AwsHttpServletResponse httpServletResponse, Context lambdaContext)
             throws Exception {
 
+        Timer.start("JERSEY_HANDLE_REQUEST");
         // this method of the AwsLambdaServletContainerHandler sets the request context
         super.handleRequest(httpServletRequest, httpServletResponse, lambdaContext);
 
         if (!initialized) {
+            Timer.start("JERSEY_INITIALIZATION");
             // call the onStartup event if set to give developers a chance to set filters in the context
             if (startupHandler != null) {
                 startupHandler.onStartup(getServletContext());
@@ -154,10 +159,12 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
             jerseyFilterReg.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/*");
 
             initialized = true;
+            Timer.stop("JERSEY_INITIALIZATION");
         }
 
         httpServletRequest.setServletContext(getServletContext());
 
         doFilter(httpServletRequest, httpServletResponse, null);
+        Timer.stop("JERSEY_HANDLE_REQUEST");
     }
 }
