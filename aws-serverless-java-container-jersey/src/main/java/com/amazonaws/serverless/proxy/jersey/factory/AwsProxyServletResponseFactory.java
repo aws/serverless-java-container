@@ -27,8 +27,8 @@ import static com.amazonaws.serverless.proxy.jersey.JerseyHandlerFilter.JERSEY_S
 
 
 /**
- * Implementation of Jersey's <code>Factory</code> object for <code>HttpServletRequest</code> objects. This can be used
- * by Jersey to generate a Servlet request given an <code>AwsProxyRequest</code> event.
+ * Implementation of Jersey's <code>Factory</code> object for <code>HttpServletResponse</code> objects. This can be used
+ * to write data directly to the servlet response for the method, without using Jersey's <code>ContainerResponse</code>
  *
  * <pre>
  * <code>
@@ -36,8 +36,8 @@ import static com.amazonaws.serverless.proxy.jersey.JerseyHandlerFilter.JERSEY_S
  *         .register(new AbstractBinder() {
  *             {@literal @}Override
  *             protected void configure() {
- *                 bindFactory(AwsProxyServletRequestFactory.class)
- *                     .to(HttpServletRequest.class)
+ *                 bindFactory(AwsProxyServletResponseFactory.class)
+ *                     .to(HttpServletResponse.class)
  *                     .in(RequestScoped.class);
  *            }
  *       });
