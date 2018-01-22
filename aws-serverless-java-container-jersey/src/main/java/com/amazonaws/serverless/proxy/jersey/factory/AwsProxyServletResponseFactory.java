@@ -15,18 +15,20 @@ package com.amazonaws.serverless.proxy.jersey.factory;
 
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.jersey.server.ContainerRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.InternalServerErrorException;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Context;
 
 import static com.amazonaws.serverless.proxy.jersey.JerseyHandlerFilter.JERSEY_SERVLET_REQUEST_PROPERTY;
+import static com.amazonaws.serverless.proxy.jersey.JerseyHandlerFilter.JERSEY_SERVLET_RESPONSE_PROPERTY;
 
 
 /**
- * Implementation of Jersey's <code>Factory</code> object for <code>ServletContext</code> objects. This can be used
- * by Jersey to generate a Servlet context given an <code>AwsProxyRequest</code> event.
+ * Implementation of Jersey's <code>Factory</code> object for <code>HttpServletResponse</code> objects. This can be used
+ * to write data directly to the servlet response for the method, without using Jersey's <code>ContainerResponse</code>
  *
  * <pre>
  * <code>
@@ -34,32 +36,31 @@ import static com.amazonaws.serverless.proxy.jersey.JerseyHandlerFilter.JERSEY_S
  *         .register(new AbstractBinder() {
  *             {@literal @}Override
  *             protected void configure() {
- *                 bindFactory(AwsProxyServletContextFactory.class)
- *                     .to(ServletContext.class)
+ *                 bindFactory(AwsProxyServletResponseFactory.class)
+ *                     .to(HttpServletResponse.class)
  *                     .in(RequestScoped.class);
  *            }
  *       });
  * </code>
  * </pre>
  */
-public class AwsProxyServletContextFactory implements Factory<ServletContext> {
+public class AwsProxyServletResponseFactory
+        implements Factory<HttpServletResponse> {
+
     @Context ContainerRequest currentRequest;
+    private static Logger log = LoggerFactory.getLogger(AwsProxyServletResponseFactory.class);
+
+    //-------------------------------------------------------------
+    // Implementation - Factory
+    //-------------------------------------------------------------
 
     @Override
-    public ServletContext provide() {
-        HttpServletRequest req = (HttpServletRequest)currentRequest.getProperty(JERSEY_SERVLET_REQUEST_PROPERTY);
-
-        if (req == null) {
-            throw new InternalServerErrorException("Could not find servlet request in context");
-        }
-
-        ServletContext ctx = req.getServletContext();
-        return ctx;
+    public HttpServletResponse provide() {
+        return (HttpServletResponse)currentRequest.getProperty(JERSEY_SERVLET_RESPONSE_PROPERTY);
     }
 
 
     @Override
-    public void dispose(ServletContext servletContext) {
-
+    public void dispose(HttpServletResponse httpServletRequest) {
     }
 }

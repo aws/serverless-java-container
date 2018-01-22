@@ -13,19 +13,16 @@
 package com.amazonaws.serverless.proxy.jersey.factory;
 
 
-import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
-import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequestReader;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
-import com.amazonaws.serverless.proxy.jersey.JerseyAwsProxyRequestReader;
-import com.amazonaws.serverless.proxy.jersey.JerseyLambdaContainerHandler;
-
 import org.glassfish.hk2.api.Factory;
+import org.glassfish.jersey.server.ContainerRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Context;
+
+import static com.amazonaws.serverless.proxy.jersey.JerseyHandlerFilter.JERSEY_SERVLET_REQUEST_PROPERTY;
+
 
 /**
  * Implementation of Jersey's <code>Factory</code> object for <code>HttpServletRequest</code> objects. This can be used
@@ -48,7 +45,7 @@ import javax.servlet.http.HttpServletRequest;
 public class AwsProxyServletRequestFactory
         implements Factory<HttpServletRequest> {
 
-    private static AwsProxyHttpServletRequestReader requestReader = new AwsProxyHttpServletRequestReader();
+    @Context ContainerRequest currentRequest;
     private static Logger log = LoggerFactory.getLogger(AwsProxyServletRequestFactory.class);
 
     //-------------------------------------------------------------
@@ -57,26 +54,11 @@ public class AwsProxyServletRequestFactory
 
     @Override
     public HttpServletRequest provide() {
-        return getRequest();
+        return (HttpServletRequest)currentRequest.getProperty(JERSEY_SERVLET_REQUEST_PROPERTY);
     }
 
 
     @Override
     public void dispose(HttpServletRequest httpServletRequest) {
-    }
-
-    public static HttpServletRequest getRequest() {
-        try {
-            AwsProxyHttpServletRequest req =  requestReader.readRequest(JerseyAwsProxyRequestReader.getCurrentRequest(),
-                                                                        AwsProxySecurityContextWriter.getCurrentContext(),
-                                                                        JerseyAwsProxyRequestReader.getCurrentLambdaContext(),
-                                                                        JerseyLambdaContainerHandler.getContainerConfig());
-            req.setServletContext(new AwsServletContext(null));
-            return req;
-        } catch (InvalidRequestEventException e) {
-            log.error("Invalid request event", e);
-            return null;
-        }
-
     }
 }

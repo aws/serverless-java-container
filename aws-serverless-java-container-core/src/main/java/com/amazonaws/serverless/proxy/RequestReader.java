@@ -50,6 +50,11 @@ public abstract class RequestReader<RequestType, ContainerRequestType> {
      */
     public static final String LAMBDA_CONTEXT_PROPERTY = "com.amazonaws.lambda.context";
 
+    /**
+     * The key for the <strong>JAX RS security context</strong> properties stored in the request attributes
+     */
+    public static final String JAX_SECURITY_CONTEXT_PROPERTY = "com.amazonaws.serverless.jaxrs.securityContext";
+
 
     //-------------------------------------------------------------
     // Methods - Abstract

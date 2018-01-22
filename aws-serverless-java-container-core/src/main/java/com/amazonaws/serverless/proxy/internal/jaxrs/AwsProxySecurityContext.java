@@ -43,9 +43,18 @@ public class AwsProxySecurityContext
     // Variables - Private
     //-------------------------------------------------------------
 
-    protected Context lambdaContext;
-    protected AwsProxyRequest event;
+    private Context lambdaContext;
+    private AwsProxyRequest event;
 
+
+    public Context getLambdaContext() {
+        return lambdaContext;
+    }
+
+
+    public AwsProxyRequest getEvent() {
+        return event;
+    }
 
     //-------------------------------------------------------------
     // Constructors
@@ -119,7 +128,7 @@ public class AwsProxySecurityContext
      * Custom object for request authorized with a Cognito User Pool authorizer. By casting the Principal
      * object to this you can extract the Claims object included in the token.
      */
-    public class CognitoUserPoolPrincipal implements Principal {
+    public static class CognitoUserPoolPrincipal implements Principal {
 
         private CognitoAuthorizerClaims claims;
 

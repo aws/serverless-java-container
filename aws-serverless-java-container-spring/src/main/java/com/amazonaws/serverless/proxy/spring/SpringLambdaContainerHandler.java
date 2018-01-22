@@ -19,6 +19,7 @@ import com.amazonaws.serverless.proxy.ExceptionHandler;
 import com.amazonaws.serverless.proxy.RequestReader;
 import com.amazonaws.serverless.proxy.ResponseWriter;
 import com.amazonaws.serverless.proxy.SecurityContextWriter;
+import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.*;
@@ -95,7 +96,9 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
                                         ConfigurableWebApplicationContext applicationContext)
             throws ContainerInitializationException {
         super(requestReader, responseWriter, securityContextWriter, exceptionHandler);
+        Timer.start("SPRING_CONTAINER_HANDLER_CONSTRUCTOR");
         initializer = new LambdaSpringApplicationInitializer(applicationContext);
+        Timer.stop("SPRING_CONTAINER_HANDLER_CONSTRUCTOR");
     }
 
     public void setRefreshContext(boolean refreshContext) {
@@ -117,6 +120,7 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
 
     @Override
     protected void handleRequest(AwsProxyHttpServletRequest containerRequest, AwsHttpServletResponse containerResponse, Context lambdaContext) throws Exception {
+        Timer.start("SPRING_HANDLE_REQUEST");
         if (initializer == null) {
             throw new ContainerInitializationException(LambdaSpringApplicationInitializer.ERROR_NO_CONTEXT, null);
         }
@@ -126,6 +130,7 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
 
         // wire up the application context on the first invocation
         if (!initialized) {
+            Timer.start("SPRING_COLD_START");
 
             initializer.onStartup(getServletContext());
 
@@ -135,11 +140,13 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
             }
 
             initialized = true;
+            Timer.stop("SPRING_COLD_START");
         }
 
         containerRequest.setServletContext(getServletContext());
 
         // process filters
         doFilter(containerRequest, containerResponse, initializer);
+        Timer.stop("SPRING_HANDLE_REQUEST");
     }
 }

@@ -13,7 +13,9 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
+import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +27,9 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedHashMap;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
@@ -82,6 +86,7 @@ public class AwsHttpServletResponse
     //-------------------------------------------------------------
 
 
+    @SuppressFBWarnings("COOKIE_USAGE")
     @Override
     public void addCookie(Cookie cookie) {
         String cookieData = cookie.getName() + "=" + cookie.getValue();
@@ -300,7 +305,9 @@ public class AwsHttpServletResponse
                     bodyOutputStream.write(b);
                 } catch (Exception e) {
                     log.error("Cannot write to output stream", e);
-                    listener.onError(e);
+                    if (listener != null) {
+                        listener.onError(e);
+                    }
                 }
             }
 
@@ -318,7 +325,7 @@ public class AwsHttpServletResponse
     @Override
     public PrintWriter getWriter() throws IOException {
         if (null == writer) {
-            writer = new PrintWriter(bodyOutputStream);
+            writer = new PrintWriter(new OutputStreamWriter(bodyOutputStream, StandardCharsets.UTF_8));
         }
         return writer;
     }
@@ -365,7 +372,7 @@ public class AwsHttpServletResponse
         if (null != writer) {
             writer.flush();
         }
-        responseBody = new String(bodyOutputStream.toByteArray());
+        responseBody = new String(bodyOutputStream.toByteArray(), StandardCharsets.UTF_8);
         log.debug("Response buffer flushed with {} bytes, latch={}", responseBody.length(), writersCountDownLatch.getCount());
         isCommitted = true;
         writersCountDownLatch.countDown();
@@ -450,14 +457,16 @@ public class AwsHttpServletResponse
     //-------------------------------------------------------------
 
     private void setHeader(String key, String value, boolean overwrite) {
-        List<String> values = headers.get(key);
+        String encodedKey = SecurityUtils.crlf(key);
+        String encodedValue = SecurityUtils.crlf(value);
+        List<String> values = headers.get(encodedKey);
 
         if (values == null || overwrite) {
             values = new ArrayList<>();
         }
 
-        values.add(value);
+        values.add(encodedValue);
 
-        headers.put(key, values);
+        headers.put(encodedKey, values);
     }
 }

@@ -3,12 +3,16 @@ package com.amazonaws.serverless.proxy.model;
 
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * Configuration parameters for the framework
  */
 public class ContainerConfig {
     public static final String DEFAULT_URI_ENCODING = "UTF-8";
+    private static final List<String> DEFAULT_FILE_PATHS = new ArrayList<String>() {{ add("/tmp"); add("/var/task"); }};
 
     public static ContainerConfig defaultConfig() {
         ContainerConfig configuration = new ContainerConfig();
@@ -16,6 +20,7 @@ public class ContainerConfig {
         configuration.setUriEncoding(DEFAULT_URI_ENCODING);
         configuration.setConsolidateSetCookieHeaders(true);
         configuration.setUseStageAsServletContext(false);
+        configuration.setValidFilePaths(DEFAULT_FILE_PATHS);
 
         return configuration;
     }
@@ -29,6 +34,11 @@ public class ContainerConfig {
     private String uriEncoding;
     private boolean consolidateSetCookieHeaders;
     private boolean useStageAsServletContext;
+    private List<String> validFilePaths;
+
+    public ContainerConfig() {
+        validFilePaths = new ArrayList<>();
+    }
 
 
     //-------------------------------------------------------------
@@ -130,5 +140,32 @@ public class ContainerConfig {
      */
     public void setUseStageAsServletContext(boolean useStageAsServletContext) {
         this.useStageAsServletContext = useStageAsServletContext;
+    }
+
+
+    /**
+     * Returns the list of file paths that the servlet accepts read/write requests to
+     * @return A List of file paths. By default this is set to /tmp and /var/task
+     */
+    public List<String> getValidFilePaths() {
+        return validFilePaths;
+    }
+
+
+    /**
+     * Sets a list of valid file paths for the servlet to read/write from.
+     * @param validFilePaths A populated list of base paths
+     */
+    public void setValidFilePaths(List<String> validFilePaths) {
+        this.validFilePaths = validFilePaths;
+    }
+
+
+    /**
+     * Adds a new base path to the list of allowed paths.
+     * @param filePath The base path
+     */
+    public void addValidFilePath(String filePath) {
+        validFilePaths.add(filePath);
     }
 }

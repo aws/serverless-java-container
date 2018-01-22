@@ -65,7 +65,7 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
     //-------------------------------------------------------------
 
     private static ContainerConfig config = ContainerConfig.defaultConfig();
-    private static ObjectMapper objectMapper;
+    private static volatile ObjectMapper objectMapper;
 
 
 
@@ -115,7 +115,6 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
      * @param basePath The base path to be stripped from the request
      */
     public void stripBasePath(String basePath) {
-        log.debug("Setting framework to strip base path: " + basePath);
         config.setStripBasePath(true);
         config.setServiceBasePath(basePath);
     }

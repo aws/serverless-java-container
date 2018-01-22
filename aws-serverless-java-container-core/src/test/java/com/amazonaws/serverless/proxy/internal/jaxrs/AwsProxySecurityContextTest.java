@@ -19,15 +19,15 @@ public class AwsProxySecurityContextTest {
     @Test
     public void localVars_constructor_nullValues() {
         AwsProxySecurityContext context = new AwsProxySecurityContext(null, null);
-        assertNull(context.event);
-        assertNull(context.lambdaContext);
+        assertNull(context.getEvent());
+        assertNull(context.getLambdaContext());
     }
 
     @Test
     public void localVars_constructor_ValidRequest() {
         AwsProxySecurityContext context = new AwsProxySecurityContext(null, REQUEST_NO_AUTH);
-        assertEquals(REQUEST_NO_AUTH, context.event);
-        assertNull(context.lambdaContext);
+        assertEquals(REQUEST_NO_AUTH, context.getEvent());
+        assertNull(context.getLambdaContext());
     }
 
     @Test

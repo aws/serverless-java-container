@@ -16,10 +16,7 @@ package com.amazonaws.serverless.proxy;
 import com.amazonaws.serverless.exceptions.InvalidResponseObjectException;
 import com.amazonaws.services.lambda.runtime.Context;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.IOException;
-import java.io.OutputStream;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 
 /**
@@ -52,6 +49,7 @@ public abstract class ResponseWriter<ContainerResponseType, ResponseType> {
      * @param input The byte[] to check against
      * @return true if the contend is valid UTF-8, false otherwise
      */
+    @SuppressFBWarnings("NS_NON_SHORT_CIRCUIT")
     protected boolean isValidUtf8(final byte[] input) {
         int i = 0;
         // Check for BOM

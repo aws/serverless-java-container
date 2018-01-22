@@ -19,6 +19,7 @@ import com.amazonaws.serverless.proxy.jersey.model.SingleValueModel;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
@@ -33,7 +34,7 @@ import java.util.Random;
  */
 @Path("/echo")
 public class EchoJerseyResource {
-
+    public static final String SERVLET_RESP_HEADER_KEY = "X-HttpServletResponse";
     public static final String EXCEPTION_MESSAGE = "Fake exception";
 
     @Path("/headers") @GET
@@ -118,6 +119,15 @@ public class EchoJerseyResource {
         output.setValue("" + statusCode);
 
         return Response.status(statusCode).entity(output).build();
+    }
+
+    @Path("/servlet-response") @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response echoCustomStatusCode(@Context HttpServletResponse resp) {
+        SingleValueModel output = new SingleValueModel();
+        output.setValue("Custom header in resp");
+        resp.setHeader(SERVLET_RESP_HEADER_KEY, "1");
+        return Response.ok().entity(output).build();
     }
 
     @Path("/binary") @GET

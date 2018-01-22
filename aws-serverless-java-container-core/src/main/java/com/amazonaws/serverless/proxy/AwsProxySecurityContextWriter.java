@@ -28,7 +28,7 @@ public class AwsProxySecurityContextWriter implements SecurityContextWriter<AwsP
     // Variables - Private - Static
     //-------------------------------------------------------------
 
-    private static AwsProxySecurityContext currentContext;
+    private AwsProxySecurityContext currentContext;
 
 
     //-------------------------------------------------------------
@@ -36,7 +36,7 @@ public class AwsProxySecurityContextWriter implements SecurityContextWriter<AwsP
     //-------------------------------------------------------------
 
     public SecurityContext writeSecurityContext(AwsProxyRequest event, Context lambdaContext) {
-        currentContext = new AwsProxySecurityContext(lambdaContext, event);
+       currentContext = new AwsProxySecurityContext(lambdaContext, event);
 
         return currentContext;
     }
@@ -46,7 +46,7 @@ public class AwsProxySecurityContextWriter implements SecurityContextWriter<AwsP
     // Methods - Getter/Setter
     //-------------------------------------------------------------
 
-    public static AwsProxySecurityContext getCurrentContext() {
+    public AwsProxySecurityContext getCurrentContext() {
         return currentContext;
     }
 }

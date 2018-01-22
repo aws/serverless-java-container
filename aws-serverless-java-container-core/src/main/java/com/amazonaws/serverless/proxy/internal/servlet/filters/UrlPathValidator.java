@@ -20,6 +20,8 @@ import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.regex.Pattern;
 
 /**
@@ -34,7 +36,7 @@ public class UrlPathValidator implements Filter {
     //-------------------------------------------------------------
 
     public static final int DEFAULT_ERROR_CODE = 404;
-    public static final Pattern PATH_PATTERN = Pattern.compile("^(/[-\\w:@&?=+,.!/~*'%$_;]*)?$");
+    //public static final Pattern PATH_PATTERN = Pattern.compile("^(/[-\\w:@&?=+,.!/~*'%$_;]*)?$");
     public static final String PARAM_INVALID_STATUS_CODE = "invalid_status_code";
 
 
@@ -67,20 +69,29 @@ public class UrlPathValidator implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        // the getServletPath method of the AwsProxyHttpServletRequest returns the request path
-        String path = ((HttpServletRequest)servletRequest).getServletPath();
+        // the getPathInfo method of the AwsProxyHttpServletRequest returns the request path with the correct base path stripped
+        String path = ((HttpServletRequest)servletRequest).getPathInfo();
         if (path == null) {
             setErrorResponse(servletResponse);
             return;
         }
 
-        if (!PATH_PATTERN.matcher(path).matches()) {
+        // switching to this mechanism to avoid ReDOS attacks on the path pattern regex
+        try {
+            URI uriPath = new URI(path);
+        } catch (URISyntaxException e) {
+            log.error("Invalid uri path in doFilter", e);
             setErrorResponse(servletResponse);
             return;
         }
+        //if (!PATH_PATTERN.matcher(path).matches()) {
+        //    setErrorResponse(servletResponse);
+        //    return;
+        //}
 
         // Logic taken from the Apache UrlValidator. I opted not to include Apache lib as a dependency to save space
         // in the final Lambda function package
+        // https://github.com/apache/commons-validator/blob/trunk/src/main/java/org/apache/commons/validator/UrlValidator.java
         int slashCount = countStrings("/", path);
         int dot2Count = countStrings("..", path);
         int slash2Count = countStrings("//", path);

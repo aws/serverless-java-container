@@ -12,6 +12,8 @@
  */
 package com.amazonaws.serverless.proxy.internal.servlet;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.annotation.WebInitParam;
@@ -213,6 +215,7 @@ public class FilterHolder {
      * Registration class for the filter. This object stores the servlet names and the url patterns the filter is
      * associated with.
      */
+    @SuppressFBWarnings("URF_UNREAD_FIELD")
     protected class Registration implements FilterRegistration.Dynamic {
 
         //-------------------------------------------------------------
@@ -350,11 +353,11 @@ public class FilterHolder {
         @Override
         public Set<String> setInitParameters(Map<String, String> map) {
             Set<String> conflicts = new LinkedHashSet<>();
-            for (String newParamKey : map.keySet()) {
-                if (initParameters.get(newParamKey) != null) {
-                    conflicts.add(newParamKey);
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                if (initParameters.get(entry.getKey()) != null) {
+                    conflicts.add(entry.getKey());
                 } else {
-                    initParameters.put(newParamKey, map.get(newParamKey));
+                    initParameters.put(entry.getKey(), entry.getValue());
                 }
             }
             return conflicts;

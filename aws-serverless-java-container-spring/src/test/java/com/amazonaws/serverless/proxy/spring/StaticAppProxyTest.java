@@ -1,6 +1,7 @@
 package com.amazonaws.serverless.proxy.spring;
 
 
+import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
@@ -22,6 +23,8 @@ public class StaticAppProxyTest {
     @Test
     public void staticPage() {
         AwsProxyRequest req = new AwsProxyRequestBuilder("/sample/page", "GET").build();
+        // we temporarily allow the container to read from any path
+        LambdaContainerHandler.getContainerConfig().addValidFilePath("/");
         AwsProxyResponse resp = lambdaHandler.handleRequest(req, new MockLambdaContext());
 
         assertEquals(200, resp.getStatusCode());

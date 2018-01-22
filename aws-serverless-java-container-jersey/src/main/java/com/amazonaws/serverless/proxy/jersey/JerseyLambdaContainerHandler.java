@@ -20,6 +20,12 @@ import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.RequestReader;
 import com.amazonaws.serverless.proxy.ResponseWriter;
 import com.amazonaws.serverless.proxy.SecurityContextWriter;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletResponse;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsLambdaServletContainerHandler;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequestReader;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
+import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 
@@ -29,8 +35,11 @@ import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.spi.Container;
 
+import javax.servlet.DispatcherType;
+import javax.servlet.FilterRegistration;
 import javax.ws.rs.core.Application;
 
+import java.util.EnumSet;
 import java.util.concurrent.CountDownLatch;
 
 
@@ -58,8 +67,7 @@ import java.util.concurrent.CountDownLatch;
  * @param <RequestType> The type for the incoming Lambda event
  * @param <ResponseType> The type for Lambda's return value
  */
-public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends LambdaContainerHandler<RequestType, ResponseType, ContainerRequest, JerseyResponseWriter>
-        implements Container {
+public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends AwsLambdaServletContainerHandler<RequestType, ResponseType, AwsProxyHttpServletRequest, AwsHttpServletResponse> {
 
     //-------------------------------------------------------------
     // Variables - Private
@@ -67,8 +75,10 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Lam
 
     // The Jersey application object
     private Application jaxRsApplication;
-    // The Jersey app handler to route requests
-    private ApplicationHandler applicationHandler;
+
+    private JerseyHandlerFilter jerseyFilter;
+    // tracker for the first request
+    private boolean initialized;
 
 
     //-------------------------------------------------------------
@@ -85,8 +95,8 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Lam
      * @return A <code>JerseyLambdaContainerHandler</code> object
      */
     public static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(Application jaxRsApplication) {
-        return new JerseyLambdaContainerHandler<>(new JerseyAwsProxyRequestReader(),
-                                                  new JerseyAwsProxyResponseWriter(),
+        return new JerseyLambdaContainerHandler<>(new AwsProxyHttpServletRequestReader(),
+                                                  new AwsProxyHttpServletResponseWriter(),
                                                   new AwsProxySecurityContextWriter(),
                                                   new AwsProxyExceptionHandler(),
                                                   jaxRsApplication);
@@ -106,89 +116,55 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Lam
      * @param exceptionHandler An exception handler
      * @param jaxRsApplication The JaxRs application
      */
-    public JerseyLambdaContainerHandler(RequestReader<RequestType, ContainerRequest> requestReader,
-                                        ResponseWriter<JerseyResponseWriter, ResponseType> responseWriter,
+    public JerseyLambdaContainerHandler(RequestReader<RequestType, AwsProxyHttpServletRequest> requestReader,
+                                        ResponseWriter<AwsHttpServletResponse, ResponseType> responseWriter,
                                         SecurityContextWriter<RequestType> securityContextWriter,
                                         ExceptionHandler<ResponseType> exceptionHandler,
                                         Application jaxRsApplication) {
+
         super(requestReader, responseWriter, securityContextWriter, exceptionHandler);
-
+        Timer.start("JERSEY_CONTAINER_CONSTRUCTOR");
         this.jaxRsApplication = jaxRsApplication;
-        this.applicationHandler = new ApplicationHandler(jaxRsApplication);
-
-        applicationHandler.onStartup(this);
+        this.initialized = false;
+        this.jerseyFilter = new JerseyHandlerFilter(this.jaxRsApplication);
+        Timer.stop("JERSEY_CONTAINER_CONSTRUCTOR");
     }
-
-
-    //-------------------------------------------------------------
-    // Implementation - Container
-    //-------------------------------------------------------------
-
-    /**
-     * Gets the configuration currently set in the internal <code>ApplicationHandler</code>
-     *
-     * @return The Jersey's ResourceConfig object currently running in the container
-     */
-    public ResourceConfig getConfiguration() {
-        return applicationHandler.getConfiguration();
-    }
-
-
-    /**
-     * The instantiated <code>ApplicationHandler</code> object used by this container
-     *
-     * @return Jersey's ApplicationHander object
-     */
-    public ApplicationHandler getApplicationHandler() {
-        return applicationHandler;
-    }
-
-
-    /**
-     * Shuts down and restarts the application handler in the current container. The <code>ApplicationHandler</code>
-     * object is re-initialized with the <code>Application</code> object initially set in the <code>LambdaContainer.getInstance()</code>
-     * call.
-     */
-    public void reload() {
-        applicationHandler.onShutdown(this);
-
-        this.applicationHandler = new ApplicationHandler(jaxRsApplication);
-
-        applicationHandler.onReload(this);
-        applicationHandler.onStartup(this);
-    }
-
-
-    /**
-     * Restarts the application handler and configures a different <code>Application</code> object. The new application
-     * resets the one currently configured in the container.
-     * @param resourceConfig An initialized Application
-     */
-    public void reload(ResourceConfig resourceConfig) {
-        applicationHandler.onShutdown(this);
-
-        this.jaxRsApplication = resourceConfig;
-        this.applicationHandler = new ApplicationHandler(resourceConfig);
-
-        applicationHandler.onReload(this);
-        applicationHandler.onStartup(this);
-    }
-
 
     //-------------------------------------------------------------
     // Methods - Implementation
     //-------------------------------------------------------------
 
     @Override
-    protected JerseyResponseWriter getContainerResponse(ContainerRequest request, CountDownLatch latch) {
-        return new JerseyResponseWriter(latch);
+    protected AwsHttpServletResponse getContainerResponse(AwsProxyHttpServletRequest request, CountDownLatch latch) {
+        return new AwsHttpServletResponse(request, latch);
     }
 
-
     @Override
-    protected void handleRequest(ContainerRequest containerRequest, JerseyResponseWriter jerseyResponseWriter, Context lambdaContext) {
-        containerRequest.setWriter(jerseyResponseWriter);
+    protected void handleRequest(AwsProxyHttpServletRequest httpServletRequest, AwsHttpServletResponse httpServletResponse, Context lambdaContext)
+            throws Exception {
 
-        applicationHandler.handle(containerRequest);
+        Timer.start("JERSEY_HANDLE_REQUEST");
+        // this method of the AwsLambdaServletContainerHandler sets the request context
+        super.handleRequest(httpServletRequest, httpServletResponse, lambdaContext);
+
+        if (!initialized) {
+            Timer.start("JERSEY_COLD_START_INIT");
+            // call the onStartup event if set to give developers a chance to set filters in the context
+            if (startupHandler != null) {
+                startupHandler.onStartup(getServletContext());
+            }
+
+            // manually add the spark filter to the chain. This should the last one and match all uris
+            FilterRegistration.Dynamic jerseyFilterReg = getServletContext().addFilter("JerseyFilter", jerseyFilter);
+            jerseyFilterReg.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/*");
+
+            initialized = true;
+            Timer.stop("JERSEY_COLD_START_INIT");
+        }
+
+        httpServletRequest.setServletContext(getServletContext());
+
+        doFilter(httpServletRequest, httpServletResponse, null);
+        Timer.stop("JERSEY_HANDLE_REQUEST");
     }
 }
