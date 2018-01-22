@@ -3,13 +3,13 @@ The `aws-serverless-java-container` makes it easy to run Java applications writt
 
 Serverless Java Container natively supports API Gateway's proxy integration models for requests and responses, you can create and inject custom models for methods that use custom mappings.
 
-Follow the quick started guides in [our wiki](wiki) to integrate Serverless Java Container with your project:
-* [Spring quick start](wiki/Quick-start---Spring)
-* [Spring Boot quick start](wiki/Quick-start---Spring-Boot)
-* [Jersey quick start](wiki/Quick-start---Jersey)
-* [Spark quick start](wiki/Quick-start---Spark)   
+Follow the quick started guides in [our wiki](https://github.com/awslabs/aws-serverless-java-container/wiki) to integrate Serverless Java Container with your project:
+* [Spring quick start](https://github.com/awslabs/aws-serverless-java-container/wiki/Quick-start---Spring)
+* [Spring Boot quick start](https://github.com/awslabs/aws-serverless-java-container/wiki/Quick-start---Spring-Boot)
+* [Jersey quick start](https://github.com/awslabs/aws-serverless-java-container/wiki/Quick-start---Jersey)
+* [Spark quick start](https://github.com/awslabs/aws-serverless-java-container/wiki/Quick-start---Spark)   
 
-Below is the most basic AWS Lambda handler example that launches a Spring application. You can also take a look at the [samples](tree/master/samples) in this repository, our main wiki page includes a [step-by-step guide](wiki#deploying-the-sample-applications) on how to deploy the various sample applications using Maven and [SAM](https://github.com/awslabs/serverless-application-model). 
+Below is the most basic AWS Lambda handler example that launches a Spring application. You can also take a look at the [samples](https://github.com/awslabs/aws-serverless-java-container/tree/master/samples) in this repository, our main wiki page includes a [step-by-step guide](https://github.com/awslabs/aws-serverless-java-container/wiki#deploying-the-sample-applications) on how to deploy the various sample applications using Maven and [SAM](https://github.com/awslabs/serverless-application-model). 
 
 ```java
 public class StreamLambdaHandler implements RequestStreamHandler {
