@@ -97,21 +97,9 @@ public class JerseyHandlerFilter implements Filter, Container {
     @SuppressFBWarnings({ "SERVLET_HEADER", "SERVLET_QUERY_STRING" })
     private ContainerRequest servletRequestToContainerRequest(ServletRequest request) {
         Timer.start("JERSEY_SERVLET_REQUEST_TO_CONTAINER");
-        URI basePathUri;
         URI requestPathUri;
         String basePath = "/";
         HttpServletRequest servletRequest = (HttpServletRequest)request;
-
-        try {
-            if (servletRequest.getContextPath().equals("")) {
-                basePathUri = URI.create(basePath);
-            } else {
-                basePathUri = new URI(servletRequest.getContextPath());
-            }
-        } catch (URISyntaxException e) {
-            log.error("Could not read base path URI", e);
-            basePathUri = URI.create(basePath);
-        }
 
         UriBuilder uriBuilder = UriBuilder.fromPath(servletRequest.getPathInfo());
         uriBuilder.replaceQuery(AwsProxyHttpServletRequest.decodeValueIfEncoded(servletRequest.getQueryString()));
@@ -125,7 +113,7 @@ public class JerseyHandlerFilter implements Filter, Container {
         apiGatewayProperties.setProperty(JERSEY_SERVLET_REQUEST_PROPERTY, servletRequest);
 
         ContainerRequest requestContext = new ContainerRequest(
-                basePathUri,
+                URI.create(basePath), // for routing within Jersey we always assume the base path is "/"
                 requestPathUri,
                 servletRequest.getMethod().toUpperCase(Locale.ENGLISH),
                 (SecurityContext)servletRequest.getAttribute(JAX_SECURITY_CONTEXT_PROPERTY),

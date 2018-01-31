@@ -278,6 +278,30 @@ public class JerseyAwsProxyTest {
         assertEquals(Response.Status.NOT_IMPLEMENTED.getStatusCode(), response.getStatusCode());
     }
 
+    @Test
+    public void stripBasePath_route_shouldRouteCorrectly() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/custompath/echo/status-code", "GET")
+                                          .json()
+                                          .queryString("status", "201")
+                                          .build();
+        handler.stripBasePath("/custompath");
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(201, output.getStatusCode());
+        handler.stripBasePath("");
+    }
+
+    @Test
+    public void stripBasePath_route_shouldReturn404() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/custompath/echo/status-code", "GET")
+                                          .json()
+                                          .queryString("status", "201")
+                                          .build();
+        handler.stripBasePath("/custom");
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(404, output.getStatusCode());
+        handler.stripBasePath("");
+    }
+
     private void validateMapResponseModel(AwsProxyResponse output) {
         validateMapResponseModel(output, CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE);
     }
