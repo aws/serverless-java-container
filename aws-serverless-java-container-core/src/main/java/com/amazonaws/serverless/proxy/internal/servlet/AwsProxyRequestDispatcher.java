@@ -1,6 +1,8 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -48,6 +50,7 @@ public class AwsProxyRequestDispatcher implements RequestDispatcher {
 
     @Override
     @SuppressWarnings("unchecked")
+    @SuppressFBWarnings("BC_UNCONFIRMED_CAST")
     public void forward(ServletRequest servletRequest, ServletResponse servletResponse)
             throws ServletException, IOException {
         if (!(servletRequest instanceof AwsProxyHttpServletRequest)) {
@@ -67,6 +70,7 @@ public class AwsProxyRequestDispatcher implements RequestDispatcher {
 
     @Override
     @SuppressWarnings("unchecked")
+    @SuppressFBWarnings("BC_UNCONFIRMED_CAST")
     public void include(ServletRequest servletRequest, ServletResponse servletResponse)
             throws ServletException, IOException {
         if (!(servletRequest instanceof AwsProxyHttpServletRequest)) {

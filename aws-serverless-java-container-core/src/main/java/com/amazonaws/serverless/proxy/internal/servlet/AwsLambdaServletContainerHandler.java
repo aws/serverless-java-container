@@ -19,6 +19,7 @@ import com.amazonaws.serverless.proxy.ResponseWriter;
 import com.amazonaws.serverless.proxy.SecurityContextWriter;
 import com.amazonaws.services.lambda.runtime.Context;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,8 +27,11 @@ import javax.servlet.FilterChain;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
+
 import java.io.IOException;
 
 /**
@@ -85,7 +89,7 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
     public void forward(ContainerRequestType servletRequest, ContainerResponseType servletResponse)
             throws ServletException, IOException {
         try {
-            handleRequest(servletRequest, servletResponse, lambdaContext);
+            handleRequest(servletRequest, (ContainerResponseType)getServletResponse(servletResponse), lambdaContext);
         } catch (Exception e) {
             log.error("Could not forward request", e);
             throw new ServletException(e);
@@ -103,11 +107,26 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
     public void include(ContainerRequestType servletRequest, ContainerResponseType servletResponse)
             throws ServletException, IOException {
         try {
-           handleRequest(servletRequest, servletResponse, lambdaContext);
+           handleRequest(servletRequest, (ContainerResponseType)getServletResponse(servletResponse), lambdaContext);
         } catch (Exception e) {
             log.error("Could not include request", e);
             throw new ServletException(e);
         }
+    }
+
+    private HttpServletResponse getServletResponse(ContainerResponseType resp) {
+        if (HttpServletResponseWrapper.class.isAssignableFrom(resp.getClass())) {
+            ServletResponse servletResp = ((HttpServletResponseWrapper)resp).getResponse();
+            assert servletResp instanceof HttpServletResponse : servletResp.getClass();
+            return (HttpServletResponse)servletResp;
+        }
+
+        if (HttpServletResponse.class.isAssignableFrom(resp.getClass())) {
+            return resp;
+        }
+
+
+        throw new UnsupportedOperationException("Response type of " + resp.getClass().getName() + " is not supported");
     }
 
 
