@@ -50,7 +50,6 @@ public class AwsProxyRequestDispatcher implements RequestDispatcher {
 
     @Override
     @SuppressWarnings("unchecked")
-    @SuppressFBWarnings("BC_UNCONFIRMED_CAST")
     public void forward(ServletRequest servletRequest, ServletResponse servletResponse)
             throws ServletException, IOException {
         if (!(servletRequest instanceof AwsProxyHttpServletRequest)) {
@@ -64,13 +63,13 @@ public class AwsProxyRequestDispatcher implements RequestDispatcher {
         ((AwsProxyHttpServletRequest) servletRequest).setDispatcherType(DispatcherType.FORWARD);
         ((AwsProxyHttpServletRequest) servletRequest).getAwsProxyRequest().setPath(dispatchPath);
 
+        assert servletResponse instanceof HttpServletResponse : servletResponse.getClass();
         lambdaContainerHandler.forward((HttpServletRequest)servletRequest, (HttpServletResponse)servletResponse);
     }
 
 
     @Override
     @SuppressWarnings("unchecked")
-    @SuppressFBWarnings("BC_UNCONFIRMED_CAST")
     public void include(ServletRequest servletRequest, ServletResponse servletResponse)
             throws ServletException, IOException {
         if (!(servletRequest instanceof AwsProxyHttpServletRequest)) {
@@ -84,6 +83,7 @@ public class AwsProxyRequestDispatcher implements RequestDispatcher {
         ((AwsProxyHttpServletRequest) servletRequest).setDispatcherType(DispatcherType.INCLUDE);
         ((AwsProxyHttpServletRequest) servletRequest).getAwsProxyRequest().setPath(dispatchPath);
 
+        assert servletResponse instanceof HttpServletResponse : servletResponse.getClass();
         lambdaContainerHandler.include((HttpServletRequest)servletRequest, (HttpServletResponse)servletResponse);
     }
 }
