@@ -19,10 +19,10 @@ import com.amazonaws.serverless.proxy.ResponseWriter;
 import com.amazonaws.serverless.proxy.SecurityContextWriter;
 import com.amazonaws.services.lambda.runtime.Context;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.DispatcherType;
 import javax.servlet.FilterChain;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
@@ -208,6 +208,11 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
     protected void doFilter(ContainerRequestType request, ContainerResponseType response, Servlet servlet) throws IOException, ServletException {
         FilterChain chain = getFilterChain(request, servlet);
         chain.doFilter(request, response);
+
+        // if for some reason the response wasn't flushed yet, we force it here.
+        if (request.getDispatcherType() != DispatcherType.FORWARD && request.getDispatcherType() != DispatcherType.INCLUDE && !response.isCommitted()) {
+            response.flushBuffer();
+        }
     }
 
     //-------------------------------------------------------------
