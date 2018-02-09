@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletResponseWrapper;
 
 import java.io.IOException;
 
+
 /**
  * Abstract extension of the code <code>LambdaContainerHandler</code> object that adds protected variables for the
  * <code>ServletContext</code> and <code>FilterChainManager</code>. This object should be extended by the framework-specific
@@ -73,6 +74,8 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
                                      SecurityContextWriter<RequestType> securityContextWriter,
                                      ExceptionHandler<ResponseType> exceptionHandler) {
         super(requestReader, responseWriter, securityContextWriter, exceptionHandler);
+        // set the default log formatter for servlet implementations
+        setLogFormatter(new ApacheCombinedServletLogFormatter<>());
     }
 
     //-------------------------------------------------------------

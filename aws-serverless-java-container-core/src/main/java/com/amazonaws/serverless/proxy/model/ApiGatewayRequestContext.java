@@ -43,6 +43,7 @@ public class ApiGatewayRequestContext {
     private ApiGatewayAuthorizerContext authorizer;
     private String stage;
     private String path;
+    private String protocol;
 
 
     //-------------------------------------------------------------
@@ -145,5 +146,15 @@ public class ApiGatewayRequestContext {
 
     public void setAuthorizer(ApiGatewayAuthorizerContext authorizer) {
         this.authorizer = authorizer;
+    }
+
+
+    public String getProtocol() {
+        return protocol;
+    }
+
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
     }
 }
