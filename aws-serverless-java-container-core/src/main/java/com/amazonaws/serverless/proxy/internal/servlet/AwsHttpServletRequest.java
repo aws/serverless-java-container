@@ -101,7 +101,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
 
     @Override
     public String getRequestedSessionId() {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
 

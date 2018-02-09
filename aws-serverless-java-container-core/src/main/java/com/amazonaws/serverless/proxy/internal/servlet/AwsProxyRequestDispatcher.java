@@ -1,6 +1,8 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -61,6 +63,7 @@ public class AwsProxyRequestDispatcher implements RequestDispatcher {
         ((AwsProxyHttpServletRequest) servletRequest).setDispatcherType(DispatcherType.FORWARD);
         ((AwsProxyHttpServletRequest) servletRequest).getAwsProxyRequest().setPath(dispatchPath);
 
+        assert servletResponse instanceof HttpServletResponse : servletResponse.getClass();
         lambdaContainerHandler.forward((HttpServletRequest)servletRequest, (HttpServletResponse)servletResponse);
     }
 
@@ -80,6 +83,7 @@ public class AwsProxyRequestDispatcher implements RequestDispatcher {
         ((AwsProxyHttpServletRequest) servletRequest).setDispatcherType(DispatcherType.INCLUDE);
         ((AwsProxyHttpServletRequest) servletRequest).getAwsProxyRequest().setPath(dispatchPath);
 
+        assert servletResponse instanceof HttpServletResponse : servletResponse.getClass();
         lambdaContainerHandler.include((HttpServletRequest)servletRequest, (HttpServletResponse)servletResponse);
     }
 }

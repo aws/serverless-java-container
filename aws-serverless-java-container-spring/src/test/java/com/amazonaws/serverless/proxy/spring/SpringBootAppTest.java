@@ -9,10 +9,13 @@ import com.amazonaws.serverless.proxy.spring.echoapp.model.SingleValueModel;
 import com.amazonaws.serverless.proxy.spring.springbootapp.LambdaHandler;
 import com.amazonaws.serverless.proxy.spring.springbootapp.TestController;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -28,6 +31,29 @@ public class SpringBootAppTest {
         AwsProxyResponse resp = handler.handleRequest(req, context);
         assertNotNull(resp);
         validateSingleValueModel(resp, TestController.TEST_VALUE);
+    }
+
+    @Test
+    public void defaultError_requestForward_springBootForwardsToDefaultErrorPage() {
+        AwsProxyRequest req = new AwsProxyRequestBuilder("/test2", "GET").build();
+        AwsProxyResponse resp = handler.handleRequest(req, context);
+        assertNotNull(resp);
+        assertEquals(404, resp.getStatusCode());
+        assertNotNull(resp.getHeaders());
+        assertTrue(resp.getHeaders().containsKey("Content-Type"));
+        assertEquals("application/json;charset=UTF-8", resp.getHeaders().get("Content-Type"));
+        try {
+            JsonNode errorData = mapper.readTree(resp.getBody());
+            assertNotNull(errorData.findValue("status"));
+            assertEquals(404, errorData.findValue("status").asInt());
+            assertNotNull(errorData.findValue("message"));
+            assertEquals("No message available", errorData.findValue("message").asText());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            fail();
+        }
+
     }
 
     private void validateSingleValueModel(AwsProxyResponse output, String value) {

@@ -17,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -85,11 +84,6 @@ public class FilterChainHolder implements FilterChain {
             holder.getFilter().doFilter(servletRequest, servletResponse, this);
             log.debug("Executed {}: filter {}-{}", servletRequest.getDispatcherType(),
                       currentFilter, holder.getFilterName());
-        }
-
-        // if for some reason the response wasn't flushed yet, we force it here.
-        if (!servletResponse.isCommitted()) {
-            servletResponse.flushBuffer();
         }
     }
 

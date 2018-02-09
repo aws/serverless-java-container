@@ -17,6 +17,9 @@ import static org.junit.Assert.*;
 
 
 public class AwsHttpServletResponseTest {
+    // we use this int to compare the cookie expiration time in the tests. The date we generate to compare to
+    // may be slight off compared to the date generated during the request processing
+    private static final int COOKIE_GRACE_COMPARE_MILLIS = 2000;
     private static final String COOKIE_NAME = "session_id";
     private static final String COOKIE_VALUE = "123";
     private static final String COOKIE_PATH = "/api";
@@ -121,8 +124,9 @@ public class AwsHttpServletResponseTest {
         Calendar expiration = getExpires(cookieHeader);
         System.out.println("Cookie date: " + dateFormat.format(expiration.getTime()));
         System.out.println("Test date: " + dateFormat.format(testExpiration.getTime()));
-        // we need to compare strings because the millis time will be off
-        assertEquals(dateFormat.format(testExpiration.getTime()), dateFormat.format(expiration.getTime()));
+
+        long dateDiff = testExpiration.getTimeInMillis() - expiration.getTimeInMillis();
+        assertTrue(Math.abs(dateDiff) < COOKIE_GRACE_COMPARE_MILLIS);
     }
 
     @Test

@@ -60,6 +60,7 @@ class JerseyServletResponseWriter
      * @param resp The current ServletResponse from the container
      */
     public JerseyServletResponseWriter(ServletResponse resp, CountDownLatch latch) {
+        assert resp instanceof HttpServletResponse;
         servletResponse = (HttpServletResponse)resp;
         jerseyLatch = latch;
     }
