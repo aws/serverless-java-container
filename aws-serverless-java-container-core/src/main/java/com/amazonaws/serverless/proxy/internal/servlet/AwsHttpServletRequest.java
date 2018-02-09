@@ -107,7 +107,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
 
     @Override
     public HttpSession getSession(boolean b) {
-        log.warn("Trying to access session. Lambda functions are stateless and should not rely on the session");
+        log.debug("Trying to access session. Lambda functions are stateless and should not rely on the session");
         if (b && null == this.session) {
             ApiGatewayRequestContext requestContext = (ApiGatewayRequestContext) getAttribute(RequestReader.API_GATEWAY_CONTEXT_PROPERTY);
             this.session = new AwsHttpSession(requestContext.getRequestId());
@@ -118,35 +118,35 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
 
     @Override
     public HttpSession getSession() {
-        log.warn("Trying to access session. Lambda functions are stateless and should not rely on the session");
+        log.debug("Trying to access session. Lambda functions are stateless and should not rely on the session");
         return this.session;
     }
 
 
     @Override
     public String changeSessionId() {
-        log.warn("Trying to access session. Lambda functions are stateless and should not rely on the session");
+        log.debug("Trying to access session. Lambda functions are stateless and should not rely on the session");
         return null;
     }
 
 
     @Override
     public boolean isRequestedSessionIdValid() {
-        log.warn("Trying to access session. Lambda functions are stateless and should not rely on the session");
+        log.debug("Trying to access session. Lambda functions are stateless and should not rely on the session");
         return false;
     }
 
 
     @Override
     public boolean isRequestedSessionIdFromCookie() {
-        log.warn("Trying to access session. Lambda functions are stateless and should not rely on the session");
+        log.debug("Trying to access session. Lambda functions are stateless and should not rely on the session");
         return false;
     }
 
 
     @Override
     public boolean isRequestedSessionIdFromURL() {
-        log.warn("Trying to access session. Lambda functions are stateless and should not rely on the session");
+        log.debug("Trying to access session. Lambda functions are stateless and should not rely on the session");
         return false;
     }
 
@@ -154,7 +154,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     @Override
     @Deprecated
     public boolean isRequestedSessionIdFromUrl() {
-        log.warn("Trying to access session. Lambda functions are stateless and should not rely on the session");
+        log.debug("Trying to access session. Lambda functions are stateless and should not rely on the session");
         return false;
     }
 
