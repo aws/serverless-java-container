@@ -44,6 +44,8 @@ public class ApiGatewayRequestContext {
     private String stage;
     private String path;
     private String protocol;
+    private String requestTime;
+    private long requestTimeEpoch;
 
 
     //-------------------------------------------------------------
@@ -156,5 +158,25 @@ public class ApiGatewayRequestContext {
 
     public void setProtocol(String protocol) {
         this.protocol = protocol;
+    }
+
+
+    public String getRequestTime() {
+        return requestTime;
+    }
+
+
+    public void setRequestTime(String requestTime) {
+        this.requestTime = requestTime;
+    }
+
+
+    public long getRequestTimeEpoch() {
+        return requestTimeEpoch;
+    }
+
+
+    public void setRequestTimeEpoch(long requestTimeEpoch) {
+        this.requestTimeEpoch = requestTimeEpoch;
     }
 }

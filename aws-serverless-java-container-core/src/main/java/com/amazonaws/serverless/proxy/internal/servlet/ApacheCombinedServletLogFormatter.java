@@ -11,7 +11,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.SecurityContext;
 
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 import static com.amazonaws.serverless.proxy.RequestReader.API_GATEWAY_CONTEXT_PROPERTY;
@@ -36,29 +38,37 @@ public class ApacheCombinedServletLogFormatter<ContainerRequestType extends Http
     public String format(ContainerRequestType servletRequest, ContainerResponseType servletResponse, SecurityContext ctx) {
         //LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\"" combined
         StringBuilder logLineBuilder = new StringBuilder();
+        ApiGatewayRequestContext gatewayContext = (ApiGatewayRequestContext)servletRequest.getAttribute(API_GATEWAY_CONTEXT_PROPERTY);
 
         // %h
         logLineBuilder.append(servletRequest.getRemoteAddr());
         logLineBuilder.append(" ");
 
         // %l
-        if (servletRequest instanceof AwsProxyHttpServletRequest && servletRequest.getAttribute(API_GATEWAY_CONTEXT_PROPERTY) != null) {
-            ApiGatewayRequestContext gatewayContext = (ApiGatewayRequestContext)servletRequest.getAttribute(API_GATEWAY_CONTEXT_PROPERTY);
-            logLineBuilder.append(gatewayContext.getIdentity().getUserArn());
-            logLineBuilder.append(" ");
+        if (gatewayContext != null) {
+            if (gatewayContext.getIdentity().getUserArn() != null) {
+                logLineBuilder.append(gatewayContext.getIdentity().getUserArn());
+            } else {
+                logLineBuilder.append("-");
+            }
         } else {
-            logLineBuilder.append("- ");
-        }
-
-        // %u
-        if (ctx != null) {
-            logLineBuilder.append(ctx.getUserPrincipal().getName());
+            logLineBuilder.append("-");
         }
         logLineBuilder.append(" ");
 
+        // %u
+        if (ctx != null && ctx.getUserPrincipal().getName() != null) {
+            logLineBuilder.append(ctx.getUserPrincipal().getName());
+            logLineBuilder.append(" ");
+        }
+
 
         // %t
-        logLineBuilder.append(dateFormat.format(Calendar.getInstance().getTime()));
+        if (gatewayContext != null) {
+            logLineBuilder.append(dateFormat.format(Date.from(Instant.ofEpochMilli(gatewayContext.getRequestTimeEpoch()))));
+        } else {
+            logLineBuilder.append(dateFormat.format(Calendar.getInstance().getTime()));
+        }
         logLineBuilder.append(" ");
 
         // %r
@@ -68,7 +78,7 @@ public class ApacheCombinedServletLogFormatter<ContainerRequestType extends Http
         logLineBuilder.append(servletRequest.getPathInfo());
         logLineBuilder.append(" ");
         logLineBuilder.append(servletRequest.getProtocol());
-        logLineBuilder.append(" \" ");
+        logLineBuilder.append("\" ");
 
         // %>s
         logLineBuilder.append(servletResponse.getStatus());
@@ -89,15 +99,23 @@ public class ApacheCombinedServletLogFormatter<ContainerRequestType extends Http
 
         // \"%{Referer}i\"
         logLineBuilder.append("\"");
-        logLineBuilder.append(servletRequest.getHeader("referer"));
-        logLineBuilder.append("\"");
+        if (servletRequest.getHeader("referer") != null) {
+            logLineBuilder.append(servletRequest.getHeader("referer"));
+        } else {
+            logLineBuilder.append("-");
+        }
+        logLineBuilder.append("\" ");
 
         // \"%{User-agent}i\"
         logLineBuilder.append("\"");
-        logLineBuilder.append(servletRequest.getHeader("user-agent"));
-        logLineBuilder.append("\"");
+        if (servletRequest.getHeader("user-agent") != null) {
+            logLineBuilder.append(servletRequest.getHeader("user-agent"));
+        } else {
+            logLineBuilder.append("-");
+        }
+        logLineBuilder.append("\" ");
 
-        logLineBuilder.append(" combined");
+        logLineBuilder.append("combined");
 
 
         return logLineBuilder.toString();
