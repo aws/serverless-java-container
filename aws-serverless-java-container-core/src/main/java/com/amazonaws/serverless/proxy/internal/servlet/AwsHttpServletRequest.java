@@ -275,7 +275,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
 
         return parsedHeaders.stream()
                             .filter(e -> e.getKey() != null)
-                            .map(e -> new Cookie(e.getKey(), e.getValue()))
+                            .map(e -> new Cookie(SecurityUtils.crlf(e.getKey()), SecurityUtils.crlf(e.getValue())))
                             .toArray(Cookie[]::new);
     }
 
@@ -304,7 +304,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
                             newValue = URLEncoder.encode(newValue, StandardCharsets.UTF_8.name());
                         }
                     } catch (UnsupportedEncodingException e) {
-                        log.error("Could not URLEncode: " + newKey, e);
+                        log.error(SecurityUtils.crlf("Could not URLEncode: " + newKey), e);
 
                     }
                     return newKey + "=" + newValue;
