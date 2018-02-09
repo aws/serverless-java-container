@@ -13,6 +13,8 @@
 package com.amazonaws.serverless.proxy.internal;
 
 
+import com.amazonaws.serverless.proxy.LogFormatter;
+import com.amazonaws.serverless.proxy.internal.servlet.ApacheCombinedServletLogFormatter;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.serverless.proxy.ExceptionHandler;
 import com.amazonaws.serverless.proxy.RequestReader;
@@ -56,8 +58,10 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
     private ExceptionHandler<ResponseType> exceptionHandler;
 
     protected Context lambdaContext;
+    protected LogFormatter<ContainerRequestType, ContainerResponseType> logFormatter;
 
     private Logger log = LoggerFactory.getLogger(LambdaContainerHandler.class);
+
 
 
     //-------------------------------------------------------------
@@ -119,6 +123,15 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
         config.setServiceBasePath(basePath);
     }
 
+    /**
+     * Sets the formatter used to log request data in CloudWatch. By default this is set to use an Apache
+     * combined log format based on the servlet request and response object {@link ApacheCombinedServletLogFormatter}.
+     * @param formatter The log formatter object
+     */
+    public void setLogFormatter(LogFormatter<ContainerRequestType, ContainerResponseType> formatter) {
+        this.logFormatter = formatter;
+    }
+
 
     /**
      * Proxies requests to the underlying container given the incoming Lambda request. This method returns a populated
@@ -139,6 +152,10 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
             handleRequest(containerRequest, containerResponse, context);
 
             latch.await();
+
+            if (logFormatter != null) {
+                log.info(SecurityUtils.crlf(logFormatter.format(containerRequest, containerResponse, securityContext)));
+            }
 
             return responseWriter.writeResponse(containerResponse, context);
         } catch (Exception e) {

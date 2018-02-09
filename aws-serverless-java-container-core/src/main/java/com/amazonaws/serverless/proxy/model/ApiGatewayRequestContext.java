@@ -43,6 +43,9 @@ public class ApiGatewayRequestContext {
     private ApiGatewayAuthorizerContext authorizer;
     private String stage;
     private String path;
+    private String protocol;
+    private String requestTime;
+    private long requestTimeEpoch;
 
 
     //-------------------------------------------------------------
@@ -145,5 +148,35 @@ public class ApiGatewayRequestContext {
 
     public void setAuthorizer(ApiGatewayAuthorizerContext authorizer) {
         this.authorizer = authorizer;
+    }
+
+
+    public String getProtocol() {
+        return protocol;
+    }
+
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
+
+
+    public String getRequestTime() {
+        return requestTime;
+    }
+
+
+    public void setRequestTime(String requestTime) {
+        this.requestTime = requestTime;
+    }
+
+
+    public long getRequestTimeEpoch() {
+        return requestTimeEpoch;
+    }
+
+
+    public void setRequestTimeEpoch(long requestTimeEpoch) {
+        this.requestTimeEpoch = requestTimeEpoch;
     }
 }

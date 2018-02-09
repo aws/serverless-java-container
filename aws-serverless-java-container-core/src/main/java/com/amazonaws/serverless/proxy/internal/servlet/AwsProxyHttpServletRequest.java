@@ -501,8 +501,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getProtocol() {
-        // TODO: We should have a cloudfront protocol header
-        return null;
+        return request.getRequestContext().getProtocol();
     }
 
 
@@ -621,6 +620,14 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
 
     private String getHeaderCaseInsensitive(String key) {
+        // special cases for referer and user agent headers
+        if ("referer".equals(key.toLowerCase(Locale.ENGLISH))) {
+            return request.getRequestContext().getIdentity().getCaller();
+        }
+        if ("user-agent".equals(key.toLowerCase(Locale.ENGLISH))) {
+            return request.getRequestContext().getIdentity().getUserAgent();
+        }
+
         if (request.getHeaders() == null) {
             return null;
         }

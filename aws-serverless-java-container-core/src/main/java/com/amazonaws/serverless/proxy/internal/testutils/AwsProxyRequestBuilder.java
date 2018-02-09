@@ -68,6 +68,7 @@ public class AwsProxyRequestBuilder {
         this.request.setRequestContext(new ApiGatewayRequestContext());
         this.request.getRequestContext().setRequestId("test-invoke-request");
         this.request.getRequestContext().setStage("test");
+        this.request.getRequestContext().setProtocol("HTTP/1.1");
         ApiGatewayRequestIdentity identity = new ApiGatewayRequestIdentity();
         identity.setSourceIp("127.0.0.1");
         this.request.getRequestContext().setIdentity(identity);
@@ -233,6 +234,30 @@ public class AwsProxyRequestBuilder {
         }
 
         request.getHeaders().put("Host", serverName);
+        return this;
+    }
+
+    public AwsProxyRequestBuilder userAgent(String agent) {
+        if (request.getRequestContext() == null) {
+            request.setRequestContext(new ApiGatewayRequestContext());
+        }
+        if (request.getRequestContext().getIdentity() == null) {
+            request.getRequestContext().setIdentity(new ApiGatewayRequestIdentity());
+        }
+
+        request.getRequestContext().getIdentity().setUserAgent(agent);
+        return this;
+    }
+
+    public AwsProxyRequestBuilder referer(String referer) {
+        if (request.getRequestContext() == null) {
+            request.setRequestContext(new ApiGatewayRequestContext());
+        }
+        if (request.getRequestContext().getIdentity() == null) {
+            request.getRequestContext().setIdentity(new ApiGatewayRequestIdentity());
+        }
+
+        request.getRequestContext().getIdentity().setCaller(referer);
         return this;
     }
 

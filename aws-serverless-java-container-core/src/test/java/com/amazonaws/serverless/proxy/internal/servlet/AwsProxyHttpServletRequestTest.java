@@ -23,6 +23,8 @@ public class AwsProxyHttpServletRequestTest {
     private static final String FORM_PARAM_TEST = "test_cookie_param";
     private static final String QUERY_STRING_NAME_VALUE = "Bob";
     private static final String REQUEST_SCHEME_HTTP = "http";
+    private static final String USER_AGENT = "Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0";
+    private static final String REFERER = "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent/Firefox";
 
     private static final AwsProxyRequest REQUEST_WITH_HEADERS = new AwsProxyRequestBuilder("/hello", "GET")
             .header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
@@ -46,6 +48,9 @@ public class AwsProxyHttpServletRequestTest {
     private static final AwsProxyRequest REQUEST_MULTIPLE_FORM_AND_QUERY = new AwsProxyRequestBuilder("/hello", "POST")
             .form(FORM_PARAM_NAME, FORM_PARAM_NAME_VALUE)
             .queryString(FORM_PARAM_TEST, QUERY_STRING_NAME_VALUE).build();
+    private static final AwsProxyRequest REQUEST_USER_AGENT_REFERER = new AwsProxyRequestBuilder("/hello", "POST")
+            .userAgent(USER_AGENT)
+            .referer(REFERER).build();
 
     private static final AwsProxyRequest REQUEST_NULL_QUERY_STRING;
     static {
@@ -64,6 +69,18 @@ public class AwsProxyHttpServletRequestTest {
         assertNotNull(request.getHeader(CUSTOM_HEADER_KEY));
         assertEquals(CUSTOM_HEADER_VALUE, request.getHeader(CUSTOM_HEADER_KEY));
         assertEquals(MediaType.APPLICATION_JSON, request.getContentType());
+    }
+
+    @Test
+    public void headers_getRefererAndUserAgent_returnsContextValues() {
+        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_USER_AGENT_REFERER, null, null);
+        assertNotNull(request.getHeader("Referer"));
+        assertEquals(REFERER, request.getHeader("Referer"));
+        assertEquals(REFERER, request.getHeader("referer"));
+
+        assertNotNull(request.getHeader("User-Agent"));
+        assertEquals(USER_AGENT, request.getHeader("User-Agent"));
+        assertEquals(USER_AGENT, request.getHeader("user-agent"));
     }
 
     @Test
