@@ -55,6 +55,7 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
         applicationContext.register(config);
 
         return new SpringLambdaContainerHandler<>(
+                AwsProxyRequest.class,
                 new AwsProxyHttpServletRequestReader(),
                 new AwsProxyHttpServletResponseWriter(),
                 new AwsProxySecurityContextWriter(),
@@ -72,6 +73,7 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
     public static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(ConfigurableWebApplicationContext applicationContext)
             throws ContainerInitializationException {
         return new SpringLambdaContainerHandler<>(
+                AwsProxyRequest.class,
                 new AwsProxyHttpServletRequestReader(),
                 new AwsProxyHttpServletResponseWriter(),
                 new AwsProxySecurityContextWriter(),
@@ -83,19 +85,21 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
     /**
      * Creates a new container handler with the given reader and writer objects
      *
+     * @param requestTypeClass The class for the incoming Lambda event
      * @param requestReader An implementation of `RequestReader`
      * @param responseWriter An implementation of `ResponseWriter`
      * @param securityContextWriter An implementation of `SecurityContextWriter`
      * @param exceptionHandler An implementation of `ExceptionHandler`
      * @throws ContainerInitializationException
      */
-    public SpringLambdaContainerHandler(RequestReader<RequestType, AwsProxyHttpServletRequest> requestReader,
+    public SpringLambdaContainerHandler(Class<RequestType> requestTypeClass,
+                                        RequestReader<RequestType, AwsProxyHttpServletRequest> requestReader,
                                         ResponseWriter<AwsHttpServletResponse, ResponseType> responseWriter,
                                         SecurityContextWriter<RequestType> securityContextWriter,
                                         ExceptionHandler<ResponseType> exceptionHandler,
                                         ConfigurableWebApplicationContext applicationContext)
             throws ContainerInitializationException {
-        super(requestReader, responseWriter, securityContextWriter, exceptionHandler);
+        super(requestTypeClass, requestReader, responseWriter, securityContextWriter, exceptionHandler);
         Timer.start("SPRING_CONTAINER_HANDLER_CONSTRUCTOR");
         initializer = new LambdaSpringApplicationInitializer(applicationContext);
         Timer.stop("SPRING_CONTAINER_HANDLER_CONSTRUCTOR");

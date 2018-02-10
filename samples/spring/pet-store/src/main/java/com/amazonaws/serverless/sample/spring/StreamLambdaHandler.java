@@ -2,7 +2,6 @@ package com.amazonaws.serverless.sample.spring;
 
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
-import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
@@ -40,13 +39,7 @@ public class StreamLambdaHandler implements RequestStreamHandler {
             }
         }
 
-        AwsProxyRequest request = LambdaContainerHandler.getObjectMapper().readValue(inputStream, AwsProxyRequest.class);
-
-        AwsProxyResponse resp = handler.proxy(request, context);
-
-        LambdaContainerHandler.getObjectMapper().writeValue(outputStream, resp);
-
-        System.err.println(LambdaContainerHandler.getObjectMapper().writeValueAsString(Timer.getTimers()));
+        handler.proxyStream(inputStream, outputStream, context);
 
         // just in case it wasn't closed by the mapper
         outputStream.close();

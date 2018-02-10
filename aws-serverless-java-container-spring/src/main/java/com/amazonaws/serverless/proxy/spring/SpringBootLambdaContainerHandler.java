@@ -66,6 +66,7 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
     public static SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(Class<? extends WebApplicationInitializer> springBootInitializer)
             throws ContainerInitializationException {
         return new SpringBootLambdaContainerHandler<>(
+                AwsProxyRequest.class,
                 new AwsProxyHttpServletRequestReader(),
                 new AwsProxyHttpServletResponseWriter(),
                 new AwsProxySecurityContextWriter(),
@@ -77,6 +78,7 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
     /**
      * Creates a new container handler with the given reader and writer objects
      *
+     * @param requestTypeClass The class for the incoming Lambda event
      * @param requestReader An implementation of `RequestReader`
      * @param responseWriter An implementation of `ResponseWriter`
      * @param securityContextWriter An implementation of `SecurityContextWriter`
@@ -84,13 +86,14 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
      * @param springBootInitializer {@code SpringBootServletInitializer} class
      * @throws ContainerInitializationException If an error occurs while initializing the Spring framework
      */
-    public SpringBootLambdaContainerHandler(RequestReader<RequestType, AwsProxyHttpServletRequest> requestReader,
+    public SpringBootLambdaContainerHandler(Class<RequestType> requestTypeClass,
+                                            RequestReader<RequestType, AwsProxyHttpServletRequest> requestReader,
                                             ResponseWriter<AwsHttpServletResponse, ResponseType> responseWriter,
                                             SecurityContextWriter<RequestType> securityContextWriter,
                                             ExceptionHandler<ResponseType> exceptionHandler,
                                             Class<? extends WebApplicationInitializer> springBootInitializer)
             throws ContainerInitializationException {
-        super(requestReader, responseWriter, securityContextWriter, exceptionHandler);
+        super(requestTypeClass, requestReader, responseWriter, securityContextWriter, exceptionHandler);
         Timer.start("SPRINGBOOT_CONTAINER_HANDLER_CONSTRUCTOR");
         this.springBootInitializer = springBootInitializer;
         Timer.stop("SPRINGBOOT_CONTAINER_HANDLER_CONSTRUCTOR");

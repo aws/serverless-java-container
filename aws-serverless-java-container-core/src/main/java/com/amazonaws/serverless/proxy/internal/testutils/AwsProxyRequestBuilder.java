@@ -27,9 +27,12 @@ import org.apache.commons.io.IOUtils;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
 
@@ -276,5 +279,14 @@ public class AwsProxyRequestBuilder {
 
     public AwsProxyRequest build() {
         return this.request;
+    }
+
+    public InputStream buildStream() {
+        try {
+            String requestJson = LambdaContainerHandler.getObjectMapper().writeValueAsString(request);
+            return new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
+        } catch (JsonProcessingException e) {
+            return null;
+        }
     }
 }

@@ -95,7 +95,8 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
      * @return A <code>JerseyLambdaContainerHandler</code> object
      */
     public static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(Application jaxRsApplication) {
-        return new JerseyLambdaContainerHandler<>(new AwsProxyHttpServletRequestReader(),
+        return new JerseyLambdaContainerHandler<>(AwsProxyRequest.class,
+                                                  new AwsProxyHttpServletRequestReader(),
                                                   new AwsProxyHttpServletResponseWriter(),
                                                   new AwsProxySecurityContextWriter(),
                                                   new AwsProxyExceptionHandler(),
@@ -110,19 +111,21 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
     /**
      * Private constructor for a LambdaContainer. Sets the application object, sets the ApplicationHandler,
      * and initializes the application using the <code>onStartup</code> method.
+     * @param requestTypeClass The class for the expected event type
      * @param requestReader A request reader instance
      * @param responseWriter A response writer instance
      * @param securityContextWriter A security context writer object
      * @param exceptionHandler An exception handler
      * @param jaxRsApplication The JaxRs application
      */
-    public JerseyLambdaContainerHandler(RequestReader<RequestType, AwsProxyHttpServletRequest> requestReader,
+    public JerseyLambdaContainerHandler(Class<RequestType> requestTypeClass,
+                                        RequestReader<RequestType, AwsProxyHttpServletRequest> requestReader,
                                         ResponseWriter<AwsHttpServletResponse, ResponseType> responseWriter,
                                         SecurityContextWriter<RequestType> securityContextWriter,
                                         ExceptionHandler<ResponseType> exceptionHandler,
                                         Application jaxRsApplication) {
 
-        super(requestReader, responseWriter, securityContextWriter, exceptionHandler);
+        super(requestTypeClass, requestReader, responseWriter, securityContextWriter, exceptionHandler);
         Timer.start("JERSEY_CONTAINER_CONSTRUCTOR");
         this.jaxRsApplication = jaxRsApplication;
         this.initialized = false;

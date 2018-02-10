@@ -22,12 +22,17 @@ import com.amazonaws.serverless.proxy.ResponseWriter;
 import com.amazonaws.serverless.proxy.SecurityContextWriter;
 import com.amazonaws.services.lambda.runtime.Context;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.SecurityContext;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.concurrent.CountDownLatch;
 
 
@@ -56,9 +61,10 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
     private ResponseWriter<ContainerResponseType, ResponseType> responseWriter;
     private SecurityContextWriter<RequestType> securityContextWriter;
     private ExceptionHandler<ResponseType> exceptionHandler;
+    private Class<RequestType> requestTypeClass;
 
     protected Context lambdaContext;
-    protected LogFormatter<ContainerRequestType, ContainerResponseType> logFormatter;
+    private LogFormatter<ContainerRequestType, ContainerResponseType> logFormatter;
 
     private Logger log = LoggerFactory.getLogger(LambdaContainerHandler.class);
 
@@ -77,11 +83,13 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
     // Constructors
     //-------------------------------------------------------------
 
-    protected LambdaContainerHandler(RequestReader<RequestType, ContainerRequestType> requestReader,
+    protected LambdaContainerHandler(Class<RequestType> requestClass,
+                                     RequestReader<RequestType, ContainerRequestType> requestReader,
                                      ResponseWriter<ContainerResponseType, ResponseType> responseWriter,
                                      SecurityContextWriter<RequestType> securityContextWriter,
                                      ExceptionHandler<ResponseType> exceptionHandler) {
         log.info("Starting Lambda Container Handler");
+        requestTypeClass = requestClass;
         this.requestReader = requestReader;
         this.responseWriter = responseWriter;
         this.securityContextWriter = securityContextWriter;
@@ -162,6 +170,34 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
             log.error("Error while handling request", e);
 
             return exceptionHandler.handle(e);
+        }
+    }
+
+
+    /**
+     * Handles Lambda <code>RequestStreamHandler</code> method. The method uses an <code>ObjectMapper</code>
+     * to transform the incoming input stream into the given {@link RequestType} and then calls the
+     * {@link #proxy(Object, Context)} method to handle the request. The output from the proxy method is
+     * written on the given output stream.
+     * @param input Lambda's incoming input stream
+     * @param output Lambda's response output stream
+     * @param context Lambda's context object
+     * @throws IOException If an error occurs during the stream processing
+     */
+    public void proxyStream(InputStream input, OutputStream output, Context context)
+            throws IOException {
+
+        try {
+            RequestType request = getObjectMapper().readValue(input, requestTypeClass);
+            ResponseType resp = proxy(request, context);
+
+            getObjectMapper().writeValue(output, resp);
+        } catch (JsonParseException e) {
+            log.error("Error while parsing request object stream", e);
+            getObjectMapper().writeValue(output, exceptionHandler.handle(e));
+        } catch (JsonMappingException e) {
+            log.error("Error while mapping object to RequestType class", e);
+            getObjectMapper().writeValue(output, exceptionHandler.handle(e));
         }
     }
 
