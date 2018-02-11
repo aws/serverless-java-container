@@ -168,6 +168,10 @@ public class AwsProxyRequestBuilder {
             this.request.getRequestContext().setAuthorizer(new ApiGatewayAuthorizerContext());
         }
         this.request.getRequestContext().getAuthorizer().setPrincipalId(principal);
+        if (this.request.getRequestContext().getAuthorizer().getClaims() == null) {
+            this.request.getRequestContext().getAuthorizer().setClaims(new CognitoAuthorizerClaims());
+        }
+        this.request.getRequestContext().getAuthorizer().getClaims().setSubject(principal);
         return this;
     }
 

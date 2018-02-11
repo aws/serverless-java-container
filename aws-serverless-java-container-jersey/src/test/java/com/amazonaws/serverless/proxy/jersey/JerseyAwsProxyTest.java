@@ -54,6 +54,7 @@ public class JerseyAwsProxyTest {
     private static final String QUERY_STRING_KEY = "identifier";
     private static final String QUERY_STRING_NON_ENCODED_VALUE = "Space Test";
     private static final String QUERY_STRING_ENCODED_VALUE = "Space%20Test";
+    private static final String USER_PRINCIPAL = "user1";
 
 
     private static ObjectMapper objectMapper = new ObjectMapper();
@@ -300,6 +301,16 @@ public class JerseyAwsProxyTest {
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(404, output.getStatusCode());
         handler.stripBasePath("");
+    }
+
+    @Test
+    public void securityContext_injectPrincipal_expectPrincipalName() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/security-context", "GET")
+                                          .authorizerPrincipal(USER_PRINCIPAL).build();
+
+        AwsProxyResponse resp = handler.proxy(request, lambdaContext);
+        assertEquals(200, resp.getStatusCode());
+        validateSingleValueModel(resp, USER_PRINCIPAL);
     }
 
     private void validateMapResponseModel(AwsProxyResponse output) {
