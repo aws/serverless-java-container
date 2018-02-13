@@ -10,16 +10,17 @@
  * OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package com.amazonaws.serverless.proxy.jersey.factory;
+package com.amazonaws.serverless.proxy.jersey.suppliers;
 
 
-import org.glassfish.hk2.api.Factory;
 import org.glassfish.jersey.server.ContainerRequest;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.core.Context;
+
+import java.util.function.Supplier;
 
 import static com.amazonaws.serverless.proxy.jersey.JerseyHandlerFilter.JERSEY_SERVLET_REQUEST_PROPERTY;
 
@@ -34,7 +35,7 @@ import static com.amazonaws.serverless.proxy.jersey.JerseyHandlerFilter.JERSEY_S
  *         .register(new AbstractBinder() {
  *             {@literal @}Override
  *             protected void configure() {
- *                 bindFactory(AwsProxyServletContextFactory.class)
+ *                 bindFactory(AwsProxyServletContextSupplier.class)
  *                     .to(ServletContext.class)
  *                     .in(RequestScoped.class);
  *            }
@@ -42,11 +43,15 @@ import static com.amazonaws.serverless.proxy.jersey.JerseyHandlerFilter.JERSEY_S
  * </code>
  * </pre>
  */
-public class AwsProxyServletContextFactory implements Factory<ServletContext> {
+public class AwsProxyServletContextSupplier implements Supplier<ServletContext> {
     @Context ContainerRequest currentRequest;
 
     @Override
-    public ServletContext provide() {
+    public ServletContext get() {
+        return getServletContext();
+    }
+
+    private ServletContext getServletContext() {
         HttpServletRequest req = (HttpServletRequest)currentRequest.getProperty(JERSEY_SERVLET_REQUEST_PROPERTY);
 
         if (req == null) {
@@ -55,11 +60,5 @@ public class AwsProxyServletContextFactory implements Factory<ServletContext> {
 
         ServletContext ctx = req.getServletContext();
         return ctx;
-    }
-
-
-    @Override
-    public void dispose(ServletContext servletContext) {
-
     }
 }

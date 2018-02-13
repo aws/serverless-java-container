@@ -3,6 +3,7 @@ package com.amazonaws.serverless.proxy.jersey;
 
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
+import com.amazonaws.serverless.proxy.jersey.suppliers.AwsProxyServletRequestSupplier;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.glassfish.jersey.internal.MapPropertiesDelegate;
@@ -110,7 +111,7 @@ public class JerseyHandlerFilter implements Filter, Container {
      * built from the request's <code>getPathInfo()</code> method. The container request also contains the
      * API Gateway context, stage variables, and Lambda context properties. The original servlet request is
      * also embedded in a property of the container request to allow injection by the
-     * {@link com.amazonaws.serverless.proxy.jersey.factory.AwsProxyServletRequestFactory}.
+     * {@link AwsProxyServletRequestSupplier}.
      * @param request The incoming servlet request
      * @return A populated ContainerRequest object.
      * @throws RuntimeException if we could not read the servlet request input stream.

@@ -25,13 +25,23 @@ import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletReques
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequestReader;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
+import com.amazonaws.serverless.proxy.jersey.suppliers.AwsProxyServletContextSupplier;
+import com.amazonaws.serverless.proxy.jersey.suppliers.AwsProxyServletRequestSupplier;
+import com.amazonaws.serverless.proxy.jersey.suppliers.AwsProxyServletResponseSupplier;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 
 import com.amazonaws.services.lambda.runtime.Context;
 
+import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.process.internal.RequestScoped;
+import org.glassfish.jersey.server.ResourceConfig;
+
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Application;
 
 import java.util.EnumSet;
@@ -124,6 +134,18 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
         super(requestTypeClass, responseTypeClass, requestReader, responseWriter, securityContextWriter, exceptionHandler);
         Timer.start("JERSEY_CONTAINER_CONSTRUCTOR");
         this.initialized = false;
+
+        if (jaxRsApplication instanceof ResourceConfig) {
+            ((ResourceConfig)jaxRsApplication).register(new AbstractBinder() {
+                @Override
+                protected void configure() {
+                    bindFactory(AwsProxyServletContextSupplier.class).to(ServletContext.class).in(RequestScoped.class);
+                    bindFactory(AwsProxyServletRequestSupplier.class).to(HttpServletRequest.class).in(RequestScoped.class);
+                    bindFactory(AwsProxyServletResponseSupplier.class).to(HttpServletResponse.class).in(RequestScoped.class);
+                }
+            });
+        }
+
         this.jerseyFilter = new JerseyHandlerFilter(jaxRsApplication);
         Timer.stop("JERSEY_CONTAINER_CONSTRUCTOR");
     }

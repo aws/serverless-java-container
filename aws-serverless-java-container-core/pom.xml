@@ -16,7 +16,7 @@
 
     <properties>
         <jackson.version>2.9.3</jackson.version>
-        <jaxrs.version>2.0.1</jaxrs.version>
+        <jaxrs.version>2.1</jaxrs.version>
         <servlet.version>3.1.0</servlet.version>
     </properties>
 
