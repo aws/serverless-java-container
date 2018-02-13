@@ -7,6 +7,7 @@ import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.spring.echoapp.EchoResource;
 import com.amazonaws.serverless.proxy.spring.echoapp.EchoSpringAppConfig;
+import com.amazonaws.serverless.proxy.spring.echoapp.RestControllerAdvice;
 import com.amazonaws.serverless.proxy.spring.echoapp.UnauthenticatedFilter;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.MapResponseModel;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.SingleValueModel;
@@ -53,6 +54,20 @@ public class SpringAwsProxyTest {
     @Before
     public void clearServletContextCache() {
         AwsServletContext.clearServletContextCache();
+    }
+
+    @Test
+    public void controllerAdvice_invalidPath_returnAdvice() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo2", "GET")
+                                          .json()
+                                          .header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
+                                          .build();
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertNotNull(output);
+        assertEquals(404, output.getStatusCode());
+        validateSingleValueModel(output, RestControllerAdvice.ERROR_MESSAGE);
+
     }
 
     @Test

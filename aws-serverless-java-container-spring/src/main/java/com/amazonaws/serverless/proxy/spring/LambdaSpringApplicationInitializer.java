@@ -115,7 +115,7 @@ public class LambdaSpringApplicationInitializer extends HttpServlet implements W
      * Gets the initialized Spring dispatcher servlet instance.
      * @return The Spring dispatcher servlet
      */
-    public Servlet getDispatcherServlet() {
+    public DispatcherServlet getDispatcherServlet() {
         return dispatcherServlet;
     }
 

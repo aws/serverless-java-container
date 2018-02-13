@@ -36,6 +36,8 @@ public class EchoSpringAppConfig {
             // update the registration to map to a path
             registration.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/echo/*");
             // servlet name mappings are disabled and will throw an exception
+
+            handler.getApplicationInitializer().getDispatcherServlet().setThrowExceptionIfNoHandlerFound(true);
         });
 
         return handler;
