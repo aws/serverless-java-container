@@ -10,13 +10,19 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.SecurityContext;
 
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.Locale;
 
 import static com.amazonaws.serverless.proxy.RequestReader.API_GATEWAY_CONTEXT_PROPERTY;
+import static java.time.temporal.ChronoField.DAY_OF_MONTH;
+import static java.time.temporal.ChronoField.HOUR_OF_DAY;
+import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
+import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
+import static java.time.temporal.ChronoField.SECOND_OF_MINUTE;
+import static java.time.temporal.ChronoField.YEAR;
 
 
 /**
@@ -27,10 +33,30 @@ import static com.amazonaws.serverless.proxy.RequestReader.API_GATEWAY_CONTEXT_P
  */
 public class ApacheCombinedServletLogFormatter<ContainerRequestType extends HttpServletRequest, ContainerResponseType extends HttpServletResponse>
         implements LogFormatter<ContainerRequestType, ContainerResponseType> {
-    SimpleDateFormat dateFormat;
+    DateTimeFormatter dateFormat;
 
     public ApacheCombinedServletLogFormatter() {
-        dateFormat = new SimpleDateFormat("[dd/MM/yyyy:hh:mm:ss Z]");
+        dateFormat = new DateTimeFormatterBuilder()
+            .parseCaseInsensitive()
+            .appendLiteral("[")
+            .appendValue(DAY_OF_MONTH, 2)
+            .appendLiteral("/")
+            .appendValue(MONTH_OF_YEAR, 2)
+            .appendLiteral("/")
+            .appendValue(YEAR, 4)
+            .appendLiteral(":")
+            .appendValue(HOUR_OF_DAY, 2)
+            .appendLiteral(":")
+            .appendValue(MINUTE_OF_HOUR, 2)
+            .appendLiteral(":")
+            .appendValue(SECOND_OF_MINUTE, 2)
+            .optionalStart()
+            .appendOffset("+HHMM", "Z")
+            .optionalEnd()
+            .appendLiteral("]")
+            .toFormatter();
+        //DateTimeFormatter.ofPattern("dd/MM/yyyy:hh:mm:ss Z");
+        //DateTimeFormatter.BASIC_ISO_DATE
     }
 
     @Override
@@ -65,9 +91,9 @@ public class ApacheCombinedServletLogFormatter<ContainerRequestType extends Http
 
         // %t
         if (gatewayContext != null) {
-            logLineBuilder.append(dateFormat.format(Date.from(Instant.ofEpochMilli(gatewayContext.getRequestTimeEpoch()))));
+            logLineBuilder.append(dateFormat.format(LocalDateTime.ofEpochSecond(gatewayContext.getRequestTimeEpoch() / 1000, 0, ZoneOffset.UTC)));
         } else {
-            logLineBuilder.append(dateFormat.format(Calendar.getInstance().getTime()));
+            logLineBuilder.append(dateFormat.format(LocalDateTime.now()));
         }
         logLineBuilder.append(" ");
 

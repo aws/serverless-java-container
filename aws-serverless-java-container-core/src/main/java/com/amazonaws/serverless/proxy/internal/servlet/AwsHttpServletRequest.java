@@ -74,6 +74,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     private Map<String, Object> attributes;
     private ServletContext servletContext;
     private AwsHttpSession session;
+    private String queryString;
 
     protected DispatcherType dispatcherType;
 
@@ -290,8 +291,11 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         if (parameters == null || parameters.size() == 0) {
             return null;
         }
+        if (queryString != null) {
+            return queryString;
+        }
 
-        return parameters.keySet().stream()
+        queryString =  parameters.keySet().stream()
                 .map(key -> {
                     String newKey = key;
                     String newValue = parameters.get(key);
@@ -310,6 +314,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
                     return newKey + "=" + newValue;
                 })
                 .collect(Collectors.joining("&"));
+        return queryString;
     }
 
 

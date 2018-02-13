@@ -56,6 +56,7 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
 
         return new SpringLambdaContainerHandler<>(
                 AwsProxyRequest.class,
+                AwsProxyResponse.class,
                 new AwsProxyHttpServletRequestReader(),
                 new AwsProxyHttpServletResponseWriter(),
                 new AwsProxySecurityContextWriter(),
@@ -74,6 +75,7 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
             throws ContainerInitializationException {
         return new SpringLambdaContainerHandler<>(
                 AwsProxyRequest.class,
+                AwsProxyResponse.class,
                 new AwsProxyHttpServletRequestReader(),
                 new AwsProxyHttpServletResponseWriter(),
                 new AwsProxySecurityContextWriter(),
@@ -93,13 +95,14 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
      * @throws ContainerInitializationException
      */
     public SpringLambdaContainerHandler(Class<RequestType> requestTypeClass,
+                                        Class<ResponseType> responseTypeClass,
                                         RequestReader<RequestType, AwsProxyHttpServletRequest> requestReader,
                                         ResponseWriter<AwsHttpServletResponse, ResponseType> responseWriter,
                                         SecurityContextWriter<RequestType> securityContextWriter,
                                         ExceptionHandler<ResponseType> exceptionHandler,
                                         ConfigurableWebApplicationContext applicationContext)
             throws ContainerInitializationException {
-        super(requestTypeClass, requestReader, responseWriter, securityContextWriter, exceptionHandler);
+        super(requestTypeClass, responseTypeClass, requestReader, responseWriter, securityContextWriter, exceptionHandler);
         Timer.start("SPRING_CONTAINER_HANDLER_CONSTRUCTOR");
         initializer = new LambdaSpringApplicationInitializer(applicationContext);
         Timer.stop("SPRING_CONTAINER_HANDLER_CONSTRUCTOR");

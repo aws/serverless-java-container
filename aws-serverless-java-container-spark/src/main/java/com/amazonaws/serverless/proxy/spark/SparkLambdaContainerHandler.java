@@ -107,6 +107,7 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType>
     public static SparkLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler()
             throws ContainerInitializationException {
         return new SparkLambdaContainerHandler<>(AwsProxyRequest.class,
+                                                 AwsProxyResponse.class,
                                                  new AwsProxyHttpServletRequestReader(),
                                                  new AwsProxyHttpServletResponseWriter(),
                                                  new AwsProxySecurityContextWriter(),
@@ -120,13 +121,14 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType>
 
 
     public SparkLambdaContainerHandler(Class<RequestType> requestTypeClass,
+                                       Class<ResponseType> responseTypeClass,
                                        RequestReader<RequestType, AwsProxyHttpServletRequest> requestReader,
                                        ResponseWriter<AwsHttpServletResponse, ResponseType> responseWriter,
                                        SecurityContextWriter<RequestType> securityContextWriter,
                                        ExceptionHandler<ResponseType> exceptionHandler,
                                        LambdaEmbeddedServerFactory embeddedServerFactory)
             throws ContainerInitializationException {
-        super(requestTypeClass, requestReader, responseWriter, securityContextWriter, exceptionHandler);
+        super(requestTypeClass, responseTypeClass, requestReader, responseWriter, securityContextWriter, exceptionHandler);
         Timer.start("SPARK_CONTAINER_HANDLER_CONSTRUCTOR");
 
         EmbeddedServers.add(LAMBDA_EMBEDDED_SERVER_CODE, embeddedServerFactory);

@@ -67,6 +67,7 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
             throws ContainerInitializationException {
         return new SpringBootLambdaContainerHandler<>(
                 AwsProxyRequest.class,
+                AwsProxyResponse.class,
                 new AwsProxyHttpServletRequestReader(),
                 new AwsProxyHttpServletResponseWriter(),
                 new AwsProxySecurityContextWriter(),
@@ -87,13 +88,14 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
      * @throws ContainerInitializationException If an error occurs while initializing the Spring framework
      */
     public SpringBootLambdaContainerHandler(Class<RequestType> requestTypeClass,
+                                            Class<ResponseType> responseTypeClass,
                                             RequestReader<RequestType, AwsProxyHttpServletRequest> requestReader,
                                             ResponseWriter<AwsHttpServletResponse, ResponseType> responseWriter,
                                             SecurityContextWriter<RequestType> securityContextWriter,
                                             ExceptionHandler<ResponseType> exceptionHandler,
                                             Class<? extends WebApplicationInitializer> springBootInitializer)
             throws ContainerInitializationException {
-        super(requestTypeClass, requestReader, responseWriter, securityContextWriter, exceptionHandler);
+        super(requestTypeClass, responseTypeClass, requestReader, responseWriter, securityContextWriter, exceptionHandler);
         Timer.start("SPRINGBOOT_CONTAINER_HANDLER_CONSTRUCTOR");
         this.springBootInitializer = springBootInitializer;
         Timer.stop("SPRINGBOOT_CONTAINER_HANDLER_CONSTRUCTOR");

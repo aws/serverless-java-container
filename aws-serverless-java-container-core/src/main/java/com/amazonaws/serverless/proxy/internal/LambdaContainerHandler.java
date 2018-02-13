@@ -25,6 +25,8 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,20 +64,22 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
     private SecurityContextWriter<RequestType> securityContextWriter;
     private ExceptionHandler<ResponseType> exceptionHandler;
     private Class<RequestType> requestTypeClass;
+    private Class<ResponseType> responseTypeClass;
 
     protected Context lambdaContext;
     private LogFormatter<ContainerRequestType, ContainerResponseType> logFormatter;
 
     private Logger log = LoggerFactory.getLogger(LambdaContainerHandler.class);
 
-
+    private ObjectReader objectReader;
+    private ObjectWriter objectWriter;
 
     //-------------------------------------------------------------
     // Variables - Private - Static
     //-------------------------------------------------------------
 
     private static ContainerConfig config = ContainerConfig.defaultConfig();
-    private static volatile ObjectMapper objectMapper;
+    private static ObjectMapper objectMapper = new ObjectMapper();
 
 
 
@@ -84,12 +88,14 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
     //-------------------------------------------------------------
 
     protected LambdaContainerHandler(Class<RequestType> requestClass,
+                                     Class<ResponseType> responseClass,
                                      RequestReader<RequestType, ContainerRequestType> requestReader,
                                      ResponseWriter<ContainerResponseType, ResponseType> responseWriter,
                                      SecurityContextWriter<RequestType> securityContextWriter,
                                      ExceptionHandler<ResponseType> exceptionHandler) {
         log.info("Starting Lambda Container Handler");
         requestTypeClass = requestClass;
+        responseTypeClass = responseClass;
         this.requestReader = requestReader;
         this.responseWriter = responseWriter;
         this.securityContextWriter = securityContextWriter;
@@ -113,9 +119,6 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
     //-------------------------------------------------------------
 
     public static ObjectMapper getObjectMapper() {
-        if (objectMapper == null) {
-            objectMapper = new ObjectMapper();
-        }
         return objectMapper;
     }
 
@@ -188,10 +191,17 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
             throws IOException {
 
         try {
-            RequestType request = getObjectMapper().readValue(input, requestTypeClass);
+            if (objectReader == null) {
+                objectReader = getObjectMapper().readerFor(requestTypeClass);
+            }
+            RequestType request = objectReader.readValue(input);
             ResponseType resp = proxy(request, context);
 
-            getObjectMapper().writeValue(output, resp);
+            if (objectWriter == null) {
+                objectWriter = getObjectMapper().writerFor(responseTypeClass);
+            }
+
+            objectWriter.writeValue(output, resp);
         } catch (JsonParseException e) {
             log.error("Error while parsing request object stream", e);
             getObjectMapper().writeValue(output, exceptionHandler.handle(e));
