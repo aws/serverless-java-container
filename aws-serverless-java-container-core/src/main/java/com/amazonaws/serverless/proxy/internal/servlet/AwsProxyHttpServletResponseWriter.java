@@ -50,11 +50,8 @@ public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpSer
         }
         awsProxyResponse.setHeaders(containerResponse.getAwsResponseHeaders());
 
-        if (containerResponse.getStatus() <= 0) {
-            awsProxyResponse.setStatusCode(200);
-        } else {
-            awsProxyResponse.setStatusCode(containerResponse.getStatus());
-        }
+        awsProxyResponse.setStatusCode(containerResponse.getStatus());
+
         Timer.stop("SERVLET_RESPONSE_WRITE");
         return awsProxyResponse;
     }

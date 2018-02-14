@@ -214,6 +214,7 @@ public class SpringAwsProxyTest {
 
         AwsProxyResponse response = handler.proxy(request, lambdaContext);
         assertNotNull(response.getBody());
+        assertEquals(200, response.getStatusCode());
         try {
             SingleValueModel output = objectMapper.readValue(response.getBody(), SingleValueModel.class);
             assertEquals("true", output.getValue());

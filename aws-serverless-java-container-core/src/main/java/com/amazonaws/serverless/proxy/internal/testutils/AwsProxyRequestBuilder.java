@@ -72,6 +72,7 @@ public class AwsProxyRequestBuilder {
         this.request.getRequestContext().setRequestId("test-invoke-request");
         this.request.getRequestContext().setStage("test");
         this.request.getRequestContext().setProtocol("HTTP/1.1");
+        this.request.getRequestContext().setRequestTimeEpoch(System.currentTimeMillis());
         ApiGatewayRequestIdentity identity = new ApiGatewayRequestIdentity();
         identity.setSourceIp("127.0.0.1");
         this.request.getRequestContext().setIdentity(identity);

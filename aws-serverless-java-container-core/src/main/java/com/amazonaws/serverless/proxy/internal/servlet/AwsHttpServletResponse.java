@@ -78,6 +78,7 @@ public class AwsHttpServletResponse
     public AwsHttpServletResponse(AwsHttpServletRequest req, CountDownLatch latch) {
         writersCountDownLatch = latch;
         request = req;
+        statusCode = 0;
     }
 
 
@@ -233,7 +234,7 @@ public class AwsHttpServletResponse
 
     @Override
     public int getStatus() {
-        return statusCode;
+        return (statusCode <= 0?SC_OK:statusCode);
     }
 
 

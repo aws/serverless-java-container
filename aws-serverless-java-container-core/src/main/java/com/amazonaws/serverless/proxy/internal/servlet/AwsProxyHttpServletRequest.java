@@ -25,6 +25,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.input.NullInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -403,7 +404,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     public ServletInputStream getInputStream()
             throws IOException {
         if (request.getBody() == null) {
-            return null;
+            return new AwsServletInputStream(new NullInputStream(0, false, false));
         }
         byte[] bodyBytes = null;
         if (request.isBase64Encoded()) {

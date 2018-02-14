@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.Enumeration;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 
 import static org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder.fromMethodCall;
@@ -119,10 +120,10 @@ public class EchoResource {
     }
 
     @RequestMapping(path = "/request-body", method = RequestMethod.POST)
-    public SingleValueModel helloForPopulatedBody(@RequestBody(required = false) String input) {
+    public SingleValueModel helloForPopulatedBody(@RequestBody(required = false) Optional<String> input) {
         SingleValueModel valueModel = new SingleValueModel();
-        System.out.println("Input: \"" + input + "\"");
-        if (input != null && !"null".equals(input)) {
+        if (input.isPresent() && !"null".equals(input.get())) {
+            System.out.println("Input: \"" + input.get() + "\"");
             valueModel.setValue("true");
         }
 
