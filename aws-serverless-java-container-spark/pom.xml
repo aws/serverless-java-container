@@ -91,6 +91,26 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>3.1.1</version>
+                <configuration>
+                    <skipProvidedScope>true</skipProvidedScope>
+                    <suppressionFiles>
+                        <suppressionFile>${project.basedir}/../owasp-suppression.xml</suppressionFile>
+                    </suppressionFiles>
+                    <failBuildOnCVSS>7</failBuildOnCVSS>
+
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
