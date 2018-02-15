@@ -15,9 +15,6 @@ package com.amazonaws.serverless.sample.jersey;
 import com.amazonaws.serverless.sample.jersey.model.Pet;
 import com.amazonaws.serverless.sample.jersey.model.PetData;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
