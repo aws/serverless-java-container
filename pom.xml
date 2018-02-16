@@ -21,6 +21,7 @@
         <module>aws-serverless-java-container-spring</module>
         <module>archetypes/jersey</module>
         <module>archetypes/spark</module>
+        <module>archetypes/spring</module>
     </modules>
 
     <scm>

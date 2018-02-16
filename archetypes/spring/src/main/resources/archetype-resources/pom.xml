@@ -4,24 +4,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.amazonaws.serverless.sample</groupId>
-    <artifactId>serverless-spring-example</artifactId>
-    <version>1.0-SNAPSHOT</version>
-    <name>Spring example for the aws-serverless-java-container library</name>
-    <description>Simple pet store written with the Spring framework</description>
-    <url>https://aws.amazon.com/lambda/</url>
+    <groupId>${groupId}</groupId>
+    <artifactId>${artifactId}</artifactId>
+    <version>${version}</version>
+    <packaging>jar</packaging>
 
-    <scm>
-        <url>https://github.com/awslabs/aws-serverless-java-container.git</url>
-    </scm>
-
-    <licenses>
-        <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
+    <name>Serverless Spark API</name>
+    <url>https://github.com/awslabs/aws-serverless-java-container</url>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -33,7 +22,7 @@
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
             <artifactId>aws-serverless-java-container-spring</artifactId>
-            <version>[0.1,)</version>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -42,7 +31,6 @@
             <version>1.2.0</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.springframework/spring-webmvc -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
@@ -55,12 +43,13 @@
             <version>${spring.version}</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/io.symphonia/lambda-logging -->
         <dependency>
-            <groupId>io.symphonia</groupId>
-            <artifactId>lambda-logging</artifactId>
-            <version>1.0.1</version>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
         </dependency>
+
     </dependencies>
 
     <build>
