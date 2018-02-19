@@ -32,7 +32,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.security.Security;
+import java.time.format.DateTimeFormatter;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,7 +58,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     static final String HEADER_VALUE_SEPARATOR = ";";
     static final String FORM_DATA_SEPARATOR = "&";
     static final String DEFAULT_CHARACTER_ENCODING = "UTF-8";
-    static final String HEADER_DATE_FORMAT = "EEE, d MMM yyyy HH:mm:ss z";
+    static final DateTimeFormatter dateFormatter = DateTimeFormatter.RFC_1123_DATE_TIME;
     static final String ENCODING_VALUE_KEY = "charset";
 
     // We need this to pickup the protocol from the CloudFront header since Lambda doesn't receive this

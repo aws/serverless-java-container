@@ -53,14 +53,14 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -133,16 +133,15 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public long getDateHeader(String s) {
-        String dateString = getHeaderCaseInsensitive(HttpHeaders.DATE);
+        String dateString = getHeaderCaseInsensitive(s);
         if (dateString == null) {
-            return new Date().getTime();
+            return -1L;
         }
-        SimpleDateFormat dateFormatter = new SimpleDateFormat(HEADER_DATE_FORMAT);
         try {
-            return dateFormatter.parse(dateString).getTime();
-        } catch (ParseException e) {
-            log.error("Could not parse date header", e);
-            return new Date().getTime();
+            return Instant.from(ZonedDateTime.parse(dateString, dateFormatter)).toEpochMilli();
+        } catch (DateTimeParseException e) {
+            log.warn("Invalid date header in request" + SecurityUtils.crlf(dateString));
+            return -1L;
         }
     }
 

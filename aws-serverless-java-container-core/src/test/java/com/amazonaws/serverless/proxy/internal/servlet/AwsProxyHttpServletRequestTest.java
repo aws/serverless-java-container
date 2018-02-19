@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +27,7 @@ public class AwsProxyHttpServletRequestTest {
     private static final String REQUEST_SCHEME_HTTP = "http";
     private static final String USER_AGENT = "Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0";
     private static final String REFERER = "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent/Firefox";
+    private static ZonedDateTime REQUEST_DATE = ZonedDateTime.now();
 
     private static final AwsProxyRequest REQUEST_WITH_HEADERS = new AwsProxyRequestBuilder("/hello", "GET")
             .header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
@@ -51,6 +54,10 @@ public class AwsProxyHttpServletRequestTest {
     private static final AwsProxyRequest REQUEST_USER_AGENT_REFERER = new AwsProxyRequestBuilder("/hello", "POST")
             .userAgent(USER_AGENT)
             .referer(REFERER).build();
+
+    private static final AwsProxyRequest REQUEST_WITH_DATE = new AwsProxyRequestBuilder("/hello", "GET")
+            .header(HttpHeaders.DATE, AwsHttpServletRequest.dateFormatter.format(REQUEST_DATE))
+            .build();
 
     private static final AwsProxyRequest REQUEST_NULL_QUERY_STRING;
     static {
@@ -111,6 +118,23 @@ public class AwsProxyHttpServletRequestTest {
         assertNotNull(request);
         assertEquals(2, request.getParameterValues(FORM_PARAM_NAME).length);
         assertEquals(QUERY_STRING_NAME_VALUE, request.getParameter(FORM_PARAM_NAME));
+    }
+
+    @Test
+    public void dateHeader_noDate_returnNegativeOne() {
+        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_FORM_URLENCODED_AND_QUERY, null, null);
+        assertNotNull(request);
+        assertEquals(-1L, request.getDateHeader(HttpHeaders.DATE));
+    }
+
+    @Test
+    public void dateHeader_correctDate_parseToCorrectLong() {
+        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_WITH_DATE, null, null);
+        assertNotNull(request);
+
+        String instantString = AwsHttpServletRequest.dateFormatter.format(REQUEST_DATE);
+        assertEquals(Instant.from(AwsHttpServletRequest.dateFormatter.parse(instantString)).toEpochMilli(), request.getDateHeader(HttpHeaders.DATE));
+        assertEquals(-1L, request.getDateHeader(HttpHeaders.IF_MODIFIED_SINCE));
     }
 
     @Test
