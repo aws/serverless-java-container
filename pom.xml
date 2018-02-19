@@ -22,6 +22,7 @@
         <module>archetypes/jersey</module>
         <module>archetypes/spark</module>
         <module>archetypes/spring</module>
+        <module>archetypes/springboot</module>
     </modules>
 
     <scm>
