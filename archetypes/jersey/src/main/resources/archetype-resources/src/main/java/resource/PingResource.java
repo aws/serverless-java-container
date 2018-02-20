@@ -13,7 +13,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 @Path("/ping")
-public class SimpleResource {
+public class PingResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
