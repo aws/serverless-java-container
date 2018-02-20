@@ -28,6 +28,9 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
@@ -110,6 +113,36 @@ public class SpringAwsProxyTest {
         assertEquals("application/json", output.getHeaders().get("Content-Type").split(";")[0]);
 
         validateMapResponseModel(output);
+    }
+
+    @Test
+    public void dateHeader_notModified_expect304() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/last-modified", "GET")
+                                          .json()
+                                          .header(
+                                                  HttpHeaders.IF_MODIFIED_SINCE,
+                                                  DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now().minus(1, ChronoUnit.SECONDS))
+                                          )
+                                          .build();
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(304, output.getStatusCode());
+        assertEquals("", output.getBody());
+    }
+
+    @Test
+    public void dateHeader_notModified_expect200() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/last-modified", "GET")
+                                          .json()
+                                          .header(
+                                                  HttpHeaders.IF_MODIFIED_SINCE,
+                                                  DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now().minus(5, ChronoUnit.DAYS))
+                                          )
+                                          .build();
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(200, output.getStatusCode());
+        assertEquals(EchoResource.STRING_BODY, output.getBody());
     }
 
     @Test

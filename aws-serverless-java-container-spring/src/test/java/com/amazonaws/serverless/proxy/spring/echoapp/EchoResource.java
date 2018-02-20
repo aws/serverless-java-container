@@ -14,6 +14,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import java.net.URI;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Optional;
@@ -28,6 +30,7 @@ import static org.springframework.web.servlet.mvc.method.annotation.MvcUriCompon
 @RequestMapping("/echo")
 public class EchoResource {
     public static final String TEST_GENERATE_URI = "test";
+    public static final String STRING_BODY = "Hello";
 
     @Autowired
     ServletContext servletContext;
@@ -149,4 +152,11 @@ public class EchoResource {
         return valueModel;
     }
 
+    @RequestMapping(path = "/last-modified", method = RequestMethod.GET)
+    public ResponseEntity<String> echoLastModified() {
+        return ResponseEntity
+                       .ok()
+                       .lastModified(Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli())
+                       .body(STRING_BODY);
+    }
 }
