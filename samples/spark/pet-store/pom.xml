@@ -77,7 +77,15 @@
                         <configuration>
                             <artifactSet>
                                 <excludes>
+                                    <!-- We exclude lots of Jetty stuff since we won't be running
+                                         the HTTP server. Our primary goal is to reduce the size
+                                         of the deployment package -->
                                     <exclude>org.eclipse.jetty.websocket:*</exclude>
+                                    <exclude>org.eclipse.jetty:jetty-http</exclude>
+                                    <exclude>org.eclipse.jetty:jetty-client</exclude>
+                                    <exclude>org.eclipse.jetty:jetty-webapp</exclude>
+                                    <exclude>org.eclipse.jetty:jetty-xml</exclude>
+                                    <exclude>org.eclipse.jetty:jetty-io</exclude>
                                 </excludes>
                             </artifactSet>
                         </configuration>

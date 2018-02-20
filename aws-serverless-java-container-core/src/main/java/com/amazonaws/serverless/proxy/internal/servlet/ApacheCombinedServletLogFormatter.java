@@ -11,7 +11,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.SecurityContext;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.Locale;
@@ -55,8 +57,6 @@ public class ApacheCombinedServletLogFormatter<ContainerRequestType extends Http
             .optionalEnd()
             .appendLiteral("]")
             .toFormatter();
-        //DateTimeFormatter.ofPattern("dd/MM/yyyy:hh:mm:ss Z");
-        //DateTimeFormatter.BASIC_ISO_DATE
     }
 
     @Override
@@ -91,9 +91,16 @@ public class ApacheCombinedServletLogFormatter<ContainerRequestType extends Http
 
         // %t
         if (gatewayContext != null) {
-            logLineBuilder.append(dateFormat.format(LocalDateTime.ofEpochSecond(gatewayContext.getRequestTimeEpoch() / 1000, 0, ZoneOffset.UTC)));
+            logLineBuilder.append(
+                    dateFormat.format(
+                            ZonedDateTime.of(
+                                    LocalDateTime.ofEpochSecond(gatewayContext.getRequestTimeEpoch() / 1000, 0, ZoneOffset.UTC),
+                                    ZoneId.systemDefault()
+                            )
+                    )
+            );
         } else {
-            logLineBuilder.append(dateFormat.format(LocalDateTime.now()));
+            logLineBuilder.append(dateFormat.format(ZonedDateTime.now()));
         }
         logLineBuilder.append(" ");
 

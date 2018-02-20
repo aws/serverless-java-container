@@ -134,7 +134,11 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
             if (springProfiles != null && springProfiles.length > 0) {
                 ConfigurableEnvironment springEnv = new StandardEnvironment();
                 springEnv.setActiveProfiles(springProfiles);
-                
+            }
+
+            // call the onStartup event if set to give developers a chance to set filters in the context
+            if (startupHandler != null) {
+                startupHandler.onStartup(getServletContext());
             }
 
             initialized = true;
