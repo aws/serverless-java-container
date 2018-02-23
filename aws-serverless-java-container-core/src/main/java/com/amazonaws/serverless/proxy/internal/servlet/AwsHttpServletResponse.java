@@ -169,7 +169,7 @@ public class AwsHttpServletResponse
 
     @Override
     public void sendRedirect(String s) throws IOException {
-        setStatus(SC_MOVED_PERMANENTLY);
+        setStatus(SC_MOVED_TEMPORARILY);
         addHeader(HttpHeaders.LOCATION, s);
         flushBuffer();
     }
