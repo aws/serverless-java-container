@@ -35,6 +35,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.UUID;
+
 
 /**
  * Request builder object. This is used by unit proxy to quickly create an AWS_PROXY request object
@@ -69,7 +71,7 @@ public class AwsProxyRequestBuilder {
         this.request.setPath(path);
         this.request.setQueryStringParameters(new HashMap<>());
         this.request.setRequestContext(new ApiGatewayRequestContext());
-        this.request.getRequestContext().setRequestId("test-invoke-request");
+        this.request.getRequestContext().setRequestId(UUID.randomUUID().toString());
         this.request.getRequestContext().setStage("test");
         this.request.getRequestContext().setProtocol("HTTP/1.1");
         this.request.getRequestContext().setRequestTimeEpoch(System.currentTimeMillis());
