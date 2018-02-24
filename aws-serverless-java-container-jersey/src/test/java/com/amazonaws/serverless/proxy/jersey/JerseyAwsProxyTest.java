@@ -152,6 +152,20 @@ public class JerseyAwsProxyTest {
     }
 
     @Test
+    public void requestScheme_valid_expectHttps() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/scheme", "GET")
+                                          .json()
+                                          .queryString(QUERY_STRING_KEY, QUERY_STRING_ENCODED_VALUE)
+                                          .build();
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(200, output.getStatusCode());
+        assertEquals("application/json", output.getHeaders().get("Content-Type"));
+
+        validateSingleValueModel(output, "https");
+    }
+
+    @Test
     public void authorizer_securityContext_customPrincipalSuccess() {
         AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/authorizer-principal", "GET")
                 .json()

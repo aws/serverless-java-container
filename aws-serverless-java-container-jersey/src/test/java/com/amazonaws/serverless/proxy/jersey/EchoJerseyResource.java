@@ -97,6 +97,15 @@ public class EchoJerseyResource {
         return queryStrings;
     }
 
+    @Path("/scheme") @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public SingleValueModel echoRequestScheme(@Context UriInfo context) {
+        SingleValueModel model = new SingleValueModel();
+        System.out.println("RequestUri: " + context.getRequestUri().toString());
+        model.setValue(context.getRequestUri().getScheme());
+        return model;
+    }
+
     @Path("/authorizer-principal") @GET
     @Produces(MediaType.APPLICATION_JSON)
     public SingleValueModel echoAuthorizerPrincipal(@Context ContainerRequestContext context) {

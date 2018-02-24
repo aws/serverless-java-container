@@ -4,6 +4,7 @@ package com.amazonaws.serverless.proxy.jersey;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.jersey.suppliers.AwsProxyServletRequestSupplier;
+import com.amazonaws.serverless.proxy.model.ApiGatewayRequestContext;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.glassfish.jersey.internal.MapPropertiesDelegate;
@@ -53,7 +54,7 @@ public class JerseyHandlerFilter implements Filter, Container {
     private ApplicationHandler jersey;
     private Application app;
     private Logger log = LoggerFactory.getLogger(JerseyHandlerFilter.class);
-    private URI basePathUri;
+    private URI baseUri;
 
 
     /**
@@ -66,7 +67,6 @@ public class JerseyHandlerFilter implements Filter, Container {
 
         jersey = new ApplicationHandler(app);
         jersey.onStartup(this);
-        basePathUri = URI.create("/");
         Timer.stop("JERSEY_FILTER_CONSTRUCTOR");
     }
 
@@ -123,7 +123,11 @@ public class JerseyHandlerFilter implements Filter, Container {
         Timer.start("JERSEY_SERVLET_REQUEST_TO_CONTAINER");
         HttpServletRequest servletRequest = (HttpServletRequest)request;
 
-        UriBuilder uriBuilder = UriBuilder.fromPath(servletRequest.getPathInfo());
+        if (baseUri == null) {
+            baseUri = getBaseUri(request, "/");
+        }
+
+        UriBuilder uriBuilder = UriBuilder.fromUri(baseUri).path(servletRequest.getPathInfo());
         uriBuilder.replaceQuery(AwsProxyHttpServletRequest.decodeValueIfEncoded(servletRequest.getQueryString()));
 
         PropertiesDelegate apiGatewayProperties = new MapPropertiesDelegate();
@@ -133,7 +137,7 @@ public class JerseyHandlerFilter implements Filter, Container {
         apiGatewayProperties.setProperty(JERSEY_SERVLET_REQUEST_PROPERTY, servletRequest);
 
         ContainerRequest requestContext = new ContainerRequest(
-                basePathUri,
+                null, // jersey uses "/" by default
                 uriBuilder.build(),
                 servletRequest.getMethod().toUpperCase(Locale.ENGLISH),
                 (SecurityContext)servletRequest.getAttribute(JAX_SECURITY_CONTEXT_PROPERTY),
@@ -159,6 +163,25 @@ public class JerseyHandlerFilter implements Filter, Container {
         }
         Timer.stop("JERSEY_SERVLET_REQUEST_TO_CONTAINER");
         return requestContext;
+    }
+
+    private URI getBaseUri(ServletRequest request, String basePath) {
+        ApiGatewayRequestContext apiGatewayCtx = (ApiGatewayRequestContext) request.getAttribute(API_GATEWAY_CONTEXT_PROPERTY);
+        String region = System.getenv("AWS_REGION");
+        if (region == null) {
+            // this is not a critical failure, we just put a static region in the URI
+            region = "us-east-1";
+        }
+        StringBuilder uriBuilder = new StringBuilder();
+        uriBuilder.append("https://") // we assume it's always https
+                  .append(apiGatewayCtx.getApiId())
+                  .append(".execute-api.")
+                  .append(region)
+                  .append(".amazonaws.com")
+                  .append("/");
+
+
+        return UriBuilder.fromUri(uriBuilder.toString()).build();
     }
 
     //-------------------------------------------------------------
