@@ -37,6 +37,7 @@ public class AwsProxyHttpServletRequestReader extends RequestReader<AwsProxyRequ
         AwsProxyHttpServletRequest servletRequest = new AwsProxyHttpServletRequest(request, lambdaContext, securityContext, config);
         servletRequest.setAttribute(API_GATEWAY_CONTEXT_PROPERTY, request.getRequestContext());
         servletRequest.setAttribute(API_GATEWAY_STAGE_VARS_PROPERTY, request.getStageVariables());
+        servletRequest.setAttribute(API_GATEWAY_EVENT_PROPERTY, request);
         servletRequest.setAttribute(LAMBDA_CONTEXT_PROPERTY, lambdaContext);
         servletRequest.setAttribute(JAX_SECURITY_CONTEXT_PROPERTY, securityContext);
 

@@ -69,11 +69,13 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
     // Constructors
     //-------------------------------------------------------------
 
-    protected AwsLambdaServletContainerHandler(RequestReader<RequestType, ContainerRequestType> requestReader,
+    protected AwsLambdaServletContainerHandler(Class<RequestType> requestTypeClass,
+                                     Class<ResponseType> responseTypeClass,
+                                     RequestReader<RequestType, ContainerRequestType> requestReader,
                                      ResponseWriter<ContainerResponseType, ResponseType> responseWriter,
                                      SecurityContextWriter<RequestType> securityContextWriter,
                                      ExceptionHandler<ResponseType> exceptionHandler) {
-        super(requestReader, responseWriter, securityContextWriter, exceptionHandler);
+        super(requestTypeClass, responseTypeClass, requestReader, responseWriter, securityContextWriter, exceptionHandler);
         // set the default log formatter for servlet implementations
         setLogFormatter(new ApacheCombinedServletLogFormatter<>());
     }

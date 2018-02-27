@@ -6,6 +6,8 @@ import com.amazonaws.serverless.proxy.AwsProxyExceptionHandler;
 import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequestReader;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
+import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spark.embeddedserver.LambdaEmbeddedServer;
 import com.amazonaws.serverless.proxy.spark.embeddedserver.LambdaEmbeddedServerFactory;
 
@@ -37,11 +39,13 @@ public class InitExceptionHandlerTest {
             when(embeddedServer.ignite(anyString(), anyInt(), anyObject(), anyInt(), anyInt(), anyInt()))
                     .thenThrow(new ContainerInitializationException(TEST_EXCEPTION_MESSAGE, null));
             LambdaEmbeddedServerFactory serverFactory = new LambdaEmbeddedServerFactory(embeddedServer);
-            new SparkLambdaContainerHandler<>(new AwsProxyHttpServletRequestReader(),
-                                                      new AwsProxyHttpServletResponseWriter(),
-                                                      new AwsProxySecurityContextWriter(),
-                                                      new AwsProxyExceptionHandler(),
-                                                      serverFactory);
+            new SparkLambdaContainerHandler<>(AwsProxyRequest.class,
+                                              AwsProxyResponse.class,
+                                              new AwsProxyHttpServletRequestReader(),
+                                              new AwsProxyHttpServletResponseWriter(),
+                                              new AwsProxySecurityContextWriter(),
+                                              new AwsProxyExceptionHandler(),
+                                              serverFactory);
 
             configureRoutes();
             Spark.awaitInitialization();

@@ -25,6 +25,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.input.NullInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,14 +53,14 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -102,9 +103,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         this.request = awsProxyRequest;
         this.securityContext = awsSecurityContext;
         this.config = config;
-
-        this.urlEncodedFormParameters = getFormUrlEncodedParametersMap();
-        this.multipartFormParameters = getMultipartFormParametersMap();
     }
 
 
@@ -135,16 +133,15 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public long getDateHeader(String s) {
-        String dateString = getHeaderCaseInsensitive(HttpHeaders.DATE);
+        String dateString = getHeaderCaseInsensitive(s);
         if (dateString == null) {
-            return new Date().getTime();
+            return -1L;
         }
-        SimpleDateFormat dateFormatter = new SimpleDateFormat(HEADER_DATE_FORMAT);
         try {
-            return dateFormatter.parse(dateString).getTime();
-        } catch (ParseException e) {
-            log.error("Could not parse date header", e);
-            return new Date().getTime();
+            return Instant.from(ZonedDateTime.parse(dateString, dateFormatter)).toEpochMilli();
+        } catch (DateTimeParseException e) {
+            log.warn("Invalid date header in request" + SecurityUtils.crlf(dateString));
+            return -1L;
         }
     }
 
@@ -295,14 +292,14 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     public Collection<Part> getParts()
             throws IOException, ServletException {
-        return multipartFormParameters.values();
+        return getMultipartFormParametersMap().values();
     }
 
 
     @Override
     public Part getPart(String s)
             throws IOException, ServletException {
-        return multipartFormParameters.get(s);
+        return getMultipartFormParametersMap().get(s);
     }
 
 
@@ -406,7 +403,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     public ServletInputStream getInputStream()
             throws IOException {
         if (request.getBody() == null) {
-            return null;
+            return new AwsServletInputStream(new NullInputStream(0, false, false));
         }
         byte[] bodyBytes = null;
         if (request.isBase64Encoded()) {
@@ -441,7 +438,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         if (request.getQueryStringParameters() != null) {
             paramNames.addAll(request.getQueryStringParameters().keySet());
         }
-        paramNames.addAll(urlEncodedFormParameters.keySet());
+        paramNames.addAll(getFormUrlEncodedParametersMap().keySet());
         return Collections.enumeration(paramNames);
     }
 
@@ -473,10 +470,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     public Map<String, String[]> getParameterMap() {
         Map<String, String[]> output = new HashMap<>();
 
-        Map<String, List<String>> params = urlEncodedFormParameters;
-        if (params == null) {
-            params = new HashMap<>();
-        }
+        Map<String, List<String>> params = getFormUrlEncodedParametersMap();
 
         if (request.getQueryStringParameters() != null) {
             for (Map.Entry<String, String> entry : request.getQueryStringParameters().entrySet()) {
@@ -655,7 +649,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
 
     private String[] getFormBodyParameterCaseInsensitive(String key) {
-        List<String> values = urlEncodedFormParameters.get(key);
+        List<String> values = getFormUrlEncodedParametersMap().get(key);
         if (values != null) {
             String[] valuesArray = new String[values.size()];
             valuesArray = values.toArray(valuesArray);
@@ -668,11 +662,15 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @SuppressFBWarnings("FILE_UPLOAD_FILENAME")
     private Map<String, Part> getMultipartFormParametersMap() {
+        if (multipartFormParameters != null) {
+            return multipartFormParameters;
+        }
         if (!ServletFileUpload.isMultipartContent(this)) { // isMultipartContent also checks the content type
-            return new HashMap<>();
+            multipartFormParameters = new HashMap<>();
+            return multipartFormParameters;
         }
         Timer.start("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
-        Map<String, Part> output = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        multipartFormParameters = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
         ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
         try {
@@ -694,14 +692,14 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
                     }
                 }
 
-                output.put(item.getFieldName(), newPart);
+                multipartFormParameters.put(item.getFieldName(), newPart);
             }
         } catch (FileUploadException e) {
             Timer.stop("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
             log.error("Could not read multipart upload file", e);
         }
         Timer.stop("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
-        return output;
+        return multipartFormParameters;
     }
 
 
@@ -723,31 +721,36 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
 
     private Map<String, List<String>> getFormUrlEncodedParametersMap() {
+        if (urlEncodedFormParameters != null) {
+            return urlEncodedFormParameters;
+        }
         String contentType = getContentType();
         if (contentType == null) {
-            return new HashMap<>();
+            urlEncodedFormParameters = new HashMap<>();
+            return urlEncodedFormParameters;
         }
         if (!contentType.startsWith(MediaType.APPLICATION_FORM_URLENCODED) || !getMethod().toLowerCase(Locale.ENGLISH).equals("post")) {
-            return new HashMap<>();
+            urlEncodedFormParameters = new HashMap<>();
+            return urlEncodedFormParameters;
         }
         Timer.start("SERVLET_REQUEST_GET_FORM_PARAMS");
         String rawBodyContent = request.getBody();
 
-        Map<String, List<String>> output = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        urlEncodedFormParameters = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (String parameter : rawBodyContent.split(FORM_DATA_SEPARATOR)) {
             String[] parameterKeyValue = parameter.split(HEADER_KEY_VALUE_SEPARATOR);
             if (parameterKeyValue.length < 2) {
                 continue;
             }
             List<String> values = new ArrayList<>();
-            if (output.containsKey(parameterKeyValue[0])) {
-                values = output.get(parameterKeyValue[0]);
+            if (urlEncodedFormParameters.containsKey(parameterKeyValue[0])) {
+                values = urlEncodedFormParameters.get(parameterKeyValue[0]);
             }
             values.add(decodeValueIfEncoded(parameterKeyValue[1]));
-            output.put(decodeValueIfEncoded(parameterKeyValue[0]), values);
+            urlEncodedFormParameters.put(decodeValueIfEncoded(parameterKeyValue[0]), values);
         }
         Timer.stop("SERVLET_REQUEST_GET_FORM_PARAMS");
-        return output;
+        return urlEncodedFormParameters;
     }
 
 

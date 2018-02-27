@@ -13,9 +13,6 @@
 package com.amazonaws.serverless.proxy.jersey;
 
 
-import com.amazonaws.serverless.proxy.jersey.factory.AwsProxyServletContextFactory;
-import com.amazonaws.serverless.proxy.jersey.factory.AwsProxyServletRequestFactory;
-import com.amazonaws.serverless.proxy.jersey.factory.AwsProxyServletResponseFactory;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
@@ -28,15 +25,10 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.logging.LoggingFeature;
-import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.Test;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Response;
 
 import java.io.IOException;
@@ -54,25 +46,12 @@ public class JerseyAwsProxyTest {
     private static final String QUERY_STRING_KEY = "identifier";
     private static final String QUERY_STRING_NON_ENCODED_VALUE = "Space Test";
     private static final String QUERY_STRING_ENCODED_VALUE = "Space%20Test";
+    private static final String USER_PRINCIPAL = "user1";
 
 
     private static ObjectMapper objectMapper = new ObjectMapper();
-    private static ResourceConfig app = new ResourceConfig().packages("com.amazonaws.serverless.proxy.jersey", "com.amazonaws.serverless.proxy.jersey.providers")
+    private static ResourceConfig app = new ResourceConfig().packages("com.amazonaws.serverless.proxy.jersey")
             .register(LoggingFeature.class)
-            .register(new AbstractBinder() {
-                @Override
-                protected void configure() {
-                    bindFactory(AwsProxyServletRequestFactory.class)
-                            .to(HttpServletRequest.class)
-                            .in(RequestScoped.class);
-                    bindFactory(AwsProxyServletContextFactory.class)
-                            .to(ServletContext.class)
-                            .in(RequestScoped.class);
-                    bindFactory(AwsProxyServletResponseFactory.class)
-                            .to(HttpServletResponse.class)
-                            .in(RequestScoped.class);
-                }
-            })
             .property(LoggingFeature.LOGGING_FEATURE_VERBOSITY_SERVER, LoggingFeature.Verbosity.PAYLOAD_ANY);
     private static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = JerseyLambdaContainerHandler.getAwsProxyHandler(app);
 
@@ -170,6 +149,20 @@ public class JerseyAwsProxyTest {
         assertEquals("application/json", output.getHeaders().get("Content-Type"));
 
         validateMapResponseModel(output, QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE);
+    }
+
+    @Test
+    public void requestScheme_valid_expectHttps() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/scheme", "GET")
+                                          .json()
+                                          .queryString(QUERY_STRING_KEY, QUERY_STRING_ENCODED_VALUE)
+                                          .build();
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(200, output.getStatusCode());
+        assertEquals("application/json", output.getHeaders().get("Content-Type"));
+
+        validateSingleValueModel(output, "https");
     }
 
     @Test
@@ -300,6 +293,16 @@ public class JerseyAwsProxyTest {
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(404, output.getStatusCode());
         handler.stripBasePath("");
+    }
+
+    @Test
+    public void securityContext_injectPrincipal_expectPrincipalName() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/security-context", "GET")
+                                          .authorizerPrincipal(USER_PRINCIPAL).build();
+
+        AwsProxyResponse resp = handler.proxy(request, lambdaContext);
+        assertEquals(200, resp.getStatusCode());
+        validateSingleValueModel(resp, USER_PRINCIPAL);
     }
 
     private void validateMapResponseModel(AwsProxyResponse output) {

@@ -27,11 +27,16 @@ import org.apache.commons.io.IOUtils;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.UUID;
+
 
 /**
  * Request builder object. This is used by unit proxy to quickly create an AWS_PROXY request object
@@ -66,9 +71,10 @@ public class AwsProxyRequestBuilder {
         this.request.setPath(path);
         this.request.setQueryStringParameters(new HashMap<>());
         this.request.setRequestContext(new ApiGatewayRequestContext());
-        this.request.getRequestContext().setRequestId("test-invoke-request");
+        this.request.getRequestContext().setRequestId(UUID.randomUUID().toString());
         this.request.getRequestContext().setStage("test");
         this.request.getRequestContext().setProtocol("HTTP/1.1");
+        this.request.getRequestContext().setRequestTimeEpoch(System.currentTimeMillis());
         ApiGatewayRequestIdentity identity = new ApiGatewayRequestIdentity();
         identity.setSourceIp("127.0.0.1");
         this.request.getRequestContext().setIdentity(identity);
@@ -165,6 +171,10 @@ public class AwsProxyRequestBuilder {
             this.request.getRequestContext().setAuthorizer(new ApiGatewayAuthorizerContext());
         }
         this.request.getRequestContext().getAuthorizer().setPrincipalId(principal);
+        if (this.request.getRequestContext().getAuthorizer().getClaims() == null) {
+            this.request.getRequestContext().getAuthorizer().setClaims(new CognitoAuthorizerClaims());
+        }
+        this.request.getRequestContext().getAuthorizer().getClaims().setSubject(principal);
         return this;
     }
 
@@ -276,5 +286,14 @@ public class AwsProxyRequestBuilder {
 
     public AwsProxyRequest build() {
         return this.request;
+    }
+
+    public InputStream buildStream() {
+        try {
+            String requestJson = LambdaContainerHandler.getObjectMapper().writeValueAsString(request);
+            return new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
+        } catch (JsonProcessingException e) {
+            return null;
+        }
     }
 }

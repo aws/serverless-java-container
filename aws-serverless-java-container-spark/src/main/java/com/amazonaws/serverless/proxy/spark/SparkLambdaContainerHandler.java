@@ -106,7 +106,9 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType>
      */
     public static SparkLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler()
             throws ContainerInitializationException {
-        return new SparkLambdaContainerHandler<>(new AwsProxyHttpServletRequestReader(),
+        return new SparkLambdaContainerHandler<>(AwsProxyRequest.class,
+                                                 AwsProxyResponse.class,
+                                                 new AwsProxyHttpServletRequestReader(),
                                                  new AwsProxyHttpServletResponseWriter(),
                                                  new AwsProxySecurityContextWriter(),
                                                  new AwsProxyExceptionHandler(),
@@ -118,13 +120,15 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType>
     //-------------------------------------------------------------
 
 
-    public SparkLambdaContainerHandler(RequestReader<RequestType, AwsProxyHttpServletRequest> requestReader,
+    public SparkLambdaContainerHandler(Class<RequestType> requestTypeClass,
+                                       Class<ResponseType> responseTypeClass,
+                                       RequestReader<RequestType, AwsProxyHttpServletRequest> requestReader,
                                        ResponseWriter<AwsHttpServletResponse, ResponseType> responseWriter,
                                        SecurityContextWriter<RequestType> securityContextWriter,
                                        ExceptionHandler<ResponseType> exceptionHandler,
                                        LambdaEmbeddedServerFactory embeddedServerFactory)
             throws ContainerInitializationException {
-        super(requestReader, responseWriter, securityContextWriter, exceptionHandler);
+        super(requestTypeClass, responseTypeClass, requestReader, responseWriter, securityContextWriter, exceptionHandler);
         Timer.start("SPARK_CONTAINER_HANDLER_CONSTRUCTOR");
 
         EmbeddedServers.add(LAMBDA_EMBEDDED_SERVER_CODE, embeddedServerFactory);

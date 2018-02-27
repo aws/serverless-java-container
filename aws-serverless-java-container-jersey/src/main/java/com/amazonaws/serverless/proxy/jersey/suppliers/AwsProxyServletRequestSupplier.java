@@ -10,16 +10,15 @@
  * OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package com.amazonaws.serverless.proxy.jersey.factory;
+package com.amazonaws.serverless.proxy.jersey.suppliers;
 
 
-import org.glassfish.hk2.api.Factory;
 import org.glassfish.jersey.server.ContainerRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
+
+import java.util.function.Supplier;
 
 import static com.amazonaws.serverless.proxy.jersey.JerseyHandlerFilter.JERSEY_SERVLET_REQUEST_PROPERTY;
 
@@ -34,7 +33,7 @@ import static com.amazonaws.serverless.proxy.jersey.JerseyHandlerFilter.JERSEY_S
  *         .register(new AbstractBinder() {
  *             {@literal @}Override
  *             protected void configure() {
- *                 bindFactory(AwsProxyServletRequestFactory.class)
+ *                 bindFactory(AwsProxyServletRequestSupplier.class)
  *                     .to(HttpServletRequest.class)
  *                     .in(RequestScoped.class);
  *            }
@@ -42,23 +41,20 @@ import static com.amazonaws.serverless.proxy.jersey.JerseyHandlerFilter.JERSEY_S
  * </code>
  * </pre>
  */
-public class AwsProxyServletRequestFactory
-        implements Factory<HttpServletRequest> {
+public class AwsProxyServletRequestSupplier implements Supplier<HttpServletRequest> {
 
     @Context ContainerRequest currentRequest;
-    private static Logger log = LoggerFactory.getLogger(AwsProxyServletRequestFactory.class);
 
     //-------------------------------------------------------------
     // Implementation - Factory
     //-------------------------------------------------------------
 
     @Override
-    public HttpServletRequest provide() {
-        return (HttpServletRequest)currentRequest.getProperty(JERSEY_SERVLET_REQUEST_PROPERTY);
+    public HttpServletRequest get() {
+        return getServletRequest();
     }
 
-
-    @Override
-    public void dispose(HttpServletRequest httpServletRequest) {
+    private HttpServletRequest getServletRequest() {
+        return (HttpServletRequest)currentRequest.getProperty(JERSEY_SERVLET_REQUEST_PROPERTY);
     }
 }

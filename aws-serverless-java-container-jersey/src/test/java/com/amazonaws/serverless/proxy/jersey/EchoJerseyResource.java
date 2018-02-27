@@ -25,7 +25,11 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.ext.ContextResolver;
+import javax.ws.rs.ext.Providers;
+
 import java.util.Enumeration;
 import java.util.Random;
 
@@ -37,6 +41,9 @@ public class EchoJerseyResource {
     public static final String SERVLET_RESP_HEADER_KEY = "X-HttpServletResponse";
     public static final String EXCEPTION_MESSAGE = "Fake exception";
 
+    @Context
+    SecurityContext securityCtx;
+
     @Path("/headers") @GET
     @Produces(MediaType.APPLICATION_JSON)
     public MapResponseModel echoHeaders(@Context ContainerRequestContext context) {
@@ -46,6 +53,16 @@ public class EchoJerseyResource {
         }
 
         return headers;
+    }
+
+    @Path("/security-context") @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public SingleValueModel getPrincipal() {
+        SingleValueModel output = new SingleValueModel();
+        if (securityCtx != null) {
+            output.setValue(securityCtx.getUserPrincipal().getName());
+        }
+        return output;
     }
 
     @Path("/servlet-headers") @GET
@@ -78,6 +95,15 @@ public class EchoJerseyResource {
         }
 
         return queryStrings;
+    }
+
+    @Path("/scheme") @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public SingleValueModel echoRequestScheme(@Context UriInfo context) {
+        SingleValueModel model = new SingleValueModel();
+        System.out.println("RequestUri: " + context.getRequestUri().toString());
+        model.setValue(context.getRequestUri().getScheme());
+        return model;
     }
 
     @Path("/authorizer-principal") @GET

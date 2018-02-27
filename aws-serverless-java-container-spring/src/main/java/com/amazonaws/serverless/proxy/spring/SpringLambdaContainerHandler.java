@@ -55,6 +55,8 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
         applicationContext.register(config);
 
         return new SpringLambdaContainerHandler<>(
+                AwsProxyRequest.class,
+                AwsProxyResponse.class,
                 new AwsProxyHttpServletRequestReader(),
                 new AwsProxyHttpServletResponseWriter(),
                 new AwsProxySecurityContextWriter(),
@@ -72,6 +74,8 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
     public static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(ConfigurableWebApplicationContext applicationContext)
             throws ContainerInitializationException {
         return new SpringLambdaContainerHandler<>(
+                AwsProxyRequest.class,
+                AwsProxyResponse.class,
                 new AwsProxyHttpServletRequestReader(),
                 new AwsProxyHttpServletResponseWriter(),
                 new AwsProxySecurityContextWriter(),
@@ -83,26 +87,44 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
     /**
      * Creates a new container handler with the given reader and writer objects
      *
+     * @param requestTypeClass The class for the incoming Lambda event
      * @param requestReader An implementation of `RequestReader`
      * @param responseWriter An implementation of `ResponseWriter`
      * @param securityContextWriter An implementation of `SecurityContextWriter`
      * @param exceptionHandler An implementation of `ExceptionHandler`
      * @throws ContainerInitializationException
      */
-    public SpringLambdaContainerHandler(RequestReader<RequestType, AwsProxyHttpServletRequest> requestReader,
+    public SpringLambdaContainerHandler(Class<RequestType> requestTypeClass,
+                                        Class<ResponseType> responseTypeClass,
+                                        RequestReader<RequestType, AwsProxyHttpServletRequest> requestReader,
                                         ResponseWriter<AwsHttpServletResponse, ResponseType> responseWriter,
                                         SecurityContextWriter<RequestType> securityContextWriter,
                                         ExceptionHandler<ResponseType> exceptionHandler,
                                         ConfigurableWebApplicationContext applicationContext)
             throws ContainerInitializationException {
-        super(requestReader, responseWriter, securityContextWriter, exceptionHandler);
+        super(requestTypeClass, responseTypeClass, requestReader, responseWriter, securityContextWriter, exceptionHandler);
         Timer.start("SPRING_CONTAINER_HANDLER_CONSTRUCTOR");
         initializer = new LambdaSpringApplicationInitializer(applicationContext);
         Timer.stop("SPRING_CONTAINER_HANDLER_CONSTRUCTOR");
     }
 
+
+    /**
+     * Asks the custom web application initializer to refresh the Spring context.
+     * @param refreshContext true if the context should be refreshed
+     */
     public void setRefreshContext(boolean refreshContext) {
         this.initializer.setRefreshContext(refreshContext);
+    }
+
+
+    /**
+     * Returns the custom web application initializer used by the object. The custom application initializer gives you access
+     * to the dispatcher servlet.
+     * @return The instance of the custom {@link org.springframework.web.WebApplicationInitializer}
+     */
+    public LambdaSpringApplicationInitializer getApplicationInitializer() {
+        return initializer;
     }
 
     @Override
@@ -110,6 +132,12 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
         return new AwsHttpServletResponse(request, latch);
     }
 
+
+    /**
+     * Activates the given Spring profiles in the application.
+     * @param profiles A number of spring profiles
+     * @throws ContainerInitializationException if the initializer is not set yet.
+     */
     public void activateSpringProfiles(String... profiles) throws ContainerInitializationException {
         if (initializer == null) {
             throw new ContainerInitializationException(LambdaSpringApplicationInitializer.ERROR_NO_CONTEXT, null);

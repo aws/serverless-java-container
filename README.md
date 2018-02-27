@@ -13,27 +13,22 @@ Below is the most basic AWS Lambda handler example that launches a Spring applic
 
 ```java
 public class StreamLambdaHandler implements RequestStreamHandler {
-    private SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
-    private Logger log = LoggerFactory.getLogger(StreamLambdaHandler.class);
+    private static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+    static {
+        try {
+            handler = SpringLambdaContainerHandler.getAwsProxyHandler(PetStoreSpringAppConfig.class);
+        } catch (ContainerInitializationException e) {
+            // if we fail here. We re-throw the exception to force another cold start
+            e.printStackTrace();
+            throw new RuntimeException("Could not initialize Spring framework", e);
+        }
+    }
 
     @Override
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
             throws IOException {
-        if (handler == null) {
-            try {
-                handler = SpringLambdaContainerHandler.getAwsProxyHandler(PetStoreSpringAppConfig.class);
-            } catch (ContainerInitializationException e) {
-                log.error("Cannot initialize Spring container", e);
-                outputStream.close();
-                throw new RuntimeException(e);
-            }
-        }
+        handler.proxyStream(inputStream, outputStream, context);
 
-        AwsProxyRequest request = LambdaContainerHandler.getObjectMapper().readValue(inputStream, AwsProxyRequest.class);
-
-        AwsProxyResponse resp = handler.proxy(request, context);
-
-        LambdaContainerHandler.getObjectMapper().writeValue(outputStream, resp);
         // just in case it wasn't closed by the mapper
         outputStream.close();
     }

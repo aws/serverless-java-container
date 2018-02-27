@@ -3,6 +3,8 @@ package com.amazonaws.serverless.proxy.jersey;
 
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
+import com.amazonaws.serverless.proxy.jersey.suppliers.AwsProxyServletRequestSupplier;
+import com.amazonaws.serverless.proxy.model.ApiGatewayRequestContext;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.glassfish.jersey.internal.MapPropertiesDelegate;
@@ -29,7 +31,6 @@ import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
@@ -40,6 +41,12 @@ import static com.amazonaws.serverless.proxy.RequestReader.JAX_SECURITY_CONTEXT_
 import static com.amazonaws.serverless.proxy.RequestReader.LAMBDA_CONTEXT_PROPERTY;
 
 
+/**
+ * Servlet filter class that calls Jersey's ApplicationHandler. Given a Jax RS Application object, this class
+ * initializes a Jersey {@link ApplicationHandler} and calls its <code>handle</code> method. Requests are transformed
+ * to <code>ContainerRequest</code> objects by the {@link #servletRequestToContainerRequest(ServletRequest)} method.
+ * Jersey responses are written directly to the ServletResponse by the {@link JerseyServletResponseWriter}.
+ */
 public class JerseyHandlerFilter implements Filter, Container {
     public static final String JERSEY_SERVLET_REQUEST_PROPERTY = "com.amazonaws.serverless.jersey.servletRequest";
     public static final String JERSEY_SERVLET_RESPONSE_PROPERTY = "com.amazonaws.serverless.jersey.servletResponse";
@@ -47,7 +54,13 @@ public class JerseyHandlerFilter implements Filter, Container {
     private ApplicationHandler jersey;
     private Application app;
     private Logger log = LoggerFactory.getLogger(JerseyHandlerFilter.class);
+    private URI baseUri;
 
+
+    /**
+     * Constructs a new handler filter with a Jax RS application object.
+     * @param jaxApplication
+     */
     JerseyHandlerFilter(Application jaxApplication) {
         Timer.start("JERSEY_FILTER_CONSTRUCTOR");
         app = jaxApplication;
@@ -92,19 +105,30 @@ public class JerseyHandlerFilter implements Filter, Container {
         jersey.onShutdown(this);
     }
 
+
+    /**
+     * Given a ServletRequest generates the corresponding Jersey ContainerRequest object. The request URI is
+     * built from the request's <code>getPathInfo()</code> method. The container request also contains the
+     * API Gateway context, stage variables, and Lambda context properties. The original servlet request is
+     * also embedded in a property of the container request to allow injection by the
+     * {@link AwsProxyServletRequestSupplier}.
+     * @param request The incoming servlet request
+     * @return A populated ContainerRequest object.
+     * @throws RuntimeException if we could not read the servlet request input stream.
+     */
     // suppressing warnings because I expect headers and query strings to be checked by the underlying
     // servlet implementation
     @SuppressFBWarnings({ "SERVLET_HEADER", "SERVLET_QUERY_STRING" })
     private ContainerRequest servletRequestToContainerRequest(ServletRequest request) {
         Timer.start("JERSEY_SERVLET_REQUEST_TO_CONTAINER");
-        URI requestPathUri;
-        String basePath = "/";
         HttpServletRequest servletRequest = (HttpServletRequest)request;
 
-        UriBuilder uriBuilder = UriBuilder.fromPath(servletRequest.getPathInfo());
-        uriBuilder.replaceQuery(AwsProxyHttpServletRequest.decodeValueIfEncoded(servletRequest.getQueryString()));
+        if (baseUri == null) {
+            baseUri = getBaseUri(request, "/");
+        }
 
-        requestPathUri = uriBuilder.build();
+        UriBuilder uriBuilder = UriBuilder.fromUri(baseUri).path(servletRequest.getPathInfo());
+        uriBuilder.replaceQuery(AwsProxyHttpServletRequest.decodeValueIfEncoded(servletRequest.getQueryString()));
 
         PropertiesDelegate apiGatewayProperties = new MapPropertiesDelegate();
         apiGatewayProperties.setProperty(API_GATEWAY_CONTEXT_PROPERTY, servletRequest.getAttribute(API_GATEWAY_CONTEXT_PROPERTY));
@@ -113,8 +137,8 @@ public class JerseyHandlerFilter implements Filter, Container {
         apiGatewayProperties.setProperty(JERSEY_SERVLET_REQUEST_PROPERTY, servletRequest);
 
         ContainerRequest requestContext = new ContainerRequest(
-                URI.create(basePath), // for routing within Jersey we always assume the base path is "/"
-                requestPathUri,
+                null, // jersey uses "/" by default
+                uriBuilder.build(),
                 servletRequest.getMethod().toUpperCase(Locale.ENGLISH),
                 (SecurityContext)servletRequest.getAttribute(JAX_SECURITY_CONTEXT_PROPERTY),
                 apiGatewayProperties);
@@ -127,16 +151,37 @@ public class JerseyHandlerFilter implements Filter, Container {
             }
         } catch (IOException e) {
             log.error("Could not read input stream from request", e);
+            throw new RuntimeException("Could not read request input stream", e);
         }
 
         Enumeration<String> headerNames = servletRequest.getHeaderNames();
-
+        
         while (headerNames.hasMoreElements()) {
             String headerKey = headerNames.nextElement();
-            requestContext.header(headerKey, servletRequest.getHeader(headerKey));
+            //requestContext.header(headerKey, servletRequest.getHeader(headerKey));
+            requestContext.getHeaders().add(headerKey, servletRequest.getHeader(headerKey));
         }
         Timer.stop("JERSEY_SERVLET_REQUEST_TO_CONTAINER");
         return requestContext;
+    }
+
+    private URI getBaseUri(ServletRequest request, String basePath) {
+        ApiGatewayRequestContext apiGatewayCtx = (ApiGatewayRequestContext) request.getAttribute(API_GATEWAY_CONTEXT_PROPERTY);
+        String region = System.getenv("AWS_REGION");
+        if (region == null) {
+            // this is not a critical failure, we just put a static region in the URI
+            region = "us-east-1";
+        }
+        StringBuilder uriBuilder = new StringBuilder();
+        uriBuilder.append("https://") // we assume it's always https
+                  .append(apiGatewayCtx.getApiId())
+                  .append(".execute-api.")
+                  .append(region)
+                  .append(".amazonaws.com")
+                  .append("/");
+
+
+        return UriBuilder.fromUri(uriBuilder.toString()).build();
     }
 
     //-------------------------------------------------------------

@@ -83,22 +83,6 @@ public class AwsProxyHttpServletRequestFormTest {
     }
 
     @Test
-    public void getForm_getParts_noPartsInGet() {
-        try {
-            AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/form", "GET")
-                                                   .header(MULTIPART_FORM_DATA.getContentType().getName(), MULTIPART_FORM_DATA.getContentType().getValue())
-                                                   .body(IOUtils.toString(MULTIPART_FORM_DATA.getContent()))
-                                                   .build();
-
-            HttpServletRequest request = new AwsProxyHttpServletRequest(proxyRequest, null, null);
-            assertNotNull(request.getParts());
-            assertEquals(0, request.getParts().size());
-        } catch (IOException | ServletException e) {
-            fail(e.getMessage());
-        }
-    }
-
-    @Test
     public void multipart_getParts_binary() {
         try {
             AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/form", "POST")

@@ -46,6 +46,11 @@ public abstract class RequestReader<RequestType, ContainerRequestType> {
     public static final String API_GATEWAY_STAGE_VARS_PROPERTY = "com.amazonaws.apigateway.stage.variables";
 
     /**
+     * The key to store the entire API Gateway event
+     */
+    public static final String API_GATEWAY_EVENT_PROPERTY = "com.amazonaws.apigateway.request";
+
+    /**
      * The key for the <strong>AWS Lambda context</strong> property in the PropertiesDelegate object
      */
     public static final String LAMBDA_CONTEXT_PROPERTY = "com.amazonaws.lambda.context";
@@ -54,6 +59,7 @@ public abstract class RequestReader<RequestType, ContainerRequestType> {
      * The key for the <strong>JAX RS security context</strong> properties stored in the request attributes
      */
     public static final String JAX_SECURITY_CONTEXT_PROPERTY = "com.amazonaws.serverless.jaxrs.securityContext";
+
 
 
     //-------------------------------------------------------------

@@ -15,8 +15,8 @@
     </parent>
 
     <properties>
-        <spring.version>4.3.13.RELEASE</spring.version>
-        <spring-security.version>4.2.4.RELEASE</spring-security.version>
+        <spring.version>5.0.3.RELEASE</spring.version>
+        <spring-security.version>5.0.1.RELEASE</spring-security.version>
         <jackson.version>2.9.3</jackson.version>
     </properties>
 
@@ -33,6 +33,7 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
             <version>${spring.version}</version>
+            <optional>true</optional>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.springframework/spring-test -->
@@ -83,6 +84,16 @@
             <artifactId>spring-boot-autoconfigure</artifactId>
             <version>1.5.9.RELEASE</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-context</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
@@ -190,6 +201,25 @@
                     <execution>
                         <id>analyze-compile</id>
                         <phase>compile</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>3.1.1</version>
+                <configuration>
+                    <skipProvidedScope>true</skipProvidedScope>
+                    <suppressionFiles>
+                        <suppressionFile>${project.basedir}/../owasp-suppression.xml</suppressionFile>
+                    </suppressionFiles>
+                    <failBuildOnCVSS>7</failBuildOnCVSS>
+                </configuration>
+                <executions>
+                    <execution>
                         <goals>
                             <goal>check</goal>
                         </goals>

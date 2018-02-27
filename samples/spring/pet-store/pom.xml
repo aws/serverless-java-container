@@ -26,8 +26,7 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <spring.version>5.0.2.RELEASE</spring.version>
-        <jackson.version>2.8.4</jackson.version>
+        <spring.version>5.0.3.RELEASE</spring.version>
     </properties>
 
     <dependencies>
@@ -40,7 +39,7 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-lambda-java-core</artifactId>
-            <version>1.1.0</version>
+            <version>1.2.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.springframework/spring-webmvc -->
@@ -60,7 +59,7 @@
         <dependency>
             <groupId>io.symphonia</groupId>
             <artifactId>lambda-logging</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1</version>
         </dependency>
     </dependencies>
 

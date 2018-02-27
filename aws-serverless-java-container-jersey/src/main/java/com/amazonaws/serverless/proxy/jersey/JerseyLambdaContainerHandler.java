@@ -16,7 +16,6 @@ package com.amazonaws.serverless.proxy.jersey;
 import com.amazonaws.serverless.proxy.AwsProxyExceptionHandler;
 import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
 import com.amazonaws.serverless.proxy.ExceptionHandler;
-import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.RequestReader;
 import com.amazonaws.serverless.proxy.ResponseWriter;
 import com.amazonaws.serverless.proxy.SecurityContextWriter;
@@ -26,17 +25,23 @@ import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletReques
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequestReader;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
+import com.amazonaws.serverless.proxy.jersey.suppliers.AwsProxyServletContextSupplier;
+import com.amazonaws.serverless.proxy.jersey.suppliers.AwsProxyServletRequestSupplier;
+import com.amazonaws.serverless.proxy.jersey.suppliers.AwsProxyServletResponseSupplier;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import org.glassfish.jersey.server.ApplicationHandler;
-import org.glassfish.jersey.server.ContainerRequest;
+
+import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.server.spi.Container;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Application;
 
 import java.util.EnumSet;
@@ -73,10 +78,8 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
     // Variables - Private
     //-------------------------------------------------------------
 
-    // The Jersey application object
-    private Application jaxRsApplication;
-
     private JerseyHandlerFilter jerseyFilter;
+
     // tracker for the first request
     private boolean initialized;
 
@@ -95,7 +98,9 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
      * @return A <code>JerseyLambdaContainerHandler</code> object
      */
     public static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(Application jaxRsApplication) {
-        return new JerseyLambdaContainerHandler<>(new AwsProxyHttpServletRequestReader(),
+        return new JerseyLambdaContainerHandler<>(AwsProxyRequest.class,
+                                                  AwsProxyResponse.class,
+                                                  new AwsProxyHttpServletRequestReader(),
                                                   new AwsProxyHttpServletResponseWriter(),
                                                   new AwsProxySecurityContextWriter(),
                                                   new AwsProxyExceptionHandler(),
@@ -110,23 +115,38 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
     /**
      * Private constructor for a LambdaContainer. Sets the application object, sets the ApplicationHandler,
      * and initializes the application using the <code>onStartup</code> method.
+     * @param requestTypeClass The class for the expected event type
+     * @param responseTypeClass The class for the output type
      * @param requestReader A request reader instance
      * @param responseWriter A response writer instance
      * @param securityContextWriter A security context writer object
      * @param exceptionHandler An exception handler
      * @param jaxRsApplication The JaxRs application
      */
-    public JerseyLambdaContainerHandler(RequestReader<RequestType, AwsProxyHttpServletRequest> requestReader,
+    public JerseyLambdaContainerHandler(Class<RequestType> requestTypeClass,
+                                        Class<ResponseType> responseTypeClass,
+                                        RequestReader<RequestType, AwsProxyHttpServletRequest> requestReader,
                                         ResponseWriter<AwsHttpServletResponse, ResponseType> responseWriter,
                                         SecurityContextWriter<RequestType> securityContextWriter,
                                         ExceptionHandler<ResponseType> exceptionHandler,
                                         Application jaxRsApplication) {
 
-        super(requestReader, responseWriter, securityContextWriter, exceptionHandler);
+        super(requestTypeClass, responseTypeClass, requestReader, responseWriter, securityContextWriter, exceptionHandler);
         Timer.start("JERSEY_CONTAINER_CONSTRUCTOR");
-        this.jaxRsApplication = jaxRsApplication;
         this.initialized = false;
-        this.jerseyFilter = new JerseyHandlerFilter(this.jaxRsApplication);
+
+        if (jaxRsApplication instanceof ResourceConfig) {
+            ((ResourceConfig)jaxRsApplication).register(new AbstractBinder() {
+                @Override
+                protected void configure() {
+                    bindFactory(AwsProxyServletContextSupplier.class).to(ServletContext.class).in(RequestScoped.class);
+                    bindFactory(AwsProxyServletRequestSupplier.class).to(HttpServletRequest.class).in(RequestScoped.class);
+                    bindFactory(AwsProxyServletResponseSupplier.class).to(HttpServletResponse.class).in(RequestScoped.class);
+                }
+            });
+        }
+
+        this.jerseyFilter = new JerseyHandlerFilter(jaxRsApplication);
         Timer.stop("JERSEY_CONTAINER_CONSTRUCTOR");
     }
 
