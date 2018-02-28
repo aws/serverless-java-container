@@ -48,6 +48,18 @@
             <version>${jersey.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+            <version>${jersey.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.inject</groupId>
+                    <artifactId>javax.inject</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/io.symphonia/lambda-logging -->
         <dependency>
             <groupId>io.symphonia</groupId>
