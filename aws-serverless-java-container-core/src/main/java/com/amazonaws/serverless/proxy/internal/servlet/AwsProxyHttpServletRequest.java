@@ -704,7 +704,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
 
     private String cleanUri(String uri) {
-        String finalUri = uri;
+        String finalUri = (uri == null ? "" : uri);
 
         if (!finalUri.startsWith("/")) {
             finalUri = "/" + finalUri;
