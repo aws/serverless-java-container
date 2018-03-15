@@ -78,6 +78,21 @@ public class HelloWorldSparkStreamTest {
         }
     }
 
+    @Test
+    public void nullPathRequest_doesntFail_expectA404() {
+        InputStream req = new AwsProxyRequestBuilder().method("GET").path(null).buildStream();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        try {
+            handler.proxyStream(req, outputStream, new MockLambdaContext());
+            AwsProxyResponse response = LambdaContainerHandler.getObjectMapper().readValue(outputStream.toByteArray(), AwsProxyResponse.class);
+
+            assertEquals(404, response.getStatusCode());
+        } catch (IOException e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
     private static void configureRoutes() {
         get("/hello", (req, res) -> {
             res.status(200);
