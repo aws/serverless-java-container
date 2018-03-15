@@ -26,10 +26,6 @@ import javax.servlet.http.HttpServletResponse;
 @ComponentScan(basePackages = "${groupId}.controller")
 public class Application extends SpringBootServletInitializer {
 
-    // silence console logging
-    @Value("${${logging}}")
-    String message = "";
-
     /*
      * Create required HandlerMapping, to avoid several default HandlerMapping instances being created
      */
