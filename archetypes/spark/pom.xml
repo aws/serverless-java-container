@@ -4,12 +4,12 @@
     <parent>
         <groupId>com.amazonaws.serverless</groupId>
         <artifactId>aws-serverless-java-container</artifactId>
-        <version>1.1-SNAPSHOT</version>
+        <version>1.0.1</version>
     </parent>
 
     <groupId>com.amazonaws.serverless.archetypes</groupId>
     <artifactId>aws-serverless-spark-archetype</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.0.2</version>
     <packaging>maven-archetype</packaging>
 
     <scm>
