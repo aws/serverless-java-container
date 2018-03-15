@@ -33,6 +33,7 @@ public class ApiGatewayRequestIdentity {
     //-------------------------------------------------------------
 
     private String apiKey;
+    private String apiKeyId;
     private String userArn;
     private String cognitoAuthenticationType;
     private String caller;
@@ -57,6 +58,16 @@ public class ApiGatewayRequestIdentity {
 
     public void setApiKey(String apiKey) {
         this.apiKey = apiKey;
+    }
+
+
+    public String getApiKeyId() {
+        return apiKeyId;
+    }
+
+
+    public void setApiKeyId(String apiKeyId) {
+        this.apiKeyId = apiKeyId;
     }
 
 

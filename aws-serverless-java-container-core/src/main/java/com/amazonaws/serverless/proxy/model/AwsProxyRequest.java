@@ -32,12 +32,19 @@ public class AwsProxyRequest {
     private String resource;
     private ApiGatewayRequestContext requestContext;
     private Map<String, String> queryStringParameters;
-    private Map<String, String> headers = new HashMap<>(); // avoid NPE
+    private Map<String, String> headers;
     private Map<String, String> pathParameters;
     private String httpMethod;
     private Map<String, String> stageVariables;
     private String path;
     private boolean isBase64Encoded;
+
+    public AwsProxyRequest() {
+        queryStringParameters = new HashMap<>();
+        headers = new HashMap<>();
+        pathParameters = new HashMap<>();
+        stageVariables = new HashMap<>();
+    }
 
 
     //-------------------------------------------------------------
