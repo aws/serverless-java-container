@@ -15,7 +15,7 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <jackson.version>2.9.4</jackson.version>
+        <jackson.version>2.9.5</jackson.version>
         <spark.version>2.7.1</spark.version>
     </properties>
 
@@ -23,7 +23,7 @@
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
             <artifactId>aws-serverless-java-container-spark</artifactId>
-            <version>1.0.1</version>
+            <version>1.1</version>
         </dependency>
 
         <dependency>
