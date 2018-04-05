@@ -64,6 +64,9 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     // We need this to pickup the protocol from the CloudFront header since Lambda doesn't receive this
     // information from anywhere else
     static final String CF_PROTOCOL_HEADER_NAME = "CloudFront-Forwarded-Proto";
+    static final String PROTOCOL_HEADER_NAME = "X-Forwarded-Proto";
+    static final String HOST_HEADER_NAME = "Host";
+    static final String PORT_HEADER_NAME = "X-Forwarded-Port";
 
 
     //-------------------------------------------------------------

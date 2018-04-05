@@ -7,8 +7,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 
 /**
@@ -17,6 +20,51 @@ import java.util.Locale;
  */
 public final class SecurityUtils {
     private static Logger log = LoggerFactory.getLogger(SecurityUtils.class);
+
+    private static Set<String> SCHEMES = new HashSet<String>() {{
+        add("http");
+        add("https");
+        add("HTTP");
+        add("HTTPS");
+    }};
+
+    private static Set<Integer> PORTS = new HashSet<Integer>() {{
+        add(443);
+        add(80);
+        add(3000); // we allow port 3000 for SAM local
+    }};
+
+    public static boolean isValidPort(String port) {
+        if (port == null) {
+            return false;
+        }
+        try {
+            int intPort = Integer.parseInt(port);
+            return PORTS.contains(intPort);
+        } catch (NumberFormatException e) {
+            log.error("Invalid port parameter: " + crlf(port));
+            return false;
+        }
+    }
+
+    public static boolean isValidScheme(String scheme) {
+        return SCHEMES.contains(scheme);
+    }
+
+    public static boolean isValidHost(String host, String apiId, String region) {
+        if (host == null) {
+            return false;
+        }
+        if (host.endsWith(".amazonaws.com")) {
+            String defaultHost = new StringBuilder().append(apiId)
+                                                    .append(".execute-api.")
+                                                    .append(region)
+                                                    .append(".amazonaws.com").toString();
+            return host.equals(defaultHost);
+        } else {
+            return LambdaContainerHandler.getContainerConfig().getCustomDomainNames().contains(host);
+        }
+    }
 
     /**
      * Replaces CRLF characters in a string with empty string ("").

@@ -501,22 +501,44 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getScheme() {
-        String headerValue = getHeaderCaseInsensitive(CF_PROTOCOL_HEADER_NAME);
-        if (headerValue == null) {
-            return "https";
+        String cfScheme = getHeaderCaseInsensitive(CF_PROTOCOL_HEADER_NAME);
+        if (cfScheme != null && SecurityUtils.isValidScheme(cfScheme)) {
+            return cfScheme;
         }
-        return headerValue;
+        String gwScheme = getHeaderCaseInsensitive(PROTOCOL_HEADER_NAME);
+        if (gwScheme != null && SecurityUtils.isValidScheme(gwScheme)) {
+            return gwScheme;
+        }
+        // https is our default scheme
+        return "https";
     }
-
 
     @Override
     public String getServerName() {
-        String name = getHeaderCaseInsensitive(HttpHeaders.HOST);
-
-        if (name == null || name.length() == 0) {
-            name = "lambda.amazonaws.com";
+        String region = System.getenv("AWS_REGION");
+        if (region == null) {
+            // this is not a critical failure, we just put a static region in the URI
+            region = "us-east-1";
         }
-        return name;
+
+        String hostHeader = getHeaderCaseInsensitive(HOST_HEADER_NAME);
+        if (hostHeader != null && SecurityUtils.isValidHost(hostHeader, request.getRequestContext().getApiId(), region)) {
+            return hostHeader;
+        }
+
+        return new StringBuilder().append(request.getRequestContext().getApiId())
+                                                .append(".execute-api.")
+                                                .append(region)
+                                                .append(".amazonaws.com").toString();
+    }
+
+    public int getServerPort() {
+        String port = getHeaderCaseInsensitive(PORT_HEADER_NAME);
+        if (SecurityUtils.isValidPort(port)) {
+            return Integer.parseInt(port);
+        } else {
+            return 443; // default port
+        }
     }
 
 
