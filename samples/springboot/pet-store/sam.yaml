@@ -6,7 +6,7 @@ Globals:
   Api:
     # API Gateway regional endpoints
     EndpointConfiguration: REGIONAL
-    
+
 Resources:
   PetStoreFunction:
     Type: AWS::Serverless::Function

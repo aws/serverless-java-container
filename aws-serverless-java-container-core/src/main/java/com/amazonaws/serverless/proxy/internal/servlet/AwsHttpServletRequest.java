@@ -299,23 +299,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         }
 
         queryString =  parameters.keySet().stream()
-                .map(key -> {
-                    String newKey = key;
-                    String newValue = parameters.get(key);
-                    try {
-                        if (!URLEncoder.encode(newKey, StandardCharsets.UTF_8.name()).equals(newKey)) {
-                            newKey = URLEncoder.encode(key, StandardCharsets.UTF_8.name());
-                        }
-
-                        if (!URLEncoder.encode(newValue, StandardCharsets.UTF_8.name()).equals(newValue)) {
-                            newValue = URLEncoder.encode(newValue, StandardCharsets.UTF_8.name());
-                        }
-                    } catch (UnsupportedEncodingException e) {
-                        log.error(SecurityUtils.crlf("Could not URLEncode: " + newKey), e);
-
-                    }
-                    return newKey + "=" + newValue;
-                })
+                .map(key -> key + "=" + parameters.get(key))
                 .collect(Collectors.joining("&"));
         return queryString;
     }

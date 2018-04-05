@@ -32,6 +32,9 @@ import org.junit.Test;
 import javax.ws.rs.core.Response;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
@@ -303,6 +306,34 @@ public class JerseyAwsProxyTest {
         AwsProxyResponse resp = handler.proxy(request, lambdaContext);
         assertEquals(200, resp.getStatusCode());
         validateSingleValueModel(resp, USER_PRINCIPAL);
+    }
+
+    @Test
+    public void queryParam_encoding_expectUnencodedParam() {
+        String paramValue = "p%2Fz%2B3";
+        String decodedParam = "";
+        try {
+            decodedParam = URLDecoder.decode(paramValue, "UTF-8");
+            System.out.println(decodedParam);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            fail("Could not decode parameter");
+        }
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/decoded-param", "GET").queryString("param", paramValue).build();
+
+        AwsProxyResponse resp = handler.proxy(request, lambdaContext);
+        assertEquals(200, resp.getStatusCode());
+        validateSingleValueModel(resp, decodedParam);
+    }
+
+    @Test
+    public void queryParam_encoding_expectEncodedParam() {
+        String paramValue = "p%2Fz%2B3";
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/encoded-param", "GET").queryString("param", paramValue).build();
+
+        AwsProxyResponse resp = handler.proxy(request, lambdaContext);
+        assertEquals(200, resp.getStatusCode());
+        validateSingleValueModel(resp, paramValue);
     }
 
     private void validateMapResponseModel(AwsProxyResponse output) {

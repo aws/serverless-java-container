@@ -128,7 +128,7 @@ public class JerseyHandlerFilter implements Filter, Container {
         }
 
         UriBuilder uriBuilder = UriBuilder.fromUri(baseUri).path(servletRequest.getPathInfo());
-        uriBuilder.replaceQuery(AwsProxyHttpServletRequest.decodeValueIfEncoded(servletRequest.getQueryString()));
+        uriBuilder.replaceQuery(servletRequest.getQueryString());
 
         PropertiesDelegate apiGatewayProperties = new MapPropertiesDelegate();
         apiGatewayProperties.setProperty(API_GATEWAY_CONTEXT_PROPERTY, servletRequest.getAttribute(API_GATEWAY_CONTEXT_PROPERTY));
