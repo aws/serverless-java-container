@@ -25,6 +25,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.NullInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -756,7 +757,12 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             return urlEncodedFormParameters;
         }
         Timer.start("SERVLET_REQUEST_GET_FORM_PARAMS");
-        String rawBodyContent = request.getBody();
+        String rawBodyContent = null;
+        try {
+            rawBodyContent = IOUtils.toString(getInputStream());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         urlEncodedFormParameters = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (String parameter : rawBodyContent.split(FORM_DATA_SEPARATOR)) {

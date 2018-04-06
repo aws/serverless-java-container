@@ -15,6 +15,9 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.Base64;
+import java.util.Map;
 import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
@@ -101,5 +104,19 @@ public class AwsProxyHttpServletRequestFormTest {
         } catch (IOException | ServletException e) {
             fail(e.getMessage());
         }
+    }
+
+    @Test
+    public void postForm_getParamsBase64Encoded_expectAllParams() {
+        AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/form", "POST")
+                                               .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED).build();
+        proxyRequest.setBody(Base64.getEncoder().encodeToString(ENCODED_FORM_ENTITY.getBytes(Charset.defaultCharset())));
+        proxyRequest.setIsBase64Encoded(true);
+
+        HttpServletRequest request = new AwsProxyHttpServletRequest(proxyRequest, null, null);
+        Map<String, String[]> params = request.getParameterMap();
+        assertNotNull(params);
+        assertEquals(2, params.size());
+        assertEquals(true, params.containsKey(PART_KEY_1));
     }
 }
