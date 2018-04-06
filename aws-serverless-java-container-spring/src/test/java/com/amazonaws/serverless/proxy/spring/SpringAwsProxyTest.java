@@ -55,10 +55,10 @@ public class SpringAwsProxyTest {
     @Autowired
     private SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
 
-    /*@Before
+    @Before
     public void clearServletContextCache() {
         AwsServletContext.clearServletContextCache();
-    }*/
+    }
 
     @Test
     public void controllerAdvice_invalidPath_returnAdvice() {

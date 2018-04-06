@@ -79,6 +79,28 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
     }
 
     /**
+     * Creates a default SpringLambdaContainerHandler initialized with the `AwsProxyRequest` and `AwsProxyResponse` objects and the given Spring profiles
+     * @param springBootInitializer {@code SpringBootServletInitializer} class
+     * @param profiles A list of Spring profiles to activate
+     * @return An initialized instance of the `SpringLambdaContainerHandler`
+     * @throws ContainerInitializationException If an error occurs while initializing the Spring framework
+     */
+    public static SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(Class<? extends WebApplicationInitializer> springBootInitializer, String... profiles)
+            throws ContainerInitializationException {
+        SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> newHandler = new SpringBootLambdaContainerHandler<>(
+                AwsProxyRequest.class,
+                AwsProxyResponse.class,
+                new AwsProxyHttpServletRequestReader(),
+                new AwsProxyHttpServletResponseWriter(),
+                new AwsProxySecurityContextWriter(),
+                new AwsProxyExceptionHandler(),
+                springBootInitializer);
+        newHandler.activateSpringProfiles(profiles);
+        newHandler.initialize();
+        return newHandler;
+    }
+
+    /**
      * Creates a new container handler with the given reader and writer objects
      *
      * @param requestTypeClass The class for the incoming Lambda event
@@ -100,6 +122,7 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
         super(requestTypeClass, responseTypeClass, requestReader, responseWriter, securityContextWriter, exceptionHandler);
         Timer.start("SPRINGBOOT_CONTAINER_HANDLER_CONSTRUCTOR");
         setServletContext(new SpringBootAwsServletContext());
+        initialized = false;
         this.springBootInitializer = springBootInitializer;
         Timer.stop("SPRINGBOOT_CONTAINER_HANDLER_CONSTRUCTOR");
     }

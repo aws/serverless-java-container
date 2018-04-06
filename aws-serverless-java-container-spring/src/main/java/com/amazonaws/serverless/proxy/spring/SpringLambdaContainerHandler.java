@@ -160,8 +160,8 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
         if (initializer == null) {
             throw new ContainerInitializationException(LambdaSpringApplicationInitializer.ERROR_NO_CONTEXT, null);
         }
-
-        initializer.setSpringProfiles(Arrays.asList(profiles));
+        setServletContext(new AwsServletContext(this));
+        initializer.setSpringProfiles(getServletContext(), profiles);
     }
 
     @Override

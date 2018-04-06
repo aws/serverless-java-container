@@ -12,6 +12,7 @@
  */
 package com.amazonaws.serverless.proxy.spring;
 
+import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -66,7 +67,7 @@ public class LambdaSpringApplicationInitializer extends HttpServlet implements W
     private volatile boolean refreshContext = true;
     @SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
     private transient volatile List<ServletContextListener> contextListeners;
-    private volatile ArrayList<String> springProfiles;
+    private volatile List<String> springProfiles;
 
     // Dynamically instantiated properties
     private volatile DispatcherServlet dispatcherServlet;
@@ -121,19 +122,19 @@ public class LambdaSpringApplicationInitializer extends HttpServlet implements W
         return dispatcherServlet;
     }
 
-    public List<String> getSpringProfiles() {
-        return Collections.unmodifiableList(springProfiles);
-    }
+    public void setSpringProfiles(ServletContext ctx, String... springProfiles)
+            throws ContainerInitializationException {
+        this.springProfiles = Arrays.asList(springProfiles);
 
-    public void setSpringProfiles(List<String> springProfiles) {
-        this.springProfiles = new ArrayList<>(springProfiles);
-        applicationContext.stop();
+        applicationContext.registerShutdownHook();
         applicationContext.close();
-        applicationContext.getEnvironment().setActiveProfiles(springProfiles.toArray(new String[0]));
-        //applicationContext.start();
-        applicationContext.refresh();
+        contextListeners.clear();
+        try {
+            onStartup(ctx);
+        } catch (ServletException e) {
+            throw new ContainerInitializationException("Could not reload Spring context", e);
+        }
 
-        //dispatcherServlet.refresh();
     }
 
     @Override

@@ -62,19 +62,6 @@ public class SpringProfileTest {
     public void profile_overrideProfile() throws Exception {
         AwsProxyRequest request = new AwsProxyRequestBuilder("/profile/spring-properties", "GET")
                 .build();
-        /*
-         This change works
-        AnnotationConfigWebApplicationContext applicationContext = new AnnotationConfigWebApplicationContext();
-        applicationContext.register(EchoSpringAppConfig.class);
-        SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = new SpringLambdaContainerHandler<>(AwsProxyRequest.class,
-                AwsProxyResponse.class,
-                new AwsProxyHttpServletRequestReader(),
-                new AwsProxyHttpServletResponseWriter(),
-                new AwsProxySecurityContextWriter(),
-                new AwsProxyExceptionHandler(), applicationContext);
-
-        handler.activateSpringProfiles("override");
-        handler.initialize();*/
         SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = SpringLambdaContainerHandler.getAwsProxyHandler(EchoSpringAppConfig.class);
         handler.activateSpringProfiles("override");
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
