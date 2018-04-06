@@ -12,6 +12,7 @@
  */
 package com.amazonaws.serverless.proxy.spring;
 
+import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -21,6 +22,8 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.ContextStoppedEvent;
+import org.springframework.context.event.GenericApplicationListenerAdapter;
+import org.springframework.context.support.AbstractRefreshableApplicationContext;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.ContextLoaderListener;
@@ -64,7 +67,7 @@ public class LambdaSpringApplicationInitializer extends HttpServlet implements W
     private volatile boolean refreshContext = true;
     @SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
     private transient volatile List<ServletContextListener> contextListeners;
-    private volatile ArrayList<String> springProfiles;
+    private volatile List<String> springProfiles;
 
     // Dynamically instantiated properties
     private volatile DispatcherServlet dispatcherServlet;
@@ -119,12 +122,19 @@ public class LambdaSpringApplicationInitializer extends HttpServlet implements W
         return dispatcherServlet;
     }
 
-    public List<String> getSpringProfiles() {
-        return Collections.unmodifiableList(springProfiles);
-    }
+    public void setSpringProfiles(ServletContext ctx, String... springProfiles)
+            throws ContainerInitializationException {
+        this.springProfiles = Arrays.asList(springProfiles);
 
-    public void setSpringProfiles(List<String> springProfiles) {
-        this.springProfiles = new ArrayList<>(springProfiles);
+        applicationContext.registerShutdownHook();
+        applicationContext.close();
+        contextListeners.clear();
+        try {
+            onStartup(ctx);
+        } catch (ServletException e) {
+            throw new ContainerInitializationException("Could not reload Spring context", e);
+        }
+
     }
 
     @Override
@@ -135,20 +145,18 @@ public class LambdaSpringApplicationInitializer extends HttpServlet implements W
         }
         applicationContext.setServletContext(servletContext);
 
-
         DefaultDispatcherConfig dispatcherConfig = new DefaultDispatcherConfig(servletContext);
         applicationContext.setServletConfig(dispatcherConfig);
 
         // Configure the listener for the request handled events. All we do here is release the latch
-        applicationContext.addApplicationListener(new ApplicationListener<ServletRequestHandledEvent>() {
-            @Override
-            public void onApplicationEvent(ServletRequestHandledEvent servletRequestHandledEvent) {
-                try {
+        applicationContext.addApplicationListener((ApplicationListener<ServletRequestHandledEvent>) servletRequestHandledEvent -> {
+            try {
+                if (currentResponse != null) {
                     currentResponse.flushBuffer();
-                } catch (IOException e) {
-                    log.error("Could not flush response buffer", e);
-                    throw new RuntimeException("Could not flush response buffer", e);
                 }
+            } catch (IOException e) {
+                log.error("Could not flush response buffer", e);
+                throw new RuntimeException("Could not flush response buffer", e);
             }
         });
 

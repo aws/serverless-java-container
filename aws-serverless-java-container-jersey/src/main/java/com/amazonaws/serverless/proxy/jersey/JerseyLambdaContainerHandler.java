@@ -79,10 +79,7 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
     //-------------------------------------------------------------
 
     private JerseyHandlerFilter jerseyFilter;
-
-    // tracker for the first request
     private boolean initialized;
-
 
     //-------------------------------------------------------------
     // Methods - Public - Static
@@ -98,13 +95,15 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
      * @return A <code>JerseyLambdaContainerHandler</code> object
      */
     public static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(Application jaxRsApplication) {
-        return new JerseyLambdaContainerHandler<>(AwsProxyRequest.class,
-                                                  AwsProxyResponse.class,
-                                                  new AwsProxyHttpServletRequestReader(),
-                                                  new AwsProxyHttpServletResponseWriter(),
-                                                  new AwsProxySecurityContextWriter(),
-                                                  new AwsProxyExceptionHandler(),
-                                                  jaxRsApplication);
+        JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> newHandler = new JerseyLambdaContainerHandler<>(AwsProxyRequest.class,
+                                                                                          AwsProxyResponse.class,
+                                                                                          new AwsProxyHttpServletRequestReader(),
+                                                                                          new AwsProxyHttpServletResponseWriter(),
+                                                                                          new AwsProxySecurityContextWriter(),
+                                                                                          new AwsProxyExceptionHandler(),
+                                                                                          jaxRsApplication);
+        newHandler.initialize();
+        return newHandler;
     }
 
 
@@ -133,8 +132,7 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
 
         super(requestTypeClass, responseTypeClass, requestReader, responseWriter, securityContextWriter, exceptionHandler);
         Timer.start("JERSEY_CONTAINER_CONSTRUCTOR");
-        this.initialized = false;
-
+        initialized = false;
         if (jaxRsApplication instanceof ResourceConfig) {
             ((ResourceConfig)jaxRsApplication).register(new AbstractBinder() {
                 @Override
@@ -162,29 +160,28 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
     @Override
     protected void handleRequest(AwsProxyHttpServletRequest httpServletRequest, AwsHttpServletResponse httpServletResponse, Context lambdaContext)
             throws Exception {
-
-        Timer.start("JERSEY_HANDLE_REQUEST");
-        // this method of the AwsLambdaServletContainerHandler sets the request context
-        super.handleRequest(httpServletRequest, httpServletResponse, lambdaContext);
-
+        // we retain the initialized property for backward compatibility
         if (!initialized) {
-            Timer.start("JERSEY_COLD_START_INIT");
-            // call the onStartup event if set to give developers a chance to set filters in the context
-            if (startupHandler != null) {
-                startupHandler.onStartup(getServletContext());
-            }
-
-            // manually add the spark filter to the chain. This should the last one and match all uris
-            FilterRegistration.Dynamic jerseyFilterReg = getServletContext().addFilter("JerseyFilter", jerseyFilter);
-            jerseyFilterReg.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/*");
-
-            initialized = true;
-            Timer.stop("JERSEY_COLD_START_INIT");
+            initialize();
         }
+        Timer.start("JERSEY_HANDLE_REQUEST");
 
         httpServletRequest.setServletContext(getServletContext());
 
         doFilter(httpServletRequest, httpServletResponse, null);
         Timer.stop("JERSEY_HANDLE_REQUEST");
+    }
+
+
+    @Override
+    public void initialize() {
+        Timer.start("JERSEY_COLD_START_INIT");
+
+        // manually add the spark filter to the chain. This should the last one and match all uris
+        FilterRegistration.Dynamic jerseyFilterReg = getServletContext().addFilter("JerseyFilter", jerseyFilter);
+        jerseyFilterReg.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/*");
+
+        Timer.stop("JERSEY_COLD_START_INIT");
+        initialized = true;
     }
 }

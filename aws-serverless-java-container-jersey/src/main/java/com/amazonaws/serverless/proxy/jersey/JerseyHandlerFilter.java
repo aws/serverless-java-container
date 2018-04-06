@@ -128,7 +128,7 @@ public class JerseyHandlerFilter implements Filter, Container {
         }
 
         UriBuilder uriBuilder = UriBuilder.fromUri(baseUri).path(servletRequest.getPathInfo());
-        uriBuilder.replaceQuery(AwsProxyHttpServletRequest.decodeValueIfEncoded(servletRequest.getQueryString()));
+        uriBuilder.replaceQuery(servletRequest.getQueryString());
 
         PropertiesDelegate apiGatewayProperties = new MapPropertiesDelegate();
         apiGatewayProperties.setProperty(API_GATEWAY_CONTEXT_PROPERTY, servletRequest.getAttribute(API_GATEWAY_CONTEXT_PROPERTY));
@@ -165,23 +165,19 @@ public class JerseyHandlerFilter implements Filter, Container {
         return requestContext;
     }
 
+    @SuppressFBWarnings("SERVLET_SERVER_NAME")
     private URI getBaseUri(ServletRequest request, String basePath) {
-        ApiGatewayRequestContext apiGatewayCtx = (ApiGatewayRequestContext) request.getAttribute(API_GATEWAY_CONTEXT_PROPERTY);
-        String region = System.getenv("AWS_REGION");
-        if (region == null) {
-            // this is not a critical failure, we just put a static region in the URI
-            region = "us-east-1";
+        String finalBasePath = basePath;
+        if (!finalBasePath.startsWith("/")) {
+            finalBasePath = "/" + finalBasePath;
         }
-        StringBuilder uriBuilder = new StringBuilder();
-        uriBuilder.append("https://") // we assume it's always https
-                  .append(apiGatewayCtx.getApiId())
-                  .append(".execute-api.")
-                  .append(region)
-                  .append(".amazonaws.com")
-                  .append("/");
-
-
-        return UriBuilder.fromUri(uriBuilder.toString()).build();
+        String uriString = new StringBuilder().append(request.getScheme())
+                  .append("://")
+                  .append(request.getServerName())
+                  .append(":")
+                  .append(request.getServerPort())
+                  .append(finalBasePath).toString();
+        return UriBuilder.fromUri(uriString).build();
     }
 
     //-------------------------------------------------------------

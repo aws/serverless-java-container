@@ -35,9 +35,11 @@ public class ContainerConfig {
     private boolean consolidateSetCookieHeaders;
     private boolean useStageAsServletContext;
     private List<String> validFilePaths;
+    private List<String> customDomainNames;
 
     public ContainerConfig() {
         validFilePaths = new ArrayList<>();
+        customDomainNames = new ArrayList<>();
     }
 
 
@@ -167,5 +169,32 @@ public class ContainerConfig {
      */
     public void addValidFilePath(String filePath) {
         validFilePaths.add(filePath);
+    }
+
+
+    /**
+     * Adds a new custom domain name to the list of allowed domains
+     * @param name The new custom domain name, excluding the scheme ("https") and port
+     */
+    public void addCustomDomain(String name) {
+        customDomainNames.add(name);
+    }
+
+
+    /**
+     * Returns the list of custom domain names enabled for the application
+     * @return The configured custom domain names
+     */
+    public List<String> getCustomDomainNames() {
+        return customDomainNames;
+    }
+
+
+    /**
+     * Enables localhost custom domain name for testing. This setting should be used only in local
+     * with SAM local
+     */
+    public void enableLocalhost() {
+        customDomainNames.add("localhost");
     }
 }

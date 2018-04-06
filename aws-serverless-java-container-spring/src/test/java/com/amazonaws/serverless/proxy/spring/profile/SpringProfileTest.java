@@ -1,5 +1,9 @@
 package com.amazonaws.serverless.proxy.spring.profile;
 
+import com.amazonaws.serverless.proxy.AwsProxyExceptionHandler;
+import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequestReader;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
@@ -18,6 +22,7 @@ import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
 import static org.junit.Assert.assertEquals;
 
@@ -57,7 +62,6 @@ public class SpringProfileTest {
     public void profile_overrideProfile() throws Exception {
         AwsProxyRequest request = new AwsProxyRequestBuilder("/profile/spring-properties", "GET")
                 .build();
-
         SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = SpringLambdaContainerHandler.getAwsProxyHandler(EchoSpringAppConfig.class);
         handler.activateSpringProfiles("override");
         AwsProxyResponse output = handler.proxy(request, lambdaContext);

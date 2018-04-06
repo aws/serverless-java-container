@@ -44,6 +44,22 @@ public class EchoJerseyResource {
     @Context
     SecurityContext securityCtx;
 
+    @Path("/decoded-param") @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public SingleValueModel echoDecodedParam(@QueryParam("param") String param) {
+        SingleValueModel model = new SingleValueModel();
+        model.setValue(param);
+        return model;
+    }
+
+    @Path("/encoded-param") @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public SingleValueModel echoEncodedParam(@QueryParam("param") @Encoded String param) {
+        SingleValueModel model = new SingleValueModel();
+        model.setValue(param);
+        return model;
+    }
+
     @Path("/headers") @GET
     @Produces(MediaType.APPLICATION_JSON)
     public MapResponseModel echoHeaders(@Context ContainerRequestContext context) {

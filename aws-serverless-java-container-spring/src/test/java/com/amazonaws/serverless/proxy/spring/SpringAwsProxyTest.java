@@ -1,5 +1,6 @@
 package com.amazonaws.serverless.proxy.spring;
 
+import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
@@ -335,6 +336,7 @@ public class SpringAwsProxyTest {
                                           .serverName("api.myserver.com")
                                           .stage("prod")
                                           .build();
+        LambdaContainerHandler.getContainerConfig().addCustomDomain("api.myserver.com");
         SpringLambdaContainerHandler.getContainerConfig().setUseStageAsServletContext(true);
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);

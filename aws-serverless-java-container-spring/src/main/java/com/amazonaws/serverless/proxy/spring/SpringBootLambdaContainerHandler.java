@@ -53,6 +53,7 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
     private final Class<? extends WebApplicationInitializer> springBootInitializer;
     private static final Logger log = LoggerFactory.getLogger(SpringBootLambdaContainerHandler.class);
     private String[] springProfiles = null;
+    private DispatcherServlet dispatcherServlet;
 
     // State vars
     private boolean initialized;
@@ -65,15 +66,38 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
      */
     public static SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(Class<? extends WebApplicationInitializer> springBootInitializer)
             throws ContainerInitializationException {
-        return new SpringBootLambdaContainerHandler<>(
+        SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> newHandler = new SpringBootLambdaContainerHandler<>(
+                                                                                                AwsProxyRequest.class,
+                                                                                                AwsProxyResponse.class,
+                                                                                                new AwsProxyHttpServletRequestReader(),
+                                                                                                new AwsProxyHttpServletResponseWriter(),
+                                                                                                new AwsProxySecurityContextWriter(),
+                                                                                                new AwsProxyExceptionHandler(),
+                                                                                                springBootInitializer);
+        newHandler.initialize();
+        return newHandler;
+    }
+
+    /**
+     * Creates a default SpringLambdaContainerHandler initialized with the `AwsProxyRequest` and `AwsProxyResponse` objects and the given Spring profiles
+     * @param springBootInitializer {@code SpringBootServletInitializer} class
+     * @param profiles A list of Spring profiles to activate
+     * @return An initialized instance of the `SpringLambdaContainerHandler`
+     * @throws ContainerInitializationException If an error occurs while initializing the Spring framework
+     */
+    public static SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(Class<? extends WebApplicationInitializer> springBootInitializer, String... profiles)
+            throws ContainerInitializationException {
+        SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> newHandler = new SpringBootLambdaContainerHandler<>(
                 AwsProxyRequest.class,
                 AwsProxyResponse.class,
                 new AwsProxyHttpServletRequestReader(),
                 new AwsProxyHttpServletResponseWriter(),
                 new AwsProxySecurityContextWriter(),
                 new AwsProxyExceptionHandler(),
-                springBootInitializer
-        );
+                springBootInitializer);
+        newHandler.activateSpringProfiles(profiles);
+        newHandler.initialize();
+        return newHandler;
     }
 
     /**
@@ -97,6 +121,8 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
             throws ContainerInitializationException {
         super(requestTypeClass, responseTypeClass, requestReader, responseWriter, securityContextWriter, exceptionHandler);
         Timer.start("SPRINGBOOT_CONTAINER_HANDLER_CONSTRUCTOR");
+        setServletContext(new SpringBootAwsServletContext());
+        initialized = false;
         this.springBootInitializer = springBootInitializer;
         Timer.stop("SPRINGBOOT_CONTAINER_HANDLER_CONSTRUCTOR");
     }
@@ -116,44 +142,50 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
     protected void handleRequest(AwsProxyHttpServletRequest containerRequest, AwsHttpServletResponse containerResponse, Context lambdaContext) throws Exception {
         // this method of the AwsLambdaServletContainerHandler sets the servlet context
         Timer.start("SPRINGBOOT_HANDLE_REQUEST");
-        if (getServletContext() == null) {
-            setServletContext(new SpringBootAwsServletContext());
-        }
 
         // wire up the application context on the first invocation
         if (!initialized) {
-            Timer.start("SPRINGBOOT_COLD_START");
-            if (springProfiles != null && springProfiles.length > 0) {
-                System.setProperty("spring.profiles.active", String.join(",", springProfiles));
-            }
-            SpringServletContainerInitializer springServletContainerInitializer = new SpringServletContainerInitializer();
-            LinkedHashSet<Class<?>> webAppInitializers = new LinkedHashSet<>();
-            webAppInitializers.add(springBootInitializer);
-            springServletContainerInitializer.onStartup(webAppInitializers, getServletContext());
-
-            if (springProfiles != null && springProfiles.length > 0) {
-                ConfigurableEnvironment springEnv = new StandardEnvironment();
-                springEnv.setActiveProfiles(springProfiles);
-            }
-
-            // call the onStartup event if set to give developers a chance to set filters in the context
-            if (startupHandler != null) {
-                startupHandler.onStartup(getServletContext());
-            }
-
-            initialized = true;
-            Timer.stop("SPRINGBOOT_COLD_START");
+            initialize();
         }
 
         containerRequest.setServletContext(getServletContext());
 
-        WebApplicationContext applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
-
-        DispatcherServlet dispatcherServlet = applicationContext.getBean("dispatcherServlet", DispatcherServlet.class);
         // process filters & invoke servlet
         doFilter(containerRequest, containerResponse, dispatcherServlet);
         Timer.stop("SPRINGBOOT_HANDLE_REQUEST");
     }
+
+
+    @Override
+    public void initialize()
+            throws ContainerInitializationException {
+        Timer.start("SPRINGBOOT_COLD_START");
+
+        if (springProfiles != null && springProfiles.length > 0) {
+            System.setProperty("spring.profiles.active", String.join(",", springProfiles));
+        }
+        SpringServletContainerInitializer springServletContainerInitializer = new SpringServletContainerInitializer();
+        LinkedHashSet<Class<?>> webAppInitializers = new LinkedHashSet<>();
+        webAppInitializers.add(springBootInitializer);
+        try {
+            springServletContainerInitializer.onStartup(webAppInitializers, getServletContext());
+        } catch (ServletException e) {
+            throw new ContainerInitializationException("Could not initialize Spring Boot", e);
+        }
+
+        if (springProfiles != null && springProfiles.length > 0) {
+            ConfigurableEnvironment springEnv = new StandardEnvironment();
+            springEnv.setActiveProfiles(springProfiles);
+        }
+
+        WebApplicationContext applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
+
+        dispatcherServlet = applicationContext.getBean("dispatcherServlet", DispatcherServlet.class);
+
+        initialized = true;
+        Timer.stop("SPRINGBOOT_COLD_START");
+    }
+
 
     private class SpringBootAwsServletContext extends AwsServletContext {
         public SpringBootAwsServletContext() {

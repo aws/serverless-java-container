@@ -15,6 +15,12 @@
                 <include>**/*.java</include>
             </includes>
         </fileSet>
+        <fileSet>
+            <directory>src/main/resources</directory>
+            <includes>
+                <include>**/*.xml</include>
+            </includes>
+        </fileSet>
         <fileSet filtered="true">
             <directory></directory>
             <includes>
