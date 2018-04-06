@@ -21,6 +21,8 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.ContextStoppedEvent;
+import org.springframework.context.event.GenericApplicationListenerAdapter;
+import org.springframework.context.support.AbstractRefreshableApplicationContext;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.ContextLoaderListener;
@@ -125,6 +127,13 @@ public class LambdaSpringApplicationInitializer extends HttpServlet implements W
 
     public void setSpringProfiles(List<String> springProfiles) {
         this.springProfiles = new ArrayList<>(springProfiles);
+        applicationContext.stop();
+        applicationContext.close();
+        applicationContext.getEnvironment().setActiveProfiles(springProfiles.toArray(new String[0]));
+        //applicationContext.start();
+        applicationContext.refresh();
+
+        //dispatcherServlet.refresh();
     }
 
     @Override
@@ -135,20 +144,18 @@ public class LambdaSpringApplicationInitializer extends HttpServlet implements W
         }
         applicationContext.setServletContext(servletContext);
 
-
         DefaultDispatcherConfig dispatcherConfig = new DefaultDispatcherConfig(servletContext);
         applicationContext.setServletConfig(dispatcherConfig);
 
         // Configure the listener for the request handled events. All we do here is release the latch
-        applicationContext.addApplicationListener(new ApplicationListener<ServletRequestHandledEvent>() {
-            @Override
-            public void onApplicationEvent(ServletRequestHandledEvent servletRequestHandledEvent) {
-                try {
+        applicationContext.addApplicationListener((ApplicationListener<ServletRequestHandledEvent>) servletRequestHandledEvent -> {
+            try {
+                if (currentResponse != null) {
                     currentResponse.flushBuffer();
-                } catch (IOException e) {
-                    log.error("Could not flush response buffer", e);
-                    throw new RuntimeException("Could not flush response buffer", e);
                 }
+            } catch (IOException e) {
+                log.error("Could not flush response buffer", e);
+                throw new RuntimeException("Could not flush response buffer", e);
             }
         });
 

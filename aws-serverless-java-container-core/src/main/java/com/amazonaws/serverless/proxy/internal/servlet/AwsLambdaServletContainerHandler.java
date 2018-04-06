@@ -54,15 +54,15 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
     //-------------------------------------------------------------
     // Variables - Private
     //-------------------------------------------------------------
-
-    protected ServletContext servletContext;
     private Logger log = LoggerFactory.getLogger(AwsLambdaServletContainerHandler.class);
+    private FilterChainManager<AwsServletContext> filterChainManager;
+    private boolean startupExecuted;
 
     //-------------------------------------------------------------
     // Variables - Protected
     //-------------------------------------------------------------
     protected StartupHandler startupHandler;
-    private FilterChainManager<AwsServletContext> filterChainManager;
+    protected ServletContext servletContext;
 
 
     //-------------------------------------------------------------
@@ -78,6 +78,8 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
         super(requestTypeClass, responseTypeClass, requestReader, responseWriter, securityContextWriter, exceptionHandler);
         // set the default log formatter for servlet implementations
         setLogFormatter(new ApacheCombinedServletLogFormatter<>());
+        setServletContext(new AwsServletContext(this));
+        startupExecuted = false;
     }
 
     //-------------------------------------------------------------
@@ -154,17 +156,7 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
      */
     public void onStartup(final StartupHandler h) {
         startupHandler = h;
-    }
-
-    @Override
-    protected void handleRequest(ContainerRequestType containerRequest, ContainerResponseType containerResponse, Context lambdaContext)
-            throws Exception {
-        // The servlet context should not be linked to a specific request object, only to the Lambda
-        // context so we only set it once.
-        // TODO: In the future, if we decide to support multiple servlets/contexts in an instance we only need to modify this method
-        if (getServletContext() == null) {
-            setServletContext(new AwsServletContext(this));
-        }
+        startupHandler.onStartup(getServletContext());
     }
 
 

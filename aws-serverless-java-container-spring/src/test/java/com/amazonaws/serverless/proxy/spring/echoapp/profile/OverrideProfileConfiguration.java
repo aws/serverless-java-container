@@ -3,6 +3,8 @@ package com.amazonaws.serverless.proxy.spring.echoapp.profile;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
 
 @Configuration
 @Profile("override")

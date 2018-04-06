@@ -13,6 +13,7 @@
 package com.amazonaws.serverless.proxy.internal;
 
 
+import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.LogFormatter;
 import com.amazonaws.serverless.proxy.internal.servlet.ApacheCombinedServletLogFormatter;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
@@ -100,6 +101,8 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
         this.responseWriter = responseWriter;
         this.securityContextWriter = securityContextWriter;
         this.exceptionHandler = exceptionHandler;
+        objectReader = getObjectMapper().readerFor(requestTypeClass);
+        objectWriter = getObjectMapper().writerFor(responseTypeClass);
     }
 
 
@@ -113,6 +116,8 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
     protected abstract void handleRequest(ContainerRequestType containerRequest, ContainerResponseType containerResponse, Context lambdaContext)
             throws Exception;
 
+    public abstract void initialize()
+            throws ContainerInitializationException;
 
     //-------------------------------------------------------------
     // Methods - Public
@@ -191,15 +196,8 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
             throws IOException {
 
         try {
-            if (objectReader == null) {
-                objectReader = getObjectMapper().readerFor(requestTypeClass);
-            }
             RequestType request = objectReader.readValue(input);
             ResponseType resp = proxy(request, context);
-
-            if (objectWriter == null) {
-                objectWriter = getObjectMapper().writerFor(responseTypeClass);
-            }
 
             objectWriter.writeValue(output, resp);
         } catch (JsonParseException e) {

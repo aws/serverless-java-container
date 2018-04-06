@@ -106,13 +106,18 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType>
      */
     public static SparkLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler()
             throws ContainerInitializationException {
-        return new SparkLambdaContainerHandler<>(AwsProxyRequest.class,
-                                                 AwsProxyResponse.class,
-                                                 new AwsProxyHttpServletRequestReader(),
-                                                 new AwsProxyHttpServletResponseWriter(),
-                                                 new AwsProxySecurityContextWriter(),
-                                                 new AwsProxyExceptionHandler(),
-                                                 new LambdaEmbeddedServerFactory());
+        SparkLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> newHandler = new SparkLambdaContainerHandler<>(AwsProxyRequest.class,
+                                                                                         AwsProxyResponse.class,
+                                                                                         new AwsProxyHttpServletRequestReader(),
+                                                                                         new AwsProxyHttpServletResponseWriter(),
+                                                                                         new AwsProxySecurityContextWriter(),
+                                                                                         new AwsProxyExceptionHandler(),
+                                                                                         new LambdaEmbeddedServerFactory());
+
+        // For Spark we cannot call intialize here. It needs to be called manually after the routes are set
+        //newHandler.initialize();
+
+        return newHandler;
     }
 
     //-------------------------------------------------------------
@@ -180,36 +185,36 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType>
     protected void handleRequest(AwsProxyHttpServletRequest httpServletRequest, AwsHttpServletResponse httpServletResponse, Context lambdaContext)
             throws Exception {
         Timer.start("SPARK_HANDLE_REQUEST");
-        // this method of the AwsLambdaServletContainerHandler sets the request context
-        super.handleRequest(httpServletRequest, httpServletResponse, lambdaContext);
 
         if (embeddedServer == null) {
-            Timer.start("SPARK_COLD_START");
-            log.debug("First request, getting new server instance");
-
-            // trying to call init in case the embedded server had not been initialized.
-            Spark.init();
-
-            // adding this call to make sure that the framework is fully initialized. This should address a race
-            // condition and solve GitHub issue #71.
-            Spark.awaitInitialization();
-
-            embeddedServer = lambdaServerFactory.getServerInstance();
-
-            // call the onStartup event if set to give developers a chance to set filters in the context
-            if (startupHandler != null) {
-                startupHandler.onStartup(getServletContext());
-            }
-
-            // manually add the spark filter to the chain. This should the last one and match all uris
-            FilterRegistration.Dynamic sparkRegistration = getServletContext().addFilter("SparkFilter", embeddedServer.getSparkFilter());
-            sparkRegistration.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/*");
-            Timer.stop("SPARK_COLD_START");
+            initialize();
         }
 
         httpServletRequest.setServletContext(getServletContext());
 
         doFilter(httpServletRequest, httpServletResponse, null);
         Timer.stop("SPARK_HANDLE_REQUEST");
+    }
+
+
+    @Override
+    public void initialize()
+            throws ContainerInitializationException {
+        Timer.start("SPARK_COLD_START");
+        log.debug("First request, getting new server instance");
+
+        // trying to call init in case the embedded server had not been initialized.
+        Spark.init();
+
+        // adding this call to make sure that the framework is fully initialized. This should address a race
+        // condition and solve GitHub issue #71.
+        Spark.awaitInitialization();
+
+        embeddedServer = lambdaServerFactory.getServerInstance();
+
+        // manually add the spark filter to the chain. This should the last one and match all uris
+        FilterRegistration.Dynamic sparkRegistration = getServletContext().addFilter("SparkFilter", embeddedServer.getSparkFilter());
+        sparkRegistration.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/*");
+        Timer.stop("SPARK_COLD_START");
     }
 }
