@@ -89,7 +89,24 @@ public class HelloWorldSparkTest {
         assertTrue(response.getHeaders().get(HttpHeaders.SET_COOKIE).contains(COOKIE_PATH));
     }
 
+    @Test
+    public void rootResource_basicRequest_expectSuccess() {
+        AwsProxyRequest req = new AwsProxyRequestBuilder().method("GET").path("/").build();
+        AwsProxyResponse response = handler.proxy(req, new MockLambdaContext());
+
+        assertEquals(200, response.getStatusCode());
+        assertTrue(response.getHeaders().containsKey(CUSTOM_HEADER_KEY));
+        assertEquals(CUSTOM_HEADER_VALUE, response.getHeaders().get(CUSTOM_HEADER_KEY));
+        assertEquals(BODY_TEXT_RESPONSE, response.getBody());
+    }
+
     private static void configureRoutes() {
+        get("/", (req, res) -> {
+            res.status(200);
+            res.header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE);
+            return BODY_TEXT_RESPONSE;
+        });
+
         get("/hello", (req, res) -> {
             res.status(200);
             res.header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE);
