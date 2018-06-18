@@ -181,6 +181,15 @@ public class EchoJerseyResource {
         return Response.ok(b).build();
     }
 
+    @Path("/empty-stream/{paramId}/test/{param2}") @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response emptyStream(@PathParam("paramId") String paramId, @PathParam("param2") String param2) {
+        SingleValueModel sv = new SingleValueModel();
+        sv.setValue(paramId);
+        return Response.ok(sv).build();
+    }
+
     @Path("/exception") @GET
     public Response throwException() {
         throw new UnsupportedOperationException(EXCEPTION_MESSAGE);
