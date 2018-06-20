@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
+        "http://struts.apache.org/dtds/struts-2.5.dtd">
+<struts>
+
+    <constant name="struts.action.extension" value=","/>
+
+    <package name="test" extends="json-default" namespace="/">
+        <action name="echo" class="com.amazonaws.serverless.proxy.struts2.echoapp.EchoAction" method="execute">
+            <result type="json">
+                <param name="root">
+                    message
+                </param>
+            </result>
+        </action>
+
+        <action name="echo-request-info" class="com.amazonaws.serverless.proxy.struts2.echoapp.EchoRequestInfoAction"
+                method="execute">
+            <result type="json">
+                <param name="root">
+                    result
+                </param>
+            </result>
+        </action>
+    </package>
+
+
+</struts>
