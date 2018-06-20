@@ -21,6 +21,7 @@ public class ContainerConfig {
         configuration.setConsolidateSetCookieHeaders(true);
         configuration.setUseStageAsServletContext(false);
         configuration.setValidFilePaths(DEFAULT_FILE_PATHS);
+        configuration.setQueryStringCaseSensitive(false);
 
         return configuration;
     }
@@ -36,6 +37,7 @@ public class ContainerConfig {
     private boolean useStageAsServletContext;
     private List<String> validFilePaths;
     private List<String> customDomainNames;
+    private boolean queryStringCaseSensitive;
 
     public ContainerConfig() {
         validFilePaths = new ArrayList<>();
@@ -196,5 +198,25 @@ public class ContainerConfig {
      */
     public void enableLocalhost() {
         customDomainNames.add("localhost");
+    }
+
+
+    /**
+     * Whether query string parameters in the request should be case sensitive or not. By default
+     * this is set to <code>false</code> for backward compatibility.
+     * @return <code>true</code> if the parameter matching algorithm is case sensitive
+     */
+    public boolean isQueryStringCaseSensitive() {
+        return queryStringCaseSensitive;
+    }
+
+
+    /**
+     * Sets whether query string parameter names should be treated as case sensitive. The default
+     * value of this option is <code>false</code> for backward compatibility.
+     * @param queryStringCaseSensitive Tells the framework to treat query string parmaeter names as case sensitive
+     */
+    public void setQueryStringCaseSensitive(boolean queryStringCaseSensitive) {
+        this.queryStringCaseSensitive = queryStringCaseSensitive;
     }
 }

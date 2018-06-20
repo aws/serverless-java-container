@@ -27,6 +27,8 @@ public class AwsHttpServletRequestTest {
             .header(HttpHeaders.ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8").build();
     private static final AwsProxyRequest queryString = new AwsProxyRequestBuilder("/test", "GET")
             .queryString("one", "two").queryString("three", "four").build();
+    private static final AwsProxyRequest encodedQueryString = new AwsProxyRequestBuilder("/test", "GET")
+            .queryString("one", "two").queryString("json", "{\"name\":\"faisal\"}").build();
 
     private static final MockLambdaContext mockContext = new MockLambdaContext();
 
@@ -72,12 +74,23 @@ public class AwsHttpServletRequestTest {
     }
 
     @Test
-    public void queyrString_generateQueryString_validQuery() {
+    public void queryString_generateQueryString_validQuery() {
         AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(queryString, mockContext, null, config);
 
-        String parsedString = request.generateQueryString(queryString.getQueryStringParameters());
-        assertEquals("one=two&three=four", parsedString);
+        String parsedString = request.generateQueryString(request.getQueryParametersMap());
+        System.out.println(parsedString);
+        assertTrue(parsedString.contains("one=two"));
+        assertTrue(parsedString.contains("three=four"));
+        assertTrue(parsedString.contains("&") && parsedString.indexOf("&") > 0 && parsedString.indexOf("&") < parsedString.length());
+    }
 
-        // TODO test url encoding, wrong parameters
+    @Test
+    public void queryStringWithEncodedParams_generateQueryString_validQuery() {
+        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(encodedQueryString, mockContext, null, config);
+
+        String parsedString = request.generateQueryString(request.getQueryParametersMap());
+        assertTrue(parsedString.contains("one=two"));
+        assertTrue(parsedString.contains("json=%7B%22name%22%3A%22faisal%22%7D"));
+        assertTrue(parsedString.contains("&") && parsedString.indexOf("&") > 0 && parsedString.indexOf("&") < parsedString.length());
     }
 }

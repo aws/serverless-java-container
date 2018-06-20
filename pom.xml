@@ -4,7 +4,7 @@
     <groupId>com.amazonaws.serverless</groupId>
     <artifactId>aws-serverless-java-container</artifactId>
     <packaging>pom</packaging>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.1.1-SNAPSHOT</version>
     <name>AWS Serverless Java container</name>
 
     <!-- https://mvnrepository.com/artifact/org.sonatype.oss/oss-parent -->
@@ -38,6 +38,10 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+
+    <properties>
+        <jacoco.minCoverage>0.7</jacoco.minCoverage>
+    </properties>
 
     <dependencies>
         <!-- https://mvnrepository.com/artifact/junit/junit -->

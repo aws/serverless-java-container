@@ -147,6 +147,11 @@ public class AwsProxyRequestBuilder {
         return this;
     }
 
+    public AwsProxyRequestBuilder nullBody() {
+        this.request.setBody(null);
+        return this;
+    }
+
     public AwsProxyRequestBuilder body(Object body) {
         if (request.getHeaders() != null && request.getHeaders().get(HttpHeaders.CONTENT_TYPE).equals(MediaType.APPLICATION_JSON)) {
             try {

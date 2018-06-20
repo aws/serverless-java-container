@@ -290,7 +290,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
      * @param parameters A Map&lt;String, String&gt; of query string parameters
      * @return The generated query string for the URI
      */
-    protected String generateQueryString(Map<String, String> parameters) {
+    protected String generateQueryString(EncodingQueryStringParameterMap parameters) {
         if (parameters == null || parameters.size() == 0) {
             return null;
         }
@@ -298,9 +298,17 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
             return queryString;
         }
 
-        queryString =  parameters.keySet().stream()
-                .map(key -> key + "=" + parameters.get(key))
-                .collect(Collectors.joining("&"));
+        StringBuilder queryStringBuilder = new StringBuilder();
+
+        parameters.keySet().stream().forEach(k -> parameters.get(k).stream().forEach(v -> {
+            queryStringBuilder.append("&");
+            queryStringBuilder.append(k);
+            queryStringBuilder.append("=");
+            queryStringBuilder.append(v);
+        }));
+
+        queryString = queryStringBuilder.toString();
+        queryString = queryString.substring(1); // remove the first & - faster to do it here than adding logic in the Lambda
         return queryString;
     }
 
