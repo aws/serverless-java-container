@@ -13,8 +13,8 @@
 package com.amazonaws.serverless.sample.spring;
 
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.web.servlet.HandlerAdapter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.HandlerMapping;
@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 
 
 @Configuration
-@ComponentScan("com.amazonaws.serverless.sample.spring")
+@Import({ PetsController.class })
 public class PetStoreSpringAppConfig {
     /*
      * Create required HandlerMapping, to avoid several default HandlerMapping instances being created

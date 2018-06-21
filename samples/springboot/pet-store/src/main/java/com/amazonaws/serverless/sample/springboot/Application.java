@@ -1,11 +1,13 @@
 package com.amazonaws.serverless.sample.springboot;
 
+import com.amazonaws.serverless.sample.springboot.controller.PetsController;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
 import org.springframework.web.servlet.HandlerAdapter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.HandlerMapping;
@@ -18,7 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 
 
 @SpringBootApplication
-@ComponentScan(basePackages = "com.amazonaws.serverless.sample.springboot.controller")
+@Import({ PetsController.class })
 public class Application extends SpringBootServletInitializer {
 
     // silence console logging
