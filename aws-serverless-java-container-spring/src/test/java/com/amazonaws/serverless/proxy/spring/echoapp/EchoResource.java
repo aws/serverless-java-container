@@ -58,7 +58,7 @@ public class EchoResource {
     }
 
     @RequestMapping(path = "/query-string", method = RequestMethod.GET)
-    public MapResponseModel echoQueryString(HttpServletRequest request) {
+    public MapResponseModel echoQueryString(HttpServletRequest request, @RequestParam(value="nonexistent", required=false) String nonexistentParamValue) {
         MapResponseModel queryStrings = new MapResponseModel();
         for (String key : request.getParameterMap().keySet()) {
             queryStrings.addValue(key, request.getParameterMap().get(key)[0]);
