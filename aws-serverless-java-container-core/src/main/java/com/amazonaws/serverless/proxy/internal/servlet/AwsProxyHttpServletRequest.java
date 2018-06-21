@@ -476,7 +476,11 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             paramKey = paramKey.toLowerCase(Locale.getDefault());
         }
         List<String> values = new ArrayList<>();
-        values.addAll(queryStringParameters.get(paramKey));
+        List<String> queryParamValues = queryStringParameters.get(paramKey);
+        if (queryParamValues != null) {
+            values.addAll(queryParamValues);
+        }
+        //values.addAll(queryStringParameters.get(paramKey));
 
         String[] formBodyValues = getFormBodyParameterCaseInsensitive(s);
         if (formBodyValues != null) {
