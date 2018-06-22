@@ -117,6 +117,19 @@ public class SpringAwsProxyTest {
     }
 
     @Test
+    public void queryString_listParameter_expectCorrectLength() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/list-query-string", "GET")
+                                          .json()
+                                          .queryString("list", "v1,v2,v3")
+                                          .build();
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(200, output.getStatusCode());
+
+        validateSingleValueModel(output, "3");
+    }
+
+    @Test
     public void dateHeader_notModified_expect304() {
         AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/last-modified", "GET")
                                           .json()

@@ -17,6 +17,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
@@ -65,6 +66,13 @@ public class EchoResource {
         }
 
         return queryStrings;
+    }
+
+    @RequestMapping(path = "/list-query-string", method = RequestMethod.GET)
+    public SingleValueModel echoListQueryString(@RequestParam(value="list") List<String> valueList) {
+        SingleValueModel value = new SingleValueModel();
+        value.setValue(valueList.size() + "");
+        return value;
     }
 
     @RequestMapping(path = "/authorizer-principal", method = RequestMethod.GET)

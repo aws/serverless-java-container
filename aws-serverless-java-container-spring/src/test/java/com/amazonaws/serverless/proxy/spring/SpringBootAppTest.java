@@ -66,6 +66,16 @@ public class SpringBootAppTest {
         validateSingleValueModel(resp, "testdomain.com");
     }
 
+    @Test
+    public void queryString_commaSeparatedList_expectUnmarshalAsList() {
+        AwsProxyRequest req = new AwsProxyRequestBuilder("/test/query-string", "GET")
+                                      .queryString("list", "v1,v2,v3").build();
+        AwsProxyResponse resp = handler.handleRequest(req, context);
+        assertNotNull(resp);
+        assertEquals(200, resp.getStatusCode());
+        validateSingleValueModel(resp, "3");
+    }
+
     private void validateSingleValueModel(AwsProxyResponse output, String value) {
         try {
             SingleValueModel response = mapper.readValue(output.getBody(), SingleValueModel.class);
