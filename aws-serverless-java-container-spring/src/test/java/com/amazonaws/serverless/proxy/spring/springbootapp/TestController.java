@@ -12,12 +12,15 @@ import org.springframework.web.accept.ContentNegotiationStrategy;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+
+import java.util.List;
 
 
 @RestController
@@ -50,6 +53,15 @@ public class TestController extends WebSecurityConfigurerAdapter {
     public SingleValueModel testDomainInPath(@PathVariable("domain") String domainName) {
         SingleValueModel value = new SingleValueModel();
         value.setValue(domainName);
+        return value;
+    }
+
+    @RequestMapping(path = "/test/query-string", method = { RequestMethod.GET })
+    public SingleValueModel testQueryStringList(@RequestParam("list") List<String> qsValues) {
+        assert qsValues != null;
+        System.out.println("QUERY_STRING_VALUES: " + qsValues);
+        SingleValueModel value = new SingleValueModel();
+        value.setValue(qsValues.size() + "");
         return value;
     }
 

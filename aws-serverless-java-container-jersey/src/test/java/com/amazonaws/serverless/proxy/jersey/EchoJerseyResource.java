@@ -31,7 +31,10 @@ import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Providers;
 
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Random;
+import java.util.Set;
+
 
 /**
  * Jersey application class for aws-serverless-java-container unit proxy
@@ -49,6 +52,15 @@ public class EchoJerseyResource {
     public SingleValueModel echoDecodedParam(@QueryParam("param") String param) {
         SingleValueModel model = new SingleValueModel();
         model.setValue(param);
+        return model;
+    }
+
+    @Path("/list-query-string") @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public SingleValueModel echoQueryStringLength(@QueryParam("list") List<String> param) {
+        System.out.println("param: " + param + " = " + param.size());
+        SingleValueModel model = new SingleValueModel();
+        model.setValue(param.size() + "");
         return model;
     }
 

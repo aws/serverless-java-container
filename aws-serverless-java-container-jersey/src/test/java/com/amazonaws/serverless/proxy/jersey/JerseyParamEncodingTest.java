@@ -135,14 +135,20 @@ public class JerseyParamEncodingTest {
         String paramValue = "/+=";
         AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/encoded-param", "GET").queryString("param", paramValue).build();
         AwsProxyResponse resp = handler.proxy(request, lambdaContext);
+        assertNotNull(resp);
+        assertEquals(resp.getStatusCode(), 200);
+        validateSingleValueModel(resp, "%2F%2B%3D");
         System.out.println("body:" + resp.getBody());
-        /*try {
-            String encodedParam = URLEncoder.encode(paramValue, "UTF-8");
-            validateSingleValueModel(resp, encodedParam);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            fail();
-        }*/
+    }
+
+    @Test
+    @Ignore
+    public void queryParam_listOfString_expectCorrectLength() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/list-query-string", "GET").queryString("list", "v1,v2,v3").build();
+        AwsProxyResponse resp = handler.proxy(request, lambdaContext);
+        assertNotNull(resp);
+        assertEquals(resp.getStatusCode(), 200);
+        validateSingleValueModel(resp, "3");
     }
 
     private void validateSingleValueModel(AwsProxyResponse output, String value) {

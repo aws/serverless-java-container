@@ -87,7 +87,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     private Map<String, List<String>> urlEncodedFormParameters;
     private Map<String, Part> multipartFormParameters;
     private Map<String, String> caseInsensitiveHeaders;
-    private EncodingQueryStringParameterMap queryStringParameters;
     private static Logger log = LoggerFactory.getLogger(AwsProxyHttpServletRequest.class);
     private ContainerConfig config;
 
@@ -106,9 +105,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         this.request = awsProxyRequest;
         this.securityContext = awsSecurityContext;
         this.config = config;
-
-        this.queryStringParameters = new EncodingQueryStringParameterMap(config.isQueryStringCaseSensitive(), config.getUriEncoding());
-        this.queryStringParameters.putAllMapEncoding(request.getQueryStringParameters());
 
         this.caseInsensitiveHeaders = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         this.caseInsensitiveHeaders.putAll(awsProxyRequest.getHeaders());
@@ -230,7 +226,12 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getQueryString() {
-        return this.generateQueryString(queryStringParameters);
+        try {
+            return this.generateQueryString(request.getQueryStringParameters(), true, config.getUriEncoding());
+        } catch (ServletException e) {
+            log.error("Could not generate query string", e);
+            return null;
+        }
     }
 
 
@@ -441,11 +442,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getParameter(String s) {
-        String paramKey = s;
-        if (config.isQueryStringCaseSensitive()) {
-            paramKey = paramKey.toLowerCase(Locale.getDefault());
-        }
-        String queryStringParameter = queryStringParameters.getFirst(paramKey);
+       String queryStringParameter = getQueryParamValue(s, config.isQueryStringCaseSensitive());
         if (queryStringParameter != null) {
             return queryStringParameter;
         }
@@ -462,7 +459,9 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     public Enumeration<String> getParameterNames() {
         List<String> paramNames = new ArrayList<>();
-        paramNames.addAll(queryStringParameters.keySet());
+        if (request.getQueryStringParameters() != null) {
+            paramNames.addAll(request.getQueryStringParameters().keySet());
+        }
         paramNames.addAll(getFormUrlEncodedParametersMap().keySet());
         return Collections.enumeration(paramNames);
     }
@@ -471,16 +470,11 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     @SuppressFBWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS") // suppressing this as according to the specs we should be returning null here if we can't find params
     public String[] getParameterValues(String s) {
-        String paramKey = s;
-        if (config.isQueryStringCaseSensitive()) {
-            paramKey = paramKey.toLowerCase(Locale.getDefault());
-        }
         List<String> values = new ArrayList<>();
-        List<String> queryParamValues = queryStringParameters.get(paramKey);
-        if (queryParamValues != null) {
-            values.addAll(queryParamValues);
+        String queryValue = getQueryParamValue(s, config.isQueryStringCaseSensitive());
+        if (queryValue != null) {
+            values.add(queryValue);
         }
-        //values.addAll(queryStringParameters.get(paramKey));
 
         String[] formBodyValues = getFormBodyParameterCaseInsensitive(s);
         if (formBodyValues != null) {
@@ -504,9 +498,17 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             output.put(e.getKey(), e.getValue().toArray(new String[0]));
         });
 
-        queryStringParameters.keySet().stream().parallel().forEach(e -> {
-            output.put(e, queryStringParameters.get(e).toArray(new String[0]));
-        });
+        if (request.getQueryStringParameters() != null) {
+            request.getQueryStringParameters().keySet().stream().parallel().forEach(e -> {
+                List<String> newValues = new ArrayList<>();
+                if (output.containsKey(e)) {
+                    String[] values = output.get(e);
+                    newValues.addAll(Arrays.asList(values));
+                }
+                newValues.add(getQueryParamValue(e, config.isQueryStringCaseSensitive()));
+                output.put(e, newValues.toArray(new String[0]));
+            });
+        }
 
         return output;
     }
@@ -649,13 +651,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         return null;
     }
 
-    //-------------------------------------------------------------
-    // Methods - Protected
-    //-------------------------------------------------------------
-
-    protected EncodingQueryStringParameterMap getQueryParametersMap() {
-        return queryStringParameters;
-    }
 
     //-------------------------------------------------------------
     // Methods - Private
@@ -813,6 +808,21 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             log.warn("Could not decode body content - proceeding as if it was already decoded", e);
             return value;
         }
+    }
+
+
+    private String getQueryParamValue(String key, boolean isCaseSensitive) {
+        if (isCaseSensitive) {
+            return request.getQueryStringParameters().get(key);
+        }
+
+        for (String k : request.getQueryStringParameters().keySet()) {
+            if (k.toLowerCase(Locale.getDefault()).equals(key.toLowerCase(Locale.getDefault()))) {
+                return request.getQueryStringParameters().get(k);
+            }
+        }
+
+        return null;
     }
 
 

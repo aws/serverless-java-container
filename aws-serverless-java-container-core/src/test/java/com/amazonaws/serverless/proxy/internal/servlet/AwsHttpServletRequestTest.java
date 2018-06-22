@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
+import javax.servlet.ServletException;
 import javax.ws.rs.core.HttpHeaders;
 
 import static org.junit.Assert.*;
@@ -77,7 +78,13 @@ public class AwsHttpServletRequestTest {
     public void queryString_generateQueryString_validQuery() {
         AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(queryString, mockContext, null, config);
 
-        String parsedString = request.generateQueryString(request.getQueryParametersMap());
+        String parsedString = null;
+        try {
+            parsedString = request.generateQueryString(request.getAwsProxyRequest().getQueryStringParameters(), true, config.getUriEncoding());
+        } catch (ServletException e) {
+            e.printStackTrace();
+            fail("Could not generate query string");
+        }
         System.out.println(parsedString);
         assertTrue(parsedString.contains("one=two"));
         assertTrue(parsedString.contains("three=four"));
@@ -88,7 +95,13 @@ public class AwsHttpServletRequestTest {
     public void queryStringWithEncodedParams_generateQueryString_validQuery() {
         AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(encodedQueryString, mockContext, null, config);
 
-        String parsedString = request.generateQueryString(request.getQueryParametersMap());
+        String parsedString = null;
+        try {
+            parsedString = request.generateQueryString(request.getAwsProxyRequest().getQueryStringParameters(), true, config.getUriEncoding());
+        } catch (ServletException e) {
+            e.printStackTrace();
+            fail("Could not generate query string");
+        }
         assertTrue(parsedString.contains("one=two"));
         assertTrue(parsedString.contains("json=%7B%22name%22%3A%22faisal%22%7D"));
         assertTrue(parsedString.contains("&") && parsedString.indexOf("&") > 0 && parsedString.indexOf("&") < parsedString.length());
