@@ -816,9 +816,11 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             return request.getQueryStringParameters().get(key);
         }
 
-        for (String k : request.getQueryStringParameters().keySet()) {
-            if (k.toLowerCase(Locale.getDefault()).equals(key.toLowerCase(Locale.getDefault()))) {
-                return request.getQueryStringParameters().get(k);
+        if (request.getQueryStringParameters() != null) {
+            for (String k : request.getQueryStringParameters().keySet()) {
+                if (k.toLowerCase(Locale.getDefault()).equals(key.toLowerCase(Locale.getDefault()))) {
+                    return request.getQueryStringParameters().get(k);
+                }
             }
         }
 
