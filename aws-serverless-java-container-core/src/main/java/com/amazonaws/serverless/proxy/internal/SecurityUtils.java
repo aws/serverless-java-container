@@ -168,12 +168,16 @@ public final class SecurityUtils {
      * @throws IllegalArgumentException If the given path is not valid or outside of /tmp
      */
     @SuppressFBWarnings("PATH_TRAVERSAL_IN")
-    public static String getValidFilePath(String inputPath, boolean isWrite) {
+    public static String getValidFilePath(final String inputPath, boolean isWrite) {
         if (inputPath == null || "".equals(inputPath.trim())) {
             return null;
         }
+        String testInputPath = inputPath;
+        if (testInputPath.startsWith("file://")) {
+            testInputPath = testInputPath.substring(6);
+        }
 
-        File f = new File(inputPath);
+        File f = new File(testInputPath);
         try {
             String canonicalPath = f.getCanonicalPath();
 
@@ -192,9 +196,9 @@ public final class SecurityUtils {
                 throw new IllegalArgumentException("File path not allowed: " + encode(canonicalPath));
             }
 
-            return canonicalPath;
+            return (inputPath.startsWith("file://") ? "file://" + canonicalPath : canonicalPath);
         } catch (IOException e) {
-            log.error("Invalid file path: {}", encode(inputPath));
+            log.error("Invalid file path: {}", encode(testInputPath));
             throw new IllegalArgumentException("Invalid file path", e);
         }
     }

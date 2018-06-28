@@ -145,13 +145,7 @@ public class AwsServletContext
     public String getMimeType(String s) {
         try {
             String validatedPath = SecurityUtils.getValidFilePath(s);
-            if (s.startsWith("file:")) { // Support paths such as file:/D:/something/hello.txt
-                return Files.probeContentType(Paths.get(URI.create(validatedPath)));
-            } else if (s.startsWith("/")) { // Support paths such as file:/D:/something/hello.txt
-                    return Files.probeContentType(Paths.get(URI.create("file://" + validatedPath)));
-            } else {
-                return Files.probeContentType(Paths.get(validatedPath));
-            }
+            return Files.probeContentType(Paths.get(validatedPath));
         } catch (IOException e) {
             log.warn("Could not find content type for file:  " + SecurityUtils.encode(s), e);
             return null;
@@ -352,7 +346,7 @@ public class AwsServletContext
     public FilterRegistration.Dynamic addFilter(String name, String filterClass) {
         try {
             Class<?> newFilterClass = getClassLoader().loadClass(filterClass);
-            if (!newFilterClass.isAssignableFrom(Filter.class)) {
+            if (!Filter.class.isAssignableFrom(newFilterClass)) {
                 throw new IllegalArgumentException(filterClass + " does not implement Filter");
             }
             @SuppressWarnings("unchecked")
