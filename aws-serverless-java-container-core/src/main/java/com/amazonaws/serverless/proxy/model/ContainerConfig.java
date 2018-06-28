@@ -69,6 +69,10 @@ public class ContainerConfig {
      * @param serviceBasePath The base path mapping to be removed.
      */
     public void setServiceBasePath(String serviceBasePath) {
+        if (serviceBasePath == null) {
+            this.serviceBasePath = null;
+            return;
+        }
         // clean up base path before setting it, we want a "/" at the beginning but not at the end.
         String finalBasePath = serviceBasePath;
         if (!finalBasePath.startsWith("/")) {

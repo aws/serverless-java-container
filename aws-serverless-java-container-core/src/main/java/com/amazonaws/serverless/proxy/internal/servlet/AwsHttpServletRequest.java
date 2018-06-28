@@ -18,6 +18,7 @@ import com.amazonaws.serverless.proxy.model.ApiGatewayRequestContext;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.services.lambda.runtime.Context;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +58,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
 
     static final String HEADER_KEY_VALUE_SEPARATOR = "=";
     static final String HEADER_VALUE_SEPARATOR = ";";
+    static final String HEADER_QUALIFIER_SEPARATOR = ",";
     static final String FORM_DATA_SEPARATOR = "&";
     static final String DEFAULT_CHARACTER_ENCODING = "UTF-8";
     static final DateTimeFormatter dateFormatter = DateTimeFormatter.RFC_1123_DATE_TIME;
@@ -276,7 +278,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
      * @return An array of Cookie objects from the header
      */
     protected Cookie[] parseCookieHeaderValue(String headerValue) {
-        List<Map.Entry<String, String>> parsedHeaders = this.parseHeaderValue(headerValue);
+        List<HeaderValue> parsedHeaders = this.parseHeaderValue(headerValue,  ";", ",");
 
         return parsedHeaders.stream()
                             .filter(e -> e.getKey() != null)
@@ -337,29 +339,73 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
 
 
     /**
+     * Prases a header value using the default value separator "," and qualifier separator ";".
+     * @param headerValue The value to be parsed
+     * @return A list of SimpleMapEntry objects with all of the possible values for the header.
+     */
+    protected  List<HeaderValue> parseHeaderValue(String headerValue) {
+        return parseHeaderValue(headerValue, HEADER_VALUE_SEPARATOR, HEADER_QUALIFIER_SEPARATOR);
+    }
+
+    /**
      * Generic method to parse an HTTP header value and split it into a list of key/values for all its components.
      * When the property in the header does not specify a key the key field in the output pair is null and only the value
      * is populated. For example, The header <code>Accept: application/json; application/xml</code> will contain two
      * key value pairs with key null and the value set to application/json and application/xml respectively.
      *
      * @param headerValue The string value for the HTTP header
+     * @param valueSeparator The separator to be used for parsing header values
      * @return A list of SimpleMapEntry objects with all of the possible values for the header.
      */
-    protected List<Map.Entry<String, String>> parseHeaderValue(String headerValue) {
-        List<Map.Entry<String, String>> values = new ArrayList<>();
+    protected List<HeaderValue> parseHeaderValue(String headerValue, String valueSeparator, String qualifierSeparator) {
+        // Accept: text/html, application/xhtml+xml, application/xml;q=0.9, */*;q=0.8
+        // Accept-Language: fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5
+        // Cookie: name=value; name2=value2; name3=value3
+
+        List<HeaderValue> values = new ArrayList<>();
         if (headerValue == null) {
             return values;
         }
 
-        for (String kv : headerValue.split(HEADER_VALUE_SEPARATOR)) {
-            String[] kvSplit = kv.split(HEADER_KEY_VALUE_SEPARATOR);
+        for (String v : headerValue.split(valueSeparator)) {
+            String curValue = v;
+            float curPreference = 1.0f;
+            HeaderValue newValue = new HeaderValue();
+            newValue.setRawValue(v);
 
-            if (kvSplit.length != 2) {
-                values.add(new AbstractMap.SimpleEntry<>(null, kv.trim()));
-            } else {
-                values.add(new AbstractMap.SimpleEntry<>(kvSplit[0].trim(), kvSplit[1].trim()));
+            for (String q : curValue.split(qualifierSeparator)) {
+                if (q.contains(HEADER_KEY_VALUE_SEPARATOR)) {
+                    String[] kv = q.split(HEADER_KEY_VALUE_SEPARATOR);
+                    // TODO: Should we concatenate the rest of the values?
+                    if (newValue.getValue() == null) {
+                        newValue.setKey(kv[0].trim());
+                        newValue.setValue(kv[1].trim());
+                    } else {
+                        // special case for quality q=
+                        if ("q".equals(kv[0].trim())) {
+                            curPreference = Float.parseFloat(kv[1].trim());
+                        } else {
+                            newValue.addAttribute(kv[0].trim(), kv[1].trim());
+                        }
+                    }
+                } else {
+                    newValue.setValue(q.trim());
+                }
+                newValue.setPriority(curPreference);
             }
+            values.add(newValue);
         }
+
+        // sort list by preference
+        values.sort((HeaderValue first, HeaderValue second) -> {
+            if ((first.getPriority() - second.getPriority()) < .001f) {
+                return 0;
+            }
+            if (first.getPriority() < second.getPriority()) {
+                return 1;
+            }
+            return -1;
+        });
         return values;
     }
 
@@ -372,5 +418,79 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
             return requestPath;
         }
 
+    }
+
+
+    /**
+     * Class that represents a header value.
+     */
+    public static class HeaderValue {
+        private String key;
+        private String value;
+        private String rawValue;
+        private float priority;
+        private Map<String, String> attributes;
+
+        public HeaderValue() {
+            attributes = new HashMap<>();
+        }
+
+
+        public String getKey() {
+            return key;
+        }
+
+
+        public void setKey(String key) {
+            this.key = key;
+        }
+
+
+        public String getValue() {
+            return value;
+        }
+
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+
+        public String getRawValue() {
+            return rawValue;
+        }
+
+
+        public void setRawValue(String rawValue) {
+            this.rawValue = rawValue;
+        }
+
+
+        public float getPriority() {
+            return priority;
+        }
+
+
+        public void setPriority(float priority) {
+            this.priority = priority;
+        }
+
+
+        public Map<String, String> getAttributes() {
+            return attributes;
+        }
+
+
+        public void setAttributes(Map<String, String> attributes) {
+            this.attributes = attributes;
+        }
+
+        public void addAttribute(String key, String value) {
+            attributes.put(key, value);
+        }
+
+        public String getAttribute(String key) {
+            return attributes.get(key);
+        }
     }
 }

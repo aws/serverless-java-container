@@ -96,7 +96,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
 
     public AwsProxyHttpServletRequest(AwsProxyRequest awsProxyRequest, Context lambdaContext, SecurityContext awsSecurityContext) {
-        this(awsProxyRequest, lambdaContext, awsSecurityContext, ContainerConfig.defaultConfig());
+        this(awsProxyRequest, lambdaContext, awsSecurityContext, LambdaContainerHandler.getContainerConfig());
     }
 
 
@@ -211,16 +211,16 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getContextPath() {
-        if (config.isUseStageAsServletContext()) {
-            String contextPath = cleanUri(request.getRequestContext().getStage());
-            if (config.getServiceBasePath() != null) {
-                contextPath += cleanUri(config.getServiceBasePath());
-            }
-
-            return contextPath;
-        } else {
-            return "" + (config.getServiceBasePath() != null ? cleanUri(config.getServiceBasePath()) : "");
+        String contextPath = "";
+        if (config.isUseStageAsServletContext() && request.getRequestContext().getStage() != null) {
+            log.debug("Using stage as context path");
+            contextPath = cleanUri(request.getRequestContext().getStage());
         }
+        if (config.getServiceBasePath() != null) {
+            contextPath += cleanUri(config.getServiceBasePath());
+        }
+
+        return contextPath;
     }
 
 
@@ -584,8 +584,9 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public Locale getLocale() {
-        List<Map.Entry<String, String>> values = this.parseHeaderValue(
-                getHeaderCaseInsensitive(HttpHeaders.ACCEPT_LANGUAGE)
+        // Accept-Language: fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5
+        List<HeaderValue> values = this.parseHeaderValue(
+                getHeaderCaseInsensitive(HttpHeaders.ACCEPT_LANGUAGE), ",", ";"
         );
         if (values.size() == 0) {
             return Locale.getDefault();
@@ -596,14 +597,15 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public Enumeration<Locale> getLocales() {
-        List<Map.Entry<String, String>> values = this.parseHeaderValue(
-                getHeaderCaseInsensitive(HttpHeaders.ACCEPT_LANGUAGE)
+        List<HeaderValue> values = this.parseHeaderValue(
+                getHeaderCaseInsensitive(HttpHeaders.ACCEPT_LANGUAGE), ",", ";"
         );
+
         List<Locale> locales = new ArrayList<>();
         if (values.size() == 0) {
             locales.add(Locale.getDefault());
         } else {
-            for (Map.Entry<String, String> locale : values) {
+            for (HeaderValue locale : values) {
                 locales.add(new Locale(locale.getValue()));
             }
         }

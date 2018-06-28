@@ -39,7 +39,7 @@ public class AwsHttpServletRequestTest {
     public void headers_parseHeaderValue_multiValue() {
         AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(contentTypeRequest, mockContext, null, config);
         // I'm also using this to double-check that I can get a header ignoring case
-        List<Map.Entry<String, String>> values = request.parseHeaderValue(request.getHeader("content-type"));
+        List<AwsHttpServletRequest.HeaderValue> values = request.parseHeaderValue(request.getHeader("content-type"));
 
         assertEquals(2, values.size());
         assertEquals("application/xml", values.get(0).getValue());
@@ -52,7 +52,7 @@ public class AwsHttpServletRequestTest {
     @Test
     public void headers_parseHeaderValue_validMultipleCookie() {
         AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(validCookieRequest, mockContext, null, config);
-        List<Map.Entry<String, String>> values = request.parseHeaderValue(request.getHeader(HttpHeaders.COOKIE));
+        List<AwsHttpServletRequest.HeaderValue> values = request.parseHeaderValue(request.getHeader(HttpHeaders.COOKIE), ";", ",");
 
         assertEquals(2, values.size());
         assertEquals("yummy_cookie", values.get(0).getKey());
@@ -64,14 +64,14 @@ public class AwsHttpServletRequestTest {
     @Test
     public void headers_parseHeaderValue_complexAccept() {
         AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(complexAcceptHeader, mockContext, null, config);
-        List<Map.Entry<String, String>> values = request.parseHeaderValue(request.getHeader(HttpHeaders.ACCEPT));
+        List<AwsHttpServletRequest.HeaderValue> values = request.parseHeaderValue(request.getHeader(HttpHeaders.ACCEPT), ",", ";");
 
         try {
             System.out.println(new ObjectMapper().writeValueAsString(values));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        assertEquals(3, values.size());
+        assertEquals(4, values.size());
     }
 
     @Test
