@@ -64,8 +64,9 @@ public class AwsServletContextTest {
 
     @Test
     public void getMimeType_mimeTypeOfCorrectFile_expectMime() {
-        String tmpFilePath = TMP_DIR + "test_text.txt";
+        String tmpFilePath = TMP_DIR + "/test_text.txt";
         try {
+            System.out.println("Writing to tmp file " + tmpFilePath);
             PrintWriter tmpWriter = new PrintWriter(tmpFilePath, "UTF-8");
             tmpWriter.write("Test case for aws-serverless-java-container");
             tmpWriter.close();
