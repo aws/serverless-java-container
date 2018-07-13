@@ -396,6 +396,7 @@ public class AwsHttpServletResponse
     public void reset() {
         headers = new MultivaluedHashMap<>();
         responseBody = null;
+        writer = null;
         bodyOutputStream = new ByteArrayOutputStream();
     }
 
@@ -429,7 +430,7 @@ public class AwsHttpServletResponse
 
 
     Map<String, String> getAwsResponseHeaders() {
-        Map<String, String> responseHeaders = new HashMap<>();
+        Map<String, String> responseHeaders = new TreeMap<>(String::compareToIgnoreCase);
         for (String header : getHeaderNames()) {
             // special behavior for set cookie
             // RFC 2109 allows for a comma separated list of cookies in one Set-Cookie header: https://tools.ietf.org/html/rfc2109
@@ -445,7 +446,7 @@ public class AwsHttpServletResponse
 
                 responseHeaders.put(header, cookieHeader.toString());
             } else {
-                responseHeaders.put(header, headers.getFirst(header));
+                responseHeaders.put(header, headers.get(header).get(headers.get(header).size() - 1));
             }
         }
 
