@@ -3,6 +3,7 @@ package ${groupId};
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.web.servlet.HandlerAdapter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.HandlerMapping;
@@ -13,9 +14,13 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import ${groupId}.controller.PingController;
+
 
 @Configuration
-@ComponentScan("${groupId}.controller")
+// We use direct @Import instead of @ComponentScan to speed up cold starts
+// @ComponentScan("${groupId}.controller")
+@Import({ PingController.class })
 public class SpringApiConfig {
     /*
      * Create required HandlerMapping, to avoid several default HandlerMapping instances being created
