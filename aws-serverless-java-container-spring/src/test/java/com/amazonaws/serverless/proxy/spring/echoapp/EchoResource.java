@@ -17,6 +17,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
@@ -58,13 +59,20 @@ public class EchoResource {
     }
 
     @RequestMapping(path = "/query-string", method = RequestMethod.GET)
-    public MapResponseModel echoQueryString(HttpServletRequest request) {
+    public MapResponseModel echoQueryString(HttpServletRequest request, @RequestParam(value="nonexistent", required=false) String nonexistentParamValue) {
         MapResponseModel queryStrings = new MapResponseModel();
         for (String key : request.getParameterMap().keySet()) {
             queryStrings.addValue(key, request.getParameterMap().get(key)[0]);
         }
 
         return queryStrings;
+    }
+
+    @RequestMapping(path = "/list-query-string", method = RequestMethod.GET)
+    public SingleValueModel echoListQueryString(@RequestParam(value="list") List<String> valueList) {
+        SingleValueModel value = new SingleValueModel();
+        value.setValue(valueList.size() + "");
+        return value;
     }
 
     @RequestMapping(path = "/authorizer-principal", method = RequestMethod.GET)

@@ -40,6 +40,10 @@
         </license>
     </licenses>
 
+    <properties>
+        <jacoco.minCoverage>0.7</jacoco.minCoverage>
+    </properties>
+
     <dependencies>
         <!-- https://mvnrepository.com/artifact/junit/junit -->
         <dependency>

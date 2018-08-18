@@ -1,10 +1,8 @@
 package com.amazonaws.serverless.proxy.jersey;
 
 
-import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.jersey.suppliers.AwsProxyServletRequestSupplier;
-import com.amazonaws.serverless.proxy.model.ApiGatewayRequestContext;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.glassfish.jersey.internal.MapPropertiesDelegate;
@@ -59,7 +57,7 @@ public class JerseyHandlerFilter implements Filter, Container {
 
     /**
      * Constructs a new handler filter with a Jax RS application object.
-     * @param jaxApplication
+     * @param jaxApplication The JAX RS application to load
      */
     JerseyHandlerFilter(Application jaxApplication) {
         Timer.start("JERSEY_FILTER_CONSTRUCTOR");
@@ -138,7 +136,7 @@ public class JerseyHandlerFilter implements Filter, Container {
 
         ContainerRequest requestContext = new ContainerRequest(
                 null, // jersey uses "/" by default
-                uriBuilder.build(),
+                uriBuilder.build(), //requestUri,
                 servletRequest.getMethod().toUpperCase(Locale.ENGLISH),
                 (SecurityContext)servletRequest.getAttribute(JAX_SECURITY_CONTEXT_PROPERTY),
                 apiGatewayProperties);
@@ -161,6 +159,7 @@ public class JerseyHandlerFilter implements Filter, Container {
             //requestContext.header(headerKey, servletRequest.getHeader(headerKey));
             requestContext.getHeaders().add(headerKey, servletRequest.getHeader(headerKey));
         }
+
         Timer.stop("JERSEY_SERVLET_REQUEST_TO_CONTAINER");
         return requestContext;
     }

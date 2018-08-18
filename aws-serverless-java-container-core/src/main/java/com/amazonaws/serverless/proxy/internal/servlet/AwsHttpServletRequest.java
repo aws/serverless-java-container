@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.AsyncContext;
 import javax.servlet.DispatcherType;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -288,9 +289,12 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
      * Given a map of key/values query string parameters from API Gateway, creates a query string as it would have
      * been in the original url.
      * @param parameters A Map&lt;String, String&gt; of query string parameters
+     * @param encode Whether the key and values should be URL encoded
+     * @param encodeCharset Charset to use for encoding the query string
      * @return The generated query string for the URI
      */
-    protected String generateQueryString(Map<String, String> parameters) {
+    protected String generateQueryString(Map<String, String> parameters, boolean encode, String encodeCharset)
+            throws ServletException {
         if (parameters == null || parameters.size() == 0) {
             return null;
         }
@@ -298,9 +302,36 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
             return queryString;
         }
 
-        queryString =  parameters.keySet().stream()
-                .map(key -> key + "=" + parameters.get(key))
-                .collect(Collectors.joining("&"));
+        StringBuilder queryStringBuilder = new StringBuilder();
+
+        /*parameters.keySet().stream().forEach(k -> parameters.stream().forEach(v -> {
+            queryStringBuilder.append("&");
+            queryStringBuilder.append(k);
+            queryStringBuilder.append("=");
+            queryStringBuilder.append(v);
+        }));*/
+        try {
+            for (Map.Entry<String, String> e : parameters.entrySet()) {
+                queryStringBuilder.append("&");
+                if (encode) {
+                    queryStringBuilder.append(URLEncoder.encode(e.getKey(), encodeCharset));
+                } else {
+                    queryStringBuilder.append(e.getKey());
+                }
+                queryStringBuilder.append("=");
+                if (encode) {
+                    queryStringBuilder.append(URLEncoder.encode(e.getValue(), encodeCharset));
+                } else {
+                    queryStringBuilder.append(e.getValue());
+                }
+
+            }
+        } catch (UnsupportedEncodingException e) {
+            throw new ServletException("Invalid charset passed for query string encoding", e);
+        }
+
+        queryString = queryStringBuilder.toString();
+        queryString = queryString.substring(1); // remove the first & - faster to do it here than adding logic in the Lambda
         return queryString;
     }
 

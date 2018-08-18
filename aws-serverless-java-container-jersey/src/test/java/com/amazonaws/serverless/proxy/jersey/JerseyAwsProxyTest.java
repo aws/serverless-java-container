@@ -29,12 +29,11 @@ import org.glassfish.jersey.logging.LoggingFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.Test;
 
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
@@ -46,9 +45,6 @@ public class JerseyAwsProxyTest {
     private static final String CUSTOM_HEADER_KEY = "x-custom-header";
     private static final String CUSTOM_HEADER_VALUE = "my-custom-value";
     private static final String AUTHORIZER_PRINCIPAL_ID = "test-principal-" + UUID.randomUUID().toString();
-    private static final String QUERY_STRING_KEY = "identifier";
-    private static final String QUERY_STRING_NON_ENCODED_VALUE = "Space Test";
-    private static final String QUERY_STRING_ENCODED_VALUE = "Space%20Test";
     private static final String USER_PRINCIPAL = "user1";
 
 
@@ -113,52 +109,9 @@ public class JerseyAwsProxyTest {
     }
 
     @Test
-    public void queryString_uriInfo_echo() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/query-string", "GET")
-                .json()
-                .queryString(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
-                .build();
-
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
-        assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getHeaders().get("Content-Type"));
-
-        validateMapResponseModel(output);
-    }
-
-    @Test
-    public void queryString_notEncoded_echo() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/query-string", "GET")
-                                          .json()
-                                          .queryString(QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE)
-                                          .build();
-
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
-        assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getHeaders().get("Content-Type"));
-
-        validateMapResponseModel(output, QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE);
-    }
-
-    @Test
-    public void queryString_encoded_echo() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/query-string", "GET")
-                                          .json()
-                                          .queryString(QUERY_STRING_KEY, QUERY_STRING_ENCODED_VALUE)
-                                          .build();
-
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
-        assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getHeaders().get("Content-Type"));
-
-        validateMapResponseModel(output, QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE);
-    }
-
-    @Test
     public void requestScheme_valid_expectHttps() {
         AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/scheme", "GET")
                                           .json()
-                                          .queryString(QUERY_STRING_KEY, QUERY_STRING_ENCODED_VALUE)
                                           .build();
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
@@ -309,31 +262,14 @@ public class JerseyAwsProxyTest {
     }
 
     @Test
-    public void queryParam_encoding_expectUnencodedParam() {
-        String paramValue = "p%2Fz%2B3";
-        String decodedParam = "";
-        try {
-            decodedParam = URLDecoder.decode(paramValue, "UTF-8");
-            System.out.println(decodedParam);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            fail("Could not decode parameter");
-        }
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/decoded-param", "GET").queryString("param", paramValue).build();
-
+    public void emptyStream_putNullBody_expectPutToSucceed() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/empty-stream/" + CUSTOM_HEADER_KEY + "/test/2", "PUT")
+                                          .nullBody()
+                                          .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                                          .build();
         AwsProxyResponse resp = handler.proxy(request, lambdaContext);
         assertEquals(200, resp.getStatusCode());
-        validateSingleValueModel(resp, decodedParam);
-    }
-
-    @Test
-    public void queryParam_encoding_expectEncodedParam() {
-        String paramValue = "p%2Fz%2B3";
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/encoded-param", "GET").queryString("param", paramValue).build();
-
-        AwsProxyResponse resp = handler.proxy(request, lambdaContext);
-        assertEquals(200, resp.getStatusCode());
-        validateSingleValueModel(resp, paramValue);
+        validateSingleValueModel(resp, CUSTOM_HEADER_KEY);
     }
 
     private void validateMapResponseModel(AwsProxyResponse output) {

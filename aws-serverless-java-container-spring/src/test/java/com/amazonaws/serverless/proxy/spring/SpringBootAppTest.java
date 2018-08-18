@@ -30,6 +30,7 @@ public class SpringBootAppTest {
         AwsProxyRequest req = new AwsProxyRequestBuilder("/test", "GET").build();
         AwsProxyResponse resp = handler.handleRequest(req, context);
         assertNotNull(resp);
+        assertEquals(200, resp.getStatusCode());
         validateSingleValueModel(resp, TestController.TEST_VALUE);
     }
 
@@ -53,7 +54,26 @@ public class SpringBootAppTest {
             e.printStackTrace();
             fail();
         }
+    }
 
+    @Test
+    public void requestUri_dotInPathParam_expectRoutingToMethod() {
+        AwsProxyRequest req = new AwsProxyRequestBuilder("/test/testdomain.com", "GET").build();
+
+        AwsProxyResponse resp = handler.handleRequest(req, context);
+        assertNotNull(resp);
+        assertEquals(200, resp.getStatusCode());
+        validateSingleValueModel(resp, "testdomain.com");
+    }
+
+    @Test
+    public void queryString_commaSeparatedList_expectUnmarshalAsList() {
+        AwsProxyRequest req = new AwsProxyRequestBuilder("/test/query-string", "GET")
+                                      .queryString("list", "v1,v2,v3").build();
+        AwsProxyResponse resp = handler.handleRequest(req, context);
+        assertNotNull(resp);
+        assertEquals(200, resp.getStatusCode());
+        validateSingleValueModel(resp, "3");
     }
 
     private void validateSingleValueModel(AwsProxyResponse output, String value) {

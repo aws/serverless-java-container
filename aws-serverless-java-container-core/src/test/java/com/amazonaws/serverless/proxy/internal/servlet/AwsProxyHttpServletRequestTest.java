@@ -9,10 +9,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -29,11 +32,6 @@ public class AwsProxyHttpServletRequestTest {
     private static final String REFERER = "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent/Firefox";
     private static ZonedDateTime REQUEST_DATE = ZonedDateTime.now();
 
-    private static final AwsProxyRequest REQUEST_WITH_HEADERS = new AwsProxyRequestBuilder("/hello", "GET")
-            .header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-            .header(AwsProxyHttpServletRequest.CF_PROTOCOL_HEADER_NAME, REQUEST_SCHEME_HTTP)
-            .build();
     private static final AwsProxyRequest REQUEST_FORM_URLENCODED = new AwsProxyRequestBuilder("/hello", "POST")
             .form(FORM_PARAM_NAME, FORM_PARAM_NAME_VALUE).build();
     private static final AwsProxyRequest REQUEST_INVALID_FORM_URLENCODED = new AwsProxyRequestBuilder("/hello", "GET")
@@ -54,10 +52,11 @@ public class AwsProxyHttpServletRequestTest {
     private static final AwsProxyRequest REQUEST_USER_AGENT_REFERER = new AwsProxyRequestBuilder("/hello", "POST")
             .userAgent(USER_AGENT)
             .referer(REFERER).build();
-
     private static final AwsProxyRequest REQUEST_WITH_DATE = new AwsProxyRequestBuilder("/hello", "GET")
             .header(HttpHeaders.DATE, AwsHttpServletRequest.dateFormatter.format(REQUEST_DATE))
             .build();
+    private static final AwsProxyRequest REQUEST_WITH_LOWERCASE_HEADER = new AwsProxyRequestBuilder("/hello", "POST")
+            .header(HttpHeaders.CONTENT_TYPE.toLowerCase(Locale.getDefault()), MediaType.APPLICATION_JSON).build();
 
     private static final AwsProxyRequest REQUEST_NULL_QUERY_STRING;
     static {
@@ -72,7 +71,7 @@ public class AwsProxyHttpServletRequestTest {
 
     @Test
     public void headers_getHeader_validRequest() {
-        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_WITH_HEADERS, null, null);
+        HttpServletRequest request = new AwsProxyHttpServletRequest(getRequestWithHeaders(), null, null);
         assertNotNull(request.getHeader(CUSTOM_HEADER_KEY));
         assertEquals(CUSTOM_HEADER_VALUE, request.getHeader(CUSTOM_HEADER_KEY));
         assertEquals(MediaType.APPLICATION_JSON, request.getContentType());
@@ -147,7 +146,7 @@ public class AwsProxyHttpServletRequestTest {
 
     @Test
     public void scheme_getScheme_http() {
-        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_WITH_HEADERS, null, null);
+        HttpServletRequest request = new AwsProxyHttpServletRequest(getRequestWithHeaders(), null, null);
         assertNotNull(request);
         assertNotNull(request.getScheme());
         assertEquals(REQUEST_SCHEME_HTTP, request.getScheme());
@@ -155,7 +154,7 @@ public class AwsProxyHttpServletRequestTest {
 
     @Test
     public void cookie_getCookies_noCookies() {
-        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_WITH_HEADERS, null, null);
+        HttpServletRequest request = new AwsProxyHttpServletRequest(getRequestWithHeaders(), null, null);
         assertNotNull(request);
         assertNotNull(request.getCookies());
         assertEquals(0, request.getCookies().length);
@@ -242,5 +241,107 @@ public class AwsProxyHttpServletRequestTest {
         assertEquals(1, params.get(FORM_PARAM_NAME).length);
         assertNotNull(params.get(FORM_PARAM_TEST));
         assertEquals(1, params.get(FORM_PARAM_TEST).length);
+    }
+
+    @Test
+    public void charEncoding_getEncoding_expectNoEncodingWithoutContentType() {
+         HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_SINGLE_COOKIE, null, null);
+         try {
+             request.setCharacterEncoding(StandardCharsets.UTF_8.name());
+             // we have not specified a content type so the encoding will not be set
+             assertEquals(null, request.getCharacterEncoding());
+             assertEquals(null, request.getContentType());
+         } catch (UnsupportedEncodingException e) {
+             fail("Unsupported encoding");
+             e.printStackTrace();
+         }
+    }
+
+    @Test
+    public void charEncoding_getEncoding_expectContentTypeOnly() {
+        HttpServletRequest request = new AwsProxyHttpServletRequest(getRequestWithHeaders(), null, null);
+        // we have not specified a content type so the encoding will not be set
+        assertEquals(null, request.getCharacterEncoding());
+        assertEquals(MediaType.APPLICATION_JSON, request.getContentType());
+        try {
+            request.setCharacterEncoding(StandardCharsets.UTF_8.name());
+            String newHeaderValue = MediaType.APPLICATION_JSON + "; charset=" + StandardCharsets.UTF_8.name();
+            assertEquals(newHeaderValue, request.getHeader(HttpHeaders.CONTENT_TYPE));
+            assertEquals(newHeaderValue, request.getContentType());
+            assertEquals(StandardCharsets.UTF_8.name(), request.getCharacterEncoding());
+        } catch (UnsupportedEncodingException e) {
+            fail("Unsupported encoding");
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void charEncoding_addCharEncodingTwice_expectSingleMediaTypeAndEncoding() {
+        HttpServletRequest request = new AwsProxyHttpServletRequest(getRequestWithHeaders(), null, null);
+        // we have not specified a content type so the encoding will not be set
+        assertEquals(null, request.getCharacterEncoding());
+        assertEquals(MediaType.APPLICATION_JSON, request.getContentType());
+
+        try {
+            request.setCharacterEncoding(StandardCharsets.UTF_8.name());
+            String newHeaderValue = MediaType.APPLICATION_JSON + "; charset=" + StandardCharsets.UTF_8.name();
+            assertEquals(newHeaderValue, request.getHeader(HttpHeaders.CONTENT_TYPE));
+            assertEquals(newHeaderValue, request.getContentType());
+            assertEquals(StandardCharsets.UTF_8.name(), request.getCharacterEncoding());
+
+
+            request.setCharacterEncoding(StandardCharsets.ISO_8859_1.name());
+            newHeaderValue = MediaType.APPLICATION_JSON + "; charset=" + StandardCharsets.ISO_8859_1.name();
+            assertEquals(newHeaderValue, request.getHeader(HttpHeaders.CONTENT_TYPE));
+            assertEquals(newHeaderValue, request.getContentType());
+            assertEquals(StandardCharsets.ISO_8859_1.name(), request.getCharacterEncoding());
+        } catch (UnsupportedEncodingException e) {
+            fail("Unsupported encoding");
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void contentType_lowerCaseHeaderKey_expectUpdatedMediaType() {
+        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_WITH_LOWERCASE_HEADER, null, null);
+        try {
+            request.setCharacterEncoding(StandardCharsets.UTF_8.name());
+            String newHeaderValue = MediaType.APPLICATION_JSON + "; charset=" + StandardCharsets.UTF_8.name();
+            assertEquals(newHeaderValue, request.getHeader(HttpHeaders.CONTENT_TYPE));
+            assertEquals(newHeaderValue, request.getContentType());
+            assertEquals(StandardCharsets.UTF_8.name(), request.getCharacterEncoding());
+
+        } catch (UnsupportedEncodingException e) {
+            fail("Unsupported encoding");
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void contentType_duplicateCase_expectSingleContentTypeHeader() {
+        AwsProxyRequest proxyRequest = getRequestWithHeaders();
+        HttpServletRequest request = new AwsProxyHttpServletRequest(proxyRequest, null, null);
+
+        try {
+            request.setCharacterEncoding(StandardCharsets.ISO_8859_1.name());
+            assertNotNull(request.getHeader(HttpHeaders.CONTENT_TYPE));
+            assertNotNull(request.getHeader(HttpHeaders.CONTENT_TYPE.toLowerCase(Locale.getDefault())));
+
+            assertFalse(proxyRequest.getHeaders().containsKey(HttpHeaders.CONTENT_TYPE) && proxyRequest.getHeaders().containsKey(HttpHeaders.CONTENT_TYPE.toLowerCase(Locale.getDefault())));
+        } catch (UnsupportedEncodingException e) {
+            fail("Unsupported encoding");
+            e.printStackTrace();
+        }
+
+
+
+    }
+
+    private AwsProxyRequest getRequestWithHeaders() {
+        return new AwsProxyRequestBuilder("/hello", "GET")
+                       .header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
+                       .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                       .header(AwsProxyHttpServletRequest.CF_PROTOCOL_HEADER_NAME, REQUEST_SCHEME_HTTP)
+                       .build();
     }
 }

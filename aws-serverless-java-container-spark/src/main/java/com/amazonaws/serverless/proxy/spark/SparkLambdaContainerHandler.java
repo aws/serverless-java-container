@@ -142,7 +142,7 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType>
         // TODO: This is pretty bad but we are not given access to the embeddedServerIdentifier property of the
         // Service object
         try {
-            AccessController.doPrivileged((PrivilegedExceptionAction) () -> {
+            AccessController.doPrivileged((PrivilegedExceptionAction<Object>) () -> {
                 log.debug("Changing visibility of getInstance method and embeddedServerIdentifier properties");
                 Method serviceInstanceMethod = Spark.class.getDeclaredMethod("getInstance");
                 serviceInstanceMethod.setAccessible(true);
