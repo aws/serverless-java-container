@@ -12,6 +12,7 @@
         <groupId>com.amazonaws.serverless</groupId>
         <artifactId>aws-serverless-java-container</artifactId>
         <version>1.2-SNAPSHOT</version>
+        <relativePath>..</relativePath>
     </parent>
 
     <properties>
