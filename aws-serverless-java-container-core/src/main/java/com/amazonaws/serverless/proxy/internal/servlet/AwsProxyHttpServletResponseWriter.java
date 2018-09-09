@@ -15,6 +15,7 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.exceptions.InvalidResponseObjectException;
 import com.amazonaws.serverless.proxy.ResponseWriter;
+import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -39,7 +40,7 @@ public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpSer
         if (containerResponse.getAwsResponseBodyString() != null) {
             String responseString;
 
-            if (isValidUtf8(containerResponse.getAwsResponseBodyBytes())) {
+            if (!isBinary(containerResponse.getContentType()) && isValidUtf8(containerResponse.getAwsResponseBodyBytes())) {
                 responseString = containerResponse.getAwsResponseBodyString();
             } else {
                 responseString = Base64.getMimeEncoder().encodeToString(containerResponse.getAwsResponseBodyBytes());
@@ -54,5 +55,9 @@ public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpSer
 
         Timer.stop("SERVLET_RESPONSE_WRITE");
         return awsProxyResponse;
+    }
+
+    private boolean isBinary(String contentType) {
+        return contentType == null ? false : LambdaContainerHandler.getContainerConfig().isBinaryContentType(contentType);
     }
 }
