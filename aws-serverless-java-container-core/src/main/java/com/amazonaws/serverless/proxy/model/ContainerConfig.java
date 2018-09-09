@@ -4,6 +4,7 @@ package com.amazonaws.serverless.proxy.model;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 
@@ -38,6 +39,7 @@ public class ContainerConfig {
     private List<String> validFilePaths;
     private List<String> customDomainNames;
     private boolean queryStringCaseSensitive;
+    private final HashSet<String> binaryContentTypes = new HashSet<>();
 
     public ContainerConfig() {
         validFilePaths = new ArrayList<>();
@@ -218,5 +220,23 @@ public class ContainerConfig {
      */
     public void setQueryStringCaseSensitive(boolean queryStringCaseSensitive) {
         this.queryStringCaseSensitive = queryStringCaseSensitive;
+    }
+
+    /**
+     * Configure specified content type as binary
+     */
+    public void addBinaryContentType(String type) {
+        if(type != null) {
+            binaryContentTypes.add(type);
+        }
+    }
+
+    /**
+     * Determine if specified content type has been configured as binary
+     * @param type
+     * @return
+     */
+    public boolean isBinaryContentType(String type) {
+        return binaryContentTypes.contains(type);
     }
 }
