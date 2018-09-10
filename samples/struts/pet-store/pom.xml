@@ -25,7 +25,7 @@
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.>1.8</maven.compiler.>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <struts2.version>2.5.17</struts2.version>
         <jackson.version>2.9.5</jackson.version>
         <junit.version>4.12</junit.version>
@@ -70,7 +70,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- some usefull inteceptors and helpers for lambda based applications -->
+        <!-- some useful interceptors and helpers for lambda based applications -->
         <dependency>
             <groupId>com.jgeppert.struts2</groupId>
             <artifactId>struts2-aws-lambda-support-plugin</artifactId>
