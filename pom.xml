@@ -24,6 +24,7 @@
         <module>archetypes/spark</module>
         <module>archetypes/spring</module>
         <module>archetypes/springboot</module>
+        <module>archetypes/struts</module>
     </modules>
 
     <scm>
