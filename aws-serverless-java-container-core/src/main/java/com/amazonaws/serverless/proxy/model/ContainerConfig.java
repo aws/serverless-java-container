@@ -23,6 +23,7 @@ public class ContainerConfig {
         configuration.setUseStageAsServletContext(false);
         configuration.setValidFilePaths(DEFAULT_FILE_PATHS);
         configuration.setQueryStringCaseSensitive(false);
+        configuration.addBinaryContentTypes("application/octet-stream", "image/jpeg", "image/png", "image/gif");
 
         return configuration;
     }
@@ -223,20 +224,23 @@ public class ContainerConfig {
     }
 
     /**
-     * Configure specified content type as binary
+     * Configure specified content type(s) as binary
+     * @param contentTypes list of exact content types that will be considered as binary
      */
-    public void addBinaryContentType(String type) {
-        if(type != null) {
-            binaryContentTypes.add(type);
+    public void addBinaryContentTypes(String... contentTypes) {
+        if(contentTypes != null) {
+            for(String type: contentTypes) {
+                binaryContentTypes.add(type);
+            }
         }
     }
 
     /**
      * Determine if specified content type has been configured as binary
-     * @param type
+     * @param contentType content type to query
      * @return
      */
-    public boolean isBinaryContentType(String type) {
-        return binaryContentTypes.contains(type);
+    public boolean isBinaryContentType(String contentType) {
+        return contentType != null && binaryContentTypes.contains(contentType.trim());
     }
 }

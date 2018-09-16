@@ -58,6 +58,15 @@ public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpSer
     }
 
     private boolean isBinary(String contentType) {
-        return contentType == null ? false : LambdaContainerHandler.getContainerConfig().isBinaryContentType(contentType);
+        if(contentType != null) {
+            int semidx = contentType.indexOf(';');
+            if(semidx >= 0) {
+                return LambdaContainerHandler.getContainerConfig().isBinaryContentType(contentType.substring(0, semidx));
+            }
+            else {
+                LambdaContainerHandler.getContainerConfig().isBinaryContentType(contentType);
+            }
+        }
+        return false;
     }
 }
