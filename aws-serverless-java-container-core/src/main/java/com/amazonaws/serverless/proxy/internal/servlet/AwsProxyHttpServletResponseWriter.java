@@ -64,7 +64,7 @@ public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpSer
                 return LambdaContainerHandler.getContainerConfig().isBinaryContentType(contentType.substring(0, semidx));
             }
             else {
-                LambdaContainerHandler.getContainerConfig().isBinaryContentType(contentType);
+                return LambdaContainerHandler.getContainerConfig().isBinaryContentType(contentType);
             }
         }
         return false;
