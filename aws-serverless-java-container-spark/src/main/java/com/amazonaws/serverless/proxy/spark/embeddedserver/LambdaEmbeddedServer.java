@@ -5,6 +5,7 @@ import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import spark.ExceptionMapper;
 import spark.embeddedserver.EmbeddedServer;
 import spark.embeddedserver.jetty.websocket.WebSocketHandlerWrapper;
 import spark.http.matching.MatcherFilter;
@@ -24,6 +25,7 @@ public class LambdaEmbeddedServer
     //-------------------------------------------------------------
 
     private Routes applicationRoutes;
+    private ExceptionMapper exceptionMapper;
     private MatcherFilter sparkFilter;
     private StaticFilesConfiguration staticFilesConfiguration;
     private boolean hasMultipleHandler;
@@ -34,14 +36,15 @@ public class LambdaEmbeddedServer
     // Constructors
     //-------------------------------------------------------------
 
-    LambdaEmbeddedServer(Routes routes, StaticFilesConfiguration filesConfig, boolean multipleHandlers) {
+    LambdaEmbeddedServer(Routes routes, StaticFilesConfiguration filesConfig, ExceptionMapper exceptionMapper, boolean multipleHandlers) {
         Timer.start("SPARK_EMBEDDED_SERVER_CONSTRUCTOR");
         applicationRoutes = routes;
         staticFilesConfiguration = filesConfig;
         hasMultipleHandler = multipleHandlers;
+        this.exceptionMapper = exceptionMapper;
 
         // try to initialize the filter here.
-        sparkFilter = new MatcherFilter(applicationRoutes, staticFilesConfiguration, true, hasMultipleHandler);
+        sparkFilter = new MatcherFilter(applicationRoutes, staticFilesConfiguration, exceptionMapper, true, hasMultipleHandler);
         Timer.stop("SPARK_EMBEDDED_SERVER_CONSTRUCTOR");
     }
 
@@ -50,17 +53,17 @@ public class LambdaEmbeddedServer
     // Implementation - EmbeddedServer
     //-------------------------------------------------------------
     @Override
-    public int ignite(String s, int i, SslStores sslStores, int i1, int i2, int i3)
+    public int ignite(String host, int port, SslStores sslStores, int maxThreads, int minThreads, int threadIdleTimeoutMillis)
             throws ContainerInitializationException {
         Timer.start("SPARK_EMBEDDED_IGNITE");
         log.info("Starting Spark server, ignoring port and host");
         // if not initialized yet
         if (sparkFilter == null) {
-            sparkFilter = new MatcherFilter(applicationRoutes, staticFilesConfiguration, true, hasMultipleHandler);
+            sparkFilter = new MatcherFilter(applicationRoutes, staticFilesConfiguration, exceptionMapper, true, hasMultipleHandler);
         }
         sparkFilter.init(null);
         Timer.stop("SPARK_EMBEDDED_IGNITE");
-        return i;
+        return port;
     }
 
 
