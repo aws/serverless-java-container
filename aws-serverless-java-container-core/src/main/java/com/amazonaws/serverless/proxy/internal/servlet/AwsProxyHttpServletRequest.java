@@ -584,6 +584,9 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getRemoteAddr() {
+        if (request.getRequestContext() == null || request.getRequestContext().getIdentity() == null) {
+            return "127.0.0.1";
+        }
         return request.getRequestContext().getIdentity().getSourceIp();
     }
 
