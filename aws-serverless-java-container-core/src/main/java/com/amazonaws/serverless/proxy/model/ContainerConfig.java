@@ -4,6 +4,7 @@ package com.amazonaws.serverless.proxy.model;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 
@@ -22,6 +23,7 @@ public class ContainerConfig {
         configuration.setUseStageAsServletContext(false);
         configuration.setValidFilePaths(DEFAULT_FILE_PATHS);
         configuration.setQueryStringCaseSensitive(false);
+        configuration.addBinaryContentTypes("application/octet-stream", "image/jpeg", "image/png", "image/gif");
 
         return configuration;
     }
@@ -38,10 +40,12 @@ public class ContainerConfig {
     private List<String> validFilePaths;
     private List<String> customDomainNames;
     private boolean queryStringCaseSensitive;
+    private final HashSet<String> binaryContentTypes;
 
     public ContainerConfig() {
         validFilePaths = new ArrayList<>();
         customDomainNames = new ArrayList<>();
+        binaryContentTypes = new HashSet<>();
     }
 
 
@@ -222,5 +226,26 @@ public class ContainerConfig {
      */
     public void setQueryStringCaseSensitive(boolean queryStringCaseSensitive) {
         this.queryStringCaseSensitive = queryStringCaseSensitive;
+    }
+
+    /**
+     * Configure specified content type(s) as binary
+     * @param contentTypes list of exact content types that will be considered as binary
+     */
+    public void addBinaryContentTypes(String... contentTypes) {
+        if(contentTypes != null) {
+            for(String type: contentTypes) {
+                binaryContentTypes.add(type);
+            }
+        }
+    }
+
+    /**
+     * Determine if specified content type has been configured as binary
+     * @param contentType content type to query
+     * @return
+     */
+    public boolean isBinaryContentType(String contentType) {
+        return contentType != null && binaryContentTypes.contains(contentType.trim());
     }
 }
