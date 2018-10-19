@@ -19,10 +19,12 @@
         <module>aws-serverless-java-container-jersey</module>
         <module>aws-serverless-java-container-spark</module>
         <module>aws-serverless-java-container-spring</module>
+        <module>aws-serverless-java-container-struts2</module>
         <module>archetypes/jersey</module>
         <module>archetypes/spark</module>
         <module>archetypes/spring</module>
         <module>archetypes/springboot</module>
+        <module>archetypes/struts</module>
     </modules>
 
     <scm>
