@@ -265,14 +265,17 @@ public class AwsHttpServletResponse
 
     @Override
     public String getCharacterEncoding() {
-        return headers.getFirst(HttpHeaders.CONTENT_ENCODING);
+        final String contentType = Optional.ofNullable(getContentType()).orElse("");
+        if (contentType.contains(";")) {
+            return contentType.split(";")[1].split("=")[1].trim().toLowerCase(Locale.getDefault());
+        } else {
+            return "";
+        }
     }
 
 
     @Override
-    public String getContentType() {
-        return headers.getFirst(HttpHeaders.CONTENT_TYPE);
-    }
+    public String getContentType() { return getHeader(HttpHeaders.CONTENT_TYPE); }
 
 
     @Override
@@ -334,7 +337,10 @@ public class AwsHttpServletResponse
 
     @Override
     public void setCharacterEncoding(String s) {
-        setHeader(HttpHeaders.CONTENT_ENCODING, s, true);
+        final String characterEncoding = Optional.ofNullable(s).orElse("").toLowerCase(Locale.getDefault());
+        final String oldValue = Optional.ofNullable(getHeader(HttpHeaders.CONTENT_TYPE)).orElse("");
+        String contentType = oldValue.contains(";") ? oldValue.split(";")[0].trim(): oldValue;
+        setHeader(HttpHeaders.CONTENT_TYPE, String.format("%s; charset=%s", contentType, characterEncoding), true);
     }
 
 

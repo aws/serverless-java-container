@@ -265,6 +265,49 @@ public class AwsHttpServletResponseTest {
         assertEquals("15", resp.getHeader("Test"));
     }
 
+    @Test
+    public void characterEncoding_setCharacterEncoding() {
+        AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+        assertNotEquals("UTF-8", resp.getHeader("Content-Encoding"));
+        assertEquals("application/json; charset=utf-8", resp.getContentType());
+        assertEquals("application/json; charset=utf-8", resp.getHeader("Content-Type"));
+    }
+
+    @Test
+    public void characterEncoding_setContentType() {
+        AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
+        resp.setContentType("application/json; charset=utf-8");
+        resp.setCharacterEncoding("UTF-8");
+
+        assertEquals("application/json; charset=utf-8", resp.getContentType());
+        assertEquals("application/json; charset=utf-8", resp.getHeader("Content-Type"));
+        assertEquals("utf-8", resp.getCharacterEncoding());
+    }
+
+    @Test
+    public void characterEncoding_setContentTypeAndsetCharacterEncoding() {
+        AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+
+        assertEquals("application/json; charset=utf-8", resp.getContentType());
+        assertEquals("application/json; charset=utf-8", resp.getHeader("Content-Type"));
+        assertEquals("utf-8", resp.getCharacterEncoding());
+    }
+
+    @Test
+    public void characterEncoding_setCharacterEncodingAndsetContentType() {
+        AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
+        resp.setCharacterEncoding("UTF-8");
+        resp.setContentType("application/json");
+
+        assertEquals("application/json", resp.getContentType());
+        assertEquals("application/json", resp.getHeader("Content-Type"));
+        assertEquals("", resp.getCharacterEncoding());
+    }
+
     private int getMaxAge(String header) {
         Matcher ageMatcher = MAX_AGE_PATTERN.matcher(header);
         assertTrue(ageMatcher.find());
