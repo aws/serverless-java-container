@@ -70,7 +70,7 @@ public class AwsProxyHttpServletRequestTest {
     private static final AwsProxyRequest REQUEST_NULL_QUERY_STRING;
     static {
         AwsProxyRequest awsProxyRequest = new AwsProxyRequestBuilder("/hello", "GET").build();
-        awsProxyRequest.setQueryStringParameters(null);
+        awsProxyRequest.setMultiValueQueryStringParameters(null);
         REQUEST_NULL_QUERY_STRING = awsProxyRequest;
     }
 
@@ -335,8 +335,6 @@ public class AwsProxyHttpServletRequestTest {
             request.setCharacterEncoding(StandardCharsets.ISO_8859_1.name());
             assertNotNull(request.getHeader(HttpHeaders.CONTENT_TYPE));
             assertNotNull(request.getHeader(HttpHeaders.CONTENT_TYPE.toLowerCase(Locale.getDefault())));
-
-            assertFalse(proxyRequest.getHeaders().containsKey(HttpHeaders.CONTENT_TYPE) && proxyRequest.getHeaders().containsKey(HttpHeaders.CONTENT_TYPE.toLowerCase(Locale.getDefault())));
         } catch (UnsupportedEncodingException e) {
             fail("Unsupported encoding");
             e.printStackTrace();
@@ -355,7 +353,7 @@ public class AwsProxyHttpServletRequestTest {
         assertTrue(requestUrl.endsWith(".com/hello"));
 
         // set localhost
-        req.getHeaders().put("Host", "localhost");
+        req.getMultiValueHeaders().putSingle("Host", "localhost");
         servletRequest = new AwsProxyHttpServletRequest(req, null, null);
         requestUrl = servletRequest.getRequestURL().toString();
         assertTrue(requestUrl.contains("http://localhost"));
@@ -402,7 +400,7 @@ public class AwsProxyHttpServletRequestTest {
     @Test
     public void getLocales_validAcceptHeader_expectSingleLocale() {
         AwsProxyRequest req = getRequestWithHeaders();
-        req.getHeaders().put(HttpHeaders.ACCEPT_LANGUAGE, "fr-CH");
+        req.getMultiValueHeaders().putSingle(HttpHeaders.ACCEPT_LANGUAGE, "fr-CH");
         HttpServletRequest servletRequest = new AwsProxyHttpServletRequest(req, null, null);
         Enumeration<Locale> locales = servletRequest.getLocales();
         int localesNo = 0;
@@ -417,7 +415,7 @@ public class AwsProxyHttpServletRequestTest {
     @Test
     public void getLocales_validAcceptHeaderMultipleLocales_expectFullLocaleList() {
         AwsProxyRequest req = getRequestWithHeaders();
-        req.getHeaders().put(HttpHeaders.ACCEPT_LANGUAGE, "fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5");
+        req.getMultiValueHeaders().putSingle(HttpHeaders.ACCEPT_LANGUAGE, "fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5");
         HttpServletRequest servletRequest = new AwsProxyHttpServletRequest(req, null, null);
         Enumeration<Locale> locales = servletRequest.getLocales();
         List<Locale> localesList = new ArrayList<>();
@@ -438,7 +436,7 @@ public class AwsProxyHttpServletRequestTest {
     @Test
     public void getLocales_validAcceptHeaderMultipleLocales_expectFullLocaleListOrdered() {
         AwsProxyRequest req = getRequestWithHeaders();
-        req.getHeaders().put(HttpHeaders.ACCEPT_LANGUAGE, "fr-CH, en;q=0.8, de;q=0.7, *;q=0.5, fr;q=0.9");
+        req.getMultiValueHeaders().putSingle(HttpHeaders.ACCEPT_LANGUAGE, "fr-CH, en;q=0.8, de;q=0.7, *;q=0.5, fr;q=0.9");
         HttpServletRequest servletRequest = new AwsProxyHttpServletRequest(req, null, null);
         Enumeration<Locale> locales = servletRequest.getLocales();
         List<Locale> localesList = new ArrayList<>();
@@ -495,7 +493,7 @@ public class AwsProxyHttpServletRequestTest {
     @Test
     public void getServerPort_customPortFromHeader_expectCustomPort() {
         AwsProxyRequest proxyReq = getRequestWithHeaders();
-        proxyReq.getHeaders().put(AwsProxyHttpServletRequest.PORT_HEADER_NAME, "80");
+        proxyReq.getMultiValueHeaders().putSingle(AwsProxyHttpServletRequest.PORT_HEADER_NAME, "80");
         HttpServletRequest req = new AwsProxyHttpServletRequest(proxyReq, null, null);
         assertEquals(80, req.getServerPort());
     }
@@ -503,30 +501,9 @@ public class AwsProxyHttpServletRequestTest {
     @Test
     public void getServerPort_invalidCustomPortFromHeader_expectDefaultPort() {
         AwsProxyRequest proxyReq = getRequestWithHeaders();
-        proxyReq.getHeaders().put(AwsProxyHttpServletRequest.PORT_HEADER_NAME, "7200");
+        proxyReq.getMultiValueHeaders().putSingle(AwsProxyHttpServletRequest.PORT_HEADER_NAME, "7200");
         HttpServletRequest req = new AwsProxyHttpServletRequest(proxyReq, null, null);
         assertEquals(443, req.getServerPort());
-    }
-
-    @Test
-    public void setHeaderCaseInsensitive_setHeader() {
-        HttpServletRequest req = new AwsProxyHttpServletRequest(getRequestWithHeaders(), null, null);
-        try {
-            Method setMethod = req.getClass().getDeclaredMethod("setHeaderCaseInsensitive", String.class, String.class);
-            setMethod.setAccessible(true);
-            setMethod.invoke(req,"Head", "head");
-            assertNotNull(req.getHeader("Head"));
-            assertEquals("head", req.getHeader("Head"));
-
-            assertNotNull(req.getHeader("head"));
-            assertEquals("head", req.getHeader("head"));
-        } catch (NoSuchMethodException e) {
-            fail("Cannot get set header method");
-            e.printStackTrace();
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            fail("Cannot invoke method dynamically");
-            e.printStackTrace();
-        }
     }
 
 

@@ -18,6 +18,7 @@ import com.amazonaws.serverless.proxy.model.ApiGatewayRequestContext;
 import com.amazonaws.serverless.proxy.model.ApiGatewayRequestIdentity;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.CognitoAuthorizerClaims;
+import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -66,10 +67,10 @@ public class AwsProxyRequestBuilder {
     public AwsProxyRequestBuilder(String path, String httpMethod) {
 
         this.request = new AwsProxyRequest();
-        this.request.setHeaders(new HashMap<>()); // avoid NPE
+        this.request.setMultiValueHeaders(new MultiValuedTreeMap<>(String.CASE_INSENSITIVE_ORDER)); // avoid NPE
         this.request.setHttpMethod(httpMethod);
         this.request.setPath(path);
-        this.request.setQueryStringParameters(new HashMap<>());
+        this.request.setMultiValueQueryStringParameters(new MultiValuedTreeMap<>());
         this.request.setRequestContext(new ApiGatewayRequestContext());
         this.request.getRequestContext().setRequestId(UUID.randomUUID().toString());
         this.request.getRequestContext().setStage("test");
@@ -108,10 +109,10 @@ public class AwsProxyRequestBuilder {
 
 
     public AwsProxyRequestBuilder form(String key, String value) {
-        if (request.getHeaders() == null) {
-            request.setHeaders(new HashMap<>());
+        if (request.getMultiValueHeaders() == null) {
+            request.setMultiValueHeaders(new MultiValuedTreeMap<>(String.CASE_INSENSITIVE_ORDER));
         }
-        request.getHeaders().put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+        request.getMultiValueHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
         String body = request.getBody();
         if (body == null) {
             body = "";
@@ -123,21 +124,21 @@ public class AwsProxyRequestBuilder {
 
 
     public AwsProxyRequestBuilder header(String key, String value) {
-        if (this.request.getHeaders() == null) {
-            this.request.setHeaders(new HashMap<>());
+        if (this.request.getMultiValueHeaders() == null) {
+            this.request.setMultiValueHeaders(new MultiValuedTreeMap<>(String.CASE_INSENSITIVE_ORDER));
         }
 
-        this.request.getHeaders().put(key, value);
+        this.request.getMultiValueHeaders().add(key, value);
         return this;
     }
 
 
     public AwsProxyRequestBuilder queryString(String key, String value) {
-        if (this.request.getQueryStringParameters() == null) {
-            this.request.setQueryStringParameters(new HashMap<>());
+        if (this.request.getMultiValueQueryStringParameters() == null) {
+            this.request.setMultiValueQueryStringParameters(new MultiValuedTreeMap<>());
         }
 
-        this.request.getQueryStringParameters().put(key, value);
+        this.request.getMultiValueQueryStringParameters().add(key, value);
         return this;
     }
 
@@ -153,7 +154,7 @@ public class AwsProxyRequestBuilder {
     }
 
     public AwsProxyRequestBuilder body(Object body) {
-        if (request.getHeaders() != null && request.getHeaders().get(HttpHeaders.CONTENT_TYPE).equals(MediaType.APPLICATION_JSON)) {
+        if (request.getMultiValueHeaders() != null && request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE).equals(MediaType.APPLICATION_JSON)) {
             try {
                 return body(LambdaContainerHandler.getObjectMapper().writeValueAsString(body));
             } catch (JsonProcessingException e) {
@@ -220,35 +221,35 @@ public class AwsProxyRequestBuilder {
 
 
     public AwsProxyRequestBuilder cookie(String name, String value) {
-        if (request.getHeaders() == null) {
-            request.setHeaders(new HashMap<>());
+        if (request.getMultiValueHeaders() == null) {
+            request.setMultiValueHeaders(new MultiValuedTreeMap<>(String.CASE_INSENSITIVE_ORDER));
         }
 
-        String cookies = request.getHeaders().get(HttpHeaders.COOKIE);
+        String cookies = request.getMultiValueHeaders().getFirst(HttpHeaders.COOKIE);
         if (cookies == null) {
             cookies = "";
         }
 
         cookies += (cookies.equals("")?"":"; ") + name + "=" + value;
-        request.getHeaders().put(HttpHeaders.COOKIE, cookies);
+        request.getMultiValueHeaders().putSingle(HttpHeaders.COOKIE, cookies);
         return this;
     }
 
     public AwsProxyRequestBuilder scheme(String scheme) {
-        if (request.getHeaders() == null) {
-            request.setHeaders(new HashMap<>());
+        if (request.getMultiValueHeaders() == null) {
+            request.setMultiValueHeaders(new MultiValuedTreeMap<>(String.CASE_INSENSITIVE_ORDER));
         }
 
-        request.getHeaders().put("CloudFront-Forwarded-Proto", scheme);
+        request.getMultiValueHeaders().putSingle("CloudFront-Forwarded-Proto", scheme);
         return this;
     }
 
     public AwsProxyRequestBuilder serverName(String serverName) {
-        if (request.getHeaders() == null) {
-            request.setHeaders(new HashMap<>());
+        if (request.getMultiValueHeaders() == null) {
+            request.setMultiValueHeaders(new MultiValuedTreeMap<>(String.CASE_INSENSITIVE_ORDER));
         }
 
-        request.getHeaders().put("Host", serverName);
+        request.getMultiValueHeaders().putSingle("Host", serverName);
         return this;
     }
 

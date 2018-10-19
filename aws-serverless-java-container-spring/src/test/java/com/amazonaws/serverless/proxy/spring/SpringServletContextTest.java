@@ -57,7 +57,7 @@ public class SpringServletContextTest {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("text/plain", output.getHeaders().get("Content-Type").split(";")[0]);
+        assertEquals("text/plain", output.getMultiValueHeaders().getFirst("Content-Type").split(";")[0]);
         assertEquals(STAGE, output.getBody());
     }
 
@@ -70,7 +70,7 @@ public class SpringServletContextTest {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("text/plain", output.getHeaders().get("Content-Type").split(";")[0]);
+        assertEquals("text/plain", output.getMultiValueHeaders().getFirst("Content-Type").split(";")[0]);
         assertEquals(STAGE, output.getBody());
     }
 
@@ -82,10 +82,10 @@ public class SpringServletContextTest {
                 .build();
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
-        assertNotNull(output.getHeaders());
-        assertTrue(output.getHeaders().size() > 0);
-        assertNotNull(output.getHeaders().get(CustomHeaderFilter.HEADER_NAME));
-        assertEquals(CustomHeaderFilter.HEADER_VALUE, output.getHeaders().get(CustomHeaderFilter.HEADER_NAME));
+        assertNotNull(output.getMultiValueHeaders());
+        assertTrue(output.getMultiValueHeaders().size() > 0);
+        assertNotNull(output.getMultiValueHeaders().get(CustomHeaderFilter.HEADER_NAME));
+        assertEquals(CustomHeaderFilter.HEADER_VALUE, output.getMultiValueHeaders().getFirst(CustomHeaderFilter.HEADER_NAME));
     }
 
     @Test
@@ -125,9 +125,9 @@ public class SpringServletContextTest {
 
 
         assertEquals(200, output.getStatusCode());
-        assertTrue(output.getHeaders().containsKey(HttpHeaders.SET_COOKIE));
-        assertTrue(output.getHeaders().get(HttpHeaders.SET_COOKIE).contains(ContextResource.COOKIE_NAME + "=" + ContextResource.COOKIE_VALUE));
-        assertTrue(output.getHeaders().get(HttpHeaders.SET_COOKIE).contains(ContextResource.COOKIE_DOMAIN));
+        assertTrue(output.getMultiValueHeaders().containsKey(HttpHeaders.SET_COOKIE));
+        assertTrue(output.getMultiValueHeaders().getFirst(HttpHeaders.SET_COOKIE).contains(ContextResource.COOKIE_NAME + "=" + ContextResource.COOKIE_VALUE));
+        assertTrue(output.getMultiValueHeaders().getFirst(HttpHeaders.SET_COOKIE).contains(ContextResource.COOKIE_DOMAIN));
     }
 }
 

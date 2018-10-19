@@ -57,8 +57,8 @@ public class AwsProxyExceptionHandlerTest {
         AwsProxyResponse resp = exceptionHandler.handle(new InvalidRequestEventException(INVALID_REQUEST_MESSAGE, null));
 
         assertNotNull(resp);
-        assertTrue(resp.getHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
-        assertEquals(MediaType.APPLICATION_JSON, resp.getHeaders().get(HttpHeaders.CONTENT_TYPE));
+        assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.APPLICATION_JSON, resp.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
     }
 
     @Test
@@ -84,8 +84,8 @@ public class AwsProxyExceptionHandlerTest {
         AwsProxyResponse resp = exceptionHandler.handle(new InvalidResponseObjectException(INVALID_RESPONSE_MESSAGE, null));
 
         assertNotNull(resp);
-        assertTrue(resp.getHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
-        assertEquals(MediaType.APPLICATION_JSON, resp.getHeaders().get(HttpHeaders.CONTENT_TYPE));
+        assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.APPLICATION_JSON, resp.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
     }
 
     @Test
@@ -95,8 +95,8 @@ public class AwsProxyExceptionHandlerTest {
 
         assertNotNull(resp);
         assertEquals(502, resp.getStatusCode());
-        assertTrue(resp.getHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
-        assertEquals(MediaType.APPLICATION_JSON, resp.getHeaders().get(HttpHeaders.CONTENT_TYPE));
+        assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.APPLICATION_JSON, resp.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
         String body = objectMapper.writeValueAsString(new ErrorModel(AwsProxyExceptionHandler.GATEWAY_TIMEOUT_ERROR));
         assertEquals(body, resp.getBody());
     }
@@ -138,8 +138,8 @@ public class AwsProxyExceptionHandlerTest {
         assertTrue(respStream.size() > 0);
         AwsProxyResponse resp = objectMapper.readValue(new ByteArrayInputStream(respStream.toByteArray()), AwsProxyResponse.class);
         assertNotNull(resp);
-        assertTrue(resp.getHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
-        assertEquals(MediaType.APPLICATION_JSON, resp.getHeaders().get(HttpHeaders.CONTENT_TYPE));
+        assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.APPLICATION_JSON, resp.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
     }
 
     @Test
@@ -179,8 +179,8 @@ public class AwsProxyExceptionHandlerTest {
         assertTrue(respStream.size() > 0);
         AwsProxyResponse resp = objectMapper.readValue(new ByteArrayInputStream(respStream.toByteArray()), AwsProxyResponse.class);
         assertNotNull(resp);
-        assertTrue(resp.getHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
-        assertEquals(MediaType.APPLICATION_JSON, resp.getHeaders().get(HttpHeaders.CONTENT_TYPE));
+        assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.APPLICATION_JSON, resp.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
     }
 
     @Test

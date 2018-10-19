@@ -56,8 +56,8 @@ public class SparkLambdaContainerHandlerTest {
 
         assertNotNull(response);
         assertEquals(200, response.getStatusCode());
-        assertTrue(response.getHeaders().containsKey(CustomHeaderFilter.HEADER_NAME));
-        assertEquals(CustomHeaderFilter.HEADER_VALUE, response.getHeaders().get(CustomHeaderFilter.HEADER_NAME));
+        assertTrue(response.getMultiValueHeaders().containsKey(CustomHeaderFilter.HEADER_NAME));
+        assertEquals(CustomHeaderFilter.HEADER_VALUE, response.getMultiValueHeaders().getFirst(CustomHeaderFilter.HEADER_NAME));
         assertEquals(RESPONSE_BODY_TEXT, response.getBody());
 
     }

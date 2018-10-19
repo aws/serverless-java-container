@@ -50,7 +50,7 @@ public class JerseyParamEncodingTest {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getHeaders().get("Content-Type"));
+        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
 
         validateMapResponseModel(output, QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE);
     }
@@ -64,7 +64,7 @@ public class JerseyParamEncodingTest {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getHeaders().get("Content-Type"));
+        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
 
         validateMapResponseModel(output, QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE);
     }
@@ -79,7 +79,7 @@ public class JerseyParamEncodingTest {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getHeaders().get("Content-Type"));
+        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
 
         validateMapResponseModel(output, QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE);
     }

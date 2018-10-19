@@ -49,7 +49,7 @@ public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpSer
 
             awsProxyResponse.setBody(responseString);
         }
-        awsProxyResponse.setHeaders(containerResponse.getAwsResponseHeaders());
+        awsProxyResponse.setMultiValueHeaders(containerResponse.getAwsResponseHeaders());
 
         awsProxyResponse.setStatusCode(containerResponse.getStatus());
 

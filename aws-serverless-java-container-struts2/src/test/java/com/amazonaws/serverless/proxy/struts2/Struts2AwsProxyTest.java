@@ -67,7 +67,7 @@ public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals(CONTENT_TYPE_APPLICATION_JSON, output.getHeaders().get("Content-Type"));
+        assertEquals(CONTENT_TYPE_APPLICATION_JSON, output.getMultiValueHeaders().getFirst("Content-Type"));
 
         validateMapResponseModel(output);
     }
@@ -81,7 +81,7 @@ public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertTrue(output.getHeaders().containsKey("XX"));
+        assertTrue(output.getMultiValueHeaders().containsKey("XX"));
     }
 
     @Test
@@ -92,11 +92,11 @@ public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
                 .queryString("contentType", "true")
                 .build();
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
-        for (String header : output.getHeaders().keySet()) {
-            System.out.println(header + ": " + output.getHeaders().get(header));
+        for (String header : output.getMultiValueHeaders().keySet()) {
+            System.out.println(header + ": " + output.getMultiValueHeaders().getFirst(header));
         }
         assertEquals(200, output.getStatusCode());
-        assertEquals(CONTENT_TYPE_APPLICATION_JSON, output.getHeaders().get("Content-Type"));
+        assertEquals(CONTENT_TYPE_APPLICATION_JSON, output.getMultiValueHeaders().getFirst("Content-Type"));
         System.out.println("Body: " + output.getBody());
 
         validateSingleValueModel(output, "Hello Struts2");
@@ -113,7 +113,7 @@ public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals(CONTENT_TYPE_APPLICATION_JSON, output.getHeaders().get("Content-Type"));
+        assertEquals(CONTENT_TYPE_APPLICATION_JSON, output.getMultiValueHeaders().getFirst("Content-Type"));
 
         validateMapResponseModel(output);
     }
@@ -128,7 +128,7 @@ public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals(CONTENT_TYPE_APPLICATION_JSON, output.getHeaders().get("Content-Type"));
+        assertEquals(CONTENT_TYPE_APPLICATION_JSON, output.getMultiValueHeaders().getFirst("Content-Type"));
 
         validateSingleValueModel(output, "https");
     }
@@ -143,7 +143,7 @@ public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals(CONTENT_TYPE_APPLICATION_JSON, output.getHeaders().get("Content-Type"));
+        assertEquals(CONTENT_TYPE_APPLICATION_JSON, output.getMultiValueHeaders().getFirst("Content-Type"));
 
         validateSingleValueModel(output, AUTHORIZER_PRINCIPAL_ID);
     }

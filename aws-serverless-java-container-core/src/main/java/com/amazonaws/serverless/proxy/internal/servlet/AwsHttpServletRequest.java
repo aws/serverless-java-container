@@ -16,6 +16,7 @@ import com.amazonaws.serverless.proxy.RequestReader;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 import com.amazonaws.serverless.proxy.model.ApiGatewayRequestContext;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
+import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -60,7 +61,6 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     static final String HEADER_VALUE_SEPARATOR = ";";
     static final String HEADER_QUALIFIER_SEPARATOR = ",";
     static final String FORM_DATA_SEPARATOR = "&";
-    static final String DEFAULT_CHARACTER_ENCODING = "UTF-8";
     static final DateTimeFormatter dateFormatter = DateTimeFormatter.RFC_1123_DATE_TIME;
     static final String ENCODING_VALUE_KEY = "charset";
 
@@ -295,7 +295,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
      * @param encodeCharset Charset to use for encoding the query string
      * @return The generated query string for the URI
      */
-    protected String generateQueryString(Map<String, String> parameters, boolean encode, String encodeCharset)
+    protected String generateQueryString(MultiValuedTreeMap<String, String> parameters, boolean encode, String encodeCharset)
             throws ServletException {
         if (parameters == null || parameters.size() == 0) {
             return null;
@@ -306,27 +306,22 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
 
         StringBuilder queryStringBuilder = new StringBuilder();
 
-        /*parameters.keySet().stream().forEach(k -> parameters.stream().forEach(v -> {
-            queryStringBuilder.append("&");
-            queryStringBuilder.append(k);
-            queryStringBuilder.append("=");
-            queryStringBuilder.append(v);
-        }));*/
         try {
-            for (Map.Entry<String, String> e : parameters.entrySet()) {
-                queryStringBuilder.append("&");
-                if (encode) {
-                    queryStringBuilder.append(URLEncoder.encode(e.getKey(), encodeCharset));
-                } else {
-                    queryStringBuilder.append(e.getKey());
+            for (String key : parameters.keySet()) {
+                for (String val : parameters.get(key)) {
+                    queryStringBuilder.append("&");
+                    if (encode) {
+                        queryStringBuilder.append(URLEncoder.encode(key, encodeCharset));
+                    } else {
+                        queryStringBuilder.append(key);
+                    }
+                    queryStringBuilder.append("=");
+                    if (encode) {
+                        queryStringBuilder.append(URLEncoder.encode(val, encodeCharset));
+                    } else {
+                        queryStringBuilder.append(val);
+                    }
                 }
-                queryStringBuilder.append("=");
-                if (encode) {
-                    queryStringBuilder.append(URLEncoder.encode(e.getValue(), encodeCharset));
-                } else {
-                    queryStringBuilder.append(e.getValue());
-                }
-
             }
         } catch (UnsupportedEncodingException e) {
             throw new ServletException("Invalid charset passed for query string encoding", e);

@@ -30,6 +30,8 @@ public class AwsHttpServletRequestTest {
             .queryString("one", "two").queryString("three", "four").build();
     private static final AwsProxyRequest encodedQueryString = new AwsProxyRequestBuilder("/test", "GET")
             .queryString("one", "two").queryString("json", "{\"name\":\"faisal\"}").build();
+    private static final AwsProxyRequest multipleParams = new AwsProxyRequestBuilder("/test", "GET")
+            .queryString("one", "two").queryString("one", "three").queryString("json", "{\"name\":\"faisal\"}").build();
 
     private static final MockLambdaContext mockContext = new MockLambdaContext();
 
@@ -80,7 +82,7 @@ public class AwsHttpServletRequestTest {
 
         String parsedString = null;
         try {
-            parsedString = request.generateQueryString(request.getAwsProxyRequest().getQueryStringParameters(), true, config.getUriEncoding());
+            parsedString = request.generateQueryString(request.getAwsProxyRequest().getMultiValueQueryStringParameters(), true, config.getUriEncoding());
         } catch (ServletException e) {
             e.printStackTrace();
             fail("Could not generate query string");
@@ -97,12 +99,29 @@ public class AwsHttpServletRequestTest {
 
         String parsedString = null;
         try {
-            parsedString = request.generateQueryString(request.getAwsProxyRequest().getQueryStringParameters(), true, config.getUriEncoding());
+            parsedString = request.generateQueryString(request.getAwsProxyRequest().getMultiValueQueryStringParameters(), true, config.getUriEncoding());
         } catch (ServletException e) {
             e.printStackTrace();
             fail("Could not generate query string");
         }
         assertTrue(parsedString.contains("one=two"));
+        assertTrue(parsedString.contains("json=%7B%22name%22%3A%22faisal%22%7D"));
+        assertTrue(parsedString.contains("&") && parsedString.indexOf("&") > 0 && parsedString.indexOf("&") < parsedString.length());
+    }
+
+    @Test
+    public void queryStringWithMultipleValues_generateQueryString_validQuery() {
+        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(multipleParams, mockContext, null, config);
+
+        String parsedString = null;
+        try {
+            parsedString = request.generateQueryString(request.getAwsProxyRequest().getMultiValueQueryStringParameters(), true, config.getUriEncoding());
+        } catch (ServletException e) {
+            e.printStackTrace();
+            fail("Could not generate query string");
+        }
+        assertTrue(parsedString.contains("one=two"));
+        assertTrue(parsedString.contains("one=three"));
         assertTrue(parsedString.contains("json=%7B%22name%22%3A%22faisal%22%7D"));
         assertTrue(parsedString.contains("&") && parsedString.indexOf("&") > 0 && parsedString.indexOf("&") < parsedString.length());
     }

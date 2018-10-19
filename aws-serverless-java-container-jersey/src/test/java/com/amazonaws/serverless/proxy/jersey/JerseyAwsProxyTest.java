@@ -65,7 +65,7 @@ public class JerseyAwsProxyTest {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getHeaders().get("Content-Type"));
+        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
 
         validateMapResponseModel(output);
     }
@@ -79,7 +79,7 @@ public class JerseyAwsProxyTest {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getHeaders().get("Content-Type"));
+        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
 
         validateMapResponseModel(output);
     }
@@ -92,18 +92,18 @@ public class JerseyAwsProxyTest {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertTrue(output.getHeaders().containsKey(EchoJerseyResource.SERVLET_RESP_HEADER_KEY));
+        assertTrue(output.getMultiValueHeaders().containsKey(EchoJerseyResource.SERVLET_RESP_HEADER_KEY));
     }
 
     @Test
     public void context_serverInfo_correctContext() {
         AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/servlet-context", "GET").build();
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
-        for (String header : output.getHeaders().keySet()) {
-            System.out.println(header + ": " + output.getHeaders().get(header));
+        for (String header : output.getMultiValueHeaders().keySet()) {
+            System.out.println(header + ": " + output.getMultiValueHeaders().getFirst(header));
         }
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getHeaders().get("Content-Type"));
+        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
 
         validateSingleValueModel(output, AwsServletContext.SERVER_INFO);
     }
@@ -116,7 +116,7 @@ public class JerseyAwsProxyTest {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getHeaders().get("Content-Type"));
+        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
 
         validateSingleValueModel(output, "https");
     }
@@ -130,7 +130,7 @@ public class JerseyAwsProxyTest {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getHeaders().get("Content-Type"));
+        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
 
         validateSingleValueModel(output, AUTHORIZER_PRINCIPAL_ID);
     }
@@ -146,7 +146,7 @@ public class JerseyAwsProxyTest {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getHeaders().get("Content-Type"));
+        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
 
         validateSingleValueModel(output, CUSTOM_HEADER_VALUE);
     }

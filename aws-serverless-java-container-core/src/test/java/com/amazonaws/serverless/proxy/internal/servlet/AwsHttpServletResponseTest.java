@@ -1,6 +1,8 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
 
+import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
+
 import org.junit.Test;
 
 import javax.servlet.http.Cookie;
@@ -152,20 +154,20 @@ public class AwsHttpServletResponseTest {
         resp.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         resp.addHeader("content-type", "application/xml");
 
-        Map<String, String> awsResp = resp.getAwsResponseHeaders();
+        MultiValuedTreeMap<String, String> awsResp = resp.getAwsResponseHeaders();
         assertEquals(1, awsResp.size());
-        assertEquals("application/json", awsResp.get(HttpHeaders.CONTENT_TYPE));
+        assertEquals("application/xml", awsResp.getFirst(HttpHeaders.CONTENT_TYPE));
     }
 
     @Test
-    public void responseHeaders_getAwsResponseHeaders_expectMergedCookies() {
+    public void responseHeaders_getAwsResponseHeaders_expectedMultpleCookieHeaders() {
         AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
         resp.addCookie(new Cookie(COOKIE_NAME, COOKIE_VALUE));
         resp.addCookie(new Cookie("Second", "test"));
 
-        Map<String, String> awsResp = resp.getAwsResponseHeaders();
+        MultiValuedTreeMap<String, String> awsResp = resp.getAwsResponseHeaders();
         assertEquals(1, awsResp.size());
-        assertEquals(2, awsResp.get(HttpHeaders.SET_COOKIE).split(",").length);
+        assertEquals(2, awsResp.get(HttpHeaders.SET_COOKIE).size());
     }
 
     @Test

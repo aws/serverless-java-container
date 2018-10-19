@@ -69,8 +69,8 @@ public class HelloWorldSparkStreamTest {
             AwsProxyResponse response = LambdaContainerHandler.getObjectMapper().readValue(outputStream.toByteArray(), AwsProxyResponse.class);
 
             assertEquals(200, response.getStatusCode());
-            assertTrue(response.getHeaders().containsKey(CUSTOM_HEADER_KEY));
-            assertEquals(CUSTOM_HEADER_VALUE, response.getHeaders().get(CUSTOM_HEADER_KEY));
+            assertTrue(response.getMultiValueHeaders().containsKey(CUSTOM_HEADER_KEY));
+            assertEquals(CUSTOM_HEADER_VALUE, response.getMultiValueHeaders().getFirst(CUSTOM_HEADER_KEY));
             assertEquals(BODY_TEXT_RESPONSE, response.getBody());
         } catch (IOException e) {
             e.printStackTrace();

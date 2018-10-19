@@ -55,8 +55,8 @@ public class HelloWorldSparkTest {
         AwsProxyResponse response = handler.proxy(req, new MockLambdaContext());
 
         assertEquals(200, response.getStatusCode());
-        assertTrue(response.getHeaders().containsKey(CUSTOM_HEADER_KEY));
-        assertEquals(CUSTOM_HEADER_VALUE, response.getHeaders().get(CUSTOM_HEADER_KEY));
+        assertTrue(response.getMultiValueHeaders().containsKey(CUSTOM_HEADER_KEY));
+        assertEquals(CUSTOM_HEADER_VALUE, response.getMultiValueHeaders().getFirst(CUSTOM_HEADER_KEY));
         assertEquals(BODY_TEXT_RESPONSE, response.getBody());
     }
 
@@ -66,10 +66,10 @@ public class HelloWorldSparkTest {
         AwsProxyResponse response = handler.proxy(req, new MockLambdaContext());
 
         assertEquals(200, response.getStatusCode());
-        assertTrue(response.getHeaders().containsKey(HttpHeaders.SET_COOKIE));
-        assertTrue(response.getHeaders().get(HttpHeaders.SET_COOKIE).contains(COOKIE_NAME + "=" + COOKIE_VALUE));
-        assertTrue(response.getHeaders().get(HttpHeaders.SET_COOKIE).contains(COOKIE_DOMAIN));
-        assertTrue(response.getHeaders().get(HttpHeaders.SET_COOKIE).contains(COOKIE_PATH));
+        assertTrue(response.getMultiValueHeaders().containsKey(HttpHeaders.SET_COOKIE));
+        assertTrue(response.getMultiValueHeaders().getFirst(HttpHeaders.SET_COOKIE).contains(COOKIE_NAME + "=" + COOKIE_VALUE));
+        assertTrue(response.getMultiValueHeaders().getFirst(HttpHeaders.SET_COOKIE).contains(COOKIE_DOMAIN));
+        assertTrue(response.getMultiValueHeaders().getFirst(HttpHeaders.SET_COOKIE).contains(COOKIE_PATH));
     }
 
     @Test
@@ -77,16 +77,14 @@ public class HelloWorldSparkTest {
         AwsProxyRequest req = new AwsProxyRequestBuilder().method("GET").path("/multi-cookie").build();
         AwsProxyResponse response = handler.proxy(req, new MockLambdaContext());
 
-        System.out.println("Cookie: " + response.getHeaders().get(HttpHeaders.SET_COOKIE));
-
         assertEquals(200, response.getStatusCode());
-        assertTrue(response.getHeaders().containsKey(HttpHeaders.SET_COOKIE));
-        // we compare against 4 because the expiration date of the cookies will also contain a string
-        assertEquals(2, response.getHeaders().get(HttpHeaders.SET_COOKIE).split(",").length);
-        assertTrue(response.getHeaders().get(HttpHeaders.SET_COOKIE).contains(COOKIE_NAME + "=" + COOKIE_VALUE));
-        assertTrue(response.getHeaders().get(HttpHeaders.SET_COOKIE).contains(COOKIE_NAME + "2=" + COOKIE_VALUE + "2"));
-        assertTrue(response.getHeaders().get(HttpHeaders.SET_COOKIE).contains(COOKIE_DOMAIN));
-        assertTrue(response.getHeaders().get(HttpHeaders.SET_COOKIE).contains(COOKIE_PATH));
+        assertTrue(response.getMultiValueHeaders().containsKey(HttpHeaders.SET_COOKIE));
+
+        assertEquals(2, response.getMultiValueHeaders().get(HttpHeaders.SET_COOKIE).size());
+        assertTrue(response.getMultiValueHeaders().getFirst(HttpHeaders.SET_COOKIE).contains(COOKIE_NAME + "=" + COOKIE_VALUE));
+        assertTrue(response.getMultiValueHeaders().get(HttpHeaders.SET_COOKIE).get(1).contains(COOKIE_NAME + "2=" + COOKIE_VALUE + "2"));
+        assertTrue(response.getMultiValueHeaders().getFirst(HttpHeaders.SET_COOKIE).contains(COOKIE_DOMAIN));
+        assertTrue(response.getMultiValueHeaders().getFirst(HttpHeaders.SET_COOKIE).contains(COOKIE_PATH));
     }
 
     @Test
@@ -95,8 +93,8 @@ public class HelloWorldSparkTest {
         AwsProxyResponse response = handler.proxy(req, new MockLambdaContext());
 
         assertEquals(200, response.getStatusCode());
-        assertTrue(response.getHeaders().containsKey(CUSTOM_HEADER_KEY));
-        assertEquals(CUSTOM_HEADER_VALUE, response.getHeaders().get(CUSTOM_HEADER_KEY));
+        assertTrue(response.getMultiValueHeaders().containsKey(CUSTOM_HEADER_KEY));
+        assertEquals(CUSTOM_HEADER_VALUE, response.getMultiValueHeaders().getFirst(CUSTOM_HEADER_KEY));
         assertEquals(BODY_TEXT_RESPONSE, response.getBody());
     }
 

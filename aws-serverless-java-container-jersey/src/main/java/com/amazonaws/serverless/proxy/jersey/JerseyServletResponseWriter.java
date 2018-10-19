@@ -13,7 +13,6 @@
 package com.amazonaws.serverless.proxy.jersey;
 
 
-import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;

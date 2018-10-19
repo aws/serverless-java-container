@@ -16,6 +16,7 @@ import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.ErrorModel;
+import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -57,14 +58,14 @@ public class AwsProxyExceptionHandler
     // Variables - Private - Static
     //-------------------------------------------------------------
 
-    private static Map<String, String> headers = new HashMap<>();
+    private static MultiValuedTreeMap<String, String> headers = new MultiValuedTreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
     //-------------------------------------------------------------
     // Constructors
     //-------------------------------------------------------------
 
     static {
-        headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+        headers.putSingle(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
     }
 
 
