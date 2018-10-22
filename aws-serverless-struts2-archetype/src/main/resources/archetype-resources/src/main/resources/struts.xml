@@ -16,7 +16,7 @@
     <!-- Define the package name where *Controller classes will be resolved in this case e.g. actions.PingController could also be com.your.company.actions.PingController -->
     <constant name="struts.convention.package.locators" value="actions"/>
     <constant name="struts.convention.action.mapAllMatches" value="true"/>
-    <constant name="struts.convention.default.parent.package" value="pets"/>
+    <constant name="struts.convention.default.parent.package" value="ping"/>
     <constant name="struts.action.extension" value=",,xml,json,action"/>
     <constant name="struts.rest.defaultExtension" value="json"/>
 
@@ -39,7 +39,7 @@
     <!-- Set encoding to UTF-8, default is ISO-8859-1 -->
     <constant name="struts.i18n.encoding" value="UTF-8"/>
 
-    <package name="pets" extends="struts-lambda-support" namespace="/">
+    <package name="ping" extends="struts-lambda-support" namespace="/">
     </package>
 
 </struts>

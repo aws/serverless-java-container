@@ -27,19 +27,8 @@ public class Struts2LambdaHandler implements RequestStreamHandler {
             .getAwsProxyHandler();
 
     @Override
-    public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) {
-
-        try {
-            AwsProxyRequest request = LambdaContainerHandler.getObjectMapper()
-                    .readValue(inputStream, AwsProxyRequest.class);
-
-            AwsProxyResponse response = handler.proxy(request, context);
-            LambdaContainerHandler.getObjectMapper().writeValue(outputStream, response);
-
-            // just in case it wasn't closed by the mapper
-            outputStream.close();
-        } catch (IOException e) {
-            log.error("An unexpected exception happened while handling request", e);
-        }
+    public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
+            throws IOException {
+        handler.proxyStream(inputStream, outputStream, context);
     }
 }

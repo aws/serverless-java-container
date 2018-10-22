@@ -23,6 +23,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: AWS Serverless Apache Struts2 API - ${groupId}::${artifactId}
+Globals:
+  Api:
+    EndpointConfiguration: REGIONAL
+
 Resources:
   ${resourceName}Function:
     Type: AWS::Serverless::Function

@@ -1,4 +1,4 @@
-package ${groupId}.controller;
+package ${groupId}.actions;
 
 
 import com.opensymphony.xwork2.ModelDriven;
@@ -32,13 +32,9 @@ public class PingController extends RestActionSupport implements ModelDriven<Obj
 
     // POST /ping
     public HttpHeaders create() {
-        if (model.getName() == null || model.getBreed() == null) {
-            return null;
-        }
-
         this.model = UUID.randomUUID().toString();
         return new DefaultHttpHeaders("success")
-                .setLocationId(model.getId());
+                .setLocationId(model);
 
     }
 
