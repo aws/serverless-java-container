@@ -16,7 +16,7 @@
     </parent>
 
     <properties>
-        <jackson.version>2.9.5</jackson.version>
+        <jackson.version>2.9.7</jackson.version>
         <jaxrs.version>2.1</jaxrs.version>
         <servlet.version>3.1.0</servlet.version>
     </properties>
@@ -49,6 +49,14 @@
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.module/jackson-module-afterburner -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-afterburner</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
 
         <!-- https://mvnrepository.com/artifact/commons-fileupload/commons-fileupload -->
         <dependency>
