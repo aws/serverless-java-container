@@ -135,8 +135,13 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
      * @param basePath The base path to be stripped from the request
      */
     public void stripBasePath(String basePath) {
-        config.setStripBasePath(true);
-        config.setServiceBasePath(basePath);
+        if (basePath == null || "".equals(basePath)) {
+            config.setStripBasePath(false);
+            config.setServiceBasePath(null);
+        } else {
+            config.setStripBasePath(true);
+            config.setServiceBasePath(basePath);
+        }
     }
 
     /**

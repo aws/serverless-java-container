@@ -142,6 +142,27 @@ public class JerseyParamEncodingTest {
     }
 
     @Test
+    public void pathParam_encoded_routesToCorrectPath() {
+        String encodedParam = "http%3A%2F%2Fhelloresource.com";
+        String path = "/echo/encoded-path/" + encodedParam;
+        AwsProxyRequest request = new AwsProxyRequestBuilder(path, "GET").build();
+        AwsProxyResponse resp = handler.proxy(request, lambdaContext);
+        assertNotNull(resp);
+        assertEquals(resp.getStatusCode(), 200);
+        validateSingleValueModel(resp, encodedParam);
+    }
+
+    @Test
+    public void pathParam_encoded_returns404() {
+        String encodedParam = "http://helloresource.com";
+        String path = "/echo/encoded-path/" + encodedParam;
+        AwsProxyRequest request = new AwsProxyRequestBuilder(path, "GET").build();
+        AwsProxyResponse resp = handler.proxy(request, lambdaContext);
+        assertNotNull(resp);
+        assertEquals(resp.getStatusCode(), 404);
+    }
+
+    @Test
     @Ignore
     public void queryParam_listOfString_expectCorrectLength() {
         AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/list-query-string", "GET").queryString("list", "v1,v2,v3").build();

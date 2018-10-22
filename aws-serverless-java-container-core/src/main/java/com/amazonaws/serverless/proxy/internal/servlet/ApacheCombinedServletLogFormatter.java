@@ -108,7 +108,7 @@ public class ApacheCombinedServletLogFormatter<ContainerRequestType extends Http
         logLineBuilder.append("\"");
         logLineBuilder.append(servletRequest.getMethod().toUpperCase(Locale.ENGLISH));
         logLineBuilder.append(" ");
-        logLineBuilder.append(servletRequest.getPathInfo());
+        logLineBuilder.append(servletRequest.getRequestURI());
         logLineBuilder.append(" ");
         logLineBuilder.append(servletRequest.getProtocol());
         logLineBuilder.append("\" ");

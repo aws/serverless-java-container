@@ -203,7 +203,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getPathInfo() {
-        String pathInfo = cleanUri(request.getPath()); //getServletPath().replace(getContextPath(), "");
+        String pathInfo = cleanUri(request.getPath());
         return decodeRequestPath(pathInfo, LambdaContainerHandler.getContainerConfig());
     }
 

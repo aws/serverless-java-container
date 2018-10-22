@@ -1,6 +1,7 @@
 package com.amazonaws.serverless.proxy.jersey;
 
 
+import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.jersey.suppliers.AwsProxyServletRequestSupplier;
 
@@ -34,6 +35,7 @@ import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 
 import static com.amazonaws.serverless.proxy.RequestReader.API_GATEWAY_CONTEXT_PROPERTY;
+import static com.amazonaws.serverless.proxy.RequestReader.API_GATEWAY_EVENT_PROPERTY;
 import static com.amazonaws.serverless.proxy.RequestReader.API_GATEWAY_STAGE_VARS_PROPERTY;
 import static com.amazonaws.serverless.proxy.RequestReader.JAX_SECURITY_CONTEXT_PROPERTY;
 import static com.amazonaws.serverless.proxy.RequestReader.LAMBDA_CONTEXT_PROPERTY;
@@ -125,7 +127,16 @@ public class JerseyHandlerFilter implements Filter, Container {
             baseUri = getBaseUri(request, "/");
         }
 
-        UriBuilder uriBuilder = UriBuilder.fromUri(baseUri).path(servletRequest.getPathInfo());
+        String requestFullPath = servletRequest.getRequestURI();
+        if (LambdaContainerHandler.getContainerConfig().getServiceBasePath() != null && LambdaContainerHandler.getContainerConfig().isStripBasePath()) {
+            if (requestFullPath.startsWith(LambdaContainerHandler.getContainerConfig().getServiceBasePath())) {
+                requestFullPath = requestFullPath.replaceFirst(LambdaContainerHandler.getContainerConfig().getServiceBasePath(), "");
+                if (!requestFullPath.startsWith("/")) {
+                    requestFullPath = "/" + requestFullPath;
+                }
+            }
+        }
+        UriBuilder uriBuilder = UriBuilder.fromUri(baseUri).path(requestFullPath);
         uriBuilder.replaceQuery(servletRequest.getQueryString());
 
         PropertiesDelegate apiGatewayProperties = new MapPropertiesDelegate();
@@ -136,7 +147,7 @@ public class JerseyHandlerFilter implements Filter, Container {
 
         ContainerRequest requestContext = new ContainerRequest(
                 null, // jersey uses "/" by default
-                uriBuilder.build(), //requestUri,
+                uriBuilder.build(),
                 servletRequest.getMethod().toUpperCase(Locale.ENGLISH),
                 (SecurityContext)servletRequest.getAttribute(JAX_SECURITY_CONTEXT_PROPERTY),
                 apiGatewayProperties);

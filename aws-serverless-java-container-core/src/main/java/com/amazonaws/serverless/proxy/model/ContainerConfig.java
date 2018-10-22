@@ -19,7 +19,7 @@ public class ContainerConfig {
         ContainerConfig configuration = new ContainerConfig();
         configuration.setStripBasePath(false);
         configuration.setUriEncoding(DEFAULT_URI_ENCODING);
-        configuration.setConsolidateSetCookieHeaders(true);
+        configuration.setConsolidateSetCookieHeaders(false);
         configuration.setUseStageAsServletContext(false);
         configuration.setValidFilePaths(DEFAULT_FILE_PATHS);
         configuration.setQueryStringCaseSensitive(false);

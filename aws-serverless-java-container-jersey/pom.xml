@@ -84,6 +84,15 @@
 
     <build>
         <plugins>
+            <!-- fork JVM before each spring test to make sure we have a clean context -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.9</version>
+                <configuration>
+                    <forkMode>always</forkMode>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
