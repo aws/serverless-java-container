@@ -2,6 +2,7 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
+import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
@@ -9,6 +10,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import org.junit.Test;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.SecurityContext;
 import java.lang.reflect.Method;
 
@@ -56,5 +58,55 @@ public class AwsProxyHttpServletRequestReaderTest {
             fail("Could not read request");
         }
 
+    }
+
+    @Test
+    public void readRequest_contentCharset_doesNotOverrideRequestCharset() {
+        String requestCharset = "application/json; charset=UTF-8";
+        AwsProxyRequest request = new AwsProxyRequestBuilder(ENCODED_REQUEST_PATH, "GET").header(HttpHeaders.CONTENT_TYPE, requestCharset).build();
+        try {
+            HttpServletRequest servletRequest = reader.readRequest(request, null, null, ContainerConfig.defaultConfig());
+            assertNotNull(servletRequest);
+            assertNotNull(servletRequest.getHeader(HttpHeaders.CONTENT_TYPE));
+            assertEquals(requestCharset, servletRequest.getHeader(HttpHeaders.CONTENT_TYPE));
+            assertEquals("UTF-8", servletRequest.getCharacterEncoding());
+        } catch (InvalidRequestEventException e) {
+            e.printStackTrace();
+            fail("Could not read request");
+        }
+    }
+
+    @Test
+    public void readRequest_contentCharset_setsDefaultCharsetWhenNotSpecified() {
+        String requestCharset = "application/json";
+        AwsProxyRequest request = new AwsProxyRequestBuilder(ENCODED_REQUEST_PATH, "GET").header(HttpHeaders.CONTENT_TYPE, requestCharset).build();
+        try {
+            HttpServletRequest servletRequest = reader.readRequest(request, null, null, ContainerConfig.defaultConfig());
+            assertNotNull(servletRequest);
+            assertNotNull(servletRequest.getHeader(HttpHeaders.CONTENT_TYPE));
+            String contentAndCharset = requestCharset + "; charset=" + LambdaContainerHandler.getContainerConfig().getDefaultContentCharset();
+            assertEquals(contentAndCharset, servletRequest.getHeader(HttpHeaders.CONTENT_TYPE));
+            assertEquals(LambdaContainerHandler.getContainerConfig().getDefaultContentCharset(), servletRequest.getCharacterEncoding());
+        } catch (InvalidRequestEventException e) {
+            e.printStackTrace();
+            fail("Could not read request");
+        }
+    }
+
+    @Test
+    public void readRequest_contentCharset_appendsCharsetToComplextContentType() {
+        String contentType = "multipart/form-data; boundary=something";
+        AwsProxyRequest request = new AwsProxyRequestBuilder(ENCODED_REQUEST_PATH, "GET").header(HttpHeaders.CONTENT_TYPE, contentType).build();
+        try {
+            HttpServletRequest servletRequest = reader.readRequest(request, null, null, ContainerConfig.defaultConfig());
+            assertNotNull(servletRequest);
+            assertNotNull(servletRequest.getHeader(HttpHeaders.CONTENT_TYPE));
+            String contentAndCharset = contentType + "; charset=" + LambdaContainerHandler.getContainerConfig().getDefaultContentCharset();
+            assertEquals(contentAndCharset, servletRequest.getHeader(HttpHeaders.CONTENT_TYPE));
+            assertEquals(LambdaContainerHandler.getContainerConfig().getDefaultContentCharset(), servletRequest.getCharacterEncoding());
+        } catch (InvalidRequestEventException e) {
+            e.printStackTrace();
+            fail("Could not read request");
+        }
     }
 }

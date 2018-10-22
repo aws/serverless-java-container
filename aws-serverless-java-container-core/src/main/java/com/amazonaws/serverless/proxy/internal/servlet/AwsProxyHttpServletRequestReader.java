@@ -14,10 +14,12 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.proxy.RequestReader;
+import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.services.lambda.runtime.Context;
 
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.SecurityContext;
 
 /**
@@ -34,6 +36,11 @@ public class AwsProxyHttpServletRequestReader extends RequestReader<AwsProxyRequ
     public AwsProxyHttpServletRequest readRequest(AwsProxyRequest request, SecurityContext securityContext, Context lambdaContext, ContainerConfig config)
             throws InvalidRequestEventException {
         request.setPath(stripBasePath(request.getPath(), config));
+        if (request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE) != null) {
+            String contentType = request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
+            // put single as we always expect to have one and only one content type in a request.
+            request.getMultiValueHeaders().putSingle(HttpHeaders.CONTENT_TYPE, getContentTypeWithCharset(contentType, config));
+        }
         AwsProxyHttpServletRequest servletRequest = new AwsProxyHttpServletRequest(request, lambdaContext, securityContext, config);
         servletRequest.setAttribute(API_GATEWAY_CONTEXT_PROPERTY, request.getRequestContext());
         servletRequest.setAttribute(API_GATEWAY_STAGE_VARS_PROPERTY, request.getStageVariables());
@@ -51,5 +58,27 @@ public class AwsProxyHttpServletRequestReader extends RequestReader<AwsProxyRequ
     @Override
     protected Class<? extends AwsProxyRequest> getRequestClass() {
         return AwsProxyRequest.class;
+    }
+
+    //-------------------------------------------------------------
+    // Methods - Private
+    //-------------------------------------------------------------
+
+    private String getContentTypeWithCharset(String headerValue, ContainerConfig config) {
+        if (headerValue == null || "".equals(headerValue.trim())) {
+            return headerValue;
+        }
+
+        if (headerValue.contains("charset=")) {
+            return headerValue;
+        }
+
+        String newValue = headerValue;
+        if (!headerValue.trim().endsWith(";")) {
+            newValue += "; ";
+        }
+
+        newValue += "charset=" + config.getDefaultContentCharset();
+        return newValue;
     }
 }

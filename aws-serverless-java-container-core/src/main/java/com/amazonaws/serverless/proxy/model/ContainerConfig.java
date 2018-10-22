@@ -13,6 +13,7 @@ import java.util.List;
  */
 public class ContainerConfig {
     public static final String DEFAULT_URI_ENCODING = "UTF-8";
+    public static final String DEFAULT_CONTENT_CHARSET = "ISO-8859-1";
     private static final List<String> DEFAULT_FILE_PATHS = new ArrayList<String>() {{ add("/tmp"); add("/var/task"); }};
 
     public static ContainerConfig defaultConfig() {
@@ -24,6 +25,7 @@ public class ContainerConfig {
         configuration.setValidFilePaths(DEFAULT_FILE_PATHS);
         configuration.setQueryStringCaseSensitive(false);
         configuration.addBinaryContentTypes("application/octet-stream", "image/jpeg", "image/png", "image/gif");
+        configuration.setDefaultContentCharset(DEFAULT_CONTENT_CHARSET);
 
         return configuration;
     }
@@ -35,6 +37,7 @@ public class ContainerConfig {
     private String serviceBasePath;
     private boolean stripBasePath;
     private String uriEncoding;
+    private String defaultContentCharset;
     private boolean consolidateSetCookieHeaders;
     private boolean useStageAsServletContext;
     private List<String> validFilePaths;
@@ -247,5 +250,26 @@ public class ContainerConfig {
      */
     public boolean isBinaryContentType(String contentType) {
         return contentType != null && binaryContentTypes.contains(contentType.trim());
+    }
+
+
+    /**
+     * Returns the name of the default charset appended to the <code>Content-Type</code> header if no charset is specified by the request. The
+     * default value of this is <code>ISO-8859-1</code>.
+     * @return The name of the default charset for the Content-Type header
+     */
+    public String getDefaultContentCharset() {
+        return defaultContentCharset;
+    }
+
+
+    /**
+     * Sets the default charset value for the <code>Content-Type</code> header if no charset is specified with a request. The default value of this
+     * is <code>ISO-8859-1</code>. If a request specifies a <code>Content-Type</code> header without a <code>charset</code> property, the value of
+     * this field is automatically appended to the header.
+     * @param defaultContentCharset The name of the charset for the content type header.
+     */
+    public void setDefaultContentCharset(String defaultContentCharset) {
+        this.defaultContentCharset = defaultContentCharset;
     }
 }
