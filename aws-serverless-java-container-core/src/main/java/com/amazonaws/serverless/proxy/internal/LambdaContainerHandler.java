@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,6 +82,9 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
 
     private static ContainerConfig config = ContainerConfig.defaultConfig();
     private static ObjectMapper objectMapper = new ObjectMapper();
+    static {
+        objectMapper.registerModule(new AfterburnerModule());
+    }
 
 
 
@@ -211,6 +215,9 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
         } catch (JsonMappingException e) {
             log.error("Error while mapping object to RequestType class", e);
             getObjectMapper().writeValue(output, exceptionHandler.handle(e));
+        } finally {
+            output.flush();
+            output.close();
         }
     }
 

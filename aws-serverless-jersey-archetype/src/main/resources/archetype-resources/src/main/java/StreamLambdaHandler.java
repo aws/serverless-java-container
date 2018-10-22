@@ -13,10 +13,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import ${groupId}.resource.PingResource;
+
 
 public class StreamLambdaHandler implements RequestStreamHandler {
     private static final ResourceConfig jerseyApplication = new ResourceConfig()
-                                                                    .packages("${groupId}.resource")
+                                                                    .register(PingResource.class)
                                                                     .register(JacksonFeature.class);
     private static final JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler
             = JerseyLambdaContainerHandler.getAwsProxyHandler(jerseyApplication);
@@ -25,8 +27,5 @@ public class StreamLambdaHandler implements RequestStreamHandler {
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
             throws IOException {
         handler.proxyStream(inputStream, outputStream, context);
-
-        // just in case it wasn't closed by the mapper
-        outputStream.close();
     }
 }
