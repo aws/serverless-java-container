@@ -73,6 +73,7 @@ public class AwsProxyRequestBuilder {
         this.request.setMultiValueQueryStringParameters(new MultiValuedTreeMap<>());
         this.request.setRequestContext(new ApiGatewayRequestContext());
         this.request.getRequestContext().setRequestId(UUID.randomUUID().toString());
+        this.request.getRequestContext().setExtendedRequestId(UUID.randomUUID().toString());
         this.request.getRequestContext().setStage("test");
         this.request.getRequestContext().setProtocol("HTTP/1.1");
         this.request.getRequestContext().setRequestTimeEpoch(System.currentTimeMillis());

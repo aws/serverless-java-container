@@ -38,6 +38,7 @@ public class ApiGatewayRequestContext {
     private String resourcePath;
     private String httpMethod;
     private String requestId;
+    private String extendedRequestId;
     private String accountId;
     private ApiGatewayRequestIdentity identity;
     private ApiGatewayAuthorizerContext authorizer;
@@ -99,6 +100,16 @@ public class ApiGatewayRequestContext {
 
     public void setRequestId(String requestId) {
         this.requestId = requestId;
+    }
+
+
+    public String getExtendedRequestId() {
+        return extendedRequestId;
+    }
+
+
+    public void setExtendedRequestId(String extendedRequestId) {
+        this.extendedRequestId = extendedRequestId;
     }
 
 
