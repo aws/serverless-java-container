@@ -42,7 +42,7 @@
     </licenses>
 
     <properties>
-        <jacoco.minCoverage>0.1</jacoco.minCoverage>
+        <jacoco.minCoverage>0.5</jacoco.minCoverage>
     </properties>
 
     <dependencies>
