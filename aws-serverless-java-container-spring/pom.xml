@@ -16,8 +16,9 @@
     </parent>
 
     <properties>
-        <spring.version>5.0.7.RELEASE</spring.version>
-        <spring-security.version>5.0.1.RELEASE</spring-security.version>
+        <spring.version>5.1.1.RELEASE</spring.version>
+        <springboot.version>1.5.17.RELEASE</springboot.version>
+        <spring-security.version>5.1.1.RELEASE</spring-security.version>
         <jackson.version>2.9.7</jackson.version>
     </properties>
 
@@ -83,7 +84,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
-            <version>1.5.9.RELEASE</version>
+            <version>${springboot.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
