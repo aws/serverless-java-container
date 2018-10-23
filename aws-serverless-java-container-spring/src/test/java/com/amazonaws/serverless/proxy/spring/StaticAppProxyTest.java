@@ -29,7 +29,7 @@ public class StaticAppProxyTest {
 
         assertEquals(200, resp.getStatusCode());
         assertTrue(resp.getBody().startsWith("<!DOCTYPE html>"));
-        assertTrue(resp.getHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
-        assertEquals(MediaType.TEXT_HTML, resp.getHeaders().get(HttpHeaders.CONTENT_TYPE));
+        assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.TEXT_HTML, resp.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
     }
 }

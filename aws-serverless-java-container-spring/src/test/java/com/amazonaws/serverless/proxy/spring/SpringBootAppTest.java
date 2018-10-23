@@ -40,9 +40,9 @@ public class SpringBootAppTest {
         AwsProxyResponse resp = handler.handleRequest(req, context);
         assertNotNull(resp);
         assertEquals(404, resp.getStatusCode());
-        assertNotNull(resp.getHeaders());
-        assertTrue(resp.getHeaders().containsKey("Content-Type"));
-        assertEquals("application/json;charset=UTF-8", resp.getHeaders().get("Content-Type"));
+        assertNotNull(resp.getMultiValueHeaders());
+        assertTrue(resp.getMultiValueHeaders().containsKey("Content-Type"));
+        assertEquals("application/json;charset=UTF-8", resp.getMultiValueHeaders().getFirst("Content-Type"));
         try {
             JsonNode errorData = mapper.readTree(resp.getBody());
             assertNotNull(errorData.findValue("status"));

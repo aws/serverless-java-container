@@ -19,10 +19,12 @@
         <module>aws-serverless-java-container-jersey</module>
         <module>aws-serverless-java-container-spark</module>
         <module>aws-serverless-java-container-spring</module>
-        <module>archetypes/jersey</module>
-        <module>archetypes/spark</module>
-        <module>archetypes/spring</module>
-        <module>archetypes/springboot</module>
+        <module>aws-serverless-java-container-struts2</module>
+        <module>aws-serverless-struts2-archetype</module>
+        <module>aws-serverless-jersey-archetype</module>
+        <module>aws-serverless-spark-archetype</module>
+        <module>aws-serverless-spring-archetype</module>
+        <module>aws-serverless-springboot-archetype</module>
     </modules>
 
     <scm>
@@ -40,7 +42,7 @@
     </licenses>
 
     <properties>
-        <jacoco.minCoverage>0.7</jacoco.minCoverage>
+        <jacoco.minCoverage>0.5</jacoco.minCoverage>
     </properties>
 
     <dependencies>

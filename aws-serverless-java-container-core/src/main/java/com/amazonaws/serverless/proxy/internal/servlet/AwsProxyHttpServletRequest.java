@@ -86,7 +86,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     private SecurityContext securityContext;
     private Map<String, List<String>> urlEncodedFormParameters;
     private Map<String, Part> multipartFormParameters;
-    private Map<String, String> caseInsensitiveHeaders;
     private static Logger log = LoggerFactory.getLogger(AwsProxyHttpServletRequest.class);
     private ContainerConfig config;
 
@@ -96,7 +95,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
 
     public AwsProxyHttpServletRequest(AwsProxyRequest awsProxyRequest, Context lambdaContext, SecurityContext awsSecurityContext) {
-        this(awsProxyRequest, lambdaContext, awsSecurityContext, ContainerConfig.defaultConfig());
+        this(awsProxyRequest, lambdaContext, awsSecurityContext, LambdaContainerHandler.getContainerConfig());
     }
 
 
@@ -105,9 +104,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         this.request = awsProxyRequest;
         this.securityContext = awsSecurityContext;
         this.config = config;
-
-        this.caseInsensitiveHeaders = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        this.caseInsensitiveHeaders.putAll(awsProxyRequest.getHeaders());
     }
 
 
@@ -128,7 +124,10 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public Cookie[] getCookies() {
-        String cookieHeader = getHeaderCaseInsensitive(HttpHeaders.COOKIE);
+        if (request.getMultiValueHeaders() == null) {
+            return new Cookie[0];
+        }
+        String cookieHeader = request.getMultiValueHeaders().getFirst(HttpHeaders.COOKIE);
         if (cookieHeader == null) {
             return new Cookie[0];
         }
@@ -138,7 +137,10 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public long getDateHeader(String s) {
-        String dateString = getHeaderCaseInsensitive(s);
+        if (request.getMultiValueHeaders() == null) {
+            return -1L;
+        }
+        String dateString = request.getMultiValueHeaders().getFirst(s);
         if (dateString == null) {
             return -1L;
         }
@@ -153,34 +155,38 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getHeader(String s) {
-        return getHeaderCaseInsensitive(s);
+        List<String> values = getHeaderValues(s);
+        if (values == null || values.size() == 0) {
+            return null;
+        }
+        return values.get(0);
     }
 
 
     @Override
     public Enumeration<String> getHeaders(String s) {
-        String headerValue = getHeaderCaseInsensitive(s);
-        if (headerValue == null) {
-            return Collections.enumeration(new ArrayList<String>());
+        if (request.getMultiValueHeaders() == null || request.getMultiValueHeaders().get(s) == null) {
+            return Collections.emptyEnumeration();
         }
-        List<String> valueCollection = new ArrayList<>();
-        valueCollection.add(headerValue);
-        return Collections.enumeration(valueCollection);
+        return Collections.enumeration(request.getMultiValueHeaders().get(s));
     }
 
 
     @Override
     public Enumeration<String> getHeaderNames() {
-        if (caseInsensitiveHeaders == null) {
+        if (request.getMultiValueHeaders() == null) {
             return Collections.emptyEnumeration();
         }
-        return Collections.enumeration(caseInsensitiveHeaders.keySet());
+        return Collections.enumeration(request.getMultiValueHeaders().keySet());
     }
 
 
     @Override
     public int getIntHeader(String s) {
-        String headerValue = getHeaderCaseInsensitive(s);
+        if (request.getMultiValueHeaders() == null) {
+            return -1;
+        }
+        String headerValue = request.getMultiValueHeaders().getFirst(s);
         if (headerValue == null) {
             return -1;
         }
@@ -197,7 +203,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getPathInfo() {
-        String pathInfo = cleanUri(request.getPath()); //getServletPath().replace(getContextPath(), "");
+        String pathInfo = cleanUri(request.getPath());
         return decodeRequestPath(pathInfo, LambdaContainerHandler.getContainerConfig());
     }
 
@@ -211,23 +217,23 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getContextPath() {
-        if (config.isUseStageAsServletContext()) {
-            String contextPath = cleanUri(request.getRequestContext().getStage());
-            if (config.getServiceBasePath() != null) {
-                contextPath += cleanUri(config.getServiceBasePath());
-            }
-
-            return contextPath;
-        } else {
-            return "" + (config.getServiceBasePath() != null ? cleanUri(config.getServiceBasePath()) : "");
+        String contextPath = "";
+        if (config.isUseStageAsServletContext() && request.getRequestContext().getStage() != null) {
+            log.debug("Using stage as context path");
+            contextPath = cleanUri(request.getRequestContext().getStage());
         }
+        if (config.getServiceBasePath() != null) {
+            contextPath += cleanUri(config.getServiceBasePath());
+        }
+
+        return contextPath;
     }
 
 
     @Override
     public String getQueryString() {
         try {
-            return this.generateQueryString(request.getQueryStringParameters(), true, config.getUriEncoding());
+            return this.generateQueryString(request.getMultiValueQueryStringParameters(), true, config.getUriEncoding());
         } catch (ServletException e) {
             log.error("Could not generate query string", e);
             return null;
@@ -328,7 +334,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     public String getCharacterEncoding() {
         // we only look at content-type because content-encoding should only be used for
         // "binary" requests such as gzip/deflate.
-        String contentTypeHeader = getHeaderCaseInsensitive(HttpHeaders.CONTENT_TYPE);
+        String contentTypeHeader = request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
         if (contentTypeHeader == null) {
             return null;
         }
@@ -354,7 +360,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     public void setCharacterEncoding(String s)
             throws UnsupportedEncodingException {
-        String currentContentType = getHeaderCaseInsensitive(HttpHeaders.CONTENT_TYPE);
+        String currentContentType = request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
         if (currentContentType == null || "".equals(currentContentType)) {
             log.error("Called set character encoding to " + SecurityUtils.crlf(s) + " on a request without a content type. Character encoding will not be set");
             return;
@@ -373,10 +379,10 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
                 contentType.append(contentTypeString);
             }
 
-            setHeaderCaseInsensitive(HttpHeaders.CONTENT_TYPE.toLowerCase(Locale.getDefault()), contentType.toString());
+            request.getMultiValueHeaders().putSingle(HttpHeaders.CONTENT_TYPE, contentType.toString());
         } else {
-            setHeaderCaseInsensitive(
-                    HttpHeaders.CONTENT_TYPE.toLowerCase(Locale.getDefault()),
+            request.getMultiValueHeaders().putSingle(
+                    HttpHeaders.CONTENT_TYPE,
                     currentContentType + HEADER_VALUE_SEPARATOR + " " + ENCODING_VALUE_KEY + HEADER_KEY_VALUE_SEPARATOR + s);
         }
     }
@@ -384,7 +390,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public int getContentLength() {
-        String headerValue = getHeaderCaseInsensitive(HttpHeaders.CONTENT_LENGTH);
+        String headerValue = request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_LENGTH);
         if (headerValue == null) {
             return -1;
         }
@@ -394,7 +400,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public long getContentLengthLong() {
-        String headerValue = getHeaderCaseInsensitive(HttpHeaders.CONTENT_LENGTH);
+        String headerValue = request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_LENGTH);
         if (headerValue == null) {
             return -1;
         }
@@ -404,7 +410,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getContentType() {
-        String contentTypeHeader = getHeaderCaseInsensitive(HttpHeaders.CONTENT_TYPE);
+        String contentTypeHeader = request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
         if (contentTypeHeader == null || "".equals(contentTypeHeader.trim())) {
             return null;
         }
@@ -442,7 +448,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getParameter(String s) {
-       String queryStringParameter = getQueryParamValue(s, config.isQueryStringCaseSensitive());
+       String queryStringParameter = getFirstQueryParamValue(s, config.isQueryStringCaseSensitive());
         if (queryStringParameter != null) {
             return queryStringParameter;
         }
@@ -458,12 +464,11 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public Enumeration<String> getParameterNames() {
-        List<String> paramNames = new ArrayList<>();
-        if (request.getQueryStringParameters() != null) {
-            paramNames.addAll(request.getQueryStringParameters().keySet());
+        if (request.getMultiValueQueryStringParameters() == null) {
+            return Collections.emptyEnumeration();
         }
-        paramNames.addAll(getFormUrlEncodedParametersMap().keySet());
-        return Collections.enumeration(paramNames);
+
+        return Collections.enumeration(request.getMultiValueQueryStringParameters().keySet());
     }
 
 
@@ -471,7 +476,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     @SuppressFBWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS") // suppressing this as according to the specs we should be returning null here if we can't find params
     public String[] getParameterValues(String s) {
         List<String> values = new ArrayList<>();
-        String queryValue = getQueryParamValue(s, config.isQueryStringCaseSensitive());
+        String queryValue = getFirstQueryParamValue(s, config.isQueryStringCaseSensitive());
         if (queryValue != null) {
             values.add(queryValue);
         }
@@ -498,14 +503,14 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             output.put(e.getKey(), e.getValue().toArray(new String[0]));
         });
 
-        if (request.getQueryStringParameters() != null) {
-            request.getQueryStringParameters().keySet().stream().parallel().forEach(e -> {
+        if (request.getMultiValueQueryStringParameters() != null) {
+            request.getMultiValueQueryStringParameters().keySet().stream().parallel().forEach(e -> {
                 List<String> newValues = new ArrayList<>();
                 if (output.containsKey(e)) {
                     String[] values = output.get(e);
                     newValues.addAll(Arrays.asList(values));
                 }
-                newValues.add(getQueryParamValue(e, config.isQueryStringCaseSensitive()));
+                newValues.add(getFirstQueryParamValue(e, config.isQueryStringCaseSensitive()));
                 output.put(e, newValues.toArray(new String[0]));
             });
         }
@@ -522,11 +527,15 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getScheme() {
-        String cfScheme = getHeaderCaseInsensitive(CF_PROTOCOL_HEADER_NAME);
+        // if we don't have any headers to deduce the value we assume HTTPS - API Gateway's default
+        if (request.getMultiValueHeaders() == null) {
+            return "https";
+        }
+        String cfScheme = request.getMultiValueHeaders().getFirst(CF_PROTOCOL_HEADER_NAME);
         if (cfScheme != null && SecurityUtils.isValidScheme(cfScheme)) {
             return cfScheme;
         }
-        String gwScheme = getHeaderCaseInsensitive(PROTOCOL_HEADER_NAME);
+        String gwScheme = request.getMultiValueHeaders().getFirst(PROTOCOL_HEADER_NAME);
         if (gwScheme != null && SecurityUtils.isValidScheme(gwScheme)) {
             return gwScheme;
         }
@@ -542,7 +551,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             region = "us-east-1";
         }
 
-        String hostHeader = getHeaderCaseInsensitive(HOST_HEADER_NAME);
+        String hostHeader = request.getMultiValueHeaders().getFirst(HOST_HEADER_NAME);
         if (hostHeader != null && SecurityUtils.isValidHost(hostHeader, request.getRequestContext().getApiId(), region)) {
             return hostHeader;
         }
@@ -554,7 +563,10 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     }
 
     public int getServerPort() {
-        String port = getHeaderCaseInsensitive(PORT_HEADER_NAME);
+        if (request.getMultiValueHeaders() == null) {
+            return 443;
+        }
+        String port = request.getMultiValueHeaders().getFirst(PORT_HEADER_NAME);
         if (SecurityUtils.isValidPort(port)) {
             return Integer.parseInt(port);
         } else {
@@ -572,20 +584,24 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getRemoteAddr() {
+        if (request.getRequestContext() == null || request.getRequestContext().getIdentity() == null) {
+            return "127.0.0.1";
+        }
         return request.getRequestContext().getIdentity().getSourceIp();
     }
 
 
     @Override
     public String getRemoteHost() {
-        return getHeaderCaseInsensitive(HttpHeaders.HOST);
+        return request.getMultiValueHeaders().getFirst(HttpHeaders.HOST);
     }
 
 
     @Override
     public Locale getLocale() {
-        List<Map.Entry<String, String>> values = this.parseHeaderValue(
-                getHeaderCaseInsensitive(HttpHeaders.ACCEPT_LANGUAGE)
+        // Accept-Language: fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5
+        List<HeaderValue> values = this.parseHeaderValue(
+                request.getMultiValueHeaders().getFirst(HttpHeaders.ACCEPT_LANGUAGE), ",", ";"
         );
         if (values.size() == 0) {
             return Locale.getDefault();
@@ -596,14 +612,15 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public Enumeration<Locale> getLocales() {
-        List<Map.Entry<String, String>> values = this.parseHeaderValue(
-                getHeaderCaseInsensitive(HttpHeaders.ACCEPT_LANGUAGE)
+        List<HeaderValue> values = this.parseHeaderValue(
+                request.getMultiValueHeaders().getFirst(HttpHeaders.ACCEPT_LANGUAGE), ",", ";"
         );
+
         List<Locale> locales = new ArrayList<>();
         if (values.size() == 0) {
             locales.add(Locale.getDefault());
         } else {
-            for (Map.Entry<String, String> locale : values) {
+            for (HeaderValue locale : values) {
                 locales.add(new Locale(locale.getValue()));
             }
         }
@@ -655,33 +672,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     //-------------------------------------------------------------
     // Methods - Private
     //-------------------------------------------------------------
-
-
-    private String getHeaderCaseInsensitive(String key) {
-        // special cases for referer and user agent headers
-        if ("referer".equals(key.toLowerCase(Locale.ENGLISH))) {
-            return request.getRequestContext().getIdentity().getCaller();
-        }
-        if ("user-agent".equals(key.toLowerCase(Locale.ENGLISH))) {
-            return request.getRequestContext().getIdentity().getUserAgent();
-        }
-
-        if (caseInsensitiveHeaders == null) {
-            return null;
-        }
-        return caseInsensitiveHeaders.get(key);
-    }
-
-    private void setHeaderCaseInsensitive(String key, String value) {
-        if (caseInsensitiveHeaders == null) {
-            caseInsensitiveHeaders = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-            if (request.getHeaders() != null) {
-                caseInsensitiveHeaders.putAll(request.getHeaders());
-            }
-        }
-
-        caseInsensitiveHeaders.put(key, value);
-    }
 
     private String[] getFormBodyParameterCaseInsensitive(String key) {
         List<String> values = getFormUrlEncodedParametersMap().get(key);
@@ -810,21 +800,57 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         }
     }
 
+    private List<String> getHeaderValues(String key) {
+        // special cases for referer and user agent headers
+        List<String> values = new ArrayList<>();
 
-    private String getQueryParamValue(String key, boolean isCaseSensitive) {
-        if (request.getQueryStringParameters() != null) {
+        if ("referer".equals(key.toLowerCase(Locale.ENGLISH))) {
+            values.add(request.getRequestContext().getIdentity().getCaller());
+            return values;
+        }
+        if ("user-agent".equals(key.toLowerCase(Locale.ENGLISH))) {
+            values.add(request.getRequestContext().getIdentity().getUserAgent());
+            return values;
+        }
+
+        if (request.getMultiValueHeaders() == null) {
+            return null;
+        }
+
+        return request.getMultiValueHeaders().get(key);
+    }
+
+
+    private String getFirstQueryParamValue(String key, boolean isCaseSensitive) {
+        if (request.getMultiValueQueryStringParameters() != null) {
             if (isCaseSensitive) {
-                return request.getQueryStringParameters().get(key);
+                return request.getMultiValueQueryStringParameters().getFirst(key);
             }
             
-            for (String k : request.getQueryStringParameters().keySet()) {
+            for (String k : request.getMultiValueQueryStringParameters().keySet()) {
                 if (k.toLowerCase(Locale.getDefault()).equals(key.toLowerCase(Locale.getDefault()))) {
-                    return request.getQueryStringParameters().get(k);
+                    return request.getMultiValueQueryStringParameters().getFirst(k);
                 }
             }
         }
 
         return null;
+    }
+
+    public String[] getQueryParamValues(String key, boolean isCaseSensitive) {
+        if (request.getMultiValueQueryStringParameters() != null) {
+            if (isCaseSensitive) {
+                return request.getMultiValueQueryStringParameters().get(key).toArray(new String[0]);
+            }
+
+            for (String k : request.getMultiValueQueryStringParameters().keySet()) {
+                if (k.toLowerCase(Locale.getDefault()).equals(key.toLowerCase(Locale.getDefault()))) {
+                    return request.getMultiValueQueryStringParameters().get(k).toArray(new String[0]);
+                }
+            }
+        }
+
+        return new String[0];
     }
 
 

@@ -1,19 +1,28 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
+import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
+import com.amazonaws.serverless.proxy.model.ContainerConfig;
 
+import org.apache.commons.io.input.NullInputStream;
 import org.junit.Test;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -61,7 +70,7 @@ public class AwsProxyHttpServletRequestTest {
     private static final AwsProxyRequest REQUEST_NULL_QUERY_STRING;
     static {
         AwsProxyRequest awsProxyRequest = new AwsProxyRequestBuilder("/hello", "GET").build();
-        awsProxyRequest.setQueryStringParameters(null);
+        awsProxyRequest.setMultiValueQueryStringParameters(null);
         REQUEST_NULL_QUERY_STRING = awsProxyRequest;
     }
 
@@ -326,16 +335,177 @@ public class AwsProxyHttpServletRequestTest {
             request.setCharacterEncoding(StandardCharsets.ISO_8859_1.name());
             assertNotNull(request.getHeader(HttpHeaders.CONTENT_TYPE));
             assertNotNull(request.getHeader(HttpHeaders.CONTENT_TYPE.toLowerCase(Locale.getDefault())));
-
-            assertFalse(proxyRequest.getHeaders().containsKey(HttpHeaders.CONTENT_TYPE) && proxyRequest.getHeaders().containsKey(HttpHeaders.CONTENT_TYPE.toLowerCase(Locale.getDefault())));
         } catch (UnsupportedEncodingException e) {
             fail("Unsupported encoding");
             e.printStackTrace();
         }
-
-
-
     }
+
+    @Test
+    public void requestURL_getUrl_expectHttpSchemaAndLocalhostForLocalTesting() {
+        AwsProxyRequest req = getRequestWithHeaders();
+        req.getRequestContext().setApiId("test-id");
+        LambdaContainerHandler.getContainerConfig().enableLocalhost();
+        HttpServletRequest servletRequest = new AwsProxyHttpServletRequest(req, null, null);
+        String requestUrl = servletRequest.getRequestURL().toString();
+        assertTrue(requestUrl.contains("http://"));
+        assertTrue(requestUrl.contains("test-id.execute-api."));
+        assertTrue(requestUrl.endsWith(".com/hello"));
+
+        // set localhost
+        req.getMultiValueHeaders().putSingle("Host", "localhost");
+        servletRequest = new AwsProxyHttpServletRequest(req, null, null);
+        requestUrl = servletRequest.getRequestURL().toString();
+        assertTrue(requestUrl.contains("http://localhost"));
+        assertTrue(requestUrl.endsWith("localhost/hello"));
+        LambdaContainerHandler.getContainerConfig().getCustomDomainNames().remove("localhost");
+    }
+
+    @Test
+    public void requestURL_getUrlWithCustomBasePath_expectCustomBasePath() {
+        AwsProxyRequest req = getRequestWithHeaders();
+        LambdaContainerHandler.getContainerConfig().setServiceBasePath("test");
+        HttpServletRequest servletRequest = new AwsProxyHttpServletRequest(req, null, null);
+        String requestUrl = servletRequest.getRequestURL().toString();
+        assertTrue(requestUrl.contains("/test/hello"));
+        LambdaContainerHandler.getContainerConfig().setServiceBasePath(null);
+    }
+
+    @Test
+    public void requestURL_getUrlWithContextPath_expectStageAsContextPath() {
+        AwsProxyRequest req = getRequestWithHeaders();
+        req.getRequestContext().setStage("test-stage");
+        LambdaContainerHandler.getContainerConfig().setUseStageAsServletContext(true);
+        HttpServletRequest servletRequest = new AwsProxyHttpServletRequest(req, null, null);
+        String requestUrl = servletRequest.getRequestURL().toString();
+        System.out.println("Url: " + requestUrl);
+        assertTrue(requestUrl.contains("/test-stage/"));
+        LambdaContainerHandler.getContainerConfig().setUseStageAsServletContext(false);
+    }
+
+    @Test
+    public void getLocales_emptyAcceptHeader_expectDefaultLocale() {
+        AwsProxyRequest req = getRequestWithHeaders();
+        HttpServletRequest servletRequest = new AwsProxyHttpServletRequest(req, null, null);
+        Enumeration<Locale> locales = servletRequest.getLocales();
+        int localesNo = 0;
+        while (locales.hasMoreElements()) {
+            Locale defaultLocale = locales.nextElement();
+            assertEquals(Locale.getDefault(), defaultLocale);
+            localesNo++;
+        }
+        assertEquals(1, localesNo);
+    }
+
+    @Test
+    public void getLocales_validAcceptHeader_expectSingleLocale() {
+        AwsProxyRequest req = getRequestWithHeaders();
+        req.getMultiValueHeaders().putSingle(HttpHeaders.ACCEPT_LANGUAGE, "fr-CH");
+        HttpServletRequest servletRequest = new AwsProxyHttpServletRequest(req, null, null);
+        Enumeration<Locale> locales = servletRequest.getLocales();
+        int localesNo = 0;
+        while (locales.hasMoreElements()) {
+            Locale defaultLocale = locales.nextElement();
+            assertEquals(new Locale("fr-CH"), defaultLocale);
+            localesNo++;
+        }
+        assertEquals(1, localesNo);
+    }
+
+    @Test
+    public void getLocales_validAcceptHeaderMultipleLocales_expectFullLocaleList() {
+        AwsProxyRequest req = getRequestWithHeaders();
+        req.getMultiValueHeaders().putSingle(HttpHeaders.ACCEPT_LANGUAGE, "fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5");
+        HttpServletRequest servletRequest = new AwsProxyHttpServletRequest(req, null, null);
+        Enumeration<Locale> locales = servletRequest.getLocales();
+        List<Locale> localesList = new ArrayList<>();
+        while (locales.hasMoreElements()) {
+            localesList.add(locales.nextElement());
+        }
+        assertEquals(5, localesList.size());
+        assertEquals(new Locale("fr-CH"), localesList.get(0));
+        assertEquals(new Locale("fr"), localesList.get(1));
+        assertEquals(new Locale("en"), localesList.get(2));
+        assertEquals(new Locale("de"), localesList.get(3));
+        assertEquals(new Locale("*"), localesList.get(4));
+
+        assertNotNull(servletRequest.getLocale());
+        assertEquals(new Locale("fr-CH"), servletRequest.getLocale());
+    }
+
+    @Test
+    public void getLocales_validAcceptHeaderMultipleLocales_expectFullLocaleListOrdered() {
+        AwsProxyRequest req = getRequestWithHeaders();
+        req.getMultiValueHeaders().putSingle(HttpHeaders.ACCEPT_LANGUAGE, "fr-CH, en;q=0.8, de;q=0.7, *;q=0.5, fr;q=0.9");
+        HttpServletRequest servletRequest = new AwsProxyHttpServletRequest(req, null, null);
+        Enumeration<Locale> locales = servletRequest.getLocales();
+        List<Locale> localesList = new ArrayList<>();
+        while (locales.hasMoreElements()) {
+            localesList.add(locales.nextElement());
+        }
+        assertEquals(5, localesList.size());
+        assertEquals(new Locale("fr-CH"), localesList.get(0));
+        assertEquals(new Locale("fr"), localesList.get(1));
+        assertEquals(new Locale("en"), localesList.get(2));
+        assertEquals(new Locale("de"), localesList.get(3));
+        assertEquals(new Locale("*"), localesList.get(4));
+    }
+
+    @Test
+    public void nullQueryString_expectNoExceptions() {
+        AwsProxyRequest req = new AwsProxyRequestBuilder("/hello", "GET").build();
+        AwsProxyHttpServletRequest servletReq = new AwsProxyHttpServletRequest(req, null, null);
+        assertNull(servletReq.getQueryString());
+        assertEquals(0, servletReq.getParameterMap().size());
+        assertFalse(servletReq.getParameterNames().hasMoreElements());
+        assertNull(servletReq.getParameter("param"));
+        assertNull(servletReq.getParameterValues("param"));
+    }
+
+    @Test
+    public void inputStream_emptyBody_expectNullInputStream() {
+        AwsProxyRequest proxyReq = getRequestWithHeaders();
+        assertNull(proxyReq.getBody());
+        HttpServletRequest req = new AwsProxyHttpServletRequest(proxyReq, null, null);
+
+        try {
+            InputStream is = req.getInputStream();
+            assertTrue(is.getClass() == AwsProxyHttpServletRequest.AwsServletInputStream.class);
+            assertEquals(0, is.available());
+        } catch (IOException e) {
+            fail("Could not get input stream");
+        }
+    }
+
+    @Test
+    public void getHeaders_emptyHeaders_expectEmptyEnumeration() {
+        AwsProxyRequest proxyReq = new AwsProxyRequestBuilder("/hello", "GET").build();
+        HttpServletRequest req = new AwsProxyHttpServletRequest(proxyReq, null, null);
+        assertFalse(req.getHeaders("param").hasMoreElements());
+    }
+
+    @Test
+    public void getServerPort_defaultPort_expect443() {
+        HttpServletRequest req = new AwsProxyHttpServletRequest(getRequestWithHeaders(), null, null);
+        assertEquals(443, req.getServerPort());
+    }
+
+    @Test
+    public void getServerPort_customPortFromHeader_expectCustomPort() {
+        AwsProxyRequest proxyReq = getRequestWithHeaders();
+        proxyReq.getMultiValueHeaders().putSingle(AwsProxyHttpServletRequest.PORT_HEADER_NAME, "80");
+        HttpServletRequest req = new AwsProxyHttpServletRequest(proxyReq, null, null);
+        assertEquals(80, req.getServerPort());
+    }
+
+    @Test
+    public void getServerPort_invalidCustomPortFromHeader_expectDefaultPort() {
+        AwsProxyRequest proxyReq = getRequestWithHeaders();
+        proxyReq.getMultiValueHeaders().putSingle(AwsProxyHttpServletRequest.PORT_HEADER_NAME, "7200");
+        HttpServletRequest req = new AwsProxyHttpServletRequest(proxyReq, null, null);
+        assertEquals(443, req.getServerPort());
+    }
+
 
     private AwsProxyRequest getRequestWithHeaders() {
         return new AwsProxyRequestBuilder("/hello", "GET")

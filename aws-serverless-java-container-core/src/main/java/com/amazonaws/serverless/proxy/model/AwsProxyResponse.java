@@ -12,9 +12,6 @@
  */
 package com.amazonaws.serverless.proxy.model;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Response object for an API Gateway method using AWS_PROXY integrations
  */
@@ -25,7 +22,7 @@ public class AwsProxyResponse {
     //-------------------------------------------------------------
 
     private int statusCode;
-    private Map<String, String> headers;
+    private MultiValuedTreeMap<String, String> multiValueHeaders;
     private String body;
     private boolean isBase64Encoded;
 
@@ -44,14 +41,14 @@ public class AwsProxyResponse {
     }
 
 
-    public AwsProxyResponse(int statusCode, Map<String, String> headers) {
+    public AwsProxyResponse(int statusCode, MultiValuedTreeMap<String, String> headers) {
         this(statusCode, headers, null);
     }
 
 
-    public AwsProxyResponse(int statusCode, Map<String, String> headers, String body) {
+    public AwsProxyResponse(int statusCode, MultiValuedTreeMap<String, String> headers, String body) {
         this.statusCode = statusCode;
-        this.headers = headers;
+        this.multiValueHeaders = headers;
         this.body = body;
     }
 
@@ -61,11 +58,11 @@ public class AwsProxyResponse {
     //-------------------------------------------------------------
 
     public void addHeader(String key, String value) {
-        if (this.headers == null) {
-            this.headers = new HashMap<String, String>();
+        if (this.multiValueHeaders == null) {
+            this.multiValueHeaders = new MultiValuedTreeMap<String, String>();
         }
 
-        this.headers.put(key, value);
+        this.multiValueHeaders.add(key, value);
     }
 
 
@@ -83,13 +80,13 @@ public class AwsProxyResponse {
     }
 
 
-    public Map<String, String> getHeaders() {
-        return headers;
+    public MultiValuedTreeMap<String, String> getMultiValueHeaders() {
+        return multiValueHeaders;
     }
 
 
-    public void setHeaders(Map<String, String> headers) {
-        this.headers = headers;
+    public void setMultiValueHeaders(MultiValuedTreeMap<String, String> multiValueHeaders) {
+        this.multiValueHeaders = multiValueHeaders;
     }
 
 

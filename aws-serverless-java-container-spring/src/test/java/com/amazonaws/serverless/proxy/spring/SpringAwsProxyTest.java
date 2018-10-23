@@ -83,7 +83,7 @@ public class SpringAwsProxyTest {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getHeaders().get("Content-Type").split(";")[0]);
+        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type").split(";")[0]);
 
         validateMapResponseModel(output);
     }
@@ -97,7 +97,7 @@ public class SpringAwsProxyTest {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getHeaders().get("Content-Type").split(";")[0]);
+        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type").split(";")[0]);
 
         validateMapResponseModel(output);
     }
@@ -111,7 +111,7 @@ public class SpringAwsProxyTest {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getHeaders().get("Content-Type").split(";")[0]);
+        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type").split(";")[0]);
 
         validateMapResponseModel(output);
     }
@@ -168,7 +168,7 @@ public class SpringAwsProxyTest {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getHeaders().get("Content-Type").split(";")[0]);
+        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type").split(";")[0]);
 
         validateSingleValueModel(output, AUTHORIZER_PRINCIPAL_ID);
     }

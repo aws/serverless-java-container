@@ -50,7 +50,7 @@ public class JerseyParamEncodingTest {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getHeaders().get("Content-Type"));
+        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
 
         validateMapResponseModel(output, QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE);
     }
@@ -64,7 +64,7 @@ public class JerseyParamEncodingTest {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getHeaders().get("Content-Type"));
+        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
 
         validateMapResponseModel(output, QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE);
     }
@@ -79,7 +79,7 @@ public class JerseyParamEncodingTest {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getHeaders().get("Content-Type"));
+        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
 
         validateMapResponseModel(output, QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE);
     }
@@ -139,6 +139,27 @@ public class JerseyParamEncodingTest {
         assertEquals(resp.getStatusCode(), 200);
         validateSingleValueModel(resp, "%2F%2B%3D");
         System.out.println("body:" + resp.getBody());
+    }
+
+    @Test
+    public void pathParam_encoded_routesToCorrectPath() {
+        String encodedParam = "http%3A%2F%2Fhelloresource.com";
+        String path = "/echo/encoded-path/" + encodedParam;
+        AwsProxyRequest request = new AwsProxyRequestBuilder(path, "GET").build();
+        AwsProxyResponse resp = handler.proxy(request, lambdaContext);
+        assertNotNull(resp);
+        assertEquals(resp.getStatusCode(), 200);
+        validateSingleValueModel(resp, encodedParam);
+    }
+
+    @Test
+    public void pathParam_encoded_returns404() {
+        String encodedParam = "http://helloresource.com";
+        String path = "/echo/encoded-path/" + encodedParam;
+        AwsProxyRequest request = new AwsProxyRequestBuilder(path, "GET").build();
+        AwsProxyResponse resp = handler.proxy(request, lambdaContext);
+        assertNotNull(resp);
+        assertEquals(resp.getStatusCode(), 404);
     }
 
     @Test

@@ -9,7 +9,7 @@ import static org.junit.Assert.*;
 
 
 public class LambdaEmbeddedServerTest {
-    private static LambdaEmbeddedServer server = new LambdaEmbeddedServer(null, null, false);
+    private static LambdaEmbeddedServer server = new LambdaEmbeddedServer(null, null, null, false);
 
     @Test
     public void webSocket_configureWebSocket_noException() {

@@ -4,6 +4,7 @@ package com.amazonaws.serverless.proxy.model;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 
@@ -12,16 +13,19 @@ import java.util.List;
  */
 public class ContainerConfig {
     public static final String DEFAULT_URI_ENCODING = "UTF-8";
+    public static final String DEFAULT_CONTENT_CHARSET = "ISO-8859-1";
     private static final List<String> DEFAULT_FILE_PATHS = new ArrayList<String>() {{ add("/tmp"); add("/var/task"); }};
 
     public static ContainerConfig defaultConfig() {
         ContainerConfig configuration = new ContainerConfig();
         configuration.setStripBasePath(false);
         configuration.setUriEncoding(DEFAULT_URI_ENCODING);
-        configuration.setConsolidateSetCookieHeaders(true);
+        configuration.setConsolidateSetCookieHeaders(false);
         configuration.setUseStageAsServletContext(false);
         configuration.setValidFilePaths(DEFAULT_FILE_PATHS);
         configuration.setQueryStringCaseSensitive(false);
+        configuration.addBinaryContentTypes("application/octet-stream", "image/jpeg", "image/png", "image/gif");
+        configuration.setDefaultContentCharset(DEFAULT_CONTENT_CHARSET);
 
         return configuration;
     }
@@ -33,15 +37,18 @@ public class ContainerConfig {
     private String serviceBasePath;
     private boolean stripBasePath;
     private String uriEncoding;
+    private String defaultContentCharset;
     private boolean consolidateSetCookieHeaders;
     private boolean useStageAsServletContext;
     private List<String> validFilePaths;
     private List<String> customDomainNames;
     private boolean queryStringCaseSensitive;
+    private final HashSet<String> binaryContentTypes;
 
     public ContainerConfig() {
         validFilePaths = new ArrayList<>();
         customDomainNames = new ArrayList<>();
+        binaryContentTypes = new HashSet<>();
     }
 
 
@@ -69,6 +76,10 @@ public class ContainerConfig {
      * @param serviceBasePath The base path mapping to be removed.
      */
     public void setServiceBasePath(String serviceBasePath) {
+        if (serviceBasePath == null) {
+            this.serviceBasePath = null;
+            return;
+        }
         // clean up base path before setting it, we want a "/" at the beginning but not at the end.
         String finalBasePath = serviceBasePath;
         if (!finalBasePath.startsWith("/")) {
@@ -218,5 +229,47 @@ public class ContainerConfig {
      */
     public void setQueryStringCaseSensitive(boolean queryStringCaseSensitive) {
         this.queryStringCaseSensitive = queryStringCaseSensitive;
+    }
+
+    /**
+     * Configure specified content type(s) as binary
+     * @param contentTypes list of exact content types that will be considered as binary
+     */
+    public void addBinaryContentTypes(String... contentTypes) {
+        if(contentTypes != null) {
+            for(String type: contentTypes) {
+                binaryContentTypes.add(type);
+            }
+        }
+    }
+
+    /**
+     * Determine if specified content type has been configured as binary
+     * @param contentType content type to query
+     * @return
+     */
+    public boolean isBinaryContentType(String contentType) {
+        return contentType != null && binaryContentTypes.contains(contentType.trim());
+    }
+
+
+    /**
+     * Returns the name of the default charset appended to the <code>Content-Type</code> header if no charset is specified by the request. The
+     * default value of this is <code>ISO-8859-1</code>.
+     * @return The name of the default charset for the Content-Type header
+     */
+    public String getDefaultContentCharset() {
+        return defaultContentCharset;
+    }
+
+
+    /**
+     * Sets the default charset value for the <code>Content-Type</code> header if no charset is specified with a request. The default value of this
+     * is <code>ISO-8859-1</code>. If a request specifies a <code>Content-Type</code> header without a <code>charset</code> property, the value of
+     * this field is automatically appended to the header.
+     * @param defaultContentCharset The name of the charset for the content type header.
+     */
+    public void setDefaultContentCharset(String defaultContentCharset) {
+        this.defaultContentCharset = defaultContentCharset;
     }
 }

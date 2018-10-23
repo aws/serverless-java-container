@@ -27,13 +27,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ext.ContextResolver;
-import javax.ws.rs.ext.Providers;
 
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 
 /**
@@ -205,5 +202,14 @@ public class EchoJerseyResource {
     @Path("/exception") @GET
     public Response throwException() {
         throw new UnsupportedOperationException(EXCEPTION_MESSAGE);
+    }
+
+    @Path("/encoded-path/{resource}") @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response encodedPathParam(@Encoded @PathParam("resource") String resource) {
+        SingleValueModel sv = new SingleValueModel();
+        sv.setValue(resource);
+        return Response.ok(sv).build();
     }
 }

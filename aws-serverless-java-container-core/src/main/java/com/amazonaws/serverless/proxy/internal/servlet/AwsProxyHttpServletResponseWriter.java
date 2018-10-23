@@ -15,6 +15,7 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.exceptions.InvalidResponseObjectException;
 import com.amazonaws.serverless.proxy.ResponseWriter;
+import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -39,7 +40,7 @@ public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpSer
         if (containerResponse.getAwsResponseBodyString() != null) {
             String responseString;
 
-            if (isValidUtf8(containerResponse.getAwsResponseBodyBytes())) {
+            if (!isBinary(containerResponse.getContentType()) && isValidUtf8(containerResponse.getAwsResponseBodyBytes())) {
                 responseString = containerResponse.getAwsResponseBodyString();
             } else {
                 responseString = Base64.getMimeEncoder().encodeToString(containerResponse.getAwsResponseBodyBytes());
@@ -48,11 +49,24 @@ public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpSer
 
             awsProxyResponse.setBody(responseString);
         }
-        awsProxyResponse.setHeaders(containerResponse.getAwsResponseHeaders());
+        awsProxyResponse.setMultiValueHeaders(containerResponse.getAwsResponseHeaders());
 
         awsProxyResponse.setStatusCode(containerResponse.getStatus());
 
         Timer.stop("SERVLET_RESPONSE_WRITE");
         return awsProxyResponse;
+    }
+
+    private boolean isBinary(String contentType) {
+        if(contentType != null) {
+            int semidx = contentType.indexOf(';');
+            if(semidx >= 0) {
+                return LambdaContainerHandler.getContainerConfig().isBinaryContentType(contentType.substring(0, semidx));
+            }
+            else {
+                return LambdaContainerHandler.getContainerConfig().isBinaryContentType(contentType);
+            }
+        }
+        return false;
     }
 }

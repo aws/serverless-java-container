@@ -3,6 +3,7 @@ package com.amazonaws.serverless.proxy.spark.embeddedserver;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import spark.ExceptionMapper;
 import spark.embeddedserver.EmbeddedServer;
 import spark.embeddedserver.EmbeddedServerFactory;
 import spark.route.Routes;
@@ -39,10 +40,10 @@ public class LambdaEmbeddedServerFactory implements EmbeddedServerFactory {
 
 
     @Override
-    public EmbeddedServer create(Routes routes, StaticFilesConfiguration staticFilesConfiguration, boolean multipleHandlers) {
+    public EmbeddedServer create(Routes routes, StaticFilesConfiguration staticFilesConfiguration, ExceptionMapper exceptionMapper, boolean multipleHandlers) {
         Timer.start("SPARK_SERVER_FACTORY_CREATE");
         if (embeddedServer == null) {
-            LambdaEmbeddedServerFactory.embeddedServer = new LambdaEmbeddedServer(routes, staticFilesConfiguration, multipleHandlers);
+            LambdaEmbeddedServerFactory.embeddedServer = new LambdaEmbeddedServer(routes, staticFilesConfiguration, exceptionMapper, multipleHandlers);
         }
         Timer.stop("SPARK_SERVER_FACTORY_CREATE");
         return embeddedServer;

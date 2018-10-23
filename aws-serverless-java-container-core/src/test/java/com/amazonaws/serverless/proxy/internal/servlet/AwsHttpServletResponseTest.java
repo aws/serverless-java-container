@@ -1,15 +1,23 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
 
+import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
+
 import org.junit.Test;
 
 import javax.servlet.http.Cookie;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Calendar;
+import java.util.Map;
 import java.util.TimeZone;
+import java.util.concurrent.CountDownLatch;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -138,6 +146,168 @@ public class AwsHttpServletResponseTest {
         String cookieHeader = resp.getHeader(HttpHeaders.SET_COOKIE);
         assertNotNull(cookieHeader);
         assertFalse(cookieHeader.contains("Expires"));
+    }
+
+    @Test
+    public void responseHeaders_getAwsResponseHeaders_expectLatestHeader() {
+        AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
+        resp.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+        resp.addHeader("content-type", "application/xml");
+
+        MultiValuedTreeMap<String, String> awsResp = resp.getAwsResponseHeaders();
+        assertEquals(1, awsResp.size());
+        assertEquals("application/xml", awsResp.getFirst(HttpHeaders.CONTENT_TYPE));
+    }
+
+    @Test
+    public void responseHeaders_getAwsResponseHeaders_expectedMultpleCookieHeaders() {
+        AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
+        resp.addCookie(new Cookie(COOKIE_NAME, COOKIE_VALUE));
+        resp.addCookie(new Cookie("Second", "test"));
+
+        MultiValuedTreeMap<String, String> awsResp = resp.getAwsResponseHeaders();
+        assertEquals(1, awsResp.size());
+        assertEquals(2, awsResp.get(HttpHeaders.SET_COOKIE).size());
+    }
+
+    @Test
+    public void releaseLatch_flushBuffer_expectFlushToWriteAndRelease() {
+        CountDownLatch respLatch = new CountDownLatch(1);
+        AwsHttpServletResponse resp = new AwsHttpServletResponse(null, respLatch);
+        String respBody = "Test resp";
+        PrintWriter writer = null;
+        try {
+            writer = resp.getWriter();
+            PrintWriter finalWriter = writer;
+            Runnable bodyWriter = () -> {
+                finalWriter.write(respBody);
+                try {
+                    resp.flushBuffer();
+                } catch (IOException e) {
+                    fail("Could not flush buffer");
+                }
+            };
+
+            new Thread(bodyWriter).start();
+        } catch (IOException e) {
+            fail("Could not get writer");
+        }
+
+        try {
+            respLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            fail("Response latch interrupted");
+        }
+
+        assertEquals(0, respLatch.getCount());
+        assertNotNull(writer);
+        assertEquals(respBody, resp.getAwsResponseBodyString());
+    }
+
+    @Test
+    public void dateHeader_addDateHeader_expectMultipleHeaders() {
+        AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
+        resp.addDateHeader("Date", Instant.now().toEpochMilli());
+        resp.addDateHeader("Date", Instant.now().toEpochMilli() - 1000);
+
+        assertEquals(2, resp.getHeaders("Date").size());
+    }
+
+    @Test
+    public void dateHeader_setDateHeader_expectSingleHeader() {
+        AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
+        resp.setDateHeader("Date", Instant.now().toEpochMilli());
+        resp.setDateHeader("Date", Instant.now().toEpochMilli() - 1000);
+
+        assertEquals(1, resp.getHeaders("Date").size());
+    }
+
+    @Test
+    public void response_reset_expectEmptyHeadersAndBody() {
+        CountDownLatch respLatch = new CountDownLatch(1);
+        AwsHttpServletResponse resp = new AwsHttpServletResponse(null, respLatch);
+        String body = "My Body";
+
+        resp.addHeader("Test", "test");
+        try {
+            resp.getWriter().write(body);
+            resp.flushBuffer();
+        } catch (IOException e) {
+            fail("Could not get writer");
+        }
+
+        assertEquals(1, resp.getHeaderNames().size());
+        assertEquals(body, resp.getAwsResponseBodyString());
+
+        resp.reset();
+
+        assertEquals(0, resp.getHeaderNames().size());
+    }
+
+    @Test
+    public void headers_setIntHeader_expectSingleHeaderValue() {
+        AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
+        resp.setIntHeader("Test", 15);
+        resp.setIntHeader("Test", 34);
+
+        assertEquals(1, resp.getHeaderNames().size());
+        assertEquals(1, resp.getHeaders("Test").size());
+        assertEquals("34", resp.getHeader("Test"));
+    }
+
+    @Test
+    public void headers_addIntHeader_expectMultipleHeaderValues() {
+        AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
+        resp.addIntHeader("Test", 15);
+        resp.addIntHeader("Test", 34);
+
+        assertEquals(1, resp.getHeaderNames().size());
+        assertEquals(2, resp.getHeaders("Test").size());
+        assertEquals("15", resp.getHeader("Test"));
+    }
+
+    @Test
+    public void characterEncoding_setCharacterEncoding() {
+        AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+        assertNotEquals("UTF-8", resp.getHeader("Content-Encoding"));
+        assertEquals("application/json; charset=utf-8", resp.getContentType());
+        assertEquals("application/json; charset=utf-8", resp.getHeader("Content-Type"));
+    }
+
+    @Test
+    public void characterEncoding_setContentType() {
+        AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
+        resp.setContentType("application/json; charset=utf-8");
+        resp.setCharacterEncoding("UTF-8");
+
+        assertEquals("application/json; charset=utf-8", resp.getContentType());
+        assertEquals("application/json; charset=utf-8", resp.getHeader("Content-Type"));
+        assertEquals("utf-8", resp.getCharacterEncoding());
+    }
+
+    @Test
+    public void characterEncoding_setContentTypeAndsetCharacterEncoding() {
+        AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+
+        assertEquals("application/json; charset=utf-8", resp.getContentType());
+        assertEquals("application/json; charset=utf-8", resp.getHeader("Content-Type"));
+        assertEquals("utf-8", resp.getCharacterEncoding());
+    }
+
+    @Test
+    public void characterEncoding_setCharacterEncodingAndsetContentType() {
+        AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
+        resp.setCharacterEncoding("UTF-8");
+        resp.setContentType("application/json");
+
+        assertEquals("application/json", resp.getContentType());
+        assertEquals("application/json", resp.getHeader("Content-Type"));
+        assertEquals("", resp.getCharacterEncoding());
     }
 
     private int getMaxAge(String header) {

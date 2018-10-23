@@ -12,8 +12,8 @@
  */
 package com.amazonaws.serverless.proxy.internal.servlet;
 
-import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
+import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
@@ -24,7 +24,6 @@ import javax.servlet.WriteListener;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MultivaluedHashMap;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -53,7 +52,7 @@ public class AwsHttpServletResponse
     // Variables - Private
     //-------------------------------------------------------------
 
-    private MultivaluedHashMap<String, String> headers = new MultivaluedHashMap<>();
+    private MultiValuedTreeMap<String, String> headers = new MultiValuedTreeMap<>(String.CASE_INSENSITIVE_ORDER);
     private int statusCode;
     private String statusMessage;
     private String responseBody;
@@ -202,7 +201,12 @@ public class AwsHttpServletResponse
 
     @Override
     public void addHeader(String s, String s1) {
-        setHeader(s, s1, false);
+        // TODO: We should probably have a list of headers that we are not allowed to have multiple values for
+        if (s.toLowerCase(Locale.getDefault()).equals(HttpHeaders.CONTENT_TYPE.toLowerCase(Locale.getDefault()))) {
+            setHeader(s, s1, true);
+        } else {
+            setHeader(s, s1, false);
+        }
     }
 
 
@@ -265,14 +269,17 @@ public class AwsHttpServletResponse
 
     @Override
     public String getCharacterEncoding() {
-        return headers.getFirst(HttpHeaders.CONTENT_ENCODING);
+        final String contentType = Optional.ofNullable(getContentType()).orElse("");
+        if (contentType.contains(";")) {
+            return contentType.split(";")[1].split("=")[1].trim().toLowerCase(Locale.getDefault());
+        } else {
+            return "";
+        }
     }
 
 
     @Override
-    public String getContentType() {
-        return headers.getFirst(HttpHeaders.CONTENT_TYPE);
-    }
+    public String getContentType() { return getHeader(HttpHeaders.CONTENT_TYPE); }
 
 
     @Override
@@ -334,7 +341,10 @@ public class AwsHttpServletResponse
 
     @Override
     public void setCharacterEncoding(String s) {
-        setHeader(HttpHeaders.CONTENT_ENCODING, s, true);
+        final String characterEncoding = Optional.ofNullable(s).orElse("").toLowerCase(Locale.getDefault());
+        final String oldValue = Optional.ofNullable(getHeader(HttpHeaders.CONTENT_TYPE)).orElse("");
+        String contentType = oldValue.contains(";") ? oldValue.split(";")[0].trim(): oldValue;
+        setHeader(HttpHeaders.CONTENT_TYPE, String.format("%s; charset=%s", contentType, characterEncoding), true);
     }
 
 
@@ -394,8 +404,9 @@ public class AwsHttpServletResponse
 
     @Override
     public void reset() {
-        headers = new MultivaluedHashMap<>();
+        headers = new MultiValuedTreeMap<>();
         responseBody = null;
+        writer = null;
         bodyOutputStream = new ByteArrayOutputStream();
     }
 
@@ -428,28 +439,8 @@ public class AwsHttpServletResponse
     }
 
 
-    Map<String, String> getAwsResponseHeaders() {
-        Map<String, String> responseHeaders = new HashMap<>();
-        for (String header : getHeaderNames()) {
-            // special behavior for set cookie
-            // RFC 2109 allows for a comma separated list of cookies in one Set-Cookie header: https://tools.ietf.org/html/rfc2109
-            if (header.equals(HttpHeaders.SET_COOKIE) && LambdaContainerHandler.getContainerConfig().isConsolidateSetCookieHeaders()) {
-                StringBuilder cookieHeader = new StringBuilder();
-                for (String cookieValue : headers.get(header)) {
-                    if (cookieHeader.length() > 0) {
-                        cookieHeader.append(",");
-                    }
-
-                    cookieHeader.append(" ").append(cookieValue);
-                }
-
-                responseHeaders.put(header, cookieHeader.toString());
-            } else {
-                responseHeaders.put(header, headers.getFirst(header));
-            }
-        }
-
-        return responseHeaders;
+    MultiValuedTreeMap<String, String> getAwsResponseHeaders() {
+        return headers;
     }
 
 
