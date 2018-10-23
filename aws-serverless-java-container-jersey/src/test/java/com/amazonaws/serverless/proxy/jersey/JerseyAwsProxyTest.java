@@ -13,6 +13,7 @@
 package com.amazonaws.serverless.proxy.jersey;
 
 
+import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
@@ -237,6 +238,21 @@ public class JerseyAwsProxyTest {
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(201, output.getStatusCode());
         handler.stripBasePath("");
+    }
+
+    @Test
+    public void stripBasePath_route_shouldReturn404WithStageAsContext() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/custompath/echo/status-code", "GET")
+                                          .stage("prod")
+                                          .json()
+                                          .queryString("status", "201")
+                                          .build();
+        handler.stripBasePath("/custompath");
+        LambdaContainerHandler.getContainerConfig().setUseStageAsServletContext(true);
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(404, output.getStatusCode());
+        handler.stripBasePath("");
+        LambdaContainerHandler.getContainerConfig().setUseStageAsServletContext(false);
     }
 
     @Test
