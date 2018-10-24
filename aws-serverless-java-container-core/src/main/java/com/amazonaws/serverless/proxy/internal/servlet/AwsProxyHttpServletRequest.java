@@ -25,6 +25,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.NullInputStream;
 import org.slf4j.Logger;
@@ -685,7 +686,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     }
 
 
-    @SuppressFBWarnings("FILE_UPLOAD_FILENAME")
+    @SuppressFBWarnings({"FILE_UPLOAD_FILENAME", "WEAK_FILENAMEUTILS"})
     private Map<String, Part> getMultipartFormParametersMap() {
         if (multipartFormParameters != null) {
             return multipartFormParameters;
@@ -701,7 +702,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         try {
             List<FileItem> items = upload.parseRequest(this);
             for (FileItem item : items) {
-                String fileName = SecurityUtils.getValidFilePath(item.getName(), true);
+                String fileName = FilenameUtils.getName(item.getName());
                 AwsProxyRequestPart newPart = new AwsProxyRequestPart(item.get());
                 newPart.setName(fileName);
                 newPart.setSubmittedFileName(item.getFieldName());
