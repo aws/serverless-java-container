@@ -6,7 +6,7 @@ Serverless Java Container natively supports API Gateway's proxy integration mode
 Follow the quick start guides in [our wiki](https://github.com/awslabs/aws-serverless-java-container/wiki) to integrate Serverless Java Container with your project:
 * [Spring quick start](https://github.com/awslabs/aws-serverless-java-container/wiki/Quick-start---Spring)
 * [Spring Boot quick start](https://github.com/awslabs/aws-serverless-java-container/wiki/Quick-start---Spring-Boot)
-* [Apache Struts quick start](https://github.com/awslabs/aws-serverless-java-container/wiki/Quick-start-Struts)
+* [Apache Struts quick start](https://github.com/awslabs/aws-serverless-java-container/wiki/Quick-start---Struts)
 * [Jersey quick start](https://github.com/awslabs/aws-serverless-java-container/wiki/Quick-start---Jersey)
 * [Spark quick start](https://github.com/awslabs/aws-serverless-java-container/wiki/Quick-start---Spark)   
 
