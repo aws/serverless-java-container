@@ -17,6 +17,8 @@ import com.amazonaws.serverless.proxy.model.ApiGatewayRequestContext;
 import com.amazonaws.serverless.proxy.jersey.model.MapResponseModel;
 import com.amazonaws.serverless.proxy.jersey.model.SingleValueModel;
 
+import org.glassfish.jersey.server.ContainerRequest;
+
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -210,6 +212,16 @@ public class EchoJerseyResource {
     public Response encodedPathParam(@Encoded @PathParam("resource") String resource) {
         SingleValueModel sv = new SingleValueModel();
         sv.setValue(resource);
+        return Response.ok(sv).build();
+    }
+
+    @Path("/referer-header") @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response referer(@HeaderParam("Referer") String referer) {
+        System.out.println("Received referer: " + referer);
+        SingleValueModel sv = new SingleValueModel();
+        sv.setValue(referer);
         return Response.ok(sv).build();
     }
 }

@@ -288,6 +288,20 @@ public class JerseyAwsProxyTest {
         validateSingleValueModel(resp, CUSTOM_HEADER_KEY);
     }
 
+    @Test
+    public void refererHeader_headerParam_expectCorrectInjection() {
+        String refererValue = "test-referer";
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/referer-header", "GET")
+                                          .nullBody()
+                                          .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                                          .header("Referer", refererValue)
+                                          .build();
+
+        AwsProxyResponse resp = handler.proxy(request, lambdaContext);
+        assertEquals(200, resp.getStatusCode());
+        validateSingleValueModel(resp, refererValue);
+    }
+
     private void validateMapResponseModel(AwsProxyResponse output) {
         validateMapResponseModel(output, CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE);
     }

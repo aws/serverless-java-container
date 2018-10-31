@@ -30,6 +30,8 @@ import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
@@ -167,8 +169,7 @@ public class JerseyHandlerFilter implements Filter, Container {
         
         while (headerNames.hasMoreElements()) {
             String headerKey = headerNames.nextElement();
-            //requestContext.header(headerKey, servletRequest.getHeader(headerKey));
-            requestContext.getHeaders().add(headerKey, servletRequest.getHeader(headerKey));
+            requestContext.getHeaders().addAll(headerKey, Collections.list(servletRequest.getHeaders(headerKey)));
         }
 
         Timer.stop("JERSEY_SERVLET_REQUEST_TO_CONTAINER");
