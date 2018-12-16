@@ -1,7 +1,7 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
 
-import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
+import com.amazonaws.serverless.proxy.model.Headers;
 
 import org.junit.Test;
 
@@ -15,7 +15,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Calendar;
-import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.CountDownLatch;
 import java.util.regex.Matcher;
@@ -154,7 +153,7 @@ public class AwsHttpServletResponseTest {
         resp.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         resp.addHeader("content-type", "application/xml");
 
-        MultiValuedTreeMap<String, String> awsResp = resp.getAwsResponseHeaders();
+        Headers awsResp = resp.getAwsResponseHeaders();
         assertEquals(1, awsResp.size());
         assertEquals("application/xml", awsResp.getFirst(HttpHeaders.CONTENT_TYPE));
     }
@@ -165,7 +164,7 @@ public class AwsHttpServletResponseTest {
         resp.addCookie(new Cookie(COOKIE_NAME, COOKIE_VALUE));
         resp.addCookie(new Cookie("Second", "test"));
 
-        MultiValuedTreeMap<String, String> awsResp = resp.getAwsResponseHeaders();
+        Headers awsResp = resp.getAwsResponseHeaders();
         assertEquals(1, awsResp.size());
         assertEquals(2, awsResp.get(HttpHeaders.SET_COOKIE).size());
     }

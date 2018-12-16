@@ -32,7 +32,7 @@ public class AwsProxyRequest {
     private String resource;
     private ApiGatewayRequestContext requestContext;
     private MultiValuedTreeMap<String, String> multiValueQueryStringParameters;
-    private MultiValuedTreeMap<String, String> multiValueHeaders;
+    private Headers multiValueHeaders;
     private Map<String, String> pathParameters;
     private String httpMethod;
     private Map<String, String> stageVariables;
@@ -40,7 +40,7 @@ public class AwsProxyRequest {
     private boolean isBase64Encoded;
 
     public AwsProxyRequest() {
-        multiValueHeaders = new MultiValuedTreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        multiValueHeaders = new Headers();
         multiValueQueryStringParameters = new MultiValuedTreeMap<>();
         pathParameters = new HashMap<>();
         stageVariables = new HashMap<>();
@@ -110,12 +110,12 @@ public class AwsProxyRequest {
         this.multiValueQueryStringParameters = multiValueQueryStringParameters;
     }
 
-    public MultiValuedTreeMap<String, String> getMultiValueHeaders() {
+    public Headers getMultiValueHeaders() {
         return multiValueHeaders;
     }
 
 
-    public void setMultiValueHeaders(MultiValuedTreeMap<String, String> multiValueHeaders) {
+    public void setMultiValueHeaders(Headers multiValueHeaders) {
         this.multiValueHeaders = multiValueHeaders;
     }
 

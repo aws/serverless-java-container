@@ -12,5 +12,5 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 @SpringBootApplication
 @ComponentScan(basePackages = "com.amazonaws.serverless.proxy.spring.springbootapp")
 public class TestApplication extends SpringBootServletInitializer {
-    
+
 }

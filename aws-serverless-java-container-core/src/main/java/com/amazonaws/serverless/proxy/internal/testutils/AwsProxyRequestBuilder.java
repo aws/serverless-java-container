@@ -18,10 +18,10 @@ import com.amazonaws.serverless.proxy.model.ApiGatewayRequestContext;
 import com.amazonaws.serverless.proxy.model.ApiGatewayRequestIdentity;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.CognitoAuthorizerClaims;
+import com.amazonaws.serverless.proxy.model.Headers;
 import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.io.IOUtils;
 
@@ -32,10 +32,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.UUID;
 
 
@@ -67,7 +65,7 @@ public class AwsProxyRequestBuilder {
     public AwsProxyRequestBuilder(String path, String httpMethod) {
 
         this.request = new AwsProxyRequest();
-        this.request.setMultiValueHeaders(new MultiValuedTreeMap<>(String.CASE_INSENSITIVE_ORDER)); // avoid NPE
+        this.request.setMultiValueHeaders(new Headers()); // avoid NPE
         this.request.setHttpMethod(httpMethod);
         this.request.setPath(path);
         this.request.setMultiValueQueryStringParameters(new MultiValuedTreeMap<>());
@@ -111,7 +109,7 @@ public class AwsProxyRequestBuilder {
 
     public AwsProxyRequestBuilder form(String key, String value) {
         if (request.getMultiValueHeaders() == null) {
-            request.setMultiValueHeaders(new MultiValuedTreeMap<>(String.CASE_INSENSITIVE_ORDER));
+            request.setMultiValueHeaders(new Headers());
         }
         request.getMultiValueHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
         String body = request.getBody();
@@ -126,7 +124,7 @@ public class AwsProxyRequestBuilder {
 
     public AwsProxyRequestBuilder header(String key, String value) {
         if (this.request.getMultiValueHeaders() == null) {
-            this.request.setMultiValueHeaders(new MultiValuedTreeMap<>(String.CASE_INSENSITIVE_ORDER));
+            this.request.setMultiValueHeaders(new Headers());
         }
 
         this.request.getMultiValueHeaders().add(key, value);
@@ -223,7 +221,7 @@ public class AwsProxyRequestBuilder {
 
     public AwsProxyRequestBuilder cookie(String name, String value) {
         if (request.getMultiValueHeaders() == null) {
-            request.setMultiValueHeaders(new MultiValuedTreeMap<>(String.CASE_INSENSITIVE_ORDER));
+            request.setMultiValueHeaders(new Headers());
         }
 
         String cookies = request.getMultiValueHeaders().getFirst(HttpHeaders.COOKIE);
@@ -238,7 +236,7 @@ public class AwsProxyRequestBuilder {
 
     public AwsProxyRequestBuilder scheme(String scheme) {
         if (request.getMultiValueHeaders() == null) {
-            request.setMultiValueHeaders(new MultiValuedTreeMap<>(String.CASE_INSENSITIVE_ORDER));
+            request.setMultiValueHeaders(new Headers());
         }
 
         request.getMultiValueHeaders().putSingle("CloudFront-Forwarded-Proto", scheme);
@@ -247,7 +245,7 @@ public class AwsProxyRequestBuilder {
 
     public AwsProxyRequestBuilder serverName(String serverName) {
         if (request.getMultiValueHeaders() == null) {
-            request.setMultiValueHeaders(new MultiValuedTreeMap<>(String.CASE_INSENSITIVE_ORDER));
+            request.setMultiValueHeaders(new Headers());
         }
 
         request.getMultiValueHeaders().putSingle("Host", serverName);

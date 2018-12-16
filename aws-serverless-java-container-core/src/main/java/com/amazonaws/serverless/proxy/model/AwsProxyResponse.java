@@ -22,7 +22,7 @@ public class AwsProxyResponse {
     //-------------------------------------------------------------
 
     private int statusCode;
-    private MultiValuedTreeMap<String, String> multiValueHeaders;
+    private Headers multiValueHeaders;
     private String body;
     private boolean isBase64Encoded;
 
@@ -41,12 +41,12 @@ public class AwsProxyResponse {
     }
 
 
-    public AwsProxyResponse(int statusCode, MultiValuedTreeMap<String, String> headers) {
+    public AwsProxyResponse(int statusCode, Headers headers) {
         this(statusCode, headers, null);
     }
 
 
-    public AwsProxyResponse(int statusCode, MultiValuedTreeMap<String, String> headers, String body) {
+    public AwsProxyResponse(int statusCode, Headers headers, String body) {
         this.statusCode = statusCode;
         this.multiValueHeaders = headers;
         this.body = body;
@@ -59,7 +59,7 @@ public class AwsProxyResponse {
 
     public void addHeader(String key, String value) {
         if (this.multiValueHeaders == null) {
-            this.multiValueHeaders = new MultiValuedTreeMap<String, String>();
+            this.multiValueHeaders = new Headers();
         }
 
         this.multiValueHeaders.add(key, value);
@@ -80,12 +80,12 @@ public class AwsProxyResponse {
     }
 
 
-    public MultiValuedTreeMap<String, String> getMultiValueHeaders() {
+    public Headers getMultiValueHeaders() {
         return multiValueHeaders;
     }
 
 
-    public void setMultiValueHeaders(MultiValuedTreeMap<String, String> multiValueHeaders) {
+    public void setMultiValueHeaders(Headers multiValueHeaders) {
         this.multiValueHeaders = multiValueHeaders;
     }
 

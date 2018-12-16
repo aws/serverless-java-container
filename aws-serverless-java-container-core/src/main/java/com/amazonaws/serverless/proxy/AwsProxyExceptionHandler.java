@@ -16,12 +16,9 @@ import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.ErrorModel;
-import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
+import com.amazonaws.serverless.proxy.model.Headers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonValueFormat;
-import com.fasterxml.jackson.databind.ser.std.JsonValueSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,8 +27,6 @@ import javax.ws.rs.core.MediaType;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Default implementation of the <code>ExceptionHandler</code> object that returns AwsProxyResponse objects.
@@ -58,7 +53,7 @@ public class AwsProxyExceptionHandler
     // Variables - Private - Static
     //-------------------------------------------------------------
 
-    private static MultiValuedTreeMap<String, String> headers = new MultiValuedTreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    private static Headers headers = new Headers();
 
     //-------------------------------------------------------------
     // Constructors
