@@ -22,7 +22,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.regex.Pattern;
 
 /**
  * Simple path validator filter. This is a default implementation to prevent malformed paths from hitting the framework

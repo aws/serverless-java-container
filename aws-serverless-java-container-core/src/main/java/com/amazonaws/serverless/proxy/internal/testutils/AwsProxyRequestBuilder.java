@@ -21,7 +21,6 @@ import com.amazonaws.serverless.proxy.model.CognitoAuthorizerClaims;
 import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.io.IOUtils;
 
@@ -32,10 +31,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.UUID;
 
 
