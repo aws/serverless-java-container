@@ -114,7 +114,7 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType>
                                                                                          new AwsProxyExceptionHandler(),
                                                                                          new LambdaEmbeddedServerFactory());
 
-        // For Spark we cannot call intialize here. It needs to be called manually after the routes are set
+        // For Spark we cannot call initialize here. It needs to be called manually after the routes are set
         //newHandler.initialize();
 
         return newHandler;

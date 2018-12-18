@@ -28,7 +28,7 @@ public class LambdaEmbeddedServerFactory implements EmbeddedServerFactory {
      * Constructor used in unit tests to inject a mocked embedded server
      * @param server The mocked server
      */
-    @SuppressFBWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD") // suppressing the warining as this constructor is only used for unit tests
+    @SuppressFBWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD") // suppressing the warning as this constructor is only used for unit tests
     public LambdaEmbeddedServerFactory(LambdaEmbeddedServer server) {
         LambdaEmbeddedServerFactory.embeddedServer = server;
     }

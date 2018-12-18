@@ -38,7 +38,7 @@ import java.util.Map;
  * implementations that use the <code>HttpServletRequest</code> and <code>HttpServletResponse</code> objects.
  *
  * For example, the Spring implementation creates the ServletContext when the application is initialized the first time
- * and creates a FitlerChainManager to execute its filters for each request.
+ * and creates a FilterChainManager to execute its filters for each request.
  */
 public abstract class FilterChainManager<ServletContextType extends ServletContext> {
 

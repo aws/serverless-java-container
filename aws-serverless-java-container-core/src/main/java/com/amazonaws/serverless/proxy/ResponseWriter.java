@@ -25,7 +25,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * or a <code>ResponseReader</code> implementation. For example, the Jersey library passes the response reader object to
  * the default implementation of this class.
  *
- * @param <ContainerResponseType> The response object expceted from the underlying container
+ * @param <ContainerResponseType> The response object expected from the underlying container
  * @param <ResponseType> The type for the Lambda function return value
  */
 public abstract class ResponseWriter<ContainerResponseType, ResponseType> {

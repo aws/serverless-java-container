@@ -27,7 +27,7 @@ import javax.ws.rs.core.SecurityContext;
  * object that supports requests for the AWS_PROXY integration.
  *
  * @param <RequestType> The type for the AWS Lambda event
- * @param <ContainerRequestType> The type for the undelying container request object
+ * @param <ContainerRequestType> The type for the underlying container request object
  */
 public abstract class RequestReader<RequestType, ContainerRequestType> {
 

@@ -92,7 +92,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     //-------------------------------------------------------------
 
     /**
-     * Protected constructors for implemnenting classes. This should be called first with the context received from
+     * Protected constructors for implementing classes. This should be called first with the context received from
      * AWS Lambda
      * @param lambdaContext The Lambda function context. This object is used for utility methods such as log
      */
