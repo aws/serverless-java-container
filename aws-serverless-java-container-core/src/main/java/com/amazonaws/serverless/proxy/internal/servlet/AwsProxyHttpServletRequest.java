@@ -511,7 +511,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
                     String[] values = output.get(e);
                     newValues.addAll(Arrays.asList(values));
                 }
-                newValues.add(getFirstQueryParamValue(e, config.isQueryStringCaseSensitive()));
+                newValues.addAll(Arrays.asList(getQueryParamValues(e, config.isQueryStringCaseSensitive())));
                 output.put(e, newValues.toArray(new String[0]));
             });
         }
