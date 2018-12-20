@@ -13,6 +13,7 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -32,6 +33,9 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
+
+import static com.amazonaws.serverless.proxy.RequestReader.API_GATEWAY_EVENT_PROPERTY;
+
 
 /**
  * Basic implementation of the <code>HttpServletResponse</code> object. This is used by the <code>AwsProxyHttpServletResponseWriter</code>
@@ -441,6 +445,10 @@ public class AwsHttpServletResponse
 
     MultiValuedTreeMap<String, String> getAwsResponseHeaders() {
         return headers;
+    }
+
+    AwsProxyRequest getAwsProxyRequest() {
+        return (AwsProxyRequest)request.getAttribute(API_GATEWAY_EVENT_PROPERTY);
     }
 
 

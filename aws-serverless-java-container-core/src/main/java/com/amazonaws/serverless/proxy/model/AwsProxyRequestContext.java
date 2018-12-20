@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @see RequestReader
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ApiGatewayRequestContext {
+public class AwsProxyRequestContext {
 
     //-------------------------------------------------------------
     // Variables - Private
@@ -47,6 +47,8 @@ public class ApiGatewayRequestContext {
     private String protocol;
     private String requestTime;
     private long requestTimeEpoch;
+
+    private AlbContext elb;
 
 
     //-------------------------------------------------------------
@@ -189,5 +191,15 @@ public class ApiGatewayRequestContext {
 
     public void setRequestTimeEpoch(long requestTimeEpoch) {
         this.requestTimeEpoch = requestTimeEpoch;
+    }
+
+
+    public AlbContext getElb() {
+        return elb;
+    }
+
+
+    public void setElb(AlbContext elb) {
+        this.elb = elb;
     }
 }

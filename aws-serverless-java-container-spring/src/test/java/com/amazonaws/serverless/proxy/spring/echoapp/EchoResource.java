@@ -1,7 +1,7 @@
 package com.amazonaws.serverless.proxy.spring.echoapp;
 
 import com.amazonaws.serverless.proxy.RequestReader;
-import com.amazonaws.serverless.proxy.model.ApiGatewayRequestContext;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.MapResponseModel;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.SingleValueModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -100,9 +100,9 @@ public class EchoResource {
     @RequestMapping(path = "/authorizer-principal", method = RequestMethod.GET)
     public SingleValueModel echoAuthorizerPrincipal(HttpServletRequest context) {
         SingleValueModel valueModel = new SingleValueModel();
-        ApiGatewayRequestContext apiGatewayRequestContext =
-                (ApiGatewayRequestContext) context.getAttribute(RequestReader.API_GATEWAY_CONTEXT_PROPERTY);
-        valueModel.setValue(apiGatewayRequestContext.getAuthorizer().getPrincipalId());
+        AwsProxyRequestContext awsProxyRequestContext =
+                (AwsProxyRequestContext) context.getAttribute(RequestReader.API_GATEWAY_CONTEXT_PROPERTY);
+        valueModel.setValue(awsProxyRequestContext.getAuthorizer().getPrincipalId());
 
         return valueModel;
     }

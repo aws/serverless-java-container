@@ -60,6 +60,23 @@ public class JerseyAwsProxyTest {
     private static Context lambdaContext = new MockLambdaContext();
 
     @Test
+    public void alb_basicRequest_expectSuccess() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/headers", "GET")
+                                          .json()
+                                          .header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
+                                          .alb()
+                                          .build();
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(200, output.getStatusCode());
+        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
+        assertNotNull(output.getStatusDescription());
+        System.out.println(output.getStatusDescription());
+
+        validateMapResponseModel(output);
+    }
+
+    @Test
     public void headers_getHeaders_echo() {
         AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/headers", "GET")
                 .json()

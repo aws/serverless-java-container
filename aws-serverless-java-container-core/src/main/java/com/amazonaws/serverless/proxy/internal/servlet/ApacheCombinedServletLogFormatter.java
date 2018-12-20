@@ -2,7 +2,8 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 
 import com.amazonaws.serverless.proxy.LogFormatter;
-import com.amazonaws.serverless.proxy.model.ApiGatewayRequestContext;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -19,6 +20,7 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.util.Locale;
 
 import static com.amazonaws.serverless.proxy.RequestReader.API_GATEWAY_CONTEXT_PROPERTY;
+import static com.amazonaws.serverless.proxy.RequestReader.API_GATEWAY_EVENT_PROPERTY;
 import static java.time.temporal.ChronoField.DAY_OF_MONTH;
 import static java.time.temporal.ChronoField.HOUR_OF_DAY;
 import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
@@ -64,14 +66,15 @@ public class ApacheCombinedServletLogFormatter<ContainerRequestType extends Http
     public String format(ContainerRequestType servletRequest, ContainerResponseType servletResponse, SecurityContext ctx) {
         //LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\"" combined
         StringBuilder logLineBuilder = new StringBuilder();
-        ApiGatewayRequestContext gatewayContext = (ApiGatewayRequestContext)servletRequest.getAttribute(API_GATEWAY_CONTEXT_PROPERTY);
+        AwsProxyRequest req = (AwsProxyRequest)servletRequest.getAttribute(API_GATEWAY_EVENT_PROPERTY);
+        AwsProxyRequestContext gatewayContext = req.getRequestContext();
 
         // %h
         logLineBuilder.append(servletRequest.getRemoteAddr());
         logLineBuilder.append(" ");
 
         // %l
-        if (gatewayContext != null) {
+        if (gatewayContext != null && req.getRequestSource() == AwsProxyRequest.RequestSource.API_GATEWAY) {
             if (gatewayContext.getIdentity().getUserArn() != null) {
                 logLineBuilder.append(gatewayContext.getIdentity().getUserArn());
             } else {

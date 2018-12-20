@@ -30,7 +30,7 @@ public class AwsProxyRequest {
 
     private String body;
     private String resource;
-    private ApiGatewayRequestContext requestContext;
+    private AwsProxyRequestContext requestContext;
     private MultiValuedTreeMap<String, String> multiValueQueryStringParameters;
     private MultiValuedTreeMap<String, String> multiValueHeaders;
     private Map<String, String> pathParameters;
@@ -70,6 +70,14 @@ public class AwsProxyRequest {
         return params.toString();
     }
 
+    public RequestSource getRequestSource() {
+        if (getRequestContext() != null && getRequestContext().getElb() != null) {
+            return RequestSource.ALB;
+        }
+
+        return RequestSource.API_GATEWAY;
+    }
+
 
     public String getBody() {
         return body;
@@ -91,12 +99,12 @@ public class AwsProxyRequest {
     }
 
 
-    public ApiGatewayRequestContext getRequestContext() {
+    public AwsProxyRequestContext getRequestContext() {
         return requestContext;
     }
 
 
-    public void setRequestContext(ApiGatewayRequestContext requestContext) {
+    public void setRequestContext(AwsProxyRequestContext requestContext) {
         this.requestContext = requestContext;
     }
 
@@ -167,5 +175,10 @@ public class AwsProxyRequest {
 
     public void setIsBase64Encoded(boolean base64Encoded) {
         isBase64Encoded = base64Encoded;
+    }
+
+    public static enum RequestSource {
+        ALB,
+        API_GATEWAY
     }
 }

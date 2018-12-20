@@ -14,11 +14,9 @@ package com.amazonaws.serverless.proxy.jersey;
 
 import com.amazonaws.serverless.proxy.RequestReader;
 import com.amazonaws.serverless.proxy.jersey.providers.ServletRequestFilter;
-import com.amazonaws.serverless.proxy.model.ApiGatewayRequestContext;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
 import com.amazonaws.serverless.proxy.jersey.model.MapResponseModel;
 import com.amazonaws.serverless.proxy.jersey.model.SingleValueModel;
-
-import org.glassfish.jersey.server.ContainerRequest;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -150,9 +148,9 @@ public class EchoJerseyResource {
     @Produces(MediaType.APPLICATION_JSON)
     public SingleValueModel echoAuthorizerPrincipal(@Context ContainerRequestContext context) {
         SingleValueModel valueModel = new SingleValueModel();
-        ApiGatewayRequestContext apiGatewayRequestContext =
-                (ApiGatewayRequestContext) context.getProperty(RequestReader.API_GATEWAY_CONTEXT_PROPERTY);
-        valueModel.setValue(apiGatewayRequestContext.getAuthorizer().getPrincipalId());
+        AwsProxyRequestContext awsProxyRequestContext =
+                (AwsProxyRequestContext) context.getProperty(RequestReader.API_GATEWAY_CONTEXT_PROPERTY);
+        valueModel.setValue(awsProxyRequestContext.getAuthorizer().getPrincipalId());
 
         return valueModel;
     }
@@ -161,9 +159,9 @@ public class EchoJerseyResource {
     @Produces(MediaType.APPLICATION_JSON)
     public SingleValueModel echoAuthorizerContext(@Context ContainerRequestContext context, @QueryParam("key") String key) {
         SingleValueModel valueModel = new SingleValueModel();
-        ApiGatewayRequestContext apiGatewayRequestContext =
-                (ApiGatewayRequestContext) context.getProperty(RequestReader.API_GATEWAY_CONTEXT_PROPERTY);
-        valueModel.setValue(apiGatewayRequestContext.getAuthorizer().getContextValue(key));
+        AwsProxyRequestContext awsProxyRequestContext =
+                (AwsProxyRequestContext) context.getProperty(RequestReader.API_GATEWAY_CONTEXT_PROPERTY);
+        valueModel.setValue(awsProxyRequestContext.getAuthorizer().getContextValue(key));
 
         return valueModel;
     }

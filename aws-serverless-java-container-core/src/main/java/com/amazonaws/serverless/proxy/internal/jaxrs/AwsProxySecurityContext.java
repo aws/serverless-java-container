@@ -12,12 +12,23 @@
  */
 package com.amazonaws.serverless.proxy.internal.jaxrs;
 
+import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.CognitoAuthorizerClaims;
 import com.amazonaws.services.lambda.runtime.Context;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+
 import javax.ws.rs.core.SecurityContext;
+
+import java.io.IOException;
 import java.security.Principal;
+import java.util.Base64;
+import java.util.Map;
+
+import static com.amazonaws.serverless.proxy.model.AwsProxyRequest.*;
+import static com.amazonaws.serverless.proxy.model.AwsProxyRequest.RequestSource.API_GATEWAY;
+
 
 /**
  * default implementation of the <code>SecurityContext</code> object. This class supports 3 API Gateway's authorization methods:
@@ -37,6 +48,9 @@ public class AwsProxySecurityContext
     private static final String AUTH_SCHEME_CUSTOM = "CUSTOM_AUTHORIZER";
     private static final String AUTH_SCHEME_COGNITO_POOL = "COGNITO_USER_POOL";
     private static final String AUTH_SCHEME_AWS_IAM = "AWS_IAM";
+
+    private static final String ALB_ACESS_TOKEN_HEADER = "x-amzn-oidc-accesstoken";
+    private static final String ALB_IDENTITY_HEADER = "x-amzn-oidc-identity";
 
 
     //-------------------------------------------------------------
@@ -78,7 +92,12 @@ public class AwsProxySecurityContext
         if (getAuthenticationScheme().equals(AUTH_SCHEME_CUSTOM) || getAuthenticationScheme().equals(AUTH_SCHEME_AWS_IAM)) {
             return () -> {
                 if (getAuthenticationScheme().equals(AUTH_SCHEME_CUSTOM)) {
-                    return event.getRequestContext().getAuthorizer().getPrincipalId();
+                    switch (event.getRequestSource()) {
+                    case API_GATEWAY:
+                        return event.getRequestContext().getAuthorizer().getPrincipalId();
+                    case ALB:
+                        return event.getMultiValueHeaders().getFirst(ALB_IDENTITY_HEADER);
+                    }
                 } else if (getAuthenticationScheme().equals(AUTH_SCHEME_AWS_IAM)) {
                     // if we received credentials from Cognito Federated Identities then we return the identity id
                     if (event.getRequestContext().getIdentity().getCognitoIdentityId() != null) {
@@ -112,15 +131,24 @@ public class AwsProxySecurityContext
 
 
     public String getAuthenticationScheme() {
-        if (event.getRequestContext().getAuthorizer() != null && event.getRequestContext().getAuthorizer().getClaims() != null && event.getRequestContext().getAuthorizer().getClaims().getSubject() != null) {
-            return AUTH_SCHEME_COGNITO_POOL;
-        } else if (event.getRequestContext().getAuthorizer() != null) {
-            return AUTH_SCHEME_CUSTOM;
-        } else if (event.getRequestContext().getIdentity().getAccessKey() != null) {
-            return AUTH_SCHEME_AWS_IAM;
-        } else {
-            return null;
+        switch (event.getRequestSource()) {
+        case API_GATEWAY:
+            if (event.getRequestContext().getAuthorizer() != null && event.getRequestContext().getAuthorizer().getClaims() != null
+                && event.getRequestContext().getAuthorizer().getClaims().getSubject() != null) {
+                return AUTH_SCHEME_COGNITO_POOL;
+            } else if (event.getRequestContext().getAuthorizer() != null) {
+                return AUTH_SCHEME_CUSTOM;
+            } else if (event.getRequestContext().getIdentity().getAccessKey() != null) {
+                return AUTH_SCHEME_AWS_IAM;
+            } else {
+                return null;
+            }
+        case ALB:
+            if (event.getMultiValueHeaders().containsKey(ALB_ACESS_TOKEN_HEADER)) {
+                return AUTH_SCHEME_CUSTOM;
+            }
         }
+        return null;
     }
 
 

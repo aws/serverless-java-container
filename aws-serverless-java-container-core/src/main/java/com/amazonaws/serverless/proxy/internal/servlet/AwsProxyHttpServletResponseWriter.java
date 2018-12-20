@@ -17,10 +17,18 @@ import com.amazonaws.serverless.exceptions.InvalidResponseObjectException;
 import com.amazonaws.serverless.proxy.ResponseWriter;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
 
+import org.apache.http.HttpStatus;
+
+import javax.ws.rs.core.Response;
+
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+
 
 /**
  * Creates an <code>AwsProxyResponse</code> object given an <code>AwsHttpServletResponse</code> object. If the
@@ -52,6 +60,10 @@ public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpSer
         awsProxyResponse.setMultiValueHeaders(containerResponse.getAwsResponseHeaders());
 
         awsProxyResponse.setStatusCode(containerResponse.getStatus());
+
+        if (containerResponse.getAwsProxyRequest().getRequestSource() == AwsProxyRequest.RequestSource.ALB) {
+            awsProxyResponse.setStatusDescription(containerResponse.getStatus() + " " + Response.Status.fromStatusCode(containerResponse.getStatus()).getReasonPhrase());
+        }
 
         Timer.stop("SERVLET_RESPONSE_WRITE");
         return awsProxyResponse;

@@ -800,13 +800,15 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         // special cases for referer and user agent headers
         List<String> values = new ArrayList<>();
 
-        if ("referer".equals(key.toLowerCase(Locale.ENGLISH))) {
-            values.add(request.getRequestContext().getIdentity().getCaller());
-            return values;
-        }
-        if ("user-agent".equals(key.toLowerCase(Locale.ENGLISH))) {
-            values.add(request.getRequestContext().getIdentity().getUserAgent());
-            return values;
+        if (request.getRequestSource() == AwsProxyRequest.RequestSource.API_GATEWAY) {
+            if ("referer".equals(key.toLowerCase(Locale.ENGLISH))) {
+                values.add(request.getRequestContext().getIdentity().getCaller());
+                return values;
+            }
+            if ("user-agent".equals(key.toLowerCase(Locale.ENGLISH))) {
+                values.add(request.getRequestContext().getIdentity().getUserAgent());
+                return values;
+            }
         }
 
         if (request.getMultiValueHeaders() == null) {

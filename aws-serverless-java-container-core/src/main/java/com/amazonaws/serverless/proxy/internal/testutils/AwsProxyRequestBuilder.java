@@ -13,19 +13,18 @@
 package com.amazonaws.serverless.proxy.internal.testutils;
 
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
+import com.amazonaws.serverless.proxy.model.AlbContext;
 import com.amazonaws.serverless.proxy.model.ApiGatewayAuthorizerContext;
-import com.amazonaws.serverless.proxy.model.ApiGatewayRequestContext;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
 import com.amazonaws.serverless.proxy.model.ApiGatewayRequestIdentity;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.CognitoAuthorizerClaims;
 import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
-import org.apache.http.entity.mime.FormBodyPart;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
 
@@ -39,7 +38,6 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.UUID;
 
 
@@ -70,13 +68,12 @@ public class AwsProxyRequestBuilder {
 
 
     public AwsProxyRequestBuilder(String path, String httpMethod) {
-
         this.request = new AwsProxyRequest();
         this.request.setMultiValueHeaders(new MultiValuedTreeMap<>(String.CASE_INSENSITIVE_ORDER)); // avoid NPE
         this.request.setHttpMethod(httpMethod);
         this.request.setPath(path);
         this.request.setMultiValueQueryStringParameters(new MultiValuedTreeMap<>());
-        this.request.setRequestContext(new ApiGatewayRequestContext());
+        this.request.setRequestContext(new AwsProxyRequestContext());
         this.request.getRequestContext().setRequestId(UUID.randomUUID().toString());
         this.request.getRequestContext().setExtendedRequestId(UUID.randomUUID().toString());
         this.request.getRequestContext().setStage("test");
@@ -91,6 +88,15 @@ public class AwsProxyRequestBuilder {
     //-------------------------------------------------------------
     // Methods - Public
     //-------------------------------------------------------------
+
+    public AwsProxyRequestBuilder alb() {
+        this.request.setRequestContext(new AwsProxyRequestContext());
+        this.request.getRequestContext().setElb(new AlbContext());
+        this.request.getRequestContext().getElb().setTargetGroupArn(
+                "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/lambda-target/d6190d154bc908a5"
+        );
+        return this;
+    }
 
     public AwsProxyRequestBuilder stage(String stageName) {
         this.request.getRequestContext().setStage(stageName);
@@ -294,7 +300,7 @@ public class AwsProxyRequestBuilder {
 
     public AwsProxyRequestBuilder userAgent(String agent) {
         if (request.getRequestContext() == null) {
-            request.setRequestContext(new ApiGatewayRequestContext());
+            request.setRequestContext(new AwsProxyRequestContext());
         }
         if (request.getRequestContext().getIdentity() == null) {
             request.getRequestContext().setIdentity(new ApiGatewayRequestIdentity());
@@ -306,7 +312,7 @@ public class AwsProxyRequestBuilder {
 
     public AwsProxyRequestBuilder referer(String referer) {
         if (request.getRequestContext() == null) {
-            request.setRequestContext(new ApiGatewayRequestContext());
+            request.setRequestContext(new AwsProxyRequestContext());
         }
         if (request.getRequestContext().getIdentity() == null) {
             request.getRequestContext().setIdentity(new ApiGatewayRequestIdentity());

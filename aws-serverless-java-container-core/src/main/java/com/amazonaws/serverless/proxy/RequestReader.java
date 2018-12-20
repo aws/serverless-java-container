@@ -46,6 +46,11 @@ public abstract class RequestReader<RequestType, ContainerRequestType> {
     public static final String API_GATEWAY_STAGE_VARS_PROPERTY = "com.amazonaws.apigateway.stage.variables";
 
     /**
+     * The key for the <strong>ALB context</strong> property in the PropertiesDelegate object
+     */
+    public static final String ALB_CONTEXT_PROPERTY = "com.amazonaws.alb.request.context";
+
+    /**
      * The key to store the entire API Gateway event
      */
     public static final String API_GATEWAY_EVENT_PROPERTY = "com.amazonaws.apigateway.request";
