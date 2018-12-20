@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartResolver;
@@ -78,6 +79,15 @@ public class EchoResource {
         }
 
         return queryStrings;
+    }
+
+    @RequestMapping(path = "/multivalue-query-string", method = RequestMethod.GET)
+    public MapResponseModel countMultivalueQueryParams(@RequestParam MultiValueMap<String, String> multipleParams) {
+        MapResponseModel out =  new MapResponseModel();
+        for (String v : multipleParams.get("multiple")) {
+            out.addValue(v, "ok");
+        }
+        return out;
     }
 
     @RequestMapping(path = "/list-query-string", method = RequestMethod.GET)
