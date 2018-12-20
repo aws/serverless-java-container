@@ -14,6 +14,7 @@ package com.amazonaws.serverless.proxy.jersey;
 
 
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
+import com.amazonaws.serverless.proxy.jersey.providers.ServletRequestFilter;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
@@ -52,6 +53,7 @@ public class JerseyAwsProxyTest {
     private static ObjectMapper objectMapper = new ObjectMapper();
     private static ResourceConfig app = new ResourceConfig().packages("com.amazonaws.serverless.proxy.jersey")
             .register(LoggingFeature.class)
+            .register(ServletRequestFilter.class)
             .property(LoggingFeature.LOGGING_FEATURE_VERBOSITY_SERVER, LoggingFeature.Verbosity.PAYLOAD_ANY);
     private static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = JerseyLambdaContainerHandler.getAwsProxyHandler(app);
 
@@ -120,6 +122,19 @@ public class JerseyAwsProxyTest {
         assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
 
         validateSingleValueModel(output, "https");
+    }
+
+    @Test
+    public void requestFilter_injectsServletRequest_expectCustomAttribute() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/filter-attribute", "GET")
+                                          .json()
+                                          .build();
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(200, output.getStatusCode());
+        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
+
+        validateSingleValueModel(output, ServletRequestFilter.FILTER_ATTRIBUTE_VALUE);
     }
 
     @Test

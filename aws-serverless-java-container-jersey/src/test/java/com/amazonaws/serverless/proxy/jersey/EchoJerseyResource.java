@@ -13,6 +13,7 @@
 package com.amazonaws.serverless.proxy.jersey;
 
 import com.amazonaws.serverless.proxy.RequestReader;
+import com.amazonaws.serverless.proxy.jersey.providers.ServletRequestFilter;
 import com.amazonaws.serverless.proxy.model.ApiGatewayRequestContext;
 import com.amazonaws.serverless.proxy.jersey.model.MapResponseModel;
 import com.amazonaws.serverless.proxy.jersey.model.SingleValueModel;
@@ -51,6 +52,18 @@ public class EchoJerseyResource {
     public SingleValueModel echoDecodedParam(@QueryParam("param") String param) {
         SingleValueModel model = new SingleValueModel();
         model.setValue(param);
+        return model;
+    }
+
+    @Path("/filter-attribute") @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public SingleValueModel returnFilterAttribute(@Context HttpServletRequest req) {
+        SingleValueModel model = new SingleValueModel();
+        if (req.getAttribute(ServletRequestFilter.FILTER_ATTRIBUTE_NAME) == null) {
+            model.setValue("");
+        } else {
+            model.setValue(req.getAttribute(ServletRequestFilter.FILTER_ATTRIBUTE_NAME).toString());
+        }
         return model;
     }
 
