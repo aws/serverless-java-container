@@ -699,6 +699,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         multipartFormParameters = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
         ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
+
         try {
             List<FileItem> items = upload.parseRequest(this);
             for (FileItem item : items) {
@@ -708,15 +709,9 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
                 newPart.setSubmittedFileName(item.getFieldName());
                 newPart.setContentType(item.getContentType());
                 newPart.setSize(item.getSize());
-
-                Iterator<String> headerNamesIterator = item.getHeaders().getHeaderNames();
-                while (headerNamesIterator.hasNext()) {
-                    String headerName = headerNamesIterator.next();
-                    Iterator<String> headerValuesIterator = item.getHeaders().getHeaders(headerName);
-                    while (headerValuesIterator.hasNext()) {
-                        newPart.addHeader(headerName, headerValuesIterator.next());
-                    }
-                }
+                item.getHeaders().getHeaderNames().forEachRemaining(h -> {
+                    newPart.addHeader(h, item.getHeaders().getHeader(h));
+                });
 
                 multipartFormParameters.put(item.getFieldName(), newPart);
             }

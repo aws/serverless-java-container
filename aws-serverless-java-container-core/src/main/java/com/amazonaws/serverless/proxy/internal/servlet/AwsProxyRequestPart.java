@@ -13,6 +13,7 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
+import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -37,7 +38,7 @@ public class AwsProxyRequestPart
     private String submittedFileName;
     private long size;
     private String contentType;
-    private MultivaluedHashMap<String, String> headers;
+    private MultiValuedTreeMap<String, String> headers;
     private byte[] content;
 
 
@@ -137,7 +138,7 @@ public class AwsProxyRequestPart
 
     public void addHeader(String key, String value) {
         if (headers == null) {
-            headers = new MultivaluedHashMap<>();
+            headers = new MultiValuedTreeMap<>(String.CASE_INSENSITIVE_ORDER);
         }
 
         if (headers.containsKey(key)) {
@@ -172,7 +173,7 @@ public class AwsProxyRequestPart
     }
 
 
-    public void setHeaders(MultivaluedHashMap<String, String> headers) {
+    public void setHeaders(MultiValuedTreeMap<String, String> headers) {
         this.headers = headers;
     }
 }

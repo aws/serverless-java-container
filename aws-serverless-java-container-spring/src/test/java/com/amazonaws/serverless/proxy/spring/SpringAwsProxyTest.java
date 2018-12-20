@@ -363,6 +363,20 @@ public class SpringAwsProxyTest {
         SpringLambdaContainerHandler.getContainerConfig().setUseStageAsServletContext(false);
     }
 
+    @Test
+    public void multipart_getFileName_rerutrnsCorrectFileName()
+            throws IOException {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/attachment", "POST")
+                                          .formFilePart("testFile", "myFile.txt", "hello".getBytes())
+                                          .build();
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(200, output.getStatusCode());
+        System.out.println("Response: " + output.getBody());
+
+        assertEquals("testFile", output.getBody());
+    }
+
     private void validateMapResponseModel(AwsProxyResponse output) {
         try {
             MapResponseModel response = objectMapper.readValue(output.getBody(), MapResponseModel.class);

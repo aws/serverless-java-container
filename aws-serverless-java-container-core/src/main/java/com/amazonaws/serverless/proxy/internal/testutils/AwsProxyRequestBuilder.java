@@ -24,6 +24,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.entity.mime.FormBodyPart;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.ByteArrayBody;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -49,6 +53,7 @@ public class AwsProxyRequestBuilder {
     //-------------------------------------------------------------
 
     private AwsProxyRequest request;
+    private MultipartEntityBuilder multipartBuilder;
 
     //-------------------------------------------------------------
     // Constructors
@@ -120,6 +125,39 @@ public class AwsProxyRequestBuilder {
         }
         body += (body.equals("")?"":"&") + key + "=" + value;
         request.setBody(body);
+        return this;
+    }
+
+    public AwsProxyRequestBuilder formFilePart(String fieldName, String fileName, byte[] content) throws IOException {
+        if (multipartBuilder == null) {
+            multipartBuilder = MultipartEntityBuilder.create();
+        }
+        multipartBuilder.addPart(fieldName, new ByteArrayBody(content, fileName));
+        HttpEntity bodyEntity = multipartBuilder.build();
+        InputStream bodyStream = bodyEntity.getContent();
+        byte[] buffer = new byte[bodyStream.available()];
+        IOUtils.readFully(bodyStream, buffer);
+        request.setBody("\n\n" + new String(buffer, Charset.defaultCharset()));
+        if (request.getMultiValueHeaders() == null) {
+            request.setMultiValueHeaders(new MultiValuedTreeMap<>(String.CASE_INSENSITIVE_ORDER));
+        }
+        request.getMultiValueHeaders().putSingle(HttpHeaders.CONTENT_TYPE, bodyEntity.getContentType().getValue());
+        if (bodyEntity.getContentEncoding() != null) {
+            request.getMultiValueHeaders().putSingle(HttpHeaders.CONTENT_ENCODING, bodyEntity.getContentEncoding().getValue());
+        }
+        request.getMultiValueHeaders().putSingle(HttpHeaders.CONTENT_LENGTH, bodyEntity.getContentLength() + "");
+        return this;
+    }
+
+    public AwsProxyRequestBuilder formFieldPart(String fieldName, String fieldValue) {
+        if (request.getMultiValueHeaders() == null) {
+            request.setMultiValueHeaders(new MultiValuedTreeMap<>(String.CASE_INSENSITIVE_ORDER));
+        }
+        request.getMultiValueHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.MULTIPART_FORM_DATA);
+        if (multipartBuilder == null) {
+            multipartBuilder = MultipartEntityBuilder.create();
+        }
+        // TODO: implement
         return this;
     }
 
