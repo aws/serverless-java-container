@@ -13,7 +13,7 @@ Resources:
     Properties:
       Handler: com.amazonaws.serverless.sample.spring.StreamLambdaHandler::handleRequest
       Runtime: java8
-      CodeUri: target/serverless-spring-example-1.0-SNAPSHOT.jar
+      CodeUri: target/serverless-spring-example-1.0-SNAPSHOT-lambda-package.zip
       MemorySize: 512
       Policies: AWSLambdaBasicExecutionRole
       Timeout: 30
