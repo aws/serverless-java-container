@@ -21,11 +21,18 @@
                 <include>**/*.xml</include>
             </includes>
         </fileSet>
+        <fileSet>
+            <directory>src/assembly</directory>
+            <includes>
+                <include>*</include>
+            </includes>
+        </fileSet>
         <fileSet filtered="true">
             <directory></directory>
             <includes>
                 <include>sam.yaml</include>
                 <include>README.md</include>
+                <include>build.gradle</include>
             </includes>
         </fileSet>
     </fileSets>
