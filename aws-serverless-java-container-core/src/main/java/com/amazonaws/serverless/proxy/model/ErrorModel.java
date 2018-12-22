@@ -13,7 +13,7 @@
 package com.amazonaws.serverless.proxy.model;
 
 /**
- * Default error response model. This object is used by the <code>AwsProxyExceptionHandler</code> objcect.
+ * Default error response model. This object is used by the <code>AwsProxyExceptionHandler</code> object.
  */
 public class ErrorModel {
 

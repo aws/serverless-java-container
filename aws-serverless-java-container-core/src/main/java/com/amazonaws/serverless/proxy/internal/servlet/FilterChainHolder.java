@@ -24,7 +24,7 @@ import java.util.List;
 
 /**
  * Implementation of the <code>FilterChain</code> interface. FilterChainHolder objects should be accessed through the
- * <code>FilterChainManager</code>. Once a filter chain is loaded, use the <code>doFilter</code> emthod to run the chain
+ * <code>FilterChainManager</code>. Once a filter chain is loaded, use the <code>doFilter</code> method to run the chain
  * during a request lifecycle
  */
 public class FilterChainHolder implements FilterChain {

@@ -91,7 +91,7 @@ public class AwsHttpSession implements HttpSession {
     @Override
     @Deprecated
     public Object getValue(String name) {
-        throw new UnsupportedOperationException("Session values are deprecated and not suported");
+        throw new UnsupportedOperationException("Session values are deprecated and not supported");
     }
 
     @Override
@@ -103,7 +103,7 @@ public class AwsHttpSession implements HttpSession {
     @Override
     @Deprecated
     public String[] getValueNames() {
-        throw new UnsupportedOperationException("Session values are deprecated and not suported");
+        throw new UnsupportedOperationException("Session values are deprecated and not supported");
     }
 
     @Override
@@ -115,7 +115,7 @@ public class AwsHttpSession implements HttpSession {
     @Override
     @Deprecated
     public void putValue(String name, Object value) {
-        throw new UnsupportedOperationException("Session values are deprecated and not suported");
+        throw new UnsupportedOperationException("Session values are deprecated and not supported");
     }
 
     @Override
@@ -127,7 +127,7 @@ public class AwsHttpSession implements HttpSession {
     @Override
     @Deprecated
     public void removeValue(String name) {
-        throw new UnsupportedOperationException("Session values are deprecated and not suported");
+        throw new UnsupportedOperationException("Session values are deprecated and not supported");
     }
 
     @Override

@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * Identity model for the API Gateway request context. This is used in the default AwsProxyRequest object. Contains
- * all of the properties declared in the $context.identity API Gateway object so could be re-used for other implemnetations
+ * all of the properties declared in the $context.identity API Gateway object so could be re-used for other implementations
  *
  * @see AwsProxyRequest
  * @see RequestReader
