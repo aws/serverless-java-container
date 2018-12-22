@@ -5,6 +5,9 @@ IFS=$'\n'
 echo "STARTING TRAVIS BUILD in $(pwd)"
 cd $TRAVIS_BUILD_DIR
 mvn install
+if [[ "$?" -ne 0 ]]; then
+    exit 1
+fi
 echo "COMPLETED MAIN FRAMEWORK INSTALL"
 
 echo "STARTING SAMPLES BUILD"
@@ -13,7 +16,21 @@ do
     echo "BUILDING SAMPLE '$SAMPLE'"
     cd $SAMPLE
     mvn clean package
-    gradle clean build
+    if [[ "$?" -ne 0 ]]; then
+        exit 1
+    fi
+    gradle wrapper
+    if [[ "$?" -ne 0 ]]; then
+        exit 1
+    fi
+    ./gradlew wrapper --gradle-version 5.0
+    if [[ "$?" -ne 0 ]]; then
+        exit 1
+    fi
+    ./gradlew clean build
+    if [[ "$?" -ne 0 ]]; then
+        exit 1
+    fi
 
     SAM_FILE="$TRAVIS_BUILD_DIR/$SAMPLE/sam.yaml"
     if [[ -f "$SAM_FILE" ]]; then
@@ -46,11 +63,31 @@ do
        -DarchetypeArtifactId=$ARCH_NAME \
        -DarchetypeCatalog=local \
        -DinteractiveMode=false
+    if [[ "$?" -ne 0 ]]; then
+        exit 1
+    fi
     cd ${TEST_PROJ}
     mvn clean package -Pshaded-jar
+    if [[ "$?" -ne 0 ]]; then
+        exit 1
+    fi
     mvn clean package
+    if [[ "$?" -ne 0 ]]; then
+        exit 1
+    fi
     if [[ -f "$TRAVIS_BUILD_DIR/tmp/$TEST_PROJ/build.gradle" ]]; then
-        gradle clean build
+        gradle wrapper
+        if [[ "$?" -ne 0 ]]; then
+            exit 1
+        fi
+        ./gradlew wrapper --gradle-version 5.0
+        if [[ "$?" -ne 0 ]]; then
+            exit 1
+        fi
+        ./gradlew clean build
+        if [[ "$?" -ne 0 ]]; then
+            exit 1
+        fi
     else
         echo "GRADLE BUILD FILE NOT FOUND"
     fi
