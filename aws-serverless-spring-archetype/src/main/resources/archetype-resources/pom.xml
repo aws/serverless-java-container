@@ -172,7 +172,7 @@
                                     <goal>single</goal>
                                 </goals>
                                 <configuration>
-                                    <finalName>${dollar}{projecft.artifactId}-${dollar}{.projectversion}</finalName>
+                                    <finalName>${dollar}{project.artifactId}-${dollar}{project.version}</finalName>
                                     <descriptors>
                                         <descriptor>src${dollar}{file.separator}assembly${dollar}{file.separator}bin.xml</descriptor>
                                     </descriptors>
