@@ -19,7 +19,7 @@ do
     if [[ "$?" -ne 0 ]]; then
         exit 1
     fi
-    gradle wrapper
+    $GRADLE wrapper
     if [[ "$?" -ne 0 ]]; then
         exit 1
     fi
@@ -76,7 +76,7 @@ do
         exit 1
     fi
     if [[ -f "$TRAVIS_BUILD_DIR/tmp/$TEST_PROJ/build.gradle" ]]; then
-        gradle wrapper
+        $GRADLE wrapper
         if [[ "$?" -ne 0 ]]; then
             exit 1
         fi
