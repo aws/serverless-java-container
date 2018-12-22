@@ -6,7 +6,7 @@ addons:
   apt:
     update: true
 before_install:
-  - curl https://gradle.org/next-steps/?version=5.0&format=bin
+  - wget https://services.gradle.org/distributions/gradle-5.0-bin.zip
   - mkdir /opt/gradle
   - unzip -d /opt/gradle gradle-5.0-bin.zip
   - export GRADLE=/opt/gradle/gradle-5.0/bin/gradle
