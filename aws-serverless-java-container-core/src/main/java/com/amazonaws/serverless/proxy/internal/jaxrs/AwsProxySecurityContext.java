@@ -42,15 +42,15 @@ public class AwsProxySecurityContext
         implements SecurityContext {
 
     //-------------------------------------------------------------
-    // Constants - Private
+    // Constants - Package
     //-------------------------------------------------------------
 
-    private static final String AUTH_SCHEME_CUSTOM = "CUSTOM_AUTHORIZER";
-    private static final String AUTH_SCHEME_COGNITO_POOL = "COGNITO_USER_POOL";
-    private static final String AUTH_SCHEME_AWS_IAM = "AWS_IAM";
+    static final String AUTH_SCHEME_CUSTOM = "CUSTOM_AUTHORIZER";
+    static final String AUTH_SCHEME_COGNITO_POOL = "COGNITO_USER_POOL";
+    static final String AUTH_SCHEME_AWS_IAM = "AWS_IAM";
 
-    private static final String ALB_ACESS_TOKEN_HEADER = "x-amzn-oidc-accesstoken";
-    private static final String ALB_IDENTITY_HEADER = "x-amzn-oidc-identity";
+    static final String ALB_ACESS_TOKEN_HEADER = "x-amzn-oidc-accesstoken";
+    static final String ALB_IDENTITY_HEADER = "x-amzn-oidc-identity";
 
 
     //-------------------------------------------------------------
