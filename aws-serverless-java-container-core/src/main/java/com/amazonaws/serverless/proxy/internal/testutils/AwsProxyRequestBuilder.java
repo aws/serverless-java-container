@@ -36,6 +36,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.UUID;
@@ -145,7 +146,7 @@ public class AwsProxyRequestBuilder {
         IOUtils.readFully(bodyStream, buffer);
         request.setBody("\n\n" + new String(buffer, Charset.defaultCharset()));
         if (request.getMultiValueHeaders() == null) {
-            request.setMultiValueHeaders(new MultiValuedTreeMap<>(String.CASE_INSENSITIVE_ORDER));
+            request.setMultiValueHeaders(new Headers());
         }
         request.getMultiValueHeaders().putSingle(HttpHeaders.CONTENT_TYPE, bodyEntity.getContentType().getValue());
         if (bodyEntity.getContentEncoding() != null) {
@@ -157,7 +158,7 @@ public class AwsProxyRequestBuilder {
 
     public AwsProxyRequestBuilder formFieldPart(String fieldName, String fieldValue) {
         if (request.getMultiValueHeaders() == null) {
-            request.setMultiValueHeaders(new MultiValuedTreeMap<>(String.CASE_INSENSITIVE_ORDER));
+            request.setMultiValueHeaders(new Headers());
         }
         request.getMultiValueHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.MULTIPART_FORM_DATA);
         if (multipartBuilder == null) {
