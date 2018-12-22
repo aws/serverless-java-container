@@ -83,10 +83,6 @@ public class UrlPathValidator implements Filter {
             setErrorResponse(servletResponse);
             return;
         }
-        //if (!PATH_PATTERN.matcher(path).matches()) {
-        //    setErrorResponse(servletResponse);
-        //    return;
-        //}
 
         // Logic taken from the Apache UrlValidator. I opted not to include Apache lib as a dependency to save space
         // in the final Lambda function package
