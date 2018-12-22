@@ -18,17 +18,11 @@ import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.event.ContextStoppedEvent;
-import org.springframework.context.event.GenericApplicationListenerAdapter;
-import org.springframework.context.support.AbstractRefreshableApplicationContext;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.ContextLoaderListener;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.context.support.ServletRequestHandledEvent;
 import org.springframework.web.servlet.DispatcherServlet;
 
