@@ -14,7 +14,7 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
-import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
+import com.amazonaws.serverless.proxy.model.Headers;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
@@ -56,7 +56,7 @@ public class AwsHttpServletResponse
     // Variables - Private
     //-------------------------------------------------------------
 
-    private MultiValuedTreeMap<String, String> headers = new MultiValuedTreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    private Headers headers = new Headers();
     private int statusCode;
     private String statusMessage;
     private String responseBody;
@@ -408,7 +408,7 @@ public class AwsHttpServletResponse
 
     @Override
     public void reset() {
-        headers = new MultiValuedTreeMap<>();
+        headers = new Headers();
         responseBody = null;
         writer = null;
         bodyOutputStream = new ByteArrayOutputStream();
@@ -443,7 +443,7 @@ public class AwsHttpServletResponse
     }
 
 
-    MultiValuedTreeMap<String, String> getAwsResponseHeaders() {
+    Headers getAwsResponseHeaders() {
         return headers;
     }
 

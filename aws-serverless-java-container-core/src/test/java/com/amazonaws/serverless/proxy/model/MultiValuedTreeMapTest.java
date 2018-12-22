@@ -29,7 +29,7 @@ public class MultiValuedTreeMapTest {
 
     @Test
     public void add_sameNameCaseInsensitive_expectOneValue() {
-        MultiValuedTreeMap<String, String> map = new MultiValuedTreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        Headers map = new Headers();
         map.add("Test", "test");
         assertNotNull(map.get("Test"));
         assertNotNull(map.get("test"));
