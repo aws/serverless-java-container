@@ -31,6 +31,7 @@
                 <filtering>true</filtering>
                 <includes>
                     <include>archetype-resources/pom.xml</include>
+                    <include>archetype-resources/README.md</include>
                 </includes>
             </resource>
             <resource>
