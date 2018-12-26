@@ -187,7 +187,7 @@
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>3.3.2</version>
+                <version>${dependencyCheck.version}</version>
                 <configuration>
                     <skipProvidedScope>true</skipProvidedScope>
                     <suppressionFiles>
