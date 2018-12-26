@@ -34,7 +34,7 @@
     <!-- TODO: remove this suppression once the bug in the dep check plugin is fixed -->
     <suppress>
         <notes><![CDATA[ Temporary suppression of slf4j vulnerability ]]></notes>
-        <cpe>cpe:/a:slf4j:slf4j:1.8.0.beta</cpe>
+        <cpe>cpe:/a:slf4j:slf4j:1.8.0</cpe>
     </suppress>
 
 </suppressions>
