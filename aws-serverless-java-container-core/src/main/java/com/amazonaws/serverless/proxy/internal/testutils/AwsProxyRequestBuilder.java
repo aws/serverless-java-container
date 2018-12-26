@@ -193,18 +193,20 @@ public class AwsProxyRequestBuilder {
         }
         // ALB does not decode parameters automatically like API Gateway.
         if (request.getRequestSource() == AwsProxyRequest.RequestSource.ALB) {
-            String albValue = value;
             try {
                 //if (URLDecoder.decode(value, ContainerConfig.DEFAULT_CONTENT_CHARSET).equals(value)) {
                 // TODO: Assume we are always given an unencoded value, smarter check here to encode
                 // only if necessary
-                    albValue = URLEncoder.encode(value, ContainerConfig.DEFAULT_CONTENT_CHARSET);
+                this.request.getMultiValueQueryStringParameters().add(
+                        key,
+                        URLEncoder.encode(value, ContainerConfig.DEFAULT_CONTENT_CHARSET)
+                );
                 //}
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
             }
-            this.request.getMultiValueQueryStringParameters().add(key, albValue);
+
         }
         return this;
     }
@@ -252,7 +254,16 @@ public class AwsProxyRequestBuilder {
         }
         if (this.request.getRequestSource() == AwsProxyRequest.RequestSource.ALB) {
             header("x-amzn-oidc-identity", principal);
-            header("x-amzn-oidc-accesstoken", Base64.getMimeEncoder().encodeToString("test-token".getBytes()));
+            try {
+                header(
+                        "x-amzn-oidc-accesstoken",
+                        Base64.getMimeEncoder().encodeToString(
+                                "test-token".getBytes(ContainerConfig.DEFAULT_CONTENT_CHARSET)
+                        )
+                );
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException(e);
+            }
         }
         return this;
     }
