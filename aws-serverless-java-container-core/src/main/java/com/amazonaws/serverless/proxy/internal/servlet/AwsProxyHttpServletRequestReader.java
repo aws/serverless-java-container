@@ -14,7 +14,6 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.proxy.RequestReader;
-import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -35,6 +34,7 @@ public class AwsProxyHttpServletRequestReader extends RequestReader<AwsProxyRequ
     @Override
     public AwsProxyHttpServletRequest readRequest(AwsProxyRequest request, SecurityContext securityContext, Context lambdaContext, ContainerConfig config)
             throws InvalidRequestEventException {
+
         request.setPath(stripBasePath(request.getPath(), config));
         if (request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE) != null) {
             String contentType = request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
@@ -45,6 +45,7 @@ public class AwsProxyHttpServletRequestReader extends RequestReader<AwsProxyRequ
         servletRequest.setAttribute(API_GATEWAY_CONTEXT_PROPERTY, request.getRequestContext());
         servletRequest.setAttribute(API_GATEWAY_STAGE_VARS_PROPERTY, request.getStageVariables());
         servletRequest.setAttribute(API_GATEWAY_EVENT_PROPERTY, request);
+        servletRequest.setAttribute(ALB_CONTEXT_PROPERTY, request.getRequestContext().getElb());
         servletRequest.setAttribute(LAMBDA_CONTEXT_PROPERTY, lambdaContext);
         servletRequest.setAttribute(JAX_SECURITY_CONTEXT_PROPERTY, securityContext);
 

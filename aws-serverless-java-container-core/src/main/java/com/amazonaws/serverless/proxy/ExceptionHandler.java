@@ -20,7 +20,7 @@ import java.io.OutputStream;
  * handled by the client applications directly within the container and a valid HTTP response is expected. This handler
  * is used for exceptions thrown by the library while marshalling and unmarshalling requests and responses.
  *
- * The interface delcares two methods. A typed <code>handle</code> method for requests that are being proxied using a
+ * The interface declares two methods. A typed <code>handle</code> method for requests that are being proxied using a
  * request and response type <code>LambdaContainerHandler</code>, and a stream-based
  * <code>handle</code> method for <a href="http://docs.aws.amazon.com/lambda/latest/dg/java-handler-io-type-stream.html" target="_blank">
  * Lambda's <code>RequestStreamHandler</code></a>.

@@ -22,7 +22,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.regex.Pattern;
 
 /**
  * Simple path validator filter. This is a default implementation to prevent malformed paths from hitting the framework
@@ -84,10 +83,6 @@ public class UrlPathValidator implements Filter {
             setErrorResponse(servletResponse);
             return;
         }
-        //if (!PATH_PATTERN.matcher(path).matches()) {
-        //    setErrorResponse(servletResponse);
-        //    return;
-        //}
 
         // Logic taken from the Apache UrlValidator. I opted not to include Apache lib as a dependency to save space
         // in the final Lambda function package

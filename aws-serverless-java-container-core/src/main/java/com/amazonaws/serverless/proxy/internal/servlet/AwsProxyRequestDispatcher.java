@@ -1,8 +1,6 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;

@@ -1,7 +1,7 @@
 package com.amazonaws.serverless.proxy.struts2.echoapp;
 
 import com.amazonaws.serverless.proxy.RequestReader;
-import com.amazonaws.serverless.proxy.model.ApiGatewayRequestContext;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
 import com.opensymphony.xwork2.ActionSupport;
 import org.apache.struts2.ServletActionContext;
 
@@ -20,13 +20,13 @@ public class EchoRequestInfoAction extends ActionSupport {
     public String execute() {
 
         HttpServletRequest request = ServletActionContext.getRequest();
-        ApiGatewayRequestContext apiGatewayRequestContext =
-                (ApiGatewayRequestContext) request
+        AwsProxyRequestContext awsProxyRequestContext =
+                (AwsProxyRequestContext) request
                         .getAttribute(RequestReader.API_GATEWAY_CONTEXT_PROPERTY);
 
         switch (mode) {
             case "principal":
-                result = apiGatewayRequestContext.getAuthorizer().getPrincipalId();
+                result = awsProxyRequestContext.getAuthorizer().getPrincipalId();
                 break;
             case "scheme":
                 result = request.getScheme();

@@ -13,7 +13,7 @@ Resources:
     Properties:
       Handler: com.amazonaws.serverless.proxy.struts2.Struts2LambdaHandler::handleRequest
       Runtime: java8
-      CodeUri: serverless-struts-example-1.0-SNAPSHOT-lambda.zip
+      CodeUri: target/serverless-struts-example-1.0-SNAPSHOT-lambda.zip
       MemorySize: 256
       Policies: AWSLambdaBasicExecutionRole
       Timeout: 30

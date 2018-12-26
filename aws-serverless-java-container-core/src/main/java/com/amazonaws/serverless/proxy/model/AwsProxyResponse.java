@@ -12,9 +12,17 @@
  */
 package com.amazonaws.serverless.proxy.model;
 
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.Map;
+
+
 /**
  * Response object for an API Gateway method using AWS_PROXY integrations
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class AwsProxyResponse {
 
     //-------------------------------------------------------------
@@ -22,7 +30,9 @@ public class AwsProxyResponse {
     //-------------------------------------------------------------
 
     private int statusCode;
-    private MultiValuedTreeMap<String, String> multiValueHeaders;
+    private String statusDescription;
+    private Map<String, String> headers;
+    private Headers multiValueHeaders;
     private String body;
     private boolean isBase64Encoded;
 
@@ -41,12 +51,12 @@ public class AwsProxyResponse {
     }
 
 
-    public AwsProxyResponse(int statusCode, MultiValuedTreeMap<String, String> headers) {
+    public AwsProxyResponse(int statusCode, Headers headers) {
         this(statusCode, headers, null);
     }
 
 
-    public AwsProxyResponse(int statusCode, MultiValuedTreeMap<String, String> headers, String body) {
+    public AwsProxyResponse(int statusCode, Headers headers, String body) {
         this.statusCode = statusCode;
         this.multiValueHeaders = headers;
         this.body = body;
@@ -59,7 +69,7 @@ public class AwsProxyResponse {
 
     public void addHeader(String key, String value) {
         if (this.multiValueHeaders == null) {
-            this.multiValueHeaders = new MultiValuedTreeMap<String, String>();
+            this.multiValueHeaders = new Headers();
         }
 
         this.multiValueHeaders.add(key, value);
@@ -80,12 +90,22 @@ public class AwsProxyResponse {
     }
 
 
-    public MultiValuedTreeMap<String, String> getMultiValueHeaders() {
+    public Map<String, String> getHeaders() {
+        return headers;
+    }
+
+
+    public void setHeaders(Map<String, String> headers) {
+        this.headers = headers;
+    }
+
+
+    public Headers getMultiValueHeaders() {
         return multiValueHeaders;
     }
 
 
-    public void setMultiValueHeaders(MultiValuedTreeMap<String, String> multiValueHeaders) {
+    public void setMultiValueHeaders(Headers multiValueHeaders) {
         this.multiValueHeaders = multiValueHeaders;
     }
 
@@ -99,11 +119,22 @@ public class AwsProxyResponse {
         this.body = body;
     }
 
+    @JsonProperty("isBase64Encoded")
     public boolean isBase64Encoded() {
         return isBase64Encoded;
     }
 
     public void setBase64Encoded(boolean base64Encoded) {
         isBase64Encoded = base64Encoded;
+    }
+
+
+    public String getStatusDescription() {
+        return statusDescription;
+    }
+
+
+    public void setStatusDescription(String statusDescription) {
+        this.statusDescription = statusDescription;
     }
 }

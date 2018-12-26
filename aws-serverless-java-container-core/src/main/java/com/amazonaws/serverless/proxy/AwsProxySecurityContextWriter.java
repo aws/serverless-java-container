@@ -19,7 +19,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import javax.ws.rs.core.SecurityContext;
 
 /**
- * Default impolementation of <code>SecurityContextWriter</code>. Creates a SecurityContext object based on an API Gateway
+ * Default implementation of <code>SecurityContextWriter</code>. Creates a SecurityContext object based on an API Gateway
  * event and the Lambda context. This returns the default <code>AwsProxySecurityContext</code> instance.
  */
 public class AwsProxySecurityContextWriter implements SecurityContextWriter<AwsProxyRequest> {

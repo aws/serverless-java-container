@@ -137,9 +137,21 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
             ((ResourceConfig)jaxRsApplication).register(new AbstractBinder() {
                 @Override
                 protected void configure() {
-                    bindFactory(AwsProxyServletContextSupplier.class).to(ServletContext.class).in(RequestScoped.class);
-                    bindFactory(AwsProxyServletRequestSupplier.class).to(HttpServletRequest.class).in(RequestScoped.class);
-                    bindFactory(AwsProxyServletResponseSupplier.class).to(HttpServletResponse.class).in(RequestScoped.class);
+                    bindFactory(AwsProxyServletContextSupplier.class)
+                            .proxy(true)
+                            .proxyForSameScope(true)
+                            .to(ServletContext.class)
+                            .in(RequestScoped.class);
+                    bindFactory(AwsProxyServletRequestSupplier.class)
+                            .proxy(true)
+                            .proxyForSameScope(true)
+                            .to(HttpServletRequest.class)
+                            .in(RequestScoped.class);
+                    bindFactory(AwsProxyServletResponseSupplier.class)
+                            .proxy(true)
+                            .proxyForSameScope(true)
+                            .to(HttpServletResponse.class)
+                            .in(RequestScoped.class);
                 }
             });
         }

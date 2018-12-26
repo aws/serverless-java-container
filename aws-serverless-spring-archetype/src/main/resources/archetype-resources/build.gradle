@@ -1,0 +1,31 @@
+apply plugin: 'java'
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+}
+
+dependencies {
+  compile (
+          'org.springframework:spring-webmvc:5.1.1.RELEASE',
+          'org.springframework:spring-context:5.1.1.RELEASE',
+          'com.amazonaws.serverless:aws-serverless-java-container-spring:[1.0,)',
+          'org.apache.logging.log4j:log4j-core:2.8.2',
+          'org.apache.logging.log4j:log4j-api:2.8.2',
+          'org.apache.logging.log4j:log4j-slf4j-impl:2.8.2',
+          'com.fasterxml.jackson.core:jackson-databind:2.9.7',
+          'com.amazonaws:aws-lambda-java-log4j2:1.1.0',
+  )
+
+  testCompile("junit:junit:4.12")
+}
+
+task buildZip(type: Zip) {
+  from compileJava
+  from processResources
+  into('lib') {
+    from(configurations.compileClasspath)
+  }
+}
+
+build.dependsOn buildZip

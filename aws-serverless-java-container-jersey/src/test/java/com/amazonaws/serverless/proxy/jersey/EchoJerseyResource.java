@@ -13,7 +13,8 @@
 package com.amazonaws.serverless.proxy.jersey;
 
 import com.amazonaws.serverless.proxy.RequestReader;
-import com.amazonaws.serverless.proxy.model.ApiGatewayRequestContext;
+import com.amazonaws.serverless.proxy.jersey.providers.ServletRequestFilter;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
 import com.amazonaws.serverless.proxy.jersey.model.MapResponseModel;
 import com.amazonaws.serverless.proxy.jersey.model.SingleValueModel;
 
@@ -49,6 +50,18 @@ public class EchoJerseyResource {
     public SingleValueModel echoDecodedParam(@QueryParam("param") String param) {
         SingleValueModel model = new SingleValueModel();
         model.setValue(param);
+        return model;
+    }
+
+    @Path("/filter-attribute") @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public SingleValueModel returnFilterAttribute(@Context HttpServletRequest req) {
+        SingleValueModel model = new SingleValueModel();
+        if (req.getAttribute(ServletRequestFilter.FILTER_ATTRIBUTE_NAME) == null) {
+            model.setValue("");
+        } else {
+            model.setValue(req.getAttribute(ServletRequestFilter.FILTER_ATTRIBUTE_NAME).toString());
+        }
         return model;
     }
 
@@ -135,9 +148,9 @@ public class EchoJerseyResource {
     @Produces(MediaType.APPLICATION_JSON)
     public SingleValueModel echoAuthorizerPrincipal(@Context ContainerRequestContext context) {
         SingleValueModel valueModel = new SingleValueModel();
-        ApiGatewayRequestContext apiGatewayRequestContext =
-                (ApiGatewayRequestContext) context.getProperty(RequestReader.API_GATEWAY_CONTEXT_PROPERTY);
-        valueModel.setValue(apiGatewayRequestContext.getAuthorizer().getPrincipalId());
+        AwsProxyRequestContext awsProxyRequestContext =
+                (AwsProxyRequestContext) context.getProperty(RequestReader.API_GATEWAY_CONTEXT_PROPERTY);
+        valueModel.setValue(awsProxyRequestContext.getAuthorizer().getPrincipalId());
 
         return valueModel;
     }
@@ -146,9 +159,9 @@ public class EchoJerseyResource {
     @Produces(MediaType.APPLICATION_JSON)
     public SingleValueModel echoAuthorizerContext(@Context ContainerRequestContext context, @QueryParam("key") String key) {
         SingleValueModel valueModel = new SingleValueModel();
-        ApiGatewayRequestContext apiGatewayRequestContext =
-                (ApiGatewayRequestContext) context.getProperty(RequestReader.API_GATEWAY_CONTEXT_PROPERTY);
-        valueModel.setValue(apiGatewayRequestContext.getAuthorizer().getContextValue(key));
+        AwsProxyRequestContext awsProxyRequestContext =
+                (AwsProxyRequestContext) context.getProperty(RequestReader.API_GATEWAY_CONTEXT_PROPERTY);
+        valueModel.setValue(awsProxyRequestContext.getAuthorizer().getContextValue(key));
 
         return valueModel;
     }
@@ -210,6 +223,16 @@ public class EchoJerseyResource {
     public Response encodedPathParam(@Encoded @PathParam("resource") String resource) {
         SingleValueModel sv = new SingleValueModel();
         sv.setValue(resource);
+        return Response.ok(sv).build();
+    }
+
+    @Path("/referer-header") @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response referer(@HeaderParam("Referer") String referer) {
+        System.out.println("Received referer: " + referer);
+        SingleValueModel sv = new SingleValueModel();
+        sv.setValue(referer);
         return Response.ok(sv).build();
     }
 }

@@ -14,12 +14,11 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.proxy.RequestReader;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
-import com.amazonaws.serverless.proxy.model.ApiGatewayRequestContext;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 import com.amazonaws.services.lambda.runtime.Context;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,16 +33,13 @@ import javax.servlet.http.HttpSession;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 
 /**
@@ -92,7 +88,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     //-------------------------------------------------------------
 
     /**
-     * Protected constructors for implemnenting classes. This should be called first with the context received from
+     * Protected constructors for implementing classes. This should be called first with the context received from
      * AWS Lambda
      * @param lambdaContext The Lambda function context. This object is used for utility methods such as log
      */
@@ -116,7 +112,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     public HttpSession getSession(boolean b) {
         log.debug("Trying to access session. Lambda functions are stateless and should not rely on the session");
         if (b && null == this.session) {
-            ApiGatewayRequestContext requestContext = (ApiGatewayRequestContext) getAttribute(RequestReader.API_GATEWAY_CONTEXT_PROPERTY);
+            AwsProxyRequestContext requestContext = (AwsProxyRequestContext) getAttribute(RequestReader.API_GATEWAY_CONTEXT_PROPERTY);
             this.session = new AwsHttpSession(requestContext.getRequestId());
         }
         return this.session;

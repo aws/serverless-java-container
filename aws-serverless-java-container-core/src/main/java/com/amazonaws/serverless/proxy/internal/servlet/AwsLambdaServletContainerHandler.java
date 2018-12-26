@@ -17,7 +17,6 @@ import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.RequestReader;
 import com.amazonaws.serverless.proxy.ResponseWriter;
 import com.amazonaws.serverless.proxy.SecurityContextWriter;
-import com.amazonaws.services.lambda.runtime.Context;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,7 +86,7 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
     //-------------------------------------------------------------
 
     /**
-     * Fowards a request to the existing framework container. This is called by the <code>AwsProxyRequestDispatcher</code> object
+     * Forwards a request to the existing framework container. This is called by the <code>AwsProxyRequestDispatcher</code> object
      * @param servletRequest The modified request object with the new request path
      * @param servletResponse The original servlet response
      * @throws ServletException

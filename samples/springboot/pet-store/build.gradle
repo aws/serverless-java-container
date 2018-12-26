@@ -1,0 +1,31 @@
+plugins {
+  id 'org.springframework.boot' version '1.5.17.RELEASE'
+}
+apply plugin: 'java'
+
+repositories {
+  jcenter()
+  mavenLocal()
+  mavenCentral()
+}
+
+dependencies {
+  compile (
+          'org.springframework.boot:spring-boot-starter-web',
+          'com.amazonaws.serverless:aws-serverless-java-container-spring:[1.0,)',
+          'io.symphonia:lambda-logging:1.0.1'
+  )
+  testCompile("junit:junit")
+}
+
+task buildZip(type: Zip) {
+  from compileJava
+  from processResources
+  into('lib') {
+    from(configurations.compileClasspath) {
+      exclude 'tomcat-embed-*'
+    }
+  }
+}
+
+build.dependsOn buildZip

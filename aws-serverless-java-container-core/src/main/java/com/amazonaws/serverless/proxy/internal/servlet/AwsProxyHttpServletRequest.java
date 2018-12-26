@@ -234,7 +234,11 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     public String getQueryString() {
         try {
-            return this.generateQueryString(request.getMultiValueQueryStringParameters(), true, config.getUriEncoding());
+            return this.generateQueryString(
+                    request.getMultiValueQueryStringParameters(),
+                    // ALB does not automatically decode parameters, so we don't want to re-encode them
+                    request.getRequestSource() != AwsProxyRequest.RequestSource.ALB,
+                    config.getUriEncoding());
         } catch (ServletException e) {
             log.error("Could not generate query string", e);
             return null;
@@ -511,7 +515,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
                     String[] values = output.get(e);
                     newValues.addAll(Arrays.asList(values));
                 }
-                newValues.add(getFirstQueryParamValue(e, config.isQueryStringCaseSensitive()));
+                newValues.addAll(Arrays.asList(getQueryParamValues(e, config.isQueryStringCaseSensitive())));
                 output.put(e, newValues.toArray(new String[0]));
             });
         }
@@ -699,6 +703,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         multipartFormParameters = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
         ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
+
         try {
             List<FileItem> items = upload.parseRequest(this);
             for (FileItem item : items) {
@@ -708,15 +713,9 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
                 newPart.setSubmittedFileName(item.getFieldName());
                 newPart.setContentType(item.getContentType());
                 newPart.setSize(item.getSize());
-
-                Iterator<String> headerNamesIterator = item.getHeaders().getHeaderNames();
-                while (headerNamesIterator.hasNext()) {
-                    String headerName = headerNamesIterator.next();
-                    Iterator<String> headerValuesIterator = item.getHeaders().getHeaders(headerName);
-                    while (headerValuesIterator.hasNext()) {
-                        newPart.addHeader(headerName, headerValuesIterator.next());
-                    }
-                }
+                item.getHeaders().getHeaderNames().forEachRemaining(h -> {
+                    newPart.addHeader(h, item.getHeaders().getHeader(h));
+                });
 
                 multipartFormParameters.put(item.getFieldName(), newPart);
             }
@@ -805,13 +804,15 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         // special cases for referer and user agent headers
         List<String> values = new ArrayList<>();
 
-        if ("referer".equals(key.toLowerCase(Locale.ENGLISH))) {
-            values.add(request.getRequestContext().getIdentity().getCaller());
-            return values;
-        }
-        if ("user-agent".equals(key.toLowerCase(Locale.ENGLISH))) {
-            values.add(request.getRequestContext().getIdentity().getUserAgent());
-            return values;
+        if (request.getRequestSource() == AwsProxyRequest.RequestSource.API_GATEWAY) {
+            if ("referer".equals(key.toLowerCase(Locale.ENGLISH))) {
+                values.add(request.getRequestContext().getIdentity().getCaller());
+                return values;
+            }
+            if ("user-agent".equals(key.toLowerCase(Locale.ENGLISH))) {
+                values.add(request.getRequestContext().getIdentity().getUserAgent());
+                return values;
+            }
         }
 
         if (request.getMultiValueHeaders() == null) {

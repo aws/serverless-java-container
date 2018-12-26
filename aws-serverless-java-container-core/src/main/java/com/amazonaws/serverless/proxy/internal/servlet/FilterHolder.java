@@ -123,7 +123,7 @@ public class FilterHolder {
     /**
      * Returns the Registration object for the filter. The <code>Registration</code> object defined in this file implements
      * both <code>FilterRegistration</code> and <code>FilterRegistration.Dynamic</code>
-     * @return The registration obejct
+     * @return The registration object
      */
     public Registration getRegistration() {
         return registration;

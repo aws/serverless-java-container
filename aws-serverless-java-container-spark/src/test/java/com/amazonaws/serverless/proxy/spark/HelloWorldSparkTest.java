@@ -10,15 +10,21 @@ import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import spark.Spark;
 
 import javax.servlet.http.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import static org.junit.Assert.*;
 import static spark.Spark.get;
 
 
+@RunWith(Parameterized.class)
 public class HelloWorldSparkTest {
     private static final String CUSTOM_HEADER_KEY = "X-Custom-Header";
     private static final String CUSTOM_HEADER_VALUE = "My Header Value";
@@ -30,6 +36,24 @@ public class HelloWorldSparkTest {
     private static final String COOKIE_PATH = "/";
 
     private static SparkLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+
+    private boolean isAlb;
+
+    public HelloWorldSparkTest(boolean alb) {
+        isAlb = alb;
+    }
+
+    @Parameterized.Parameters
+    public static Collection<Object> data() {
+        return Arrays.asList(new Object[] { false, true });
+    }
+
+    private AwsProxyRequestBuilder getRequestBuilder() {
+        AwsProxyRequestBuilder builder = new AwsProxyRequestBuilder();
+        if (isAlb) builder.alb();
+
+        return builder;
+    }
 
     @BeforeClass
     public static void initializeServer() {
@@ -51,7 +75,7 @@ public class HelloWorldSparkTest {
 
     @Test
     public void basicServer_handleRequest_emptyFilters() {
-        AwsProxyRequest req = new AwsProxyRequestBuilder().method("GET").path("/hello").build();
+        AwsProxyRequest req = getRequestBuilder().method("GET").path("/hello").build();
         AwsProxyResponse response = handler.proxy(req, new MockLambdaContext());
 
         assertEquals(200, response.getStatusCode());
@@ -62,7 +86,7 @@ public class HelloWorldSparkTest {
 
     @Test
     public void addCookie_setCookieOnResponse_validCustomCookie() {
-        AwsProxyRequest req = new AwsProxyRequestBuilder().method("GET").path("/cookie").build();
+        AwsProxyRequest req = getRequestBuilder().method("GET").path("/cookie").build();
         AwsProxyResponse response = handler.proxy(req, new MockLambdaContext());
 
         assertEquals(200, response.getStatusCode());
@@ -74,7 +98,7 @@ public class HelloWorldSparkTest {
 
     @Test
     public void multiCookie_setCookieOnResponse_singleHeaderWithMultipleValues() {
-        AwsProxyRequest req = new AwsProxyRequestBuilder().method("GET").path("/multi-cookie").build();
+        AwsProxyRequest req = getRequestBuilder().method("GET").path("/multi-cookie").build();
         AwsProxyResponse response = handler.proxy(req, new MockLambdaContext());
 
         assertEquals(200, response.getStatusCode());
@@ -89,7 +113,7 @@ public class HelloWorldSparkTest {
 
     @Test
     public void rootResource_basicRequest_expectSuccess() {
-        AwsProxyRequest req = new AwsProxyRequestBuilder().method("GET").path("/").build();
+        AwsProxyRequest req = getRequestBuilder().method("GET").path("/").build();
         AwsProxyResponse response = handler.proxy(req, new MockLambdaContext());
 
         assertEquals(200, response.getStatusCode());

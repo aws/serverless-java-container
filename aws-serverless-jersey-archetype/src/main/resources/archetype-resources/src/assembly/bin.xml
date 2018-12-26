@@ -1,0 +1,24 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+    <id>lambda-package</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <fileSets>
+        <!-- copy runtime dependencies with some exclusions -->
+        <fileSet>
+            <directory>${project.build.directory}${file.separator}lib</directory>
+            <outputDirectory>lib</outputDirectory>
+        </fileSet>
+        <!-- copy all classes -->
+        <fileSet>
+            <directory>${project.build.directory}${file.separator}classes</directory>
+            <includes>
+                <include>**</include>
+            </includes>
+            <outputDirectory>${file.separator}</outputDirectory>
+        </fileSet>
+    </fileSets>
+</assembly>

@@ -1,4 +1,14 @@
 language: java
+dist: trusty
 jdk:
-  - oraclejdk8
-script: mvn install
+  - openjdk8
+addons:
+  apt:
+    update: true
+before_install:
+  - wget https://services.gradle.org/distributions/gradle-5.0-bin.zip
+  - mkdir /opt/gradle
+  - unzip -d /opt/gradle gradle-5.0-bin.zip
+  - export GRADLE=/opt/gradle/gradle-5.0/bin/gradle
+install: true
+script: ./travis.sh

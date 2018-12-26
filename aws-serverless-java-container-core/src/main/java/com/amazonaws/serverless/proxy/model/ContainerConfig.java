@@ -225,7 +225,7 @@ public class ContainerConfig {
     /**
      * Sets whether query string parameter names should be treated as case sensitive. The default
      * value of this option is <code>false</code> for backward compatibility.
-     * @param queryStringCaseSensitive Tells the framework to treat query string parmaeter names as case sensitive
+     * @param queryStringCaseSensitive Tells the framework to treat query string parameter names as case sensitive
      */
     public void setQueryStringCaseSensitive(boolean queryStringCaseSensitive) {
         this.queryStringCaseSensitive = queryStringCaseSensitive;

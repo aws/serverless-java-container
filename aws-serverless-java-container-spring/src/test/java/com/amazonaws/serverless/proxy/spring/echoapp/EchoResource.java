@@ -1,18 +1,24 @@
 package com.amazonaws.serverless.proxy.spring.echoapp;
 
 import com.amazonaws.serverless.proxy.RequestReader;
-import com.amazonaws.serverless.proxy.model.ApiGatewayRequestContext;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.MapResponseModel;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.SingleValueModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartResolver;
+import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
+import java.io.IOException;
 import java.net.URI;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -32,6 +38,13 @@ import static org.springframework.web.servlet.mvc.method.annotation.MvcUriCompon
 public class EchoResource {
     public static final String TEST_GENERATE_URI = "test";
     public static final String STRING_BODY = "Hello";
+
+    @Bean
+    public MultipartResolver multipartResolver() {
+        CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver();
+        multipartResolver.setMaxUploadSize(1000000);
+        return multipartResolver;
+    }
 
     @Autowired
     ServletContext servletContext;
@@ -68,6 +81,15 @@ public class EchoResource {
         return queryStrings;
     }
 
+    @RequestMapping(path = "/multivalue-query-string", method = RequestMethod.GET)
+    public MapResponseModel countMultivalueQueryParams(@RequestParam MultiValueMap<String, String> multipleParams) {
+        MapResponseModel out =  new MapResponseModel();
+        for (String v : multipleParams.get("multiple")) {
+            out.addValue(v, "ok");
+        }
+        return out;
+    }
+
     @RequestMapping(path = "/list-query-string", method = RequestMethod.GET)
     public SingleValueModel echoListQueryString(@RequestParam(value="list") List<String> valueList) {
         SingleValueModel value = new SingleValueModel();
@@ -78,9 +100,9 @@ public class EchoResource {
     @RequestMapping(path = "/authorizer-principal", method = RequestMethod.GET)
     public SingleValueModel echoAuthorizerPrincipal(HttpServletRequest context) {
         SingleValueModel valueModel = new SingleValueModel();
-        ApiGatewayRequestContext apiGatewayRequestContext =
-                (ApiGatewayRequestContext) context.getAttribute(RequestReader.API_GATEWAY_CONTEXT_PROPERTY);
-        valueModel.setValue(apiGatewayRequestContext.getAuthorizer().getPrincipalId());
+        AwsProxyRequestContext awsProxyRequestContext =
+                (AwsProxyRequestContext) context.getAttribute(RequestReader.API_GATEWAY_CONTEXT_PROPERTY);
+        valueModel.setValue(awsProxyRequestContext.getAuthorizer().getPrincipalId());
 
         return valueModel;
     }
@@ -166,5 +188,13 @@ public class EchoResource {
                        .ok()
                        .lastModified(Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli())
                        .body(STRING_BODY);
+    }
+
+    @RequestMapping(path = "/attachment", method=RequestMethod.POST)
+    public ResponseEntity<String> receiveFile(@RequestParam("testFile") MultipartFile file) throws IOException {
+        String fileName = file.getName();
+        byte[] fileContents = file.getBytes();
+        System.out.println("Content length: " + fileContents.length);
+        return ResponseEntity.ok(fileName);
     }
 }

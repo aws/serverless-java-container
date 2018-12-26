@@ -130,6 +130,24 @@ public class SpringAwsProxyTest {
     }
 
     @Test
+    public void queryString_multiParam_expectCorrectValueCount()
+            throws IOException {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/multivalue-query-string", "GET")
+                                          .json()
+                                          .queryString("multiple", "first")
+                                          .queryString("multiple", "second")
+                                          .build();
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(200, output.getStatusCode());
+        MapResponseModel response = objectMapper.readValue(output.getBody(), MapResponseModel.class);
+
+        assertEquals(2, response.getValues().size());
+        assertTrue(response.getValues().containsKey("first"));
+        assertTrue(response.getValues().containsKey("second"));
+    }
+
+    @Test
     public void dateHeader_notModified_expect304() {
         AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/last-modified", "GET")
                                           .json()
@@ -361,6 +379,20 @@ public class SpringAwsProxyTest {
         validateSingleValueModel(output, expectedUri);
 
         SpringLambdaContainerHandler.getContainerConfig().setUseStageAsServletContext(false);
+    }
+
+    @Test
+    public void multipart_getFileName_rerutrnsCorrectFileName()
+            throws IOException {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/attachment", "POST")
+                                          .formFilePart("testFile", "myFile.txt", "hello".getBytes())
+                                          .build();
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(200, output.getStatusCode());
+        System.out.println("Response: " + output.getBody());
+
+        assertEquals("testFile", output.getBody());
     }
 
     private void validateMapResponseModel(AwsProxyResponse output) {

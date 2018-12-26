@@ -52,6 +52,8 @@ public class Application extends SpringBootServletInitializer {
      *
      * By default, an ExceptionHandlerExceptionResolver is created which creates many dependent object, including
      * an expensive ObjectMapper instance.
+     *
+     * To enable custom @ControllerAdvice classes remove this bean.
      */
     @Bean
     public HandlerExceptionResolver handlerExceptionResolver() {

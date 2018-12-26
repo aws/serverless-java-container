@@ -27,7 +27,7 @@ import javax.ws.rs.core.SecurityContext;
  * object that supports requests for the AWS_PROXY integration.
  *
  * @param <RequestType> The type for the AWS Lambda event
- * @param <ContainerRequestType> The type for the undelying container request object
+ * @param <ContainerRequestType> The type for the underlying container request object
  */
 public abstract class RequestReader<RequestType, ContainerRequestType> {
 
@@ -44,6 +44,11 @@ public abstract class RequestReader<RequestType, ContainerRequestType> {
      * The key for the <strong>API Gateway stage variables</strong> property in the PropertiesDelegate object
      */
     public static final String API_GATEWAY_STAGE_VARS_PROPERTY = "com.amazonaws.apigateway.stage.variables";
+
+    /**
+     * The key for the <strong>ALB context</strong> property in the PropertiesDelegate object
+     */
+    public static final String ALB_CONTEXT_PROPERTY = "com.amazonaws.alb.request.context";
 
     /**
      * The key to store the entire API Gateway event

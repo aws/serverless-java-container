@@ -25,6 +25,7 @@
         <module>aws-serverless-spark-archetype</module>
         <module>aws-serverless-spring-archetype</module>
         <module>aws-serverless-springboot-archetype</module>
+        <module>aws-serverless-springboot2-archetype</module>
     </modules>
 
     <scm>
@@ -43,6 +44,7 @@
 
     <properties>
         <jacoco.minCoverage>0.5</jacoco.minCoverage>
+        <dependencyCheck.version>4.0.1</dependencyCheck.version>
     </properties>
 
     <dependencies>
@@ -58,14 +60,14 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.25</version>
+            <version>1.8.0-beta2</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>1.7.25</version>
+            <version>1.8.0-beta2</version>
             <scope>test</scope>
         </dependency>
 
