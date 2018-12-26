@@ -14,16 +14,21 @@ import org.glassfish.jersey.logging.LoggingFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Arrays;
+import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 
+@RunWith(Parameterized.class)
 public class JerseyParamEncodingTest {
 
     private static final String SIMPLE_ENCODED_PARAM = "p/z+3";
@@ -41,9 +46,27 @@ public class JerseyParamEncodingTest {
 
     private static Context lambdaContext = new MockLambdaContext();
 
+    private boolean isAlb;
+
+    public JerseyParamEncodingTest(boolean alb) {
+        isAlb = alb;
+    }
+
+    @Parameterized.Parameters
+    public static Collection<Object> data() {
+        return Arrays.asList(new Object[] { false, true });
+    }
+
+    private AwsProxyRequestBuilder getRequestBuilder(String path, String method) {
+        AwsProxyRequestBuilder builder = new AwsProxyRequestBuilder(path, method);
+        if (isAlb) builder.alb();
+
+        return builder;
+    }
+
     @Test
     public void queryString_uriInfo_echo() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/query-string", "GET")
+        AwsProxyRequest request = getRequestBuilder("/echo/query-string", "GET")
                                           .json()
                                           .queryString(QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE)
                                           .build();
@@ -57,7 +80,7 @@ public class JerseyParamEncodingTest {
 
     @Test
     public void queryString_notEncoded_echo() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/query-string", "GET")
+        AwsProxyRequest request = getRequestBuilder("/echo/query-string", "GET")
                                           .json()
                                           .queryString(QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE)
                                           .build();
@@ -72,7 +95,7 @@ public class JerseyParamEncodingTest {
     @Test
     @Ignore("We expect to only receive decoded values from API Gateway")
     public void queryString_encoded_echo() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/query-string", "GET")
+        AwsProxyRequest request = getRequestBuilder("/echo/query-string", "GET")
                                           .json()
                                           .queryString(QUERY_STRING_KEY, QUERY_STRING_ENCODED_VALUE)
                                           .build();
@@ -86,7 +109,7 @@ public class JerseyParamEncodingTest {
 
     @Test
     public void simpleQueryParam_encoding_expectDecodedParam() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/decoded-param", "GET").queryString("param", SIMPLE_ENCODED_PARAM).build();
+        AwsProxyRequest request = getRequestBuilder("/echo/decoded-param", "GET").queryString("param", SIMPLE_ENCODED_PARAM).build();
 
         AwsProxyResponse resp = handler.proxy(request, lambdaContext);
         assertEquals(200, resp.getStatusCode());
@@ -95,7 +118,7 @@ public class JerseyParamEncodingTest {
 
     @Test
     public void jsonQueryParam_encoding_expectDecodedParam() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/decoded-param", "GET").queryString("param", JSON_ENCODED_PARAM).build();
+        AwsProxyRequest request = getRequestBuilder("/echo/decoded-param", "GET").queryString("param", JSON_ENCODED_PARAM).build();
 
         AwsProxyResponse resp = handler.proxy(request, lambdaContext);
         assertEquals(200, resp.getStatusCode());
@@ -104,7 +127,7 @@ public class JerseyParamEncodingTest {
 
     @Test
     public void simpleQueryParam_encoding_expectEncodedParam() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/encoded-param", "GET").queryString("param", SIMPLE_ENCODED_PARAM).build();
+        AwsProxyRequest request = getRequestBuilder("/echo/encoded-param", "GET").queryString("param", SIMPLE_ENCODED_PARAM).build();
         String encodedVal = "";
         try {
             encodedVal = URLEncoder.encode(SIMPLE_ENCODED_PARAM, "UTF-8");
@@ -118,7 +141,7 @@ public class JerseyParamEncodingTest {
 
     @Test
     public void jsonQueryParam_encoding_expectEncodedParam() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/encoded-param", "GET").queryString("param", JSON_ENCODED_PARAM).build();
+        AwsProxyRequest request = getRequestBuilder("/echo/encoded-param", "GET").queryString("param", JSON_ENCODED_PARAM).build();
         String encodedVal = "";
         try {
             encodedVal = URLEncoder.encode(JSON_ENCODED_PARAM, "UTF-8");
@@ -133,7 +156,7 @@ public class JerseyParamEncodingTest {
     @Test
     public void queryParam_encoding_expectFullyEncodedUrl() {
         String paramValue = "/+=";
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/encoded-param", "GET").queryString("param", paramValue).build();
+        AwsProxyRequest request = getRequestBuilder("/echo/encoded-param", "GET").queryString("param", paramValue).build();
         AwsProxyResponse resp = handler.proxy(request, lambdaContext);
         assertNotNull(resp);
         assertEquals(resp.getStatusCode(), 200);
@@ -145,7 +168,7 @@ public class JerseyParamEncodingTest {
     public void pathParam_encoded_routesToCorrectPath() {
         String encodedParam = "http%3A%2F%2Fhelloresource.com";
         String path = "/echo/encoded-path/" + encodedParam;
-        AwsProxyRequest request = new AwsProxyRequestBuilder(path, "GET").build();
+        AwsProxyRequest request = getRequestBuilder(path, "GET").build();
         AwsProxyResponse resp = handler.proxy(request, lambdaContext);
         assertNotNull(resp);
         assertEquals(resp.getStatusCode(), 200);
@@ -156,7 +179,7 @@ public class JerseyParamEncodingTest {
     public void pathParam_encoded_returns404() {
         String encodedParam = "http://helloresource.com";
         String path = "/echo/encoded-path/" + encodedParam;
-        AwsProxyRequest request = new AwsProxyRequestBuilder(path, "GET").build();
+        AwsProxyRequest request = getRequestBuilder(path, "GET").build();
         AwsProxyResponse resp = handler.proxy(request, lambdaContext);
         assertNotNull(resp);
         assertEquals(resp.getStatusCode(), 404);
@@ -165,7 +188,7 @@ public class JerseyParamEncodingTest {
     @Test
     @Ignore
     public void queryParam_listOfString_expectCorrectLength() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/list-query-string", "GET").queryString("list", "v1,v2,v3").build();
+        AwsProxyRequest request = getRequestBuilder("/echo/list-query-string", "GET").queryString("list", "v1,v2,v3").build();
         AwsProxyResponse resp = handler.proxy(request, lambdaContext);
         assertNotNull(resp);
         assertEquals(resp.getStatusCode(), 200);

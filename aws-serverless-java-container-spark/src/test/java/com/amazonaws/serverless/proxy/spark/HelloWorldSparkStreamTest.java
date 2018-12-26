@@ -12,6 +12,8 @@ import org.apache.commons.io.IOUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import spark.Spark;
 
 import javax.servlet.http.Cookie;
@@ -21,6 +23,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -30,6 +34,7 @@ import static spark.Spark.get;
 // This class doesn't actually test Spark. Instead it tests the proxyStream method of the
 // LambdaContainerHandler object. We use the Spark implementation for this because it's the
 // fastest to start
+@RunWith(Parameterized.class)
 public class HelloWorldSparkStreamTest {
     private static final String CUSTOM_HEADER_KEY = "X-Custom-Header";
     private static final String CUSTOM_HEADER_VALUE = "My Header Value";
@@ -41,6 +46,24 @@ public class HelloWorldSparkStreamTest {
     private static final String COOKIE_PATH = "/";
 
     private static SparkLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+
+    private boolean isAlb;
+
+    public HelloWorldSparkStreamTest(boolean alb) {
+        isAlb = alb;
+    }
+
+    @Parameterized.Parameters
+    public static Collection<Object> data() {
+        return Arrays.asList(new Object[] { false, true });
+    }
+
+    private AwsProxyRequestBuilder getRequestBuilder() {
+        AwsProxyRequestBuilder builder = new AwsProxyRequestBuilder();
+        if (isAlb) builder.alb();
+
+        return builder;
+    }
 
     @BeforeClass
     public static void initializeServer() {
@@ -62,7 +85,7 @@ public class HelloWorldSparkStreamTest {
 
     @Test
     public void helloRequest_basicStream_populatesOutputSuccessfully() {
-        InputStream req = new AwsProxyRequestBuilder().method("GET").path("/hello").buildStream();
+        InputStream req = getRequestBuilder().method("GET").path("/hello").buildStream();
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
             handler.proxyStream(req, outputStream, new MockLambdaContext());
@@ -80,7 +103,7 @@ public class HelloWorldSparkStreamTest {
 
     @Test
     public void nullPathRequest_doesntFail_expectA404() {
-        InputStream req = new AwsProxyRequestBuilder().method("GET").path(null).buildStream();
+        InputStream req = getRequestBuilder().method("GET").path(null).buildStream();
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
             handler.proxyStream(req, outputStream, new MockLambdaContext());

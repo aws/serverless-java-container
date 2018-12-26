@@ -19,6 +19,7 @@ import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
 import com.amazonaws.serverless.proxy.model.ApiGatewayRequestIdentity;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.CognitoAuthorizerClaims;
+import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.serverless.proxy.model.Headers;
 import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 
@@ -36,6 +37,9 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -184,7 +188,24 @@ public class AwsProxyRequestBuilder {
             this.request.setMultiValueQueryStringParameters(new MultiValuedTreeMap<>());
         }
 
-        this.request.getMultiValueQueryStringParameters().add(key, value);
+        if (request.getRequestSource() == AwsProxyRequest.RequestSource.API_GATEWAY) {
+            this.request.getMultiValueQueryStringParameters().add(key, value);
+        }
+        // ALB does not decode parameters automatically like API Gateway.
+        if (request.getRequestSource() == AwsProxyRequest.RequestSource.ALB) {
+            String albValue = value;
+            try {
+                //if (URLDecoder.decode(value, ContainerConfig.DEFAULT_CONTENT_CHARSET).equals(value)) {
+                // TODO: Assume we are always given an unencoded value, smarter check here to encode
+                // only if necessary
+                    albValue = URLEncoder.encode(value, ContainerConfig.DEFAULT_CONTENT_CHARSET);
+                //}
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
+            this.request.getMultiValueQueryStringParameters().add(key, albValue);
+        }
         return this;
     }
 
@@ -219,14 +240,20 @@ public class AwsProxyRequestBuilder {
 
 
     public AwsProxyRequestBuilder authorizerPrincipal(String principal) {
-        if (this.request.getRequestContext().getAuthorizer() == null) {
-            this.request.getRequestContext().setAuthorizer(new ApiGatewayAuthorizerContext());
+        if (this.request.getRequestSource() == AwsProxyRequest.RequestSource.API_GATEWAY) {
+            if (this.request.getRequestContext().getAuthorizer() == null) {
+                this.request.getRequestContext().setAuthorizer(new ApiGatewayAuthorizerContext());
+            }
+            this.request.getRequestContext().getAuthorizer().setPrincipalId(principal);
+            if (this.request.getRequestContext().getAuthorizer().getClaims() == null) {
+                this.request.getRequestContext().getAuthorizer().setClaims(new CognitoAuthorizerClaims());
+            }
+            this.request.getRequestContext().getAuthorizer().getClaims().setSubject(principal);
         }
-        this.request.getRequestContext().getAuthorizer().setPrincipalId(principal);
-        if (this.request.getRequestContext().getAuthorizer().getClaims() == null) {
-            this.request.getRequestContext().getAuthorizer().setClaims(new CognitoAuthorizerClaims());
+        if (this.request.getRequestSource() == AwsProxyRequest.RequestSource.ALB) {
+            header("x-amzn-oidc-identity", principal);
+            header("x-amzn-oidc-accesstoken", Base64.getMimeEncoder().encodeToString("test-token".getBytes()));
         }
-        this.request.getRequestContext().getAuthorizer().getClaims().setSubject(principal);
         return this;
     }
 

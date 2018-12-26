@@ -234,7 +234,11 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     public String getQueryString() {
         try {
-            return this.generateQueryString(request.getMultiValueQueryStringParameters(), true, config.getUriEncoding());
+            return this.generateQueryString(
+                    request.getMultiValueQueryStringParameters(),
+                    // ALB does not automatically decode parameters, so we don't want to re-encode them
+                    request.getRequestSource() != AwsProxyRequest.RequestSource.ALB,
+                    config.getUriEncoding());
         } catch (ServletException e) {
             log.error("Could not generate query string", e);
             return null;
