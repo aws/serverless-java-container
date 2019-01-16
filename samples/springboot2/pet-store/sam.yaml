@@ -11,7 +11,7 @@ Resources:
   PetStoreFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: com.amazonaws.serverless.sample.springboot.StreamLambdaHandler::handleRequest
+      Handler: com.amazonaws.serverless.sample.springboot2.StreamLambdaHandler::handleRequest
       Runtime: java8
       CodeUri: target/serverless-springboot2-example-1.0-SNAPSHOT-lambda-package.zip
       MemorySize: 1512
