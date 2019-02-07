@@ -21,13 +21,9 @@ import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
 
-import org.apache.http.HttpStatus;
-
 import javax.ws.rs.core.Response;
 
 import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**

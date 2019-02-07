@@ -12,21 +12,14 @@
  */
 package com.amazonaws.serverless.proxy.internal.jaxrs;
 
-import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.CognitoAuthorizerClaims;
 import com.amazonaws.services.lambda.runtime.Context;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-
 import javax.ws.rs.core.SecurityContext;
 
-import java.io.IOException;
 import java.security.Principal;
-import java.util.Base64;
-import java.util.Map;
 
-import static com.amazonaws.serverless.proxy.model.AwsProxyRequest.*;
 import static com.amazonaws.serverless.proxy.model.AwsProxyRequest.RequestSource.API_GATEWAY;
 
 

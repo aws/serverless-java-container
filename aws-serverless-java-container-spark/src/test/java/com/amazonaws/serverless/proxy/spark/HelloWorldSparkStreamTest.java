@@ -8,7 +8,6 @@ import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -17,12 +16,10 @@ import org.junit.runners.Parameterized;
 import spark.Spark;
 
 import javax.servlet.http.Cookie;
-import javax.ws.rs.core.HttpHeaders;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collection;
 

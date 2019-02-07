@@ -3,9 +3,7 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
-import com.amazonaws.serverless.proxy.model.ContainerConfig;
 
-import org.apache.commons.io.input.NullInputStream;
 import org.junit.Test;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,8 +13,6 @@ import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZonedDateTime;
