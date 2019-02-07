@@ -117,7 +117,7 @@ public class AwsProxyRequestPart
     @Override
     public Collection<String> getHeaders(String s) {
         if (headers == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         return headers.get(s);
     }
@@ -126,7 +126,7 @@ public class AwsProxyRequestPart
     @Override
     public Collection<String> getHeaderNames() {
         if (headers == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         return headers.keySet();
     }
