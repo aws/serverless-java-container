@@ -168,8 +168,7 @@ public class MultiValuedTreeMap<Key, Value> implements MultivaluedMap<Key, Value
         MultiValuedTreeMap<Key, Value> clone = new MultiValuedTreeMap<>();
         for (Key key : keySet()) {
             List<Value> value = get(key);
-            List<Value> newValue = new ArrayList<>();
-            newValue.addAll(value);
+            List<Value> newValue = new ArrayList<>(value);
             clone.put(key, newValue);
         }
         return clone;

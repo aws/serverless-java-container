@@ -4,6 +4,7 @@ package com.amazonaws.serverless.proxy.model;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
@@ -237,9 +238,7 @@ public class ContainerConfig {
      */
     public void addBinaryContentTypes(String... contentTypes) {
         if(contentTypes != null) {
-            for(String type: contentTypes) {
-                binaryContentTypes.add(type);
-            }
+            binaryContentTypes.addAll(Arrays.asList(contentTypes));
         }
     }
 
