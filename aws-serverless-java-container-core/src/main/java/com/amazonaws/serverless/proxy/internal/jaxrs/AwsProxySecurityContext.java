@@ -84,6 +84,7 @@ public class AwsProxySecurityContext
     // Implementation - SecurityContext
     //-------------------------------------------------------------
 
+    @Override
     public Principal getUserPrincipal() {
         if (getAuthenticationScheme() == null) {
             return () -> null;
@@ -120,16 +121,19 @@ public class AwsProxySecurityContext
     }
 
 
+    @Override
     public boolean isUserInRole(String role) {
         return (role.equals(event.getRequestContext().getIdentity().getUserArn()));
     }
 
 
+    @Override
     public boolean isSecure() {
         return getAuthenticationScheme() != null;
     }
 
 
+    @Override
     public String getAuthenticationScheme() {
         switch (event.getRequestSource()) {
         case API_GATEWAY:

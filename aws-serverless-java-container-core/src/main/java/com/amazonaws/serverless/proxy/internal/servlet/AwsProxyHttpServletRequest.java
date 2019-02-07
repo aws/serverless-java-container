@@ -567,6 +567,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
                                                 .append(".amazonaws.com").toString();
     }
 
+    @Override
     public int getServerPort() {
         if (request.getMultiValueHeaders() == null) {
             return 443;

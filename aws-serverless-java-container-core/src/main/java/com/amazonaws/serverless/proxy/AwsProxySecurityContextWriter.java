@@ -35,6 +35,7 @@ public class AwsProxySecurityContextWriter implements SecurityContextWriter<AwsP
     // Implementation - SecurityContextWriter
     //-------------------------------------------------------------
 
+    @Override
     public SecurityContext writeSecurityContext(AwsProxyRequest event, Context lambdaContext) {
        currentContext = new AwsProxySecurityContext(lambdaContext, event);
 
