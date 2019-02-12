@@ -40,6 +40,7 @@ public class AwsFilterChainManager extends FilterChainManager<AwsServletContext>
      * Returns the filter holders stored in the <code>AwsServletContext</code> object
      * @return The map of filter holders
      */
+    @Override
     protected Map<String, FilterHolder> getFilterHolders() {
         return servletContext.getFilterHolders();
     }

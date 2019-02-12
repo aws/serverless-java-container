@@ -15,7 +15,6 @@ import javax.ws.rs.core.HttpHeaders;
 import static org.junit.Assert.*;
 
 import java.util.List;
-import java.util.Map;
 
 
 public class AwsHttpServletRequestTest {
