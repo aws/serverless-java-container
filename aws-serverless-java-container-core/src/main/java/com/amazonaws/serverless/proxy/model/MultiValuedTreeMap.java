@@ -36,11 +36,13 @@ public class MultiValuedTreeMap<Key, Value> implements MultivaluedMap<Key, Value
         map = new TreeMap<>(comparator);
     }
 
+    @Override
     public void add(Key key, Value value) {
         List<Value> values = findKey(key);
         values.add(value);
     }
 
+    @Override
     public Value getFirst(Key key) {
         List<Value> values = get(key);
         if (values == null || values.size() == 0) {
@@ -49,24 +51,29 @@ public class MultiValuedTreeMap<Key, Value> implements MultivaluedMap<Key, Value
         return values.get(0);
     }
 
+    @Override
     public void putSingle(Key key, Value value) {
         List<Value> values = findKey(key);
         values.clear();
         values.add(value);
     }
 
+    @Override
     public void clear() {
         map.clear();
     }
 
+    @Override
     public boolean containsKey(Object key) {
         return map.containsKey(key);
     }
 
+    @Override
     public boolean containsValue(Object value) {
         return map.containsValue(value);
     }
 
+    @Override
     public Set<Entry<Key, List<Value>>> entrySet() {
         return map.entrySet();
     }
@@ -75,6 +82,7 @@ public class MultiValuedTreeMap<Key, Value> implements MultivaluedMap<Key, Value
         return map.equals(o);
     }
 
+    @Override
     public List<Value> get(Object key) {
         return map.get(key);
     }
@@ -83,46 +91,56 @@ public class MultiValuedTreeMap<Key, Value> implements MultivaluedMap<Key, Value
         return map.hashCode();
     }
 
+    @Override
     public boolean isEmpty() {
         return map.isEmpty();
     }
 
+    @Override
     public Set<Key> keySet() {
         return map.keySet();
     }
 
+    @Override
     public List<Value> put(Key key, List<Value> value) {
         return map.put(key, value);
     }
 
+    @Override
     public void putAll(Map<? extends Key, ? extends List<Value>> t) {
         map.putAll(t);
     }
 
+    @Override
     public List<Value> remove(Object key) {
         return map.remove(key);
     }
 
+    @Override
     public int size() {
         return map.size();
     }
 
+    @Override
     public Collection<List<Value>> values() {
         return map.values();
     }
 
+    @Override
     public void addAll(Key key, Value... newValues) {
         for (Value value : newValues) {
             add(key, value);
         }
     }
 
+    @Override
     public void addAll(Key key, List<Value> valueList) {
         for (Value value : valueList) {
             add(key, value);
         }
     }
 
+    @Override
     public void addFirst(Key key, Value value) {
         List<Value> values = get(key);
         if (values == null) {
@@ -133,6 +151,7 @@ public class MultiValuedTreeMap<Key, Value> implements MultivaluedMap<Key, Value
         }
     }
 
+    @Override
     public boolean equalsIgnoreValueOrder(MultivaluedMap<Key, Value> vmap) {
         if (this == vmap) {
             return true;
@@ -163,13 +182,13 @@ public class MultiValuedTreeMap<Key, Value> implements MultivaluedMap<Key, Value
         return values;
     }
 
+    @Override
     @SuppressFBWarnings("CN_IDIOM_NO_SUPER_CALL")
     public MultiValuedTreeMap<Key, Value> clone() {
         MultiValuedTreeMap<Key, Value> clone = new MultiValuedTreeMap<>();
         for (Key key : keySet()) {
             List<Value> value = get(key);
-            List<Value> newValue = new ArrayList<>();
-            newValue.addAll(value);
+            List<Value> newValue = new ArrayList<>(value);
             clone.put(key, newValue);
         }
         return clone;

@@ -18,7 +18,6 @@ import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import javax.servlet.http.Part;
-import javax.ws.rs.core.MultivaluedHashMap;
 import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -117,7 +116,7 @@ public class AwsProxyRequestPart
     @Override
     public Collection<String> getHeaders(String s) {
         if (headers == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         return headers.get(s);
     }
@@ -126,7 +125,7 @@ public class AwsProxyRequestPart
     @Override
     public Collection<String> getHeaderNames() {
         if (headers == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         return headers.keySet();
     }

@@ -12,21 +12,14 @@
  */
 package com.amazonaws.serverless.proxy.internal.jaxrs;
 
-import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.CognitoAuthorizerClaims;
 import com.amazonaws.services.lambda.runtime.Context;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-
 import javax.ws.rs.core.SecurityContext;
 
-import java.io.IOException;
 import java.security.Principal;
-import java.util.Base64;
-import java.util.Map;
 
-import static com.amazonaws.serverless.proxy.model.AwsProxyRequest.*;
 import static com.amazonaws.serverless.proxy.model.AwsProxyRequest.RequestSource.API_GATEWAY;
 
 
@@ -84,6 +77,7 @@ public class AwsProxySecurityContext
     // Implementation - SecurityContext
     //-------------------------------------------------------------
 
+    @Override
     public Principal getUserPrincipal() {
         if (getAuthenticationScheme() == null) {
             return () -> null;
@@ -120,16 +114,19 @@ public class AwsProxySecurityContext
     }
 
 
+    @Override
     public boolean isUserInRole(String role) {
         return (role.equals(event.getRequestContext().getIdentity().getUserArn()));
     }
 
 
+    @Override
     public boolean isSecure() {
         return getAuthenticationScheme() != null;
     }
 
 
+    @Override
     public String getAuthenticationScheme() {
         switch (event.getRequestSource()) {
         case API_GATEWAY:
