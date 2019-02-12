@@ -29,6 +29,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
+import org.apache.http.entity.mime.content.StringBody;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -143,32 +144,38 @@ public class AwsProxyRequestBuilder {
             multipartBuilder = MultipartEntityBuilder.create();
         }
         multipartBuilder.addPart(fieldName, new ByteArrayBody(content, fileName));
+        buildMultipartBody();
+        return this;
+    }
+
+    public AwsProxyRequestBuilder formFieldPart(String fieldName, String fieldValue)
+            throws IOException {
+        if (request.getMultiValueHeaders() == null) {
+            request.setMultiValueHeaders(new Headers());
+        }
+        if (multipartBuilder == null) {
+            multipartBuilder = MultipartEntityBuilder.create();
+        }
+        multipartBuilder.addPart(fieldName, new StringBody(fieldValue));
+        buildMultipartBody();
+        return this;
+    }
+
+    private void buildMultipartBody()
+            throws IOException {
         HttpEntity bodyEntity = multipartBuilder.build();
         InputStream bodyStream = bodyEntity.getContent();
         byte[] buffer = new byte[bodyStream.available()];
         IOUtils.readFully(bodyStream, buffer);
-        request.setBody("\n\n" + new String(buffer, Charset.defaultCharset()));
-        if (request.getMultiValueHeaders() == null) {
-            request.setMultiValueHeaders(new Headers());
-        }
-        request.getMultiValueHeaders().putSingle(HttpHeaders.CONTENT_TYPE, bodyEntity.getContentType().getValue());
-        if (bodyEntity.getContentEncoding() != null) {
-            request.getMultiValueHeaders().putSingle(HttpHeaders.CONTENT_ENCODING, bodyEntity.getContentEncoding().getValue());
-        }
-        request.getMultiValueHeaders().putSingle(HttpHeaders.CONTENT_LENGTH, bodyEntity.getContentLength() + "");
-        return this;
-    }
-
-    public AwsProxyRequestBuilder formFieldPart(String fieldName, String fieldValue) {
-        if (request.getMultiValueHeaders() == null) {
-            request.setMultiValueHeaders(new Headers());
-        }
-        request.getMultiValueHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.MULTIPART_FORM_DATA);
-        if (multipartBuilder == null) {
-            multipartBuilder = MultipartEntityBuilder.create();
-        }
-        // TODO: implement
-        return this;
+        byte[] finalBuffer = new byte[buffer.length + 1];
+        byte[] newLineBytes = "\n\n".getBytes(LambdaContainerHandler.getContainerConfig().getDefaultContentCharset());
+        System.arraycopy(newLineBytes, 0, finalBuffer, 0, newLineBytes.length);
+        System.arraycopy(buffer, 0, finalBuffer, newLineBytes.length - 1, buffer.length);
+        request.setBody(Base64.getMimeEncoder().encodeToString(finalBuffer));
+        request.setIsBase64Encoded(true);
+        this.request.setMultiValueHeaders(new Headers());
+        header(HttpHeaders.CONTENT_TYPE, bodyEntity.getContentType().getValue());
+        header(HttpHeaders.CONTENT_LENGTH, bodyEntity.getContentLength() + "");
     }
 
 

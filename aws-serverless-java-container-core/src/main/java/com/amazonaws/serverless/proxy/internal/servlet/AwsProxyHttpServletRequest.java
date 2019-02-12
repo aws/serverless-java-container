@@ -429,7 +429,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         if (request.getBody() == null) {
             return new AwsServletInputStream(new NullInputStream(0, false, false));
         }
-        byte[] bodyBytes = null;
+        byte[] bodyBytes;
         if (request.isBase64Encoded()) {
             bodyBytes = Base64.getMimeDecoder().decode(request.getBody());
         } else {

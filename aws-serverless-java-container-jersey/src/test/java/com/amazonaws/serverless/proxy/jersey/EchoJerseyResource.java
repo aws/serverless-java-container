@@ -13,10 +13,16 @@
 package com.amazonaws.serverless.proxy.jersey;
 
 import com.amazonaws.serverless.proxy.RequestReader;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
 import com.amazonaws.serverless.proxy.jersey.providers.ServletRequestFilter;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
 import com.amazonaws.serverless.proxy.jersey.model.MapResponseModel;
 import com.amazonaws.serverless.proxy.jersey.model.SingleValueModel;
+
+import org.apache.commons.io.IOUtils;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -29,9 +35,16 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Random;
+
+import static com.amazonaws.serverless.proxy.jersey.JerseyHandlerFilter.JERSEY_SERVLET_REQUEST_PROPERTY;
 
 
 /**
@@ -230,9 +243,33 @@ public class EchoJerseyResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response referer(@HeaderParam("Referer") String referer) {
-        System.out.println("Received referer: " + referer);
         SingleValueModel sv = new SingleValueModel();
         sv.setValue(referer);
         return Response.ok(sv).build();
+    }
+
+    @Path("/file-size") @POST
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response fileSize(@FormDataParam("file") final File uploadedFile,
+                             @FormDataParam("file") FormDataContentDisposition fileDetail,
+                             @Context ContainerRequestContext req) {
+        SingleValueModel sv = new SingleValueModel();
+
+        System.out.println(
+                "Is base64 encoded: " +
+                ((AwsProxyHttpServletRequest)req.getProperty(JERSEY_SERVLET_REQUEST_PROPERTY)).getAwsProxyRequest().isBase64Encoded()
+        );
+
+        try {
+            InputStream fileIs = new FileInputStream(uploadedFile);
+            System.out.println("File: " + fileDetail.getName() + " " + fileDetail.getFileName() + " " + fileDetail.getSize());
+            System.out.println("Size: " + fileIs.available());
+            sv.setValue("" + fileIs.available());
+            return Response.ok(sv).build();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return Response.status(500).build();
+        }
     }
 }
