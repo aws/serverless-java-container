@@ -34,7 +34,7 @@ public class AwsProxyHttpServletRequestReaderTest {
 
     @Test
     public void readRequest_validAwsProxy_populatedRequest() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder().header(TEST_HEADER_KEY, TEST_HEADER_VALUE).build();
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/path", "GET").header(TEST_HEADER_KEY, TEST_HEADER_VALUE).build();
         try {
             HttpServletRequest servletRequest = reader.readRequest(request, null, null, ContainerConfig.defaultConfig());
             assertNotNull(servletRequest.getHeader(TEST_HEADER_KEY));
@@ -107,6 +107,43 @@ public class AwsProxyHttpServletRequestReaderTest {
         } catch (InvalidRequestEventException e) {
             e.printStackTrace();
             fail("Could not read request");
+        }
+    }
+
+    @Test
+    public void readRequest_validEventEmptyPath_expectExcepion() {
+        try {
+            AwsProxyRequest req = new AwsProxyRequestBuilder(null, "GET").build();
+            AwsProxyHttpServletRequest servletReq = reader.readRequest(req, null, null, ContainerConfig.defaultConfig());
+            assertNotNull(servletReq);
+        } catch (InvalidRequestEventException e) {
+            fail("Could not read a request with a null path");
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void readRequest_invalidEventEmptyMethod_expectExcepion() {
+        try {
+            AwsProxyRequest req = new AwsProxyRequestBuilder("/path", null).build();
+            reader.readRequest(req, null, null, ContainerConfig.defaultConfig());
+            fail("Expected InvalidRequestEventException");
+        } catch (InvalidRequestEventException e) {
+            assertEquals(AwsProxyHttpServletRequestReader.INVALID_REQUEST_ERROR, e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void readRequest_invalidEventEmptyContext_expectExcepion() {
+        try {
+            AwsProxyRequest req = new AwsProxyRequestBuilder("/path", "GET").build();
+            req.setRequestContext(null);
+            reader.readRequest(req, null, null, ContainerConfig.defaultConfig());
+            fail("Expected InvalidRequestEventException");
+        } catch (InvalidRequestEventException e) {
+            assertEquals(AwsProxyHttpServletRequestReader.INVALID_REQUEST_ERROR, e.getMessage());
+            e.printStackTrace();
         }
     }
 }
