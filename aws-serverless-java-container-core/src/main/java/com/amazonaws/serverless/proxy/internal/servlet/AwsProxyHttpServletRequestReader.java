@@ -42,7 +42,7 @@ public class AwsProxyHttpServletRequestReader extends RequestReader<AwsProxyRequ
         }
 
         request.setPath(stripBasePath(request.getPath(), config));
-        if (request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE) != null) {
+        if (request.getMultiValueHeaders() != null && request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE) != null) {
             String contentType = request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
             // put single as we always expect to have one and only one content type in a request.
             request.getMultiValueHeaders().putSingle(HttpHeaders.CONTENT_TYPE, getContentTypeWithCharset(contentType, config));

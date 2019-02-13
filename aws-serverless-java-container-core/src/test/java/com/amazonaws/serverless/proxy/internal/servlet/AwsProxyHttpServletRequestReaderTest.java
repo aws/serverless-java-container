@@ -111,7 +111,7 @@ public class AwsProxyHttpServletRequestReaderTest {
     }
 
     @Test
-    public void readRequest_validEventEmptyPath_expectExcepion() {
+    public void readRequest_validEventEmptyPath_expectException() {
         try {
             AwsProxyRequest req = new AwsProxyRequestBuilder(null, "GET").build();
             AwsProxyHttpServletRequest servletReq = reader.readRequest(req, null, null, ContainerConfig.defaultConfig());
@@ -123,7 +123,7 @@ public class AwsProxyHttpServletRequestReaderTest {
     }
 
     @Test
-    public void readRequest_invalidEventEmptyMethod_expectExcepion() {
+    public void readRequest_invalidEventEmptyMethod_expectException() {
         try {
             AwsProxyRequest req = new AwsProxyRequestBuilder("/path", null).build();
             reader.readRequest(req, null, null, ContainerConfig.defaultConfig());
@@ -135,7 +135,7 @@ public class AwsProxyHttpServletRequestReaderTest {
     }
 
     @Test
-    public void readRequest_invalidEventEmptyContext_expectExcepion() {
+    public void readRequest_invalidEventEmptyContext_expectException() {
         try {
             AwsProxyRequest req = new AwsProxyRequestBuilder("/path", "GET").build();
             req.setRequestContext(null);
@@ -144,6 +144,33 @@ public class AwsProxyHttpServletRequestReaderTest {
         } catch (InvalidRequestEventException e) {
             assertEquals(AwsProxyHttpServletRequestReader.INVALID_REQUEST_ERROR, e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void readRequest_nullHeaders_expectSuccess() {
+        AwsProxyRequest req = new AwsProxyRequestBuilder("/path", "GET").build();
+        req.setMultiValueHeaders(null);
+        try {
+            AwsProxyHttpServletRequest servletReq = reader.readRequest(req, null, null, ContainerConfig.defaultConfig());
+            String headerValue = servletReq.getHeader(HttpHeaders.CONTENT_TYPE);
+            assertNull(headerValue);
+        } catch (InvalidRequestEventException e) {
+            e.printStackTrace();
+            fail("Failed to read request with null headers");
+        }
+    }
+
+    @Test
+    public void readRequest_emptyHeaders_expectSuccess() {
+        AwsProxyRequest req = new AwsProxyRequestBuilder("/path", "GET").build();
+        try {
+            AwsProxyHttpServletRequest servletReq = reader.readRequest(req, null, null, ContainerConfig.defaultConfig());
+            String headerValue = servletReq.getHeader(HttpHeaders.CONTENT_TYPE);
+            assertNull(headerValue);
+        } catch (InvalidRequestEventException e) {
+            e.printStackTrace();
+            fail("Failed to read request with null headers");
         }
     }
 }
