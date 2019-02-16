@@ -23,7 +23,7 @@ The starter project defines a simple `/ping` resource that can accept `GET` requ
 The project folder also includes a `sam.yaml` file. You can use this [SAM](https://github.com/awslabs/serverless-application-model) file to deploy the project to AWS Lambda and Amazon API Gateway or test in local with [SAM Local](https://github.com/awslabs/aws-sam-local).
 
 ## Building the project
-Using [Maven](https://maven.apache.org/), you can create an AWS Lambda-compatible zip file simply by running the maven package command from the projct folder.
+Using [Maven](https://maven.apache.org/), you can create an AWS Lambda-compatible zip file simply by running the maven package command from the project folder.
 ```bash
 $ mvn archetype:generate -DartifactId=\${artifactId} -DarchetypeGroupId=com.amazonaws.serverless.archetypes -DarchetypeArtifactId=aws-serverless-spark-archetype -DarchetypeVersion=${project.version} -DgroupId=\${groupId} -Dversion=\${version} -Dinteractive=false
 $ cd \${artifactId}
