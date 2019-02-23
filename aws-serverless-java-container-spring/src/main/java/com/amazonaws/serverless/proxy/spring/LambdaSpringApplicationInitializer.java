@@ -142,18 +142,6 @@ public class LambdaSpringApplicationInitializer extends HttpServlet implements W
         DefaultDispatcherConfig dispatcherConfig = new DefaultDispatcherConfig(servletContext);
         applicationContext.setServletConfig(dispatcherConfig);
 
-        // Configure the listener for the request handled events. All we do here is release the latch
-        applicationContext.addApplicationListener((ApplicationListener<ServletRequestHandledEvent>) servletRequestHandledEvent -> {
-            try {
-                if (currentResponse != null) {
-                    currentResponse.flushBuffer();
-                }
-            } catch (IOException e) {
-                log.error("Could not flush response buffer", e);
-                throw new RuntimeException("Could not flush response buffer", e);
-            }
-        });
-
         // Manage the lifecycle of the root application context
         this.addListener(new ContextLoaderListener(applicationContext));
 

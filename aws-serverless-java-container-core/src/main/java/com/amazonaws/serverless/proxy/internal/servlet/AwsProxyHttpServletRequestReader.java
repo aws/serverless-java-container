@@ -26,6 +26,7 @@ import javax.ws.rs.core.SecurityContext;
  * object and uses it to initialize a <code>AwsProxyHttpServletRequest</code> object.
  */
 public class AwsProxyHttpServletRequestReader extends RequestReader<AwsProxyRequest, AwsProxyHttpServletRequest> {
+    static final String INVALID_REQUEST_ERROR = "The incoming event is not a valid request from Amazon API Gateway or an Application Load Balancer";
 
     //-------------------------------------------------------------
     // Methods - Implementation
@@ -34,9 +35,14 @@ public class AwsProxyHttpServletRequestReader extends RequestReader<AwsProxyRequ
     @Override
     public AwsProxyHttpServletRequest readRequest(AwsProxyRequest request, SecurityContext securityContext, Context lambdaContext, ContainerConfig config)
             throws InvalidRequestEventException {
+        // Expect the HTTP method and context to be populated. If they are not, we are handling an
+        // unsupported event type.
+        if (request.getHttpMethod() == null || request.getHttpMethod().equals("") || request.getRequestContext() == null) {
+            throw new InvalidRequestEventException(INVALID_REQUEST_ERROR);
+        }
 
         request.setPath(stripBasePath(request.getPath(), config));
-        if (request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE) != null) {
+        if (request.getMultiValueHeaders() != null && request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE) != null) {
             String contentType = request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
             // put single as we always expect to have one and only one content type in a request.
             request.getMultiValueHeaders().putSingle(HttpHeaders.CONTENT_TYPE, getContentTypeWithCharset(contentType, config));
