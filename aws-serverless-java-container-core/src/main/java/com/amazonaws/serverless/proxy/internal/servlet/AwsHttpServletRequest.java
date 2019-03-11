@@ -370,7 +370,11 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
                     // TODO: Should we concatenate the rest of the values?
                     if (newValue.getValue() == null) {
                         newValue.setKey(kv[0].trim());
-                        newValue.setValue(kv[1].trim());
+                        if (kv.length == 1) {
+                            newValue.setValue("");
+                        } else {
+                            newValue.setValue(kv[1].trim());
+                        }
                     } else {
                         // special case for quality q=
                         if ("q".equals(kv[0].trim())) {
