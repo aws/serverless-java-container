@@ -143,6 +143,10 @@ public class AwsServletContext
     @SuppressFBWarnings("PATH_TRAVERSAL_IN") // suppressing because we are using the getValidFilePath
     public String getMimeType(String s) {
         try {
+            File f = new File(s);
+            if (!f.isAbsolute()) {
+                s = "/tmp/" + f;
+            }
             String validatedPath = SecurityUtils.getValidFilePath(s);
             return Files.probeContentType(Paths.get(validatedPath));
         } catch (IOException e) {
