@@ -16,7 +16,7 @@
 
     <properties>
         <struts2.version>2.5.20</struts2.version>
-        <jackson.version>2.9.8</jackson.version>
+        <jackson.version>2.9.9</jackson.version>
     </properties>
 
     <dependencies>
