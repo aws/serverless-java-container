@@ -34,6 +34,7 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.internal.inject.InjectionManager;
 import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
 
@@ -195,5 +196,13 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
 
         Timer.stop("JERSEY_COLD_START_INIT");
         initialized = true;
+    }
+
+
+    public InjectionManager getInjectionManager() {
+        if (!initialized) {
+            initialize();
+        }
+        return jerseyFilter.getApplicationHandler().getInjectionManager();
     }
 }
