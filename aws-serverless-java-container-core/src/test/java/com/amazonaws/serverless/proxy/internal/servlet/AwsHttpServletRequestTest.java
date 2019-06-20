@@ -14,6 +14,7 @@ import javax.ws.rs.core.HttpHeaders;
 
 import static org.junit.Assert.*;
 
+import java.util.Base64;
 import java.util.List;
 
 
@@ -73,6 +74,17 @@ public class AwsHttpServletRequestTest {
             e.printStackTrace();
         }
         assertEquals(4, values.size());
+    }
+
+    @Test
+    public void headers_parseHeaderValue_encodedContentWithEquals() {
+        AwsHttpServletRequest context = new AwsProxyHttpServletRequest(null,null,null);
+
+        String value = Base64.getUrlEncoder().encodeToString("a".getBytes());
+
+        List<AwsHttpServletRequest.HeaderValue> result = context.parseHeaderValue(value);
+
+        assertEquals("YQ==", result.get(0).getValue());
     }
 
     @Test

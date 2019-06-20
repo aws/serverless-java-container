@@ -13,12 +13,18 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.proxy.RequestReader;
+import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 import com.amazonaws.services.lambda.runtime.Context;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.http.HeaderElement;
+import org.apache.http.message.BasicHeaderValueParser;
+import org.apache.http.message.ParserCursor;
+import org.apache.http.util.CharArrayBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,6 +83,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     private ServletContext servletContext;
     private AwsHttpSession session;
     private String queryString;
+    private BasicHeaderValueParser headerParser;
 
     protected DispatcherType dispatcherType;
 
@@ -95,6 +102,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     AwsHttpServletRequest(Context lambdaContext) {
         this.lambdaContext = lambdaContext;
         attributes = new HashMap<>();
+        headerParser = new BasicHeaderValueParser();
     }
 
 
@@ -352,6 +360,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         // Accept: text/html, application/xhtml+xml, application/xml;q=0.9, */*;q=0.8
         // Accept-Language: fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5
         // Cookie: name=value; name2=value2; name3=value3
+        // X-Custom-Header: YQ==
 
         List<HeaderValue> values = new ArrayList<>();
         if (headerValue == null) {
@@ -365,7 +374,8 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
             newValue.setRawValue(v);
 
             for (String q : curValue.split(qualifierSeparator)) {
-                if (q.contains(HEADER_KEY_VALUE_SEPARATOR)) {
+                // contains key/value pairs and it's not a base64-encoded value.
+                if (q.contains(HEADER_KEY_VALUE_SEPARATOR) && !q.trim().endsWith("==")) {
                     String[] kv = q.split(HEADER_KEY_VALUE_SEPARATOR);
                     // TODO: Should we concatenate the rest of the values?
                     if (newValue.getValue() == null) {
