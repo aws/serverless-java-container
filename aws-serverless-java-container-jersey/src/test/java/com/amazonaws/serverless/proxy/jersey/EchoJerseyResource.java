@@ -41,6 +41,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -271,5 +272,12 @@ public class EchoJerseyResource {
             e.printStackTrace();
             return Response.status(500).build();
         }
+    }
+
+    @Path("/plain") @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response plain() {
+        return Response.status(200).entity("Hello!").build();
     }
 }
