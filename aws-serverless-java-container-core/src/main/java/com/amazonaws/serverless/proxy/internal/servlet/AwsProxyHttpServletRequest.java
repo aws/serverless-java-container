@@ -709,8 +709,8 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             for (FileItem item : items) {
                 String fileName = FilenameUtils.getName(item.getName());
                 AwsProxyRequestPart newPart = new AwsProxyRequestPart(item.get());
-                newPart.setName(fileName);
-                newPart.setSubmittedFileName(item.getFieldName());
+                newPart.setName(item.getFieldName());
+                newPart.setSubmittedFileName(fileName);
                 newPart.setContentType(item.getContentType());
                 newPart.setSize(item.getSize());
                 item.getHeaders().getHeaderNames().forEachRemaining(h -> {
