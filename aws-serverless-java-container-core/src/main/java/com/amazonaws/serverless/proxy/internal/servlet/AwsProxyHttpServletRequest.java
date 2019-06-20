@@ -366,7 +366,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             throws UnsupportedEncodingException {
         String currentContentType = request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
         if (currentContentType == null || "".equals(currentContentType)) {
-            log.error("Called set character encoding to " + SecurityUtils.crlf(s) + " on a request without a content type. Character encoding will not be set");
+            log.debug("Called set character encoding to " + SecurityUtils.crlf(s) + " on a request without a content type. Character encoding will not be set");
             return;
         }
 
