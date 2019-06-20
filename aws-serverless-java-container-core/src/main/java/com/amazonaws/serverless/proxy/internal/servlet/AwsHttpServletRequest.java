@@ -320,10 +320,12 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
                         queryStringBuilder.append(key);
                     }
                     queryStringBuilder.append("=");
-                    if (encode) {
-                        queryStringBuilder.append(URLEncoder.encode(val, encodeCharset));
-                    } else {
-                        queryStringBuilder.append(val);
+                    if (val != null) {
+                        if (encode) {
+                            queryStringBuilder.append(URLEncoder.encode(val, encodeCharset));
+                        } else {
+                            queryStringBuilder.append(val);
+                        }
                     }
                 }
             }
@@ -342,7 +344,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
      * @param headerValue The value to be parsed
      * @return A list of SimpleMapEntry objects with all of the possible values for the header.
      */
-    protected  List<HeaderValue> parseHeaderValue(String headerValue) {
+    protected List<HeaderValue> parseHeaderValue(String headerValue) {
         return parseHeaderValue(headerValue, HEADER_VALUE_SEPARATOR, HEADER_QUALIFIER_SEPARATOR);
     }
 
@@ -377,16 +379,21 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
                 // contains key/value pairs and it's not a base64-encoded value.
                 if (q.contains(HEADER_KEY_VALUE_SEPARATOR) && !q.trim().endsWith("==")) {
                     String[] kv = q.split(HEADER_KEY_VALUE_SEPARATOR);
+                    String key = kv[0].trim();
+                    String val = null;
+                    if (kv.length > 1) {
+                        val = kv[1].trim();
+                    }
                     // TODO: Should we concatenate the rest of the values?
                     if (newValue.getValue() == null) {
-                        newValue.setKey(kv[0].trim());
-                        newValue.setValue(kv[1].trim());
+                        newValue.setKey(key);
+                        newValue.setValue(val);
                     } else {
                         // special case for quality q=
-                        if ("q".equals(kv[0].trim())) {
-                            curPreference = Float.parseFloat(kv[1].trim());
+                        if ("q".equals(key)) {
+                            curPreference = Float.parseFloat(val);
                         } else {
-                            newValue.addAttribute(kv[0].trim(), kv[1].trim());
+                            newValue.addAttribute(key, val);
                         }
                     }
                 } else {

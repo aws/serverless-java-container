@@ -28,6 +28,8 @@ public class AwsHttpServletRequestTest {
             .header(HttpHeaders.ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8").build();
     private static final AwsProxyRequest queryString = new AwsProxyRequestBuilder("/test", "GET")
             .queryString("one", "two").queryString("three", "four").build();
+    private static final AwsProxyRequest queryStringNullValue = new AwsProxyRequestBuilder("/test", "GET")
+            .queryString("one", "two").queryString("three", null).build();
     private static final AwsProxyRequest encodedQueryString = new AwsProxyRequestBuilder("/test", "GET")
             .queryString("one", "two").queryString("json", "{\"name\":\"faisal\"}").build();
     private static final AwsProxyRequest multipleParams = new AwsProxyRequestBuilder("/test", "GET")
@@ -102,6 +104,19 @@ public class AwsHttpServletRequestTest {
         assertTrue(parsedString.contains("one=two"));
         assertTrue(parsedString.contains("three=four"));
         assertTrue(parsedString.contains("&") && parsedString.indexOf("&") > 0 && parsedString.indexOf("&") < parsedString.length());
+    }
+
+    @Test
+    public void queryString_generateQueryString_nullParameterIsEmpty() {
+        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(queryStringNullValue, mockContext, null, config);String parsedString = null;
+        try {
+            parsedString = request.generateQueryString(request.getAwsProxyRequest().getMultiValueQueryStringParameters(), true, config.getUriEncoding());
+        } catch (ServletException e) {
+            e.printStackTrace();
+            fail("Could not generate query string");
+        }
+
+        assertTrue(parsedString.endsWith("three="));
     }
 
     @Test
