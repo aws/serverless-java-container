@@ -70,6 +70,9 @@ public final class SecurityUtils {
      * @return A copy of the original string without CRLF characters
      */
     public static String crlf(String s) {
+        if (s == null) {
+            return null;
+        }
         return s.replaceAll("[\r\n]", "");
     }
 

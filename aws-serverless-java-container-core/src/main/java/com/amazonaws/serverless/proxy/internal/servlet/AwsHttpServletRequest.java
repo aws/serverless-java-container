@@ -13,18 +13,13 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.proxy.RequestReader;
-import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 import com.amazonaws.services.lambda.runtime.Context;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import org.apache.http.HeaderElement;
 import org.apache.http.message.BasicHeaderValueParser;
-import org.apache.http.message.ParserCursor;
-import org.apache.http.util.CharArrayBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -376,31 +371,44 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
             newValue.setRawValue(v);
 
             for (String q : curValue.split(qualifierSeparator)) {
-                // contains key/value pairs and it's not a base64-encoded value.
-                if (q.contains(HEADER_KEY_VALUE_SEPARATOR) && !q.trim().endsWith("==")) {
-                    String[] kv = q.split(HEADER_KEY_VALUE_SEPARATOR);
-                    String key = kv[0].trim();
-                    String val = null;
-                    if (kv.length > 1) {
-                        val = kv[1].trim();
-                    }
-                    // TODO: Should we concatenate the rest of the values?
-                    if (newValue.getValue() == null) {
-                        newValue.setKey(key);
-                        newValue.setValue(val);
-                    } else {
-                        // special case for quality q=
-                        if ("q".equals(key)) {
-                            curPreference = Float.parseFloat(val);
-                        } else {
-                            newValue.addAttribute(key, val);
-                        }
-                    }
-                } else {
-                    newValue.setValue(q.trim());
+
+                String[] kv = q.split(HEADER_KEY_VALUE_SEPARATOR, 2);
+                String key = null;
+                String val = null;
+                // no separator, set the value only
+                if (kv.length == 1) {
+                    val = q.trim();
                 }
-                newValue.setPriority(curPreference);
+                // we have a separator
+                if (kv.length == 2) {
+                    // if the length of the value is 0 we assume that we are looking at a
+                    // base64 encoded value with padding so we just set the value. This is because
+                    // we assume that empty values in a key/value pair will contain at least a white space
+                    if (kv[1].length() == 0) {
+                        val = q.trim();
+                    }
+                    // this was a base64 string with an additional = for padding, set the value only
+                    if ("=".equals(kv[1].trim())) {
+                        val = q.trim();
+                    } else { // it's a proper key/value set both
+                        key = kv[0].trim();
+                        val = ("".equals(kv[1].trim()) ? null : kv[1].trim());
+                    }
+                }
+
+                if (newValue.getValue() == null) {
+                    newValue.setKey(key);
+                    newValue.setValue(val);
+                } else {
+                    // special case for quality q=
+                    if ("q".equals(key)) {
+                        curPreference = Float.parseFloat(val);
+                    } else {
+                        newValue.addAttribute(key, val);
+                    }
+                }
             }
+            newValue.setPriority(curPreference);
             values.add(newValue);
         }
 
@@ -427,7 +435,6 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         }
 
     }
-
 
     /**
      * Class that represents a header value.

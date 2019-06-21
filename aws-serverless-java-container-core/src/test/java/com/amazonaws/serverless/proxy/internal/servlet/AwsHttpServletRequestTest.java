@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 
 import static org.junit.Assert.*;
@@ -85,8 +86,46 @@ public class AwsHttpServletRequestTest {
         String value = Base64.getUrlEncoder().encodeToString("a".getBytes());
 
         List<AwsHttpServletRequest.HeaderValue> result = context.parseHeaderValue(value);
-
+        assertTrue(result.size() > 0);
         assertEquals("YQ==", result.get(0).getValue());
+    }
+
+    @Test
+    public void headers_parseHeaderValue_base64EncodedCookieValue() {
+        String value = Base64.getUrlEncoder().encodeToString("a".getBytes());
+        String cookieValue = "jwt=" + value + "; secondValue=second";
+        AwsProxyRequest req = new AwsProxyRequestBuilder("/test", "GET").header(HttpHeaders.COOKIE, cookieValue).build();
+        AwsHttpServletRequest context = new AwsProxyHttpServletRequest(req,null,null);
+
+        Cookie[] cookies = context.getCookies();
+
+        assertEquals(2, cookies.length);
+        assertEquals("jwt", cookies[0].getName());
+        assertEquals(value, cookies[0].getValue());
+    }
+
+    @Test
+    public void headers_parseHeaderValue_cookieWithSeparatorInValue() {
+        String cookieValue = "jwt==test; secondValue=second";
+        AwsProxyRequest req = new AwsProxyRequestBuilder("/test", "GET").header(HttpHeaders.COOKIE, cookieValue).build();
+        AwsHttpServletRequest context = new AwsProxyHttpServletRequest(req,null,null);
+
+        Cookie[] cookies = context.getCookies();
+
+        assertEquals(2, cookies.length);
+        assertEquals("jwt", cookies[0].getName());
+        assertEquals("=test", cookies[0].getValue());
+    }
+
+    @Test
+    public void headers_parseHeaderValue_headerWithPaddingButNotBase64Encoded() {
+        AwsHttpServletRequest context = new AwsProxyHttpServletRequest(null,null,null);
+
+        List<AwsHttpServletRequest.HeaderValue> result = context.parseHeaderValue("hello=");
+        assertTrue(result.size() > 0);
+        assertEquals("hello", result.get(0).getKey());
+        System.out.println("\"" + result.get(0).getValue() + "\"");
+        assertNull(result.get(0).getValue());
     }
 
     @Test
