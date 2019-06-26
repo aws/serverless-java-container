@@ -892,6 +892,9 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         @Override
         public int read()
                 throws IOException {
+            if (bodyStream == null || bodyStream instanceof NullInputStream) {
+                return -1;
+            }
             int readByte = bodyStream.read();
             if (bodyStream.available() == 0 && listener != null) {
                 listener.onAllDataRead();
