@@ -1,6 +1,7 @@
 package com.amazonaws.serverless.proxy.spring;
 
 
+import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
@@ -13,6 +14,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
+import javax.ws.rs.core.HttpHeaders;
 import java.io.IOException;
 
 import static org.junit.Assert.*;
@@ -73,6 +75,20 @@ public class SpringBootAppTest {
         assertEquals(200, resp.getStatusCode());
         validateSingleValueModel(resp, "3");
     }
+
+    @Test
+    public void staticContent_getHtmlFile_returnsHtmlContent() {
+        LambdaContainerHandler.getContainerConfig().addValidFilePath("/Users/bulianis/workspace/aws-serverless-java-container/aws-serverless-java-container-spring");
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/static.html", "GET")
+                .header(HttpHeaders.ACCEPT, "text/html")
+                .header(HttpHeaders.CONTENT_TYPE, "text/plain")
+                .build();
+        AwsProxyResponse output = handler.handleRequest(request, context);
+        System.out.println("Response: " + output.getBody());
+        assertEquals(200, output.getStatusCode());
+        assertTrue(output.getBody().contains("<h1>Static</h1>"));
+    }
+
 
     private void validateSingleValueModel(AwsProxyResponse output, String value) {
         try {
