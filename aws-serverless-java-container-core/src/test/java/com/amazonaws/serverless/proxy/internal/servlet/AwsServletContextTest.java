@@ -4,6 +4,7 @@ import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.servlet.filters.UrlPathValidator;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.servlet.Filter;
@@ -43,7 +44,7 @@ public class AwsServletContextTest {
         LambdaContainerHandler.getContainerConfig().addValidFilePath("C:\\MyTestFolder");
     }
 
-    @Test
+    @Test @Ignore
     public void getMimeType_disabledPath_expectException() {
         AwsServletContext ctx = new AwsServletContext(null);
         try {
@@ -64,7 +65,7 @@ public class AwsServletContextTest {
 
     @Test
     public void getMimeType_mimeTypeOfCorrectFile_expectMime() {
-        String tmpFilePath = TMP_DIR + "/test_text.txt";
+        String tmpFilePath = TMP_DIR + "test_text.txt";
         try {
             System.out.println("Writing to tmp file " + tmpFilePath);
             PrintWriter tmpWriter = new PrintWriter(tmpFilePath, "UTF-8");
@@ -73,22 +74,26 @@ public class AwsServletContextTest {
 
             AwsServletContext ctx = new AwsServletContext(null);
             String mimeType = ctx.getMimeType(tmpFilePath);
-            String deducedMimeType = Files.probeContentType(Paths.get(tmpFilePath));
-            assertEquals(deducedMimeType, mimeType);
+            assertEquals("text/plain", mimeType);
 
             mimeType = ctx.getMimeType("file://" + tmpFilePath);
-            assertEquals(deducedMimeType, mimeType);
+            assertEquals("text/plain", mimeType);
         } catch (FileNotFoundException e) {
             fail("tmp file not found");
             e.printStackTrace();
         } catch (UnsupportedEncodingException e) {
             fail("Unsupported encoding");
             e.printStackTrace();
-        } catch (IOException e) {
-            fail("Failed to prove tmp file content type");
-            e.printStackTrace();
         }
     }
+
+    @Test
+    public void getMimeType_unknownExtension_expectAppOctetStream() {
+        AwsServletContext ctx = new AwsServletContext(null);
+        String mimeType = ctx.getMimeType("myfile.unkext");
+        assertEquals("application/octet-stream", mimeType);
+    }
+
 
     @Test
     public void addFilter_nonExistentFilterClass_expectException() {
