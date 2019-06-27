@@ -363,6 +363,20 @@ public class JerseyAwsProxyTest {
         validateSingleValueModel(resp, refererValue);
     }
 
+    @Test
+    public void textPlainContent_plain_responseHonorsContentType() {
+        AwsProxyRequest req = getRequestBuilder("/echo/plain", "GET")
+                                            .nullBody()
+                                            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                                            .header(HttpHeaders.ACCEPT, MediaType.TEXT_PLAIN)
+                                            .build();
+
+        AwsProxyResponse resp = handler.proxy(req, lambdaContext);
+        assertEquals(200, resp.getStatusCode());
+        assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.TEXT_PLAIN, resp.getMultiValueHeaders().get(HttpHeaders.CONTENT_TYPE).get(0));
+    }
+
     private void validateMapResponseModel(AwsProxyResponse output) {
         validateMapResponseModel(output, CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE);
     }

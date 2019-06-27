@@ -14,6 +14,7 @@ package com.amazonaws.serverless.proxy.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -167,7 +168,7 @@ public class AwsProxyRequest {
         this.path = path;
     }
 
-
+    @JsonProperty("isBase64Encoded")
     public boolean isBase64Encoded() {
         return isBase64Encoded;
     }

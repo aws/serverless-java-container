@@ -382,7 +382,7 @@ public class SpringAwsProxyTest {
     }
 
     @Test
-    public void multipart_getFileName_rerutrnsCorrectFileName()
+    public void multipart_getFileName_returnsCorrectFileName()
             throws IOException {
         AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/attachment", "POST")
                                           .formFilePart("testFile", "myFile.txt", "hello".getBytes())

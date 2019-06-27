@@ -20,6 +20,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.activation.MimetypesFileTypeMap;
 import javax.servlet.Filter;
 import javax.servlet.FilterRegistration;
 import javax.servlet.RequestDispatcher;
@@ -72,6 +73,7 @@ public class AwsServletContext
     private Map<String, String> initParameters;
     private AwsLambdaServletContainerHandler containerHandler;
     private Logger log = LoggerFactory.getLogger(AwsServletContext.class);
+    private MimetypesFileTypeMap mimeTypes; // lazily loaded in the getMimeType method
 
 
     //-------------------------------------------------------------
@@ -142,13 +144,16 @@ public class AwsServletContext
     @Override
     @SuppressFBWarnings("PATH_TRAVERSAL_IN") // suppressing because we are using the getValidFilePath
     public String getMimeType(String s) {
-        try {
-            String validatedPath = SecurityUtils.getValidFilePath(s);
-            return Files.probeContentType(Paths.get(validatedPath));
-        } catch (IOException e) {
-            log.warn("Could not find content type for file:  " + SecurityUtils.encode(s), e);
+        if (s == null || !s.contains(".")) {
             return null;
         }
+        if (mimeTypes == null) {
+            mimeTypes = new MimetypesFileTypeMap();
+        }
+        // TODO: The getContentType method of the MimetypesFileTypeMap returns application/octet-stream
+        // instead of null when the type cannot be found. We should replace with an implementation that
+        // loads the System mime types ($JAVA_HOME/lib/mime.types
+        return mimeTypes.getContentType(s);
     }
 
 
@@ -232,7 +237,7 @@ public class AwsServletContext
             try {
                 absPath = new File(fileUrl.toURI()).getAbsolutePath();
             } catch (URISyntaxException e) {
-                log.error("Error while looking for real path: {}", SecurityUtils.encode(s), SecurityUtils.encode(e.getMessage()));
+                log.error("Error while looking for real path {}: {}", SecurityUtils.encode(s), SecurityUtils.encode(e.getMessage()));
             }
         }
         return absPath;

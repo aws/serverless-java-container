@@ -10,10 +10,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 
 import static org.junit.Assert.*;
 
+import java.util.Base64;
 import java.util.List;
 
 
@@ -27,6 +29,8 @@ public class AwsHttpServletRequestTest {
             .header(HttpHeaders.ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8").build();
     private static final AwsProxyRequest queryString = new AwsProxyRequestBuilder("/test", "GET")
             .queryString("one", "two").queryString("three", "four").build();
+    private static final AwsProxyRequest queryStringNullValue = new AwsProxyRequestBuilder("/test", "GET")
+            .queryString("one", "two").queryString("three", null).build();
     private static final AwsProxyRequest encodedQueryString = new AwsProxyRequestBuilder("/test", "GET")
             .queryString("one", "two").queryString("json", "{\"name\":\"faisal\"}").build();
     private static final AwsProxyRequest multipleParams = new AwsProxyRequestBuilder("/test", "GET")
@@ -76,6 +80,55 @@ public class AwsHttpServletRequestTest {
     }
 
     @Test
+    public void headers_parseHeaderValue_encodedContentWithEquals() {
+        AwsHttpServletRequest context = new AwsProxyHttpServletRequest(null,null,null);
+
+        String value = Base64.getUrlEncoder().encodeToString("a".getBytes());
+
+        List<AwsHttpServletRequest.HeaderValue> result = context.parseHeaderValue(value);
+        assertTrue(result.size() > 0);
+        assertEquals("YQ==", result.get(0).getValue());
+    }
+
+    @Test
+    public void headers_parseHeaderValue_base64EncodedCookieValue() {
+        String value = Base64.getUrlEncoder().encodeToString("a".getBytes());
+        String cookieValue = "jwt=" + value + "; secondValue=second";
+        AwsProxyRequest req = new AwsProxyRequestBuilder("/test", "GET").header(HttpHeaders.COOKIE, cookieValue).build();
+        AwsHttpServletRequest context = new AwsProxyHttpServletRequest(req,null,null);
+
+        Cookie[] cookies = context.getCookies();
+
+        assertEquals(2, cookies.length);
+        assertEquals("jwt", cookies[0].getName());
+        assertEquals(value, cookies[0].getValue());
+    }
+
+    @Test
+    public void headers_parseHeaderValue_cookieWithSeparatorInValue() {
+        String cookieValue = "jwt==test; secondValue=second";
+        AwsProxyRequest req = new AwsProxyRequestBuilder("/test", "GET").header(HttpHeaders.COOKIE, cookieValue).build();
+        AwsHttpServletRequest context = new AwsProxyHttpServletRequest(req,null,null);
+
+        Cookie[] cookies = context.getCookies();
+
+        assertEquals(2, cookies.length);
+        assertEquals("jwt", cookies[0].getName());
+        assertEquals("=test", cookies[0].getValue());
+    }
+
+    @Test
+    public void headers_parseHeaderValue_headerWithPaddingButNotBase64Encoded() {
+        AwsHttpServletRequest context = new AwsProxyHttpServletRequest(null,null,null);
+
+        List<AwsHttpServletRequest.HeaderValue> result = context.parseHeaderValue("hello=");
+        assertTrue(result.size() > 0);
+        assertEquals("hello", result.get(0).getKey());
+        System.out.println("\"" + result.get(0).getValue() + "\"");
+        assertNull(result.get(0).getValue());
+    }
+
+    @Test
     public void queryString_generateQueryString_validQuery() {
         AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(queryString, mockContext, null, config);
 
@@ -90,6 +143,19 @@ public class AwsHttpServletRequestTest {
         assertTrue(parsedString.contains("one=two"));
         assertTrue(parsedString.contains("three=four"));
         assertTrue(parsedString.contains("&") && parsedString.indexOf("&") > 0 && parsedString.indexOf("&") < parsedString.length());
+    }
+
+    @Test
+    public void queryString_generateQueryString_nullParameterIsEmpty() {
+        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(queryStringNullValue, mockContext, null, config);String parsedString = null;
+        try {
+            parsedString = request.generateQueryString(request.getAwsProxyRequest().getMultiValueQueryStringParameters(), true, config.getUriEncoding());
+        } catch (ServletException e) {
+            e.printStackTrace();
+            fail("Could not generate query string");
+        }
+
+        assertTrue(parsedString.endsWith("three="));
     }
 
     @Test

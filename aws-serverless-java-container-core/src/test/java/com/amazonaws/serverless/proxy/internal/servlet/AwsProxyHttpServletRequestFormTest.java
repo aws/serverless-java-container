@@ -6,6 +6,7 @@ import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.junit.Test;
 
@@ -31,6 +32,7 @@ public class AwsProxyHttpServletRequestFormTest {
     private static final String PART_KEY_2 = "test2";
     private static final String PART_VALUE_2 = "value2";
     private static final String FILE_KEY = "file_upload_1";
+    private static final String FILE_NAME = "testImage.jpg";
 
     private static final String ENCODED_VALUE = "test123a%3D1%262@3";
 
@@ -46,7 +48,7 @@ public class AwsProxyHttpServletRequestFormTest {
     private static final HttpEntity MULTIPART_BINARY_DATA = MultipartEntityBuilder.create()
                                                                                   .addTextBody(PART_KEY_1, PART_VALUE_1)
                                                                                   .addTextBody(PART_KEY_2, PART_VALUE_2)
-                                                                                  .addBinaryBody(FILE_KEY, FILE_BYTES)
+                                                                                  .addBinaryBody(FILE_KEY, FILE_BYTES, ContentType.IMAGE_JPEG, FILE_NAME)
                                                                                   .build();
     private static final String ENCODED_FORM_ENTITY = PART_KEY_1 + "=" + ENCODED_VALUE + "&" + PART_KEY_2 + "=" + PART_VALUE_2;
 
@@ -99,6 +101,8 @@ public class AwsProxyHttpServletRequestFormTest {
             assertEquals(3, request.getParts().size());
             assertNotNull(request.getPart(FILE_KEY));
             assertEquals(FILE_SIZE, request.getPart(FILE_KEY).getSize());
+            assertEquals(FILE_KEY, request.getPart(FILE_KEY).getName());
+            assertEquals(FILE_NAME, request.getPart(FILE_KEY).getSubmittedFileName());
             assertEquals(PART_VALUE_1, IOUtils.toString(request.getPart(PART_KEY_1).getInputStream()));
             assertEquals(PART_VALUE_2, IOUtils.toString(request.getPart(PART_KEY_2).getInputStream()));
         } catch (IOException | ServletException e) {
