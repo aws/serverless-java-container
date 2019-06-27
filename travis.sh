@@ -4,7 +4,7 @@ IFS=$'\n'
 
 echo "STARTING TRAVIS BUILD in $(pwd)"
 cd $TRAVIS_BUILD_DIR
-mvn install
+mvn -q install
 if [[ "$?" -ne 0 ]]; then
     exit 1
 fi
@@ -15,11 +15,11 @@ for SAMPLE in $(find samples -type d -maxdepth 2 -mindepth 2);
 do
     echo "BUILDING SAMPLE '$SAMPLE'"
     cd $SAMPLE
-    mvn clean package
+    mvn -q clean package
     if [[ "$?" -ne 0 ]]; then
         exit 1
     fi
-    $GRADLE wrapper
+    $GRADLE -q wrapper
     if [[ "$?" -ne 0 ]]; then
         exit 1
     fi
@@ -27,7 +27,7 @@ do
     if [[ "$?" -ne 0 ]]; then
         exit 1
     fi
-    ./gradlew clean build
+    ./gradlew -q clean build
     if [[ "$?" -ne 0 ]]; then
         exit 1
     fi
@@ -67,16 +67,16 @@ do
         exit 1
     fi
     cd ${TEST_PROJ}
-    mvn clean package -Pshaded-jar
+    mvn -q clean package -Pshaded-jar
     if [[ "$?" -ne 0 ]]; then
         exit 1
     fi
-    mvn clean package
+    mvn -q clean package
     if [[ "$?" -ne 0 ]]; then
         exit 1
     fi
     if [[ -f "$TRAVIS_BUILD_DIR/tmp/$TEST_PROJ/build.gradle" ]]; then
-        $GRADLE wrapper
+        $GRADLE -q wrapper
         if [[ "$?" -ne 0 ]]; then
             exit 1
         fi
@@ -84,7 +84,7 @@ do
         if [[ "$?" -ne 0 ]]; then
             exit 1
         fi
-        ./gradlew clean build
+        ./gradlew -q clean build
         if [[ "$?" -ne 0 ]]; then
             exit 1
         fi
