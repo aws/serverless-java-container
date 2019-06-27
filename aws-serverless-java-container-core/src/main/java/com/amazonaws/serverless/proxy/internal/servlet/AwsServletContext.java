@@ -144,7 +144,7 @@ public class AwsServletContext
     @Override
     @SuppressFBWarnings("PATH_TRAVERSAL_IN") // suppressing because we are using the getValidFilePath
     public String getMimeType(String s) {
-        if (!s.contains(".")) {
+        if (s == null || !s.contains(".")) {
             return null;
         }
         if (mimeTypes == null) {
