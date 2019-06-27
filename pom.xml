@@ -44,7 +44,7 @@
 
     <properties>
         <jacoco.minCoverage>0.5</jacoco.minCoverage>
-        <dependencyCheck.version>4.0.1</dependencyCheck.version>
+        <dependencyCheck.version>5.0.0</dependencyCheck.version>
     </properties>
 
     <dependencies>
