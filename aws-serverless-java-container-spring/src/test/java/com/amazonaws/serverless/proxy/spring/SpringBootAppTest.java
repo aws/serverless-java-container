@@ -42,7 +42,7 @@ public class SpringBootAppTest {
         assertEquals(404, resp.getStatusCode());
         assertNotNull(resp.getMultiValueHeaders());
         assertTrue(resp.getMultiValueHeaders().containsKey("Content-Type"));
-        assertEquals("application/json;charset=UTF-8", resp.getMultiValueHeaders().getFirst("Content-Type"));
+        assertEquals("application/json; charset=UTF-8", resp.getMultiValueHeaders().getFirst("Content-Type"));
         try {
             JsonNode errorData = mapper.readTree(resp.getBody());
             assertNotNull(errorData.findValue("status"));
@@ -87,6 +87,20 @@ public class SpringBootAppTest {
         System.out.println("Response: " + output.getBody());
         assertEquals(200, output.getStatusCode());
         assertTrue(output.getBody().contains("<h1>Static</h1>"));
+    }
+
+    @Test
+    public void utf8_returnUtf8String_expectCorrectHeaderMediaAndCharset() {
+        LambdaContainerHandler.getContainerConfig().setDefaultContentCharset("UTF-8");
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/test/utf8", "GET")
+                .build();
+        AwsProxyResponse output = handler.handleRequest(request, context);
+        System.out.println("Response: " + output.getBody());
+        System.out.println("Content-Type:" + output.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
+        validateSingleValueModel(output, TestController.UTF8_TEST_STRING);
+        assertTrue(output.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
+        assertTrue(output.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE).contains(";"));
+        assertTrue(output.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE).contains("charset=UTF-8"));
     }
 
 

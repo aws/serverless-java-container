@@ -16,13 +16,17 @@ import org.springframework.web.servlet.config.annotation.ContentNegotiationConfi
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
+import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
 @EnableWebSecurity
 public class TestController extends WebSecurityConfigurerAdapter {
     public static final String TEST_VALUE = "test";
+    public static final String UTF8_TEST_STRING = "health心跳测试完成。可正常使用";
 
     // workaround to address the most annoying issue in the world: https://blog.georgovassilis.com/2015/10/29/spring-mvc-rest-controller-says-406-when-emails-are-part-url-path/
     @Configuration
@@ -59,6 +63,13 @@ public class TestController extends WebSecurityConfigurerAdapter {
         SingleValueModel value = new SingleValueModel();
         value.setValue(qsValues.size() + "");
         return value;
+    }
+
+    @RequestMapping(value="/test/utf8",method=RequestMethod.GET)
+    public Object testUtf8(String name, HttpServletResponse response){
+        SingleValueModel model = new SingleValueModel();
+        model.setValue(UTF8_TEST_STRING);
+        return model;
     }
 
     @Override

@@ -12,6 +12,7 @@
  */
 package com.amazonaws.serverless.proxy.internal.servlet;
 
+import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.Headers;
@@ -60,6 +61,7 @@ public class AwsHttpServletResponse
     private int statusCode;
     private String statusMessage;
     private String responseBody;
+    private String characterEncoding;
     private PrintWriter writer;
     private ByteArrayOutputStream bodyOutputStream = new ByteArrayOutputStream();
     private CountDownLatch writersCountDownLatch;
@@ -80,6 +82,7 @@ public class AwsHttpServletResponse
      */
     public AwsHttpServletResponse(AwsHttpServletRequest req, CountDownLatch latch) {
         writersCountDownLatch = latch;
+        characterEncoding = null;
         request = req;
         statusCode = 0;
     }
@@ -207,7 +210,7 @@ public class AwsHttpServletResponse
     public void addHeader(String s, String s1) {
         // TODO: We should probably have a list of headers that we are not allowed to have multiple values for
         if (s.toLowerCase(Locale.getDefault()).equals(HttpHeaders.CONTENT_TYPE.toLowerCase(Locale.getDefault()))) {
-            setHeader(s, s1, true);
+            setContentType(s1);
         } else {
             setHeader(s, s1, false);
         }
@@ -273,12 +276,7 @@ public class AwsHttpServletResponse
 
     @Override
     public String getCharacterEncoding() {
-        final String contentType = Optional.ofNullable(getContentType()).orElse("");
-        if (contentType.contains(";")) {
-            return contentType.split(";")[1].split("=")[1].trim().toLowerCase(Locale.getDefault());
-        } else {
-            return "";
-        }
+        return characterEncoding;
     }
 
 
@@ -345,10 +343,11 @@ public class AwsHttpServletResponse
 
     @Override
     public void setCharacterEncoding(String s) {
-        final String characterEncoding = Optional.ofNullable(s).orElse("").toLowerCase(Locale.getDefault());
-        final String oldValue = Optional.ofNullable(getHeader(HttpHeaders.CONTENT_TYPE)).orElse("");
-        String contentType = oldValue.contains(";") ? oldValue.split(";")[0].trim(): oldValue;
-        setHeader(HttpHeaders.CONTENT_TYPE, String.format("%s; charset=%s", contentType, characterEncoding), true);
+        characterEncoding = s.toUpperCase(Locale.getDefault());
+        // The char encoding is being forced, if we already have a content-type header we recreate it
+        if (headers.getFirst(HttpHeaders.CONTENT_TYPE) != null) {
+            setContentType(headers.getFirst(HttpHeaders.CONTENT_TYPE));
+        }
     }
 
 
@@ -366,7 +365,21 @@ public class AwsHttpServletResponse
 
     @Override
     public void setContentType(String s) {
-        setHeader(HttpHeaders.CONTENT_TYPE, s, true);
+        if (s == null) {
+            return;
+        }
+
+        // we have no forced character encoding
+        if (characterEncoding == null) {
+            setHeader(HttpHeaders.CONTENT_TYPE, s, true);
+            return;
+        }
+
+        if (s.contains(";")) { // we have a forced charset
+            setHeader(HttpHeaders.CONTENT_TYPE, String.format("%s; charset=%s", s.split(";")[0], characterEncoding), true);
+        } else {
+            setHeader(HttpHeaders.CONTENT_TYPE, String.format("%s; charset=%s", s, characterEncoding), true);
+        }
     }
 
 
@@ -387,7 +400,7 @@ public class AwsHttpServletResponse
         if (null != writer) {
             writer.flush();
         }
-        responseBody = new String(bodyOutputStream.toByteArray(), StandardCharsets.UTF_8);
+        responseBody = new String(bodyOutputStream.toByteArray(), LambdaContainerHandler.getContainerConfig().getDefaultContentCharset());
         log.debug("Response buffer flushed with {} bytes, latch={}", responseBody.length(), writersCountDownLatch.getCount());
         isCommitted = true;
         writersCountDownLatch.countDown();
