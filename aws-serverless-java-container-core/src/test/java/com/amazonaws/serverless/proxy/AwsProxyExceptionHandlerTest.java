@@ -3,7 +3,6 @@ package com.amazonaws.serverless.proxy;
 
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.exceptions.InvalidResponseObjectException;
-import com.amazonaws.serverless.proxy.AwsProxyExceptionHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.ErrorModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -16,17 +15,21 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import java.io.*;
 
 
 public class AwsProxyExceptionHandlerTest {
+    private static final String INTERNAL_SERVER_ERROR_MESSAGE = "Internal server error";
     private static final String INVALID_REQUEST_MESSAGE = "Invalid request error";
     private static final String INVALID_RESPONSE_MESSAGE = "Invalid response error";
     private AwsProxyExceptionHandler exceptionHandler;
     private ObjectMapper objectMapper;
+
 
     @Before
     public void setUp() {
@@ -82,6 +85,44 @@ public class AwsProxyExceptionHandlerTest {
     @Test
     public void typedHandle_InvalidResponseObjectException_jsonContentTypeHeader() {
         AwsProxyResponse resp = exceptionHandler.handle(new InvalidResponseObjectException(INVALID_RESPONSE_MESSAGE, null));
+
+        assertNotNull(resp);
+        assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.APPLICATION_JSON, resp.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
+    }
+
+    @Test
+    public void typedHandle_InternalServerErrorException_500State() {
+        // Needed to mock InternalServerErrorException because it leverages RuntimeDelegate to set an internal
+        // response object.
+        InternalServerErrorException mockInternalServerErrorException = Mockito.mock(InternalServerErrorException.class);
+        Mockito.when(mockInternalServerErrorException.getMessage()).thenReturn(INTERNAL_SERVER_ERROR_MESSAGE);
+
+        AwsProxyResponse resp = exceptionHandler.handle(mockInternalServerErrorException);
+
+        assertNotNull(resp);
+        assertEquals(500, resp.getStatusCode());
+    }
+
+    @Test
+    public void typedHandle_InternalServerErrorException_responseString()
+            throws JsonProcessingException {
+        InternalServerErrorException mockInternalServerErrorException = Mockito.mock(InternalServerErrorException.class);
+        Mockito.when(mockInternalServerErrorException.getMessage()).thenReturn(INTERNAL_SERVER_ERROR_MESSAGE);
+
+        AwsProxyResponse resp = exceptionHandler.handle(mockInternalServerErrorException);
+
+        assertNotNull(resp);
+        String body = objectMapper.writeValueAsString(new ErrorModel(AwsProxyExceptionHandler.INTERNAL_SERVER_ERROR));
+        assertEquals(body, resp.getBody());
+    }
+
+    @Test
+    public void typedHandle_InternalServerErrorException_jsonContentTypeHeader() {
+        InternalServerErrorException mockInternalServerErrorException = Mockito.mock(InternalServerErrorException.class);
+        Mockito.when(mockInternalServerErrorException.getMessage()).thenReturn(INTERNAL_SERVER_ERROR_MESSAGE);
+
+        AwsProxyResponse resp = exceptionHandler.handle(mockInternalServerErrorException);
 
         assertNotNull(resp);
         assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));

@@ -215,9 +215,6 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
         } catch (JsonMappingException e) {
             log.error("Error while mapping object to RequestType class", e);
             getObjectMapper().writeValue(output, exceptionHandler.handle(e));
-        } catch (Exception e) {
-            log.error("Error while proxying request.", e);
-            getObjectMapper().writeValue(output, exceptionHandler.handle(e));
         } finally {
             output.flush();
             output.close();

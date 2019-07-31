@@ -11,7 +11,6 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.glassfish.jersey.logging.LoggingFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.Ignore;
@@ -26,10 +25,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -69,6 +64,7 @@ public class JerseyParamEncodingTest {
     private static ObjectMapper objectMapper = new ObjectMapper();
     private static ResourceConfig app = new ResourceConfig().packages("com.amazonaws.serverless.proxy.jersey")
                                                             .register(MultiPartFeature.class)
+                                                            .register(new ResourceBinder())
                                                             .property("jersey.config.server.tracing.type", "ALL")
                                                             .property("jersey.config.server.tracing.threshold", "VERBOSE");
     private static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = JerseyLambdaContainerHandler.getAwsProxyHandler(app);
