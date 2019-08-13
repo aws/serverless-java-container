@@ -30,7 +30,7 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
  */
 public class JerseyInjectionTest {
 
-    // Test ressource binder
+    // Test resource binder
     private static class ResourceBinder extends AbstractBinder {
 
         @Override

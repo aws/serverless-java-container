@@ -22,6 +22,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
@@ -31,7 +32,8 @@ import java.io.OutputStream;
 /**
  * Default implementation of the <code>ExceptionHandler</code> object that returns AwsProxyResponse objects.
  *
- * Returns application/json messages with a status code of 500 when the RequestReader failed to read the incoming event.
+ * Returns application/json messages with a status code of 500 when the RequestReader failed to read the incoming event
+ *  or if InternalServerErrorException is thrown.
  * For all other exceptions returns a 502. Responses are populated with a JSON object containing a message property.
  *
  * @see ExceptionHandler
@@ -76,7 +78,7 @@ public class AwsProxyExceptionHandler
         // adding a print stack trace in case we have no appender or we are running inside SAM local, where need the
         // output to go to the stderr.
         ex.printStackTrace();
-        if (ex instanceof InvalidRequestEventException) {
+        if (ex instanceof InvalidRequestEventException || ex instanceof InternalServerErrorException) {
             return new AwsProxyResponse(500, headers, getErrorJson(INTERNAL_SERVER_ERROR));
         } else {
             return new AwsProxyResponse(502, headers, getErrorJson(GATEWAY_TIMEOUT_ERROR));

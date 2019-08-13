@@ -24,6 +24,7 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
+import javax.inject.Inject;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -58,6 +59,9 @@ public class EchoJerseyResource {
 
     @Context
     SecurityContext securityCtx;
+
+    @Inject
+    JerseyDependency jerseyDependency;
 
     @Path("/decoded-param") @GET
     @Produces(MediaType.APPLICATION_JSON)
