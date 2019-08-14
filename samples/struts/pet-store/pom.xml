@@ -27,7 +27,8 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <struts2.version>2.5.20</struts2.version>
-        <jackson.version>2.9.9.3</jackson.version>
+        <jackson.version>2.9.9</jackson.version>
+        <jackson-databind.version>2.9.9.3</jackson-databind.version>
         <junit.version>4.12</junit.version>
         <log4j.version>2.11.1</log4j.version>
     </properties>
@@ -97,7 +98,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
+            <version>${jackson-databind.version}</version>
         </dependency>
 
         <dependency>
