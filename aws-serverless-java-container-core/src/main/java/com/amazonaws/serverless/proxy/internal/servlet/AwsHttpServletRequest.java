@@ -60,6 +60,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     static final String FORM_DATA_SEPARATOR = "&";
     static final DateTimeFormatter dateFormatter = DateTimeFormatter.RFC_1123_DATE_TIME;
     static final String ENCODING_VALUE_KEY = "charset";
+    static final String DISPATCHER_TYPE_ATTRIBUTE = "com.amazonaws.serverless.javacontainer.dispatchertype";
 
     // We need this to pickup the protocol from the CloudFront header since Lambda doesn't receive this
     // information from anywhere else
@@ -80,8 +81,6 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     private String queryString;
     private BasicHeaderValueParser headerParser;
 
-    protected DispatcherType dispatcherType;
-
     private Logger log = LoggerFactory.getLogger(AwsHttpServletRequest.class);
 
 
@@ -98,6 +97,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         this.lambdaContext = lambdaContext;
         attributes = new HashMap<>();
         headerParser = new BasicHeaderValueParser();
+        setAttribute(DISPATCHER_TYPE_ATTRIBUTE, DispatcherType.REQUEST);
     }
 
 
@@ -250,6 +250,9 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
 
     @Override
     public DispatcherType getDispatcherType() {
+        if (getAttribute(DISPATCHER_TYPE_ATTRIBUTE) != null) {
+            return (DispatcherType) getAttribute(DISPATCHER_TYPE_ATTRIBUTE);
+        }
         return DispatcherType.REQUEST;
     }
 
@@ -257,10 +260,6 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     //-------------------------------------------------------------
     // Methods - Getter/Setter
     //-------------------------------------------------------------
-
-    public void setDispatcherType(DispatcherType type) {
-        dispatcherType = type;
-    }
 
     public void setServletContext(ServletContext context) {
         servletContext = context;

@@ -37,6 +37,7 @@ import spark.embeddedserver.EmbeddedServers;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
+import javax.servlet.Servlet;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -216,5 +217,9 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType>
         FilterRegistration.Dynamic sparkRegistration = getServletContext().addFilter("SparkFilter", embeddedServer.getSparkFilter());
         sparkRegistration.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/*");
         Timer.stop("SPARK_COLD_START");
+    }
+
+    public Servlet getServlet() {
+        return null;
     }
 }

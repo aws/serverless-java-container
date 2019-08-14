@@ -186,6 +186,10 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
         Timer.stop("SPRINGBOOT_COLD_START");
     }
 
+    public Servlet getServlet() {
+        return dispatcherServlet;
+    }
+
 
     private class SpringBootAwsServletContext extends AwsServletContext {
         public SpringBootAwsServletContext() {

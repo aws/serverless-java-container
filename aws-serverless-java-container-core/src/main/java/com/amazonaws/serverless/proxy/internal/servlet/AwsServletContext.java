@@ -179,7 +179,7 @@ public class AwsServletContext
 
     @Override
     public RequestDispatcher getRequestDispatcher(String s) {
-        return new AwsProxyRequestDispatcher(s, containerHandler);
+        return new AwsProxyRequestDispatcher(s, false, containerHandler);
     }
 
 

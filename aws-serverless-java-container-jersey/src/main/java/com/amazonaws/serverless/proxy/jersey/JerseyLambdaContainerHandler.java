@@ -40,6 +40,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
+import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -204,5 +205,9 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
             initialize();
         }
         return jerseyFilter.getApplicationHandler().getInjectionManager();
+    }
+
+    public Servlet getServlet() {
+        return null;
     }
 }

@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
+import javax.servlet.Servlet;
 import java.util.EnumSet;
 import java.util.concurrent.CountDownLatch;
 
@@ -108,5 +109,9 @@ public class Struts2LambdaContainerHandler<RequestType, ResponseType> extends Aw
         this.initialized = true;
         Timer.stop(TIMER_STRUTS_2_COLD_START_INIT);
         log.info("... initialize of Struts2 Lambda Application completed!");
+    }
+
+    public Servlet getServlet() {
+        return null;
     }
 }

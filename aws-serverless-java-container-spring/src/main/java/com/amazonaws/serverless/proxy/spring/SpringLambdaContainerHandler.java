@@ -27,6 +27,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
+import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 
 import java.util.concurrent.CountDownLatch;
@@ -196,5 +197,9 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
 
         initialized = true;
         Timer.stop("SPRING_COLD_START");
+    }
+
+    public Servlet getServlet() {
+        return initializer.getDispatcherServlet();
     }
 }

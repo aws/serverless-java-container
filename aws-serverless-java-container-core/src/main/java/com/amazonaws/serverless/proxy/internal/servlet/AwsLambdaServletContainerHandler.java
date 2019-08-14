@@ -18,6 +18,7 @@ import com.amazonaws.serverless.proxy.RequestReader;
 import com.amazonaws.serverless.proxy.ResponseWriter;
 import com.amazonaws.serverless.proxy.SecurityContextWriter;
 
+import com.amazonaws.services.lambda.runtime.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,57 +87,6 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
     //-------------------------------------------------------------
 
     /**
-     * Forwards a request to the existing framework container. This is called by the <code>AwsProxyRequestDispatcher</code> object
-     * @param servletRequest The modified request object with the new request path
-     * @param servletResponse The original servlet response
-     * @throws ServletException
-     * @throws IOException
-     */
-    public void forward(ContainerRequestType servletRequest, ContainerResponseType servletResponse)
-            throws ServletException, IOException {
-        try {
-            handleRequest(servletRequest, (ContainerResponseType)getServletResponse(servletResponse), lambdaContext);
-        } catch (Exception e) {
-            log.error("Could not forward request", e);
-            throw new ServletException(e);
-        }
-    }
-
-
-    /**
-     * Includes a request to the existing framework container. This is called by the <code>AwsProxyRequestDispatcher</code> object
-     * @param servletRequest The modified request object with the new request path
-     * @param servletResponse The original servlet response
-     * @throws ServletException
-     * @throws IOException
-     */
-    public void include(ContainerRequestType servletRequest, ContainerResponseType servletResponse)
-            throws ServletException, IOException {
-        try {
-           handleRequest(servletRequest, (ContainerResponseType)getServletResponse(servletResponse), lambdaContext);
-        } catch (Exception e) {
-            log.error("Could not include request", e);
-            throw new ServletException(e);
-        }
-    }
-
-    private HttpServletResponse getServletResponse(ContainerResponseType resp) {
-        if (HttpServletResponseWrapper.class.isAssignableFrom(resp.getClass())) {
-            ServletResponse servletResp = ((HttpServletResponseWrapper)resp).getResponse();
-            assert servletResp instanceof HttpServletResponse : servletResp.getClass();
-            return (HttpServletResponse)servletResp;
-        }
-
-        if (HttpServletResponse.class.isAssignableFrom(resp.getClass())) {
-            return resp;
-        }
-
-
-        throw new UnsupportedOperationException("Response type of " + resp.getClass().getName() + " is not supported");
-    }
-
-
-    /**
      * You can use the <code>onStartup</code> to intercept the ServletContext as the Spring application is
      * initialized and inject custom values. The StartupHandler is called after the <code>onStartup</code> method
      * of the <code>LambdaSpringApplicationinitializer</code> implementation. For example, you can use this method to
@@ -184,7 +134,7 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
         filterChainManager = new AwsFilterChainManager((AwsServletContext)servletContext);
     }
 
-    protected FilterChain getFilterChain(ContainerRequestType req, Servlet servlet) {
+    protected FilterChain getFilterChain(HttpServletRequest req, Servlet servlet) {
         return filterChainManager.getFilterChain(req, servlet);
     }
 
@@ -201,15 +151,17 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
      * @throws IOException
      * @throws ServletException
      */
-    protected void doFilter(ContainerRequestType request, ContainerResponseType response, Servlet servlet) throws IOException, ServletException {
+    protected void doFilter(HttpServletRequest request, HttpServletResponse response, Servlet servlet) throws IOException, ServletException {
         FilterChain chain = getFilterChain(request, servlet);
         chain.doFilter(request, response);
 
         // if for some reason the response wasn't flushed yet, we force it here.
-        if (request.getDispatcherType() != DispatcherType.FORWARD && request.getDispatcherType() != DispatcherType.INCLUDE && !response.isCommitted()) {
+        if (!response.isCommitted()) {
             response.flushBuffer();
         }
     }
+
+    public abstract Servlet getServlet();
 
     //-------------------------------------------------------------
     // Inner Class -

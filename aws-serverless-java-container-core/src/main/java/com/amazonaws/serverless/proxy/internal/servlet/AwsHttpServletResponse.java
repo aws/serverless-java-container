@@ -21,6 +21,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.DispatcherType;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
 import javax.servlet.http.Cookie;
@@ -96,6 +97,9 @@ public class AwsHttpServletResponse
     @SuppressFBWarnings("COOKIE_USAGE")
     @Override
     public void addCookie(Cookie cookie) {
+        if (request != null && request.getDispatcherType() == DispatcherType.INCLUDE && isCommitted()) {
+            throw new IllegalStateException("Cannot add Cookies for include request when response is committed");
+        }
         String cookieData = cookie.getName() + "=" + cookie.getValue();
         if (cookie.getPath() != null) {
             cookieData += "; Path=" + cookie.getPath();
@@ -162,6 +166,7 @@ public class AwsHttpServletResponse
 
     @Override
     public void sendError(int i, String s) throws IOException {
+        request.setAttribute(AwsHttpServletRequest.DISPATCHER_TYPE_ATTRIBUTE, DispatcherType.ERROR);
         setStatus(i, s);
         flushBuffer();
     }
@@ -169,6 +174,7 @@ public class AwsHttpServletResponse
 
     @Override
     public void sendError(int i) throws IOException {
+        request.setAttribute(AwsHttpServletRequest.DISPATCHER_TYPE_ATTRIBUTE, DispatcherType.ERROR);
         setStatus(i);
         flushBuffer();
     }
@@ -184,6 +190,7 @@ public class AwsHttpServletResponse
 
     @Override
     public void setDateHeader(String s, long l) {
+        if (!canSetHeader()) return;
         SimpleDateFormat sdf = new SimpleDateFormat(HEADER_DATE_PATTERN);
         Date responseDate = new Date();
         responseDate.setTime(l);
@@ -193,6 +200,7 @@ public class AwsHttpServletResponse
 
     @Override
     public void addDateHeader(String s, long l) {
+        if (!canSetHeader()) return;
         SimpleDateFormat sdf = new SimpleDateFormat(HEADER_DATE_PATTERN);
         Date responseDate = new Date();
         responseDate.setTime(l);
@@ -202,12 +210,14 @@ public class AwsHttpServletResponse
 
     @Override
     public void setHeader(String s, String s1) {
+        if (!canSetHeader()) return;
         setHeader(s, s1, true);
     }
 
 
     @Override
     public void addHeader(String s, String s1) {
+        if (!canSetHeader()) return;
         // TODO: We should probably have a list of headers that we are not allowed to have multiple values for
         if (s.toLowerCase(Locale.getDefault()).equals(HttpHeaders.CONTENT_TYPE.toLowerCase(Locale.getDefault()))) {
             setContentType(s1);
@@ -219,18 +229,21 @@ public class AwsHttpServletResponse
 
     @Override
     public void setIntHeader(String s, int i) {
+        if (!canSetHeader()) return;
         setHeader(s, "" + i, true);
     }
 
 
     @Override
     public void addIntHeader(String s, int i) {
+        if (!canSetHeader()) return;
         setHeader(s, "" + i, false);
     }
 
 
     @Override
     public void setStatus(int i) {
+        if (!canSetHeader()) return;
         statusCode = i;
     }
 
@@ -238,6 +251,7 @@ public class AwsHttpServletResponse
     @Override
     @Deprecated
     public void setStatus(int i, String s) {
+        if (!canSetHeader()) return;
         statusCode = i;
         statusMessage = s;
     }
@@ -343,6 +357,7 @@ public class AwsHttpServletResponse
 
     @Override
     public void setCharacterEncoding(String s) {
+        if (!canSetHeader()) return;
         characterEncoding = s.toUpperCase(Locale.getDefault());
         // The char encoding is being forced, if we already have a content-type header we recreate it
         if (headers.getFirst(HttpHeaders.CONTENT_TYPE) != null) {
@@ -353,18 +368,21 @@ public class AwsHttpServletResponse
 
     @Override
     public void setContentLength(int i) {
+        if (!canSetHeader()) return;
         setHeader(HttpHeaders.CONTENT_LENGTH, "" + i, true);
     }
 
 
     @Override
     public void setContentLengthLong(long l) {
+        if (!canSetHeader()) return;
         setHeader(HttpHeaders.CONTENT_LENGTH, "" + l, true);
     }
 
 
     @Override
     public void setContentType(String s) {
+        if (!canSetHeader()) return;
         if (s == null) {
             return;
         }
@@ -430,6 +448,7 @@ public class AwsHttpServletResponse
 
     @Override
     public void setLocale(Locale locale) {
+        if (!canSetHeader()) return;
         setHeader(HttpHeaders.CONTENT_LANGUAGE, locale.getLanguage(), true);
     }
 
@@ -470,6 +489,7 @@ public class AwsHttpServletResponse
     //-------------------------------------------------------------
 
     private void setHeader(String key, String value, boolean overwrite) {
+        if (!canSetHeader()) return;
         String encodedKey = SecurityUtils.crlf(key);
         String encodedValue = SecurityUtils.crlf(value);
         List<String> values = headers.get(encodedKey);
@@ -481,5 +501,9 @@ public class AwsHttpServletResponse
         values.add(encodedValue);
 
         headers.put(encodedKey, values);
+    }
+
+    private boolean canSetHeader() {
+        return request == null || request.getDispatcherType() != DispatcherType.INCLUDE;
     }
 }
