@@ -215,7 +215,9 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType>
 
         // manually add the spark filter to the chain. This should the last one and match all uris
         FilterRegistration.Dynamic sparkRegistration = getServletContext().addFilter("SparkFilter", embeddedServer.getSparkFilter());
-        sparkRegistration.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/*");
+        sparkRegistration.addMappingForUrlPatterns(
+                EnumSet.of(DispatcherType.REQUEST, DispatcherType.ASYNC, DispatcherType.INCLUDE, DispatcherType.FORWARD),
+                true, "/*");
         Timer.stop("SPARK_COLD_START");
     }
 

@@ -75,6 +75,12 @@ public class FilterChainHolder implements FilterChain {
         if (currentFilter <= filters.size() - 1) {
             FilterHolder holder = filters.get(currentFilter);
 
+            // confirm that this filter needs to be executed
+            if (!holder.getRegistration().getDispatcherTypes().contains(servletRequest.getDispatcherType())) {
+                // skip to the next filter - we have already incremented the currentFilter
+                doFilter(servletRequest, servletResponse);
+            }
+
             // lazily initialize filters when they are needed
             if (!holder.isFilterInitialized()) {
                 holder.init();
