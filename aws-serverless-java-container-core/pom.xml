@@ -109,6 +109,9 @@
                 <configuration>
                     <destFile>${basedir}/target/coverage-reports/jacoco-unit.exec</destFile>
                     <dataFile>${basedir}/target/coverage-reports/jacoco-unit.exec</dataFile>
+                    <excludes>
+                        <exclude>com/amazonaws/serverless/proxy/internal/testutils/**</exclude>
+                    </excludes>
                 </configuration>
                 <executions>
                     <execution>
