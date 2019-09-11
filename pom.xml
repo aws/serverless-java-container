@@ -26,6 +26,7 @@
         <module>aws-serverless-spring-archetype</module>
         <module>aws-serverless-springboot-archetype</module>
         <module>aws-serverless-springboot2-archetype</module>
+        <module>aws-serverless-java-container-springboot2</module>
     </modules>
 
     <scm>
