@@ -110,7 +110,6 @@ public class JerseyAwsProxyTest {
         assertEquals(200, output.getStatusCode());
         assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
         assertNotNull(output.getStatusDescription());
-        System.out.println(output.getStatusDescription());
 
         validateMapResponseModel(output);
     }
@@ -170,9 +169,6 @@ public class JerseyAwsProxyTest {
     public void context_serverInfo_correctContext() {
         AwsProxyRequest request = getRequestBuilder("/echo/servlet-context", "GET").build();
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
-        for (String header : output.getMultiValueHeaders().keySet()) {
-            System.out.println(header + ": " + output.getMultiValueHeaders().getFirst(header));
-        }
         assertEquals(200, output.getStatusCode());
         assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
 

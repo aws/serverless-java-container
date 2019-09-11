@@ -67,7 +67,6 @@ public class InitExceptionHandlerTest {
 
     private static void configureRoutes() {
         initExceptionHandler((e) -> {
-            System.out.println("Exception Handler called: " + e.getLocalizedMessage());
             assertEquals(TEST_EXCEPTION_MESSAGE, e.getLocalizedMessage());
         });
 

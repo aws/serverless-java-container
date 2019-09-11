@@ -187,7 +187,6 @@ public class JerseyParamEncodingTest {
         assertNotNull(resp);
         assertEquals(resp.getStatusCode(), 200);
         validateSingleValueModel(resp, "%2F%2B%3D");
-        System.out.println("body:" + resp.getBody());
     }
 
     @Test

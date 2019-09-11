@@ -12,7 +12,7 @@ import javax.ws.rs.ext.Provider;
 public class CustomExceptionMapper implements ExceptionMapper<UnsupportedOperationException> {
 
     public CustomExceptionMapper() {
-        System.out.println("Starting custom exception mapper");
+
     }
 
     @Inject
@@ -23,7 +23,6 @@ public class CustomExceptionMapper implements ExceptionMapper<UnsupportedOperati
         if (request == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         } else {
-            System.out.println("Request uri: " + request.get().getRequestURI());
             return Response.ok(throwable.getMessage()).status(Response.Status.NOT_IMPLEMENTED).build();
         }
     }
