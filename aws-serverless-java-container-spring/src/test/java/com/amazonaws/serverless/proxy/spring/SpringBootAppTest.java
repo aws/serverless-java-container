@@ -10,7 +10,7 @@ import com.amazonaws.serverless.proxy.spring.echoapp.model.SingleValueModel;
 import com.amazonaws.serverless.proxy.spring.springbootapp.LambdaHandler;
 import com.amazonaws.serverless.proxy.spring.springbootapp.TestController;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
@@ -41,19 +41,6 @@ public class SpringBootAppTest {
         assertNotNull(resp);
         assertEquals(404, resp.getStatusCode());
         assertNotNull(resp.getMultiValueHeaders());
-        assertTrue(resp.getMultiValueHeaders().containsKey("Content-Type"));
-        assertEquals("application/json; charset=UTF-8", resp.getMultiValueHeaders().getFirst("Content-Type"));
-        try {
-            JsonNode errorData = mapper.readTree(resp.getBody());
-            assertNotNull(errorData.findValue("status"));
-            assertEquals(404, errorData.findValue("status").asInt());
-            assertNotNull(errorData.findValue("message"));
-            assertEquals("No message available", errorData.findValue("message").asText());
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            fail();
-        }
     }
 
     @Test
@@ -84,7 +71,6 @@ public class SpringBootAppTest {
                 .header(HttpHeaders.CONTENT_TYPE, "text/plain")
                 .build();
         AwsProxyResponse output = handler.handleRequest(request, context);
-        System.out.println("Response: " + output.getBody());
         assertEquals(200, output.getStatusCode());
         assertTrue(output.getBody().contains("<h1>Static</h1>"));
     }
@@ -95,8 +81,6 @@ public class SpringBootAppTest {
         AwsProxyRequest request = new AwsProxyRequestBuilder("/test/utf8", "GET")
                 .build();
         AwsProxyResponse output = handler.handleRequest(request, context);
-        System.out.println("Response: " + output.getBody());
-        System.out.println("Content-Type:" + output.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
         validateSingleValueModel(output, TestController.UTF8_TEST_STRING);
         assertTrue(output.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
         assertTrue(output.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE).contains(";"));

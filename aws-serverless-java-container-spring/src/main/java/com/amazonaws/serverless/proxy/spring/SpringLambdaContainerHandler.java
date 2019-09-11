@@ -26,9 +26,10 @@ import com.amazonaws.serverless.proxy.internal.servlet.*;
 import com.amazonaws.services.lambda.runtime.Context;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
+import org.springframework.web.servlet.DispatcherServlet;
 
 import javax.servlet.Servlet;
-import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -40,10 +41,11 @@ import java.util.concurrent.CountDownLatch;
  * @param <ResponseType> The expected return type
  */
 public class SpringLambdaContainerHandler<RequestType, ResponseType> extends AwsLambdaServletContainerHandler<RequestType, ResponseType, AwsProxyHttpServletRequest, AwsHttpServletResponse> {
-    private LambdaSpringApplicationInitializer initializer;
+    private ConfigurableWebApplicationContext appContext;
+    private String[] profiles;
 
     // State vars
-    private boolean initialized;
+    private boolean refreshContext = false;
 
     /**
      * Creates a default SpringLambdaContainerHandler initialized with the `AwsProxyRequest` and `AwsProxyResponse` objects
@@ -120,29 +122,20 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
             throws ContainerInitializationException {
         super(requestTypeClass, responseTypeClass, requestReader, responseWriter, securityContextWriter, exceptionHandler);
         Timer.start("SPRING_CONTAINER_HANDLER_CONSTRUCTOR");
-        initialized = false;
-        initializer = new LambdaSpringApplicationInitializer(applicationContext);
+        appContext = applicationContext;
         Timer.stop("SPRING_CONTAINER_HANDLER_CONSTRUCTOR");
     }
 
 
     /**
      * Asks the custom web application initializer to refresh the Spring context.
-     * @param refreshContext true if the context should be refreshed
+     * @param refresh true if the context should be refreshed
      */
-    public void setRefreshContext(boolean refreshContext) {
-        this.initializer.setRefreshContext(refreshContext);
+    public void setRefreshContext(boolean refresh) {
+        //this.initializer.setRefreshContext(refreshContext);
+        refreshContext = refresh;
     }
 
-
-    /**
-     * Returns the custom web application initializer used by the object. The custom application initializer gives you access
-     * to the dispatcher servlet.
-     * @return The instance of the custom {@link org.springframework.web.WebApplicationInitializer}
-     */
-    public LambdaSpringApplicationInitializer getApplicationInitializer() {
-        return initializer;
-    }
 
     @Override
     protected AwsHttpServletResponse getContainerResponse(AwsProxyHttpServletRequest request, CountDownLatch latch) {
@@ -153,33 +146,31 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
     /**
      * Activates the given Spring profiles in the application. This method will cause the context to be
      * refreshed. To use a single Spring profile, use the static method {@link SpringLambdaContainerHandler#getAwsProxyHandler(ConfigurableWebApplicationContext, String...)}
-     * @param profiles A number of spring profiles
+     * @param p A number of spring profiles
      * @throws ContainerInitializationException if the initializer is not set yet.
      */
-    public void activateSpringProfiles(String... profiles) throws ContainerInitializationException {
-        if (initializer == null) {
-            throw new ContainerInitializationException(LambdaSpringApplicationInitializer.ERROR_NO_CONTEXT, null);
-        }
+    public void activateSpringProfiles(String... p) throws ContainerInitializationException {
+        profiles = p;
         setServletContext(new AwsServletContext(this));
-        initializer.setSpringProfiles(getServletContext(), profiles);
+        appContext.registerShutdownHook();
+        appContext.close();
+        initialize();
     }
 
     @Override
     protected void handleRequest(AwsProxyHttpServletRequest containerRequest, AwsHttpServletResponse containerResponse, Context lambdaContext) throws Exception {
         Timer.start("SPRING_HANDLE_REQUEST");
-        if (initializer == null) {
-            throw new ContainerInitializationException(LambdaSpringApplicationInitializer.ERROR_NO_CONTEXT, null);
-        }
 
-        // wire up the application context on the first invocation
-        if (!initialized) {
-            initialize();
+        if (refreshContext) {
+            appContext.refresh();
+            refreshContext = false;
         }
 
         containerRequest.setServletContext(getServletContext());
 
         // process filters
-        doFilter(containerRequest, containerResponse, initializer);
+        Servlet reqServlet = ((AwsServletContext)getServletContext()).getServletForPath(containerRequest.getPathInfo());
+        doFilter(containerRequest, containerResponse, reqServlet);
         Timer.stop("SPRING_HANDLE_REQUEST");
     }
 
@@ -188,18 +179,13 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
     public void initialize()
             throws ContainerInitializationException {
         Timer.start("SPRING_COLD_START");
-
-        try {
-            initializer.onStartup(getServletContext());
-        } catch (ServletException e) {
-            throw new ContainerInitializationException("Could not initialize Spring", e);
+        if (profiles != null) {
+            appContext.getEnvironment().setActiveProfiles(profiles);
         }
-
-        initialized = true;
+        appContext.setServletContext(getServletContext());
+        DispatcherServlet dispatcher = new DispatcherServlet(appContext);
+        ServletRegistration.Dynamic reg = getServletContext().addServlet("dispatcherServlet", dispatcher);
+        reg.addMapping("/");
         Timer.stop("SPRING_COLD_START");
-    }
-
-    public Servlet getServlet() {
-        return initializer.getDispatcherServlet();
     }
 }

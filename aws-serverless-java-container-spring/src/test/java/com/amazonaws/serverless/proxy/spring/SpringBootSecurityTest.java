@@ -45,7 +45,6 @@ public class SpringBootSecurityTest {
         AwsProxyResponse resp = handler.handleRequest(req, context);
         assertNotNull(resp);
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
-        System.out.println(mapper.writeValueAsString(resp.getMultiValueHeaders()));
         assertEquals(403, resp.getStatusCode());
         validateSingleValueModel(resp, TestController.ACCESS_DENIED);
     }

@@ -24,12 +24,11 @@ public class TestSecurityConfig extends WebSecurityConfigurerAdapter {
         auth.inMemoryAuthentication().withUser(USERNAME).password(pEncoder.encode(PASSWORD)).roles("ADMIN")
                 .and().withUser(NO_ADMIN_USERNAME).password(pEncoder.encode(PASSWORD)).roles("USER")
                 .and().passwordEncoder(pEncoder);
-        System.out.println("Configure authentication manager");
+
     }
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        System.out.println("Configure Web security");
     }
 
     @Override

@@ -156,7 +156,6 @@ public class EchoResource {
     public SingleValueModel helloForPopulatedBody(@RequestBody(required = false) Optional<String> input) {
         SingleValueModel valueModel = new SingleValueModel();
         if (input.isPresent() && !"null".equals(input.get())) {
-            System.out.println("Input: \"" + input.get() + "\"");
             valueModel.setValue("true");
         }
 
@@ -194,7 +193,7 @@ public class EchoResource {
     public ResponseEntity<String> receiveFile(@RequestParam("testFile") MultipartFile file) throws IOException {
         String fileName = file.getName();
         byte[] fileContents = file.getBytes();
-        System.out.println("Content length: " + fileContents.length);
+
         return ResponseEntity.ok(fileName);
     }
 }

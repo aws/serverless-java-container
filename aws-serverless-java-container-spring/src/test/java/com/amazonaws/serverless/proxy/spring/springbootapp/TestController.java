@@ -59,7 +59,6 @@ public class TestController extends WebSecurityConfigurerAdapter {
     @RequestMapping(path = "/test/query-string", method = { RequestMethod.GET })
     public SingleValueModel testQueryStringList(@RequestParam("list") List<String> qsValues) {
         assert qsValues != null;
-        System.out.println("QUERY_STRING_VALUES: " + qsValues);
         SingleValueModel value = new SingleValueModel();
         value.setValue(qsValues.size() + "");
         return value;

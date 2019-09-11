@@ -33,7 +33,6 @@ public class TestController {
         } else {
             value.setValue(null);
         }
-        System.out.println("Principal: " + value.getValue());
         return value;
     }
 

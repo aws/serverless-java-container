@@ -246,7 +246,6 @@ public class SpringAwsProxyTest {
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
         assertNotNull(output.getBody());
-        System.out.println("Output:" + output.getBody());
         validateSingleValueModel(output, CUSTOM_HEADER_VALUE);
     }
 
@@ -372,7 +371,6 @@ public class SpringAwsProxyTest {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        System.out.println("Response: " + output.getBody());
 
         String expectedUri = "https://api.myserver.com/prod/echo/encoded-request-uri/" + EchoResource.TEST_GENERATE_URI;
 
@@ -390,7 +388,6 @@ public class SpringAwsProxyTest {
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        System.out.println("Response: " + output.getBody());
 
         assertEquals("testFile", output.getBody());
     }
