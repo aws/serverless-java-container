@@ -230,19 +230,18 @@ public class AwsFilterChainManagerTest {
 
         @Override
         public void init(FilterConfig filterConfig) throws ServletException {
-            System.out.println("Init");
+
         }
 
         @Override
         public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-            System.out.println("DoFilter");
             servletRequest.setAttribute(REQUEST_CUSTOM_ATTRIBUTE_NAME, REQUEST_CUSTOM_ATTRIBUTE_VALUE);
             filterChain.doFilter(servletRequest, servletResponse);
         }
 
         @Override
         public void destroy() {
-            System.out.println("Destroy");
+
         }
     }
 }

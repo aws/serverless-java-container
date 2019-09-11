@@ -22,17 +22,13 @@ import com.amazonaws.services.lambda.runtime.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.FilterChain;
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
 import java.io.IOException;
+import java.util.Map;
 
 
 /**
@@ -56,7 +52,6 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
     //-------------------------------------------------------------
     private Logger log = LoggerFactory.getLogger(AwsLambdaServletContainerHandler.class);
     private FilterChainManager<AwsServletContext> filterChainManager;
-    private boolean startupExecuted;
 
     //-------------------------------------------------------------
     // Variables - Protected
@@ -79,7 +74,6 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
         // set the default log formatter for servlet implementations
         setLogFormatter(new ApacheCombinedServletLogFormatter<>());
         setServletContext(new AwsServletContext(this));
-        startupExecuted = false;
     }
 
     //-------------------------------------------------------------
@@ -160,8 +154,6 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
             response.flushBuffer();
         }
     }
-
-    public abstract Servlet getServlet();
 
     //-------------------------------------------------------------
     // Inner Class -

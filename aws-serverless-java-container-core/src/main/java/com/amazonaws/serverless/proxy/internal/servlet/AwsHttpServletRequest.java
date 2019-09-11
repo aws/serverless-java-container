@@ -23,12 +23,10 @@ import org.apache.http.message.BasicHeaderValueParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.AsyncContext;
-import javax.servlet.DispatcherType;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import javax.servlet.*;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import java.io.UnsupportedEncodingException;
@@ -81,7 +79,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     private String queryString;
     private BasicHeaderValueParser headerParser;
 
-    private Logger log = LoggerFactory.getLogger(AwsHttpServletRequest.class);
+    private static Logger log = LoggerFactory.getLogger(AwsHttpServletRequest.class);
 
 
     //-------------------------------------------------------------
@@ -240,13 +238,6 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     public boolean isAsyncSupported() {
         return false;
     }
-
-
-    @Override
-    public AsyncContext getAsyncContext() {
-        return null;
-    }
-
 
     @Override
     public DispatcherType getDispatcherType() {
@@ -424,7 +415,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         return values;
     }
 
-    protected String decodeRequestPath(String requestPath, ContainerConfig config) {
+    static String decodeRequestPath(String requestPath, ContainerConfig config) {
         try {
             return URLDecoder.decode(requestPath, config.getUriEncoding());
         } catch (UnsupportedEncodingException ex) {

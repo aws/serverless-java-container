@@ -21,32 +21,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.activation.MimetypesFileTypeMap;
-import javax.servlet.Filter;
-import javax.servlet.FilterRegistration;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import javax.servlet.SessionCookieConfig;
-import javax.servlet.SessionTrackingMode;
+import javax.servlet.*;
 import javax.servlet.descriptor.JspConfigDescriptor;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.EventListener;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -69,6 +53,7 @@ public class AwsServletContext
     // Variables - Private
     //-------------------------------------------------------------
     private Map<String, FilterHolder> filters;
+    private Map<String, AwsServletRegistration> servletRegistrations;
     private Map<String, Object> attributes;
     private Map<String, String> initParameters;
     private AwsLambdaServletContainerHandler containerHandler;
@@ -91,6 +76,7 @@ public class AwsServletContext
         this.attributes = new HashMap<>();
         this.initParameters = new HashMap<>();
         this.filters = new LinkedHashMap<>();
+        this.servletRegistrations = new HashMap<>();
     }
 
 
@@ -192,21 +178,59 @@ public class AwsServletContext
     @Override
     @Deprecated
     public Servlet getServlet(String s) throws ServletException {
-        throw new UnsupportedOperationException();
+        return servletRegistrations.get(s).getServlet();
+    }
+
+    public Servlet getServletForPath(String path) {
+        String[] pathParts = path.split("/");
+        for (AwsServletRegistration reg : servletRegistrations.values()) {
+            for (String p : reg.getMappings()) {
+                try {
+                    if ("".equals(p) || "/".equals(p) || "/*".equals(p)) {
+                        return reg.getServlet();
+                    }
+                    // if  I have no path and I haven't matched something now I'll just move on to the next
+                    if ("".equals(path) || "/".equals(path)) {
+                        continue;
+                    }
+                    String[] regParts = p.split("/");
+                    for (int i = 0; i < regParts.length; i++) {
+                        if (!regParts[i].equals(pathParts[i]) && !"*".equals(regParts[i])) {
+                            break;
+                        }
+                        if (i == regParts.length - 1 && (regParts[i].equals(pathParts[i]) || "*".equals(regParts[i]))) {
+                            return reg.getServlet();
+                        }
+                    }
+                } catch (ServletException e) {
+                    return null;
+                }
+            }
+        }
+        return null;
     }
 
 
     @Override
     @Deprecated
     public Enumeration<Servlet> getServlets() {
-        throw new UnsupportedOperationException();
+        return Collections.enumeration(servletRegistrations.entrySet().stream()
+                .map((e) -> {
+                    try {
+                        return e.getValue().getServlet();
+                    } catch (ServletException ex) {
+                        ex.printStackTrace();
+                        return null;
+                    }
+                } )
+                .collect(Collectors.toList()));
     }
 
 
     @Override
     @Deprecated
     public Enumeration<String> getServletNames() {
-        throw new UnsupportedOperationException();
+        return Collections.enumeration(servletRegistrations.keySet());
     }
 
 
@@ -302,47 +326,61 @@ public class AwsServletContext
 
     @Override
     public ServletRegistration.Dynamic addServlet(String s, String s1) {
-        log("Called addServlet: " + s1);
-        log("Implemented frameworks are responsible for registering servlets");
-        throw new UnsupportedOperationException();
+        try {
+            Class<? extends Servlet> servletClass = (Class<? extends Servlet>) this.getClassLoader().loadClass(s1);
+            Servlet servlet = createServlet(servletClass);
+            servletRegistrations.put(s, new AwsServletRegistration(s, servlet, this));
+            return servletRegistrations.get(s);
+        } catch (ServletException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
     @Override
     public ServletRegistration.Dynamic addServlet(String s, Servlet servlet) {
-        log("Called addServlet: " + servlet.getClass().getName());
-        log("Implemented frameworks are responsible for registering servlets");
-        throw new UnsupportedOperationException();
+        servletRegistrations.put(s, new AwsServletRegistration(s, servlet, this));
+        return servletRegistrations.get(s);
     }
 
 
     @Override
     public ServletRegistration.Dynamic addServlet(String s, Class<? extends Servlet> aClass) {
-        log("Called addServlet: " + aClass.getName());
-        log("Implemented frameworks are responsible for registering servlets");
-        throw new UnsupportedOperationException();
+        try {
+            Servlet servlet = createServlet(aClass);
+            servletRegistrations.put(s, new AwsServletRegistration(s, servlet, this));
+            return servletRegistrations.get(s);
+        } catch (ServletException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
     @Override
     public <T extends Servlet> T createServlet(Class<T> aClass) throws ServletException {
-        log("Called createServlet: " + aClass.getName());
-        log("Implemented frameworks are responsible for creating servlets");
-        throw new UnsupportedOperationException();
+        /*log("Called createServlet: " + aClass.getName());
+        log("Implemented frameworks are responsible for creating servlets");*/
+        // TODO: This method introspects the given clazz for the following annotations: ServletSecurity, MultipartConfig,
+        //  javax.annotation.security.RunAs, and javax.annotation.security.DeclareRoles. In addition, this method supports
+        //  resource injection if the given clazz represents a Managed Bean. See the Java EE platform and JSR 299 specifications
+        //  for additional details about Managed Beans and resource injection.
+        try {
+            return aClass.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new ServletException(e);
+        }
     }
 
 
     @Override
     public ServletRegistration getServletRegistration(String s) {
-        // TODO: This could come from the reader interface
-        return null;
+        return servletRegistrations.get(s);
     }
 
 
     @Override
     public Map<String, ? extends ServletRegistration> getServletRegistrations() {
-        // TODO: This could come from the reader interface
-        return null;
+        return servletRegistrations;
     }
 
 

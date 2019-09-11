@@ -44,7 +44,6 @@ public class AwsHttpServletResponseTest {
 
         resp.addCookie(pathCookie);
         String cookieHeader = resp.getHeader(HttpHeaders.SET_COOKIE);
-        System.out.println("Cookie string: " + cookieHeader);
         assertNotNull(cookieHeader);
         assertTrue(cookieHeader.contains("Path=" + COOKIE_PATH));
         assertTrue(cookieHeader.contains(COOKIE_NAME + "=" + COOKIE_VALUE));
@@ -58,7 +57,6 @@ public class AwsHttpServletResponseTest {
 
         resp.addCookie(secureCookie);
         String cookieHeader = resp.getHeader(HttpHeaders.SET_COOKIE);
-        System.out.println("Cookie string: " + cookieHeader);
         assertNotNull(cookieHeader);
         assertTrue(cookieHeader.contains("; Secure"));
         assertTrue(cookieHeader.contains(COOKIE_NAME + "=" + COOKIE_VALUE));
@@ -72,7 +70,6 @@ public class AwsHttpServletResponseTest {
 
         resp.addCookie(domainCookie);
         String cookieHeader = resp.getHeader(HttpHeaders.SET_COOKIE);
-        System.out.println("Cookie string: " + cookieHeader);
         assertNotNull(cookieHeader);
         assertTrue(cookieHeader.contains("; Domain=" + COOKIE_DOMAIN));
         assertTrue(cookieHeader.contains(COOKIE_NAME + "=" + COOKIE_VALUE));
@@ -86,7 +83,6 @@ public class AwsHttpServletResponseTest {
 
         resp.addCookie(maxAgeCookie);
         String cookieHeader = resp.getHeader(HttpHeaders.SET_COOKIE);
-        System.out.println("Cookie string: " + cookieHeader);
         assertNotNull(cookieHeader);
         assertFalse(cookieHeader.contains("Max-Age="));
         assertTrue(cookieHeader.contains(COOKIE_NAME + "=" + COOKIE_VALUE));
@@ -100,7 +96,6 @@ public class AwsHttpServletResponseTest {
 
         resp.addCookie(maxAgeCookie);
         String cookieHeader = resp.getHeader(HttpHeaders.SET_COOKIE);
-        System.out.println("Cookie string: " + cookieHeader);
         assertNotNull(cookieHeader);
         assertTrue(cookieHeader.contains("; Max-Age="));
         assertTrue(cookieHeader.contains(COOKIE_NAME + "=" + COOKIE_VALUE));
@@ -121,7 +116,6 @@ public class AwsHttpServletResponseTest {
         testExpiration.setTimeZone(TimeZone.getTimeZone(AwsHttpServletResponse.COOKIE_DEFAULT_TIME_ZONE));
 
         String cookieHeader = resp.getHeader(HttpHeaders.SET_COOKIE);
-        System.out.println("Cookie string: " + cookieHeader);
         assertNotNull(cookieHeader);
         assertTrue(cookieHeader.contains("; Max-Age="));
         assertTrue(cookieHeader.contains(COOKIE_NAME + "=" + COOKIE_VALUE));
@@ -129,8 +123,6 @@ public class AwsHttpServletResponseTest {
         SimpleDateFormat dateFormat = new SimpleDateFormat(AwsHttpServletResponse.HEADER_DATE_PATTERN);
 
         Calendar expiration = getExpires(cookieHeader);
-        System.out.println("Cookie date: " + dateFormat.format(expiration.getTime()));
-        System.out.println("Test date: " + dateFormat.format(testExpiration.getTime()));
 
         long dateDiff = testExpiration.getTimeInMillis() - expiration.getTimeInMillis();
         assertTrue(Math.abs(dateDiff) < COOKIE_GRACE_COMPARE_MILLIS);
@@ -314,7 +306,6 @@ public class AwsHttpServletResponseTest {
         assertTrue(ageMatcher.find());
         assertTrue(ageMatcher.groupCount() >= 1);
         String ageString = ageMatcher.group(1);
-        System.out.println("Age string: " + ageString);
         return Integer.parseInt(ageString);
     }
 

@@ -96,7 +96,7 @@ public class AwsProxyRequestTest {
                 .fromJsonString(getRequestJson(true, CUSTOM_HEADER_KEY_LOWER_CASE, CUSTOM_HEADER_VALUE)).build();
         ObjectMapper mapper = new ObjectMapper();
         String serializedRequest = mapper.writeValueAsString(req);
-        System.out.println(serializedRequest);
+
         assertTrue(serializedRequest.contains("\"isBase64Encoded\":true"));
     }
 

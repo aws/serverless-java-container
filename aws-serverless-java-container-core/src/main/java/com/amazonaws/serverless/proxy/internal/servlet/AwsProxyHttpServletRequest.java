@@ -38,10 +38,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpUpgradeHandler;
-import javax.servlet.http.Part;
+import javax.servlet.http.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
@@ -84,10 +81,13 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     private AwsProxyRequest request;
     private SecurityContext securityContext;
+    private AsyncContext asyncContext;
     private Map<String, List<String>> urlEncodedFormParameters;
     private Map<String, Part> multipartFormParameters;
     private static Logger log = LoggerFactory.getLogger(AwsProxyHttpServletRequest.class);
     private ContainerConfig config;
+    private AwsHttpServletResponse response;
+    private AwsLambdaServletContainerHandler containerHandler;
 
     //-------------------------------------------------------------
     // Constructors
@@ -109,6 +109,22 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     public AwsProxyRequest getAwsProxyRequest() {
         return this.request;
+    }
+
+    public AwsHttpServletResponse getResponse() {
+        return response;
+    }
+
+    public void setResponse(AwsHttpServletResponse response) {
+        this.response = response;
+    }
+
+    public AwsLambdaServletContainerHandler getContainerHandler() {
+        return containerHandler;
+    }
+
+    public void setContainerHandler(AwsLambdaServletContainerHandler containerHandler) {
+        this.containerHandler = containerHandler;
     }
 
     //-------------------------------------------------------------
@@ -661,18 +677,36 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
 
     @Override
+    public boolean isAsyncSupported() {
+        return true;
+    }
+
+
+    @Override
     public AsyncContext startAsync()
             throws IllegalStateException {
-        return null;
+        asyncContext = new AwsAsyncContext(this, response, containerHandler);
+        log.debug("Starting async context for request: " + SecurityUtils.crlf(request.getRequestContext().getRequestId()));
+        return asyncContext;
     }
 
 
     @Override
     public AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse)
             throws IllegalStateException {
-        return null;
+        asyncContext = new AwsAsyncContext((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse, containerHandler);
+        log.debug("Starting async context for request: " + SecurityUtils.crlf(request.getRequestContext().getRequestId()));
+        return asyncContext;
     }
 
+    @Override
+    public AsyncContext getAsyncContext() {
+        if (asyncContext == null) {
+            throw new IllegalStateException("Request " + SecurityUtils.crlf(request.getRequestContext().getRequestId())
+                    + " is not in asynchronous mode. Call startAsync before atttempting to get the async context.");
+        }
+        return asyncContext;
+    }
 
     //-------------------------------------------------------------
     // Methods - Private
@@ -728,7 +762,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     }
 
 
-    private String cleanUri(String uri) {
+    static String cleanUri(String uri) {
         String finalUri = (uri == null ? "/" : uri);
         if (finalUri.equals("/")) {
             return finalUri;

@@ -7,11 +7,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -76,13 +72,13 @@ public class AwsProxyRequestDispatcher implements RequestDispatcher {
         }
 
         if (isNamedDispatcher) {
-            lambdaContainerHandler.doFilter((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse, lambdaContainerHandler.getServlet());
+            lambdaContainerHandler.doFilter((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse, getServlet((HttpServletRequest)servletRequest));
             return;
         }
 
         servletRequest.setAttribute(DISPATCHER_TYPE_ATTRIBUTE, DispatcherType.FORWARD);
         setRequestPath(servletRequest, dispatchTo);
-        lambdaContainerHandler.doFilter((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse, lambdaContainerHandler.getServlet());
+        lambdaContainerHandler.doFilter((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse, getServlet((HttpServletRequest)servletRequest));
     }
 
 
@@ -107,7 +103,7 @@ public class AwsProxyRequestDispatcher implements RequestDispatcher {
                     SecurityUtils.encode(SecurityUtils.crlf(((HttpServletRequest) servletRequest).getQueryString())));
             setRequestPath(servletRequest, dispatchTo);
         }
-        lambdaContainerHandler.doFilter((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse, lambdaContainerHandler.getServlet());
+        lambdaContainerHandler.doFilter((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse, getServlet((HttpServletRequest)servletRequest));
     }
 
     /**
@@ -129,5 +125,9 @@ public class AwsProxyRequestDispatcher implements RequestDispatcher {
             throw new IllegalStateException("ServletRequest object does not contain API Gateway event");
         }
         ((AwsProxyRequest)req.getAttribute(API_GATEWAY_EVENT_PROPERTY)).setPath(dispatchTo);
+    }
+
+    private Servlet getServlet(HttpServletRequest req) {
+        return ((AwsServletContext)lambdaContainerHandler.getServletContext()).getServletForPath(req.getPathInfo());
     }
 }

@@ -183,10 +183,6 @@ public class AwsProxyRequestDispatcherTest {
                 new AwsProxySecurityContextWriter(),
                 new AwsProxyExceptionHandler()
         ) {
-            @Override
-            public Servlet getServlet() {
-                return null;
-            }
 
             @Override
             protected void doFilter(HttpServletRequest request, HttpServletResponse response, Servlet servlet) throws IOException, ServletException {

@@ -71,11 +71,6 @@ public class AwsHttpServletRequestTest {
         AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(complexAcceptHeader, mockContext, null, config);
         List<AwsHttpServletRequest.HeaderValue> values = request.parseHeaderValue(request.getHeader(HttpHeaders.ACCEPT), ",", ";");
 
-        try {
-            System.out.println(new ObjectMapper().writeValueAsString(values));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
         assertEquals(4, values.size());
     }
 
@@ -124,7 +119,6 @@ public class AwsHttpServletRequestTest {
         List<AwsHttpServletRequest.HeaderValue> result = context.parseHeaderValue("hello=");
         assertTrue(result.size() > 0);
         assertEquals("hello", result.get(0).getKey());
-        System.out.println("\"" + result.get(0).getValue() + "\"");
         assertNull(result.get(0).getValue());
     }
 
@@ -139,7 +133,6 @@ public class AwsHttpServletRequestTest {
             e.printStackTrace();
             fail("Could not generate query string");
         }
-        System.out.println(parsedString);
         assertTrue(parsedString.contains("one=two"));
         assertTrue(parsedString.contains("three=four"));
         assertTrue(parsedString.contains("&") && parsedString.indexOf("&") > 0 && parsedString.indexOf("&") < parsedString.length());

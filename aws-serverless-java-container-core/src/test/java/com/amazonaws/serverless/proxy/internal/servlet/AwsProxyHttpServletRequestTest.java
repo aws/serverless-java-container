@@ -4,11 +4,15 @@ import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 
+import com.amazonaws.services.lambda.runtime.Context;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.SecurityContext;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,16 +20,14 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
+@RunWith(Parameterized.class)
 public class AwsProxyHttpServletRequestTest {
+    private boolean isWrapped;
+
     private static final String CUSTOM_HEADER_KEY = "X-Custom-Header";
     private static final String CUSTOM_HEADER_VALUE = "Custom-Header-Value";
     private static final String FORM_PARAM_NAME = "name";
@@ -74,9 +76,27 @@ public class AwsProxyHttpServletRequestTest {
             .queryString(FORM_PARAM_NAME, QUERY_STRING_NAME_VALUE).build();
 
 
+    public AwsProxyHttpServletRequestTest(boolean wrap) {
+        isWrapped = wrap;
+    }
+
+    @Parameterized.Parameters
+    public static Collection<Object> data() {
+        return Arrays.asList(new Object[] { false, true });
+    }
+
+    private HttpServletRequest getRequest(AwsProxyRequest req, Context lambdaCtx, SecurityContext securityCtx) {
+        HttpServletRequest servletRequest = new AwsProxyHttpServletRequest(req, lambdaCtx, securityCtx);
+        if (isWrapped) {
+            servletRequest = new AwsHttpServletRequestWrapper(servletRequest, req.getPath());
+        }
+        return servletRequest;
+    }
+
+
     @Test
     public void headers_getHeader_validRequest() {
-        HttpServletRequest request = new AwsProxyHttpServletRequest(getRequestWithHeaders(), null, null);
+        HttpServletRequest request = getRequest(getRequestWithHeaders(), null, null);
         assertNotNull(request.getHeader(CUSTOM_HEADER_KEY));
         assertEquals(CUSTOM_HEADER_VALUE, request.getHeader(CUSTOM_HEADER_KEY));
         assertEquals(MediaType.APPLICATION_JSON, request.getContentType());
@@ -84,7 +104,7 @@ public class AwsProxyHttpServletRequestTest {
 
     @Test
     public void headers_getRefererAndUserAgent_returnsContextValues() {
-        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_USER_AGENT_REFERER, null, null);
+        HttpServletRequest request = getRequest(REQUEST_USER_AGENT_REFERER, null, null);
         assertNotNull(request.getHeader("Referer"));
         assertEquals(REFERER, request.getHeader("Referer"));
         assertEquals(REFERER, request.getHeader("referer"));
@@ -96,7 +116,7 @@ public class AwsProxyHttpServletRequestTest {
 
     @Test
     public void formParams_getParameter_validForm() {
-        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_FORM_URLENCODED, null, null);
+        HttpServletRequest request = getRequest(REQUEST_FORM_URLENCODED, null, null);
         assertNotNull(request);
         assertNotNull(request.getParameter(FORM_PARAM_NAME));
         assertEquals(FORM_PARAM_NAME_VALUE, request.getParameter(FORM_PARAM_NAME));
@@ -104,21 +124,21 @@ public class AwsProxyHttpServletRequestTest {
 
     @Test
     public void formParams_getParameter_null() {
-        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_INVALID_FORM_URLENCODED, null, null);
+        HttpServletRequest request = getRequest(REQUEST_INVALID_FORM_URLENCODED, null, null);
         assertNotNull(request);
         assertNull(request.getParameter(FORM_PARAM_NAME));
     }
 
     @Test
     public void formParams_getParameter_multipleParams() {
-        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_FORM_URLENCODED_AND_QUERY, null, null);
+        HttpServletRequest request = getRequest(REQUEST_FORM_URLENCODED_AND_QUERY, null, null);
         assertNotNull(request);
         assertEquals(2, request.getParameterValues(FORM_PARAM_NAME).length);
     }
 
     @Test
     public void formParams_getParameter_queryStringPrecendence() {
-        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_FORM_URLENCODED_AND_QUERY, null, null);
+        HttpServletRequest request = getRequest(REQUEST_FORM_URLENCODED_AND_QUERY, null, null);
         assertNotNull(request);
         assertEquals(2, request.getParameterValues(FORM_PARAM_NAME).length);
         assertEquals(QUERY_STRING_NAME_VALUE, request.getParameter(FORM_PARAM_NAME));
@@ -126,14 +146,14 @@ public class AwsProxyHttpServletRequestTest {
 
     @Test
     public void dateHeader_noDate_returnNegativeOne() {
-        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_FORM_URLENCODED_AND_QUERY, null, null);
+        HttpServletRequest request = getRequest(REQUEST_FORM_URLENCODED_AND_QUERY, null, null);
         assertNotNull(request);
         assertEquals(-1L, request.getDateHeader(HttpHeaders.DATE));
     }
 
     @Test
     public void dateHeader_correctDate_parseToCorrectLong() {
-        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_WITH_DATE, null, null);
+        HttpServletRequest request = getRequest(REQUEST_WITH_DATE, null, null);
         assertNotNull(request);
 
         String instantString = AwsHttpServletRequest.dateFormatter.format(REQUEST_DATE);
@@ -143,7 +163,7 @@ public class AwsProxyHttpServletRequestTest {
 
     @Test
     public void scheme_getScheme_https() {
-        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_FORM_URLENCODED, null, null);
+        HttpServletRequest request = getRequest(REQUEST_FORM_URLENCODED, null, null);
         assertNotNull(request);
         assertNotNull(request.getScheme());
         assertEquals("https", request.getScheme());
@@ -151,7 +171,7 @@ public class AwsProxyHttpServletRequestTest {
 
     @Test
     public void scheme_getScheme_http() {
-        HttpServletRequest request = new AwsProxyHttpServletRequest(getRequestWithHeaders(), null, null);
+        HttpServletRequest request = getRequest(getRequestWithHeaders(), null, null);
         assertNotNull(request);
         assertNotNull(request.getScheme());
         assertEquals(REQUEST_SCHEME_HTTP, request.getScheme());
@@ -159,7 +179,7 @@ public class AwsProxyHttpServletRequestTest {
 
     @Test
     public void cookie_getCookies_noCookies() {
-        HttpServletRequest request = new AwsProxyHttpServletRequest(getRequestWithHeaders(), null, null);
+        HttpServletRequest request = getRequest(getRequestWithHeaders(), null, null);
         assertNotNull(request);
         assertNotNull(request.getCookies());
         assertEquals(0, request.getCookies().length);
@@ -167,7 +187,7 @@ public class AwsProxyHttpServletRequestTest {
 
     @Test
     public void cookie_getCookies_singleCookie() {
-        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_SINGLE_COOKIE, null, null);
+        HttpServletRequest request = getRequest(REQUEST_SINGLE_COOKIE, null, null);
         assertNotNull(request);
         assertNotNull(request.getCookies());
         assertEquals(1, request.getCookies().length);
@@ -177,7 +197,7 @@ public class AwsProxyHttpServletRequestTest {
 
     @Test
     public void cookie_getCookies_multipleCookies() {
-        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_MULTIPLE_COOKIES, null, null);
+        HttpServletRequest request = getRequest(REQUEST_MULTIPLE_COOKIES, null, null);
         assertNotNull(request);
         assertNotNull(request.getCookies());
         assertEquals(2, request.getCookies().length);
@@ -189,7 +209,7 @@ public class AwsProxyHttpServletRequestTest {
 
     @Test
     public void cookie_getCookies_emptyCookies() {
-        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_MALFORMED_COOKIE, null, null);
+        HttpServletRequest request = getRequest(REQUEST_MALFORMED_COOKIE, null, null);
         assertNotNull(request);
         assertNotNull(request.getCookies());
         assertEquals(0, request.getCookies().length);
@@ -197,14 +217,14 @@ public class AwsProxyHttpServletRequestTest {
 
     @Test
     public void queryParameters_getParameterMap_null() {
-        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_NULL_QUERY_STRING, null, null);
+        HttpServletRequest request = getRequest(REQUEST_NULL_QUERY_STRING, null, null);
         assertNotNull(request);
         assertEquals(0, request.getParameterMap().size());
     }
 
     @Test
     public void queryParameters_getParameterMap_nonNull() {
-        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_QUERY, null, null);
+        HttpServletRequest request = getRequest(REQUEST_QUERY, null, null);
         assertNotNull(request);
         assertEquals(1, request.getParameterMap().size());
         assertEquals(QUERY_STRING_NAME_VALUE, request.getParameterMap().get(FORM_PARAM_NAME)[0]);
@@ -212,7 +232,7 @@ public class AwsProxyHttpServletRequestTest {
 
     @Test
     public void queryParameters_getParameterNames_null() {
-        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_NULL_QUERY_STRING, null, null);
+        HttpServletRequest request = getRequest(REQUEST_NULL_QUERY_STRING, null, null);
         List<String> parameterNames = Collections.list(request.getParameterNames());
         assertNotNull(request);
         assertEquals(0, parameterNames.size());
@@ -220,7 +240,7 @@ public class AwsProxyHttpServletRequestTest {
 
     @Test
     public void queryParameters_getParameterNames_notNull() {
-        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_QUERY, null, null);
+        HttpServletRequest request = getRequest(REQUEST_QUERY, null, null);
         List<String> parameterNames = Collections.list(request.getParameterNames());
         assertNotNull(request);
         assertEquals(1, parameterNames.size());
@@ -229,7 +249,7 @@ public class AwsProxyHttpServletRequestTest {
 
     @Test
     public void queryParameter_getParameterMap_avoidDuplicationOnMultipleCalls() {
-        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_MULTIPLE_FORM_AND_QUERY, null, null);
+        HttpServletRequest request = getRequest(REQUEST_MULTIPLE_FORM_AND_QUERY, null, null);
 
         Map<String, String[]> params = request.getParameterMap();
         assertNotNull(params);
@@ -250,7 +270,7 @@ public class AwsProxyHttpServletRequestTest {
 
     @Test
     public void charEncoding_getEncoding_expectNoEncodingWithoutContentType() {
-         HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_SINGLE_COOKIE, null, null);
+         HttpServletRequest request = getRequest(REQUEST_SINGLE_COOKIE, null, null);
          try {
              request.setCharacterEncoding(StandardCharsets.UTF_8.name());
              // we have not specified a content type so the encoding will not be set
@@ -264,7 +284,7 @@ public class AwsProxyHttpServletRequestTest {
 
     @Test
     public void charEncoding_getEncoding_expectContentTypeOnly() {
-        HttpServletRequest request = new AwsProxyHttpServletRequest(getRequestWithHeaders(), null, null);
+        HttpServletRequest request = getRequest(getRequestWithHeaders(), null, null);
         // we have not specified a content type so the encoding will not be set
         assertEquals(null, request.getCharacterEncoding());
         assertEquals(MediaType.APPLICATION_JSON, request.getContentType());
@@ -282,7 +302,7 @@ public class AwsProxyHttpServletRequestTest {
 
     @Test
     public void charEncoding_addCharEncodingTwice_expectSingleMediaTypeAndEncoding() {
-        HttpServletRequest request = new AwsProxyHttpServletRequest(getRequestWithHeaders(), null, null);
+        HttpServletRequest request = getRequest(getRequestWithHeaders(), null, null);
         // we have not specified a content type so the encoding will not be set
         assertEquals(null, request.getCharacterEncoding());
         assertEquals(MediaType.APPLICATION_JSON, request.getContentType());
@@ -308,7 +328,7 @@ public class AwsProxyHttpServletRequestTest {
 
     @Test
     public void contentType_lowerCaseHeaderKey_expectUpdatedMediaType() {
-        HttpServletRequest request = new AwsProxyHttpServletRequest(REQUEST_WITH_LOWERCASE_HEADER, null, null);
+        HttpServletRequest request = getRequest(REQUEST_WITH_LOWERCASE_HEADER, null, null);
         try {
             request.setCharacterEncoding(StandardCharsets.UTF_8.name());
             String newHeaderValue = MediaType.APPLICATION_JSON + "; charset=" + StandardCharsets.UTF_8.name();
@@ -325,7 +345,7 @@ public class AwsProxyHttpServletRequestTest {
     @Test
     public void contentType_duplicateCase_expectSingleContentTypeHeader() {
         AwsProxyRequest proxyRequest = getRequestWithHeaders();
-        HttpServletRequest request = new AwsProxyHttpServletRequest(proxyRequest, null, null);
+        HttpServletRequest request = getRequest(proxyRequest, null, null);
 
         try {
             request.setCharacterEncoding(StandardCharsets.ISO_8859_1.name());
@@ -342,7 +362,7 @@ public class AwsProxyHttpServletRequestTest {
         AwsProxyRequest req = getRequestWithHeaders();
         req.getRequestContext().setApiId("test-id");
         LambdaContainerHandler.getContainerConfig().enableLocalhost();
-        HttpServletRequest servletRequest = new AwsProxyHttpServletRequest(req, null, null);
+        HttpServletRequest servletRequest = getRequest(req, null, null);
         String requestUrl = servletRequest.getRequestURL().toString();
         assertTrue(requestUrl.contains("http://"));
         assertTrue(requestUrl.contains("test-id.execute-api."));
@@ -350,7 +370,7 @@ public class AwsProxyHttpServletRequestTest {
 
         // set localhost
         req.getMultiValueHeaders().putSingle("Host", "localhost");
-        servletRequest = new AwsProxyHttpServletRequest(req, null, null);
+        servletRequest = getRequest(req, null, null);
         requestUrl = servletRequest.getRequestURL().toString();
         assertTrue(requestUrl.contains("http://localhost"));
         assertTrue(requestUrl.endsWith("localhost/hello"));
@@ -361,7 +381,7 @@ public class AwsProxyHttpServletRequestTest {
     public void requestURL_getUrlWithCustomBasePath_expectCustomBasePath() {
         AwsProxyRequest req = getRequestWithHeaders();
         LambdaContainerHandler.getContainerConfig().setServiceBasePath("test");
-        HttpServletRequest servletRequest = new AwsProxyHttpServletRequest(req, null, null);
+        HttpServletRequest servletRequest = getRequest(req, null, null);
         String requestUrl = servletRequest.getRequestURL().toString();
         assertTrue(requestUrl.contains("/test/hello"));
         LambdaContainerHandler.getContainerConfig().setServiceBasePath(null);
@@ -372,9 +392,8 @@ public class AwsProxyHttpServletRequestTest {
         AwsProxyRequest req = getRequestWithHeaders();
         req.getRequestContext().setStage("test-stage");
         LambdaContainerHandler.getContainerConfig().setUseStageAsServletContext(true);
-        HttpServletRequest servletRequest = new AwsProxyHttpServletRequest(req, null, null);
+        HttpServletRequest servletRequest = getRequest(req, null, null);
         String requestUrl = servletRequest.getRequestURL().toString();
-        System.out.println("Url: " + requestUrl);
         assertTrue(requestUrl.contains("/test-stage/"));
         LambdaContainerHandler.getContainerConfig().setUseStageAsServletContext(false);
     }
@@ -382,7 +401,7 @@ public class AwsProxyHttpServletRequestTest {
     @Test
     public void getLocales_emptyAcceptHeader_expectDefaultLocale() {
         AwsProxyRequest req = getRequestWithHeaders();
-        HttpServletRequest servletRequest = new AwsProxyHttpServletRequest(req, null, null);
+        HttpServletRequest servletRequest = getRequest(req, null, null);
         Enumeration<Locale> locales = servletRequest.getLocales();
         int localesNo = 0;
         while (locales.hasMoreElements()) {
@@ -397,7 +416,7 @@ public class AwsProxyHttpServletRequestTest {
     public void getLocales_validAcceptHeader_expectSingleLocale() {
         AwsProxyRequest req = getRequestWithHeaders();
         req.getMultiValueHeaders().putSingle(HttpHeaders.ACCEPT_LANGUAGE, "fr-CH");
-        HttpServletRequest servletRequest = new AwsProxyHttpServletRequest(req, null, null);
+        HttpServletRequest servletRequest = getRequest(req, null, null);
         Enumeration<Locale> locales = servletRequest.getLocales();
         int localesNo = 0;
         while (locales.hasMoreElements()) {
@@ -412,7 +431,7 @@ public class AwsProxyHttpServletRequestTest {
     public void getLocales_validAcceptHeaderMultipleLocales_expectFullLocaleList() {
         AwsProxyRequest req = getRequestWithHeaders();
         req.getMultiValueHeaders().putSingle(HttpHeaders.ACCEPT_LANGUAGE, "fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5");
-        HttpServletRequest servletRequest = new AwsProxyHttpServletRequest(req, null, null);
+        HttpServletRequest servletRequest = getRequest(req, null, null);
         Enumeration<Locale> locales = servletRequest.getLocales();
         List<Locale> localesList = new ArrayList<>();
         while (locales.hasMoreElements()) {
@@ -433,7 +452,7 @@ public class AwsProxyHttpServletRequestTest {
     public void getLocales_validAcceptHeaderMultipleLocales_expectFullLocaleListOrdered() {
         AwsProxyRequest req = getRequestWithHeaders();
         req.getMultiValueHeaders().putSingle(HttpHeaders.ACCEPT_LANGUAGE, "fr-CH, en;q=0.8, de;q=0.7, *;q=0.5, fr;q=0.9");
-        HttpServletRequest servletRequest = new AwsProxyHttpServletRequest(req, null, null);
+        HttpServletRequest servletRequest = getRequest(req, null, null);
         Enumeration<Locale> locales = servletRequest.getLocales();
         List<Locale> localesList = new ArrayList<>();
         while (locales.hasMoreElements()) {
@@ -450,7 +469,7 @@ public class AwsProxyHttpServletRequestTest {
     @Test
     public void nullQueryString_expectNoExceptions() {
         AwsProxyRequest req = new AwsProxyRequestBuilder("/hello", "GET").build();
-        AwsProxyHttpServletRequest servletReq = new AwsProxyHttpServletRequest(req, null, null);
+        HttpServletRequest servletReq = getRequest(req, null, null);
         assertNull(servletReq.getQueryString());
         assertEquals(0, servletReq.getParameterMap().size());
         assertFalse(servletReq.getParameterNames().hasMoreElements());
@@ -462,7 +481,7 @@ public class AwsProxyHttpServletRequestTest {
     public void inputStream_emptyBody_expectNullInputStream() {
         AwsProxyRequest proxyReq = getRequestWithHeaders();
         assertNull(proxyReq.getBody());
-        HttpServletRequest req = new AwsProxyHttpServletRequest(proxyReq, null, null);
+        HttpServletRequest req = getRequest(proxyReq, null, null);
 
         try {
             InputStream is = req.getInputStream();
@@ -476,13 +495,13 @@ public class AwsProxyHttpServletRequestTest {
     @Test
     public void getHeaders_emptyHeaders_expectEmptyEnumeration() {
         AwsProxyRequest proxyReq = new AwsProxyRequestBuilder("/hello", "GET").build();
-        HttpServletRequest req = new AwsProxyHttpServletRequest(proxyReq, null, null);
+        HttpServletRequest req = getRequest(proxyReq, null, null);
         assertFalse(req.getHeaders("param").hasMoreElements());
     }
 
     @Test
     public void getServerPort_defaultPort_expect443() {
-        HttpServletRequest req = new AwsProxyHttpServletRequest(getRequestWithHeaders(), null, null);
+        HttpServletRequest req = getRequest(getRequestWithHeaders(), null, null);
         assertEquals(443, req.getServerPort());
     }
 
@@ -490,7 +509,7 @@ public class AwsProxyHttpServletRequestTest {
     public void getServerPort_customPortFromHeader_expectCustomPort() {
         AwsProxyRequest proxyReq = getRequestWithHeaders();
         proxyReq.getMultiValueHeaders().putSingle(AwsProxyHttpServletRequest.PORT_HEADER_NAME, "80");
-        HttpServletRequest req = new AwsProxyHttpServletRequest(proxyReq, null, null);
+        HttpServletRequest req = getRequest(proxyReq, null, null);
         assertEquals(80, req.getServerPort());
     }
 
@@ -498,7 +517,7 @@ public class AwsProxyHttpServletRequestTest {
     public void getServerPort_invalidCustomPortFromHeader_expectDefaultPort() {
         AwsProxyRequest proxyReq = getRequestWithHeaders();
         proxyReq.getMultiValueHeaders().putSingle(AwsProxyHttpServletRequest.PORT_HEADER_NAME, "7200");
-        HttpServletRequest req = new AwsProxyHttpServletRequest(proxyReq, null, null);
+        HttpServletRequest req = getRequest(proxyReq, null, null);
         assertEquals(443, req.getServerPort());
     }
 

@@ -25,6 +25,7 @@ import javax.servlet.DispatcherType;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.HttpHeaders;
 import java.io.ByteArrayOutputStream;
@@ -66,7 +67,7 @@ public class AwsHttpServletResponse
     private PrintWriter writer;
     private ByteArrayOutputStream bodyOutputStream = new ByteArrayOutputStream();
     private CountDownLatch writersCountDownLatch;
-    private AwsHttpServletRequest request;
+    private HttpServletRequest request;
     private boolean isCommitted = false;
 
     private Logger log = LoggerFactory.getLogger(AwsHttpServletResponse.class);
@@ -81,7 +82,7 @@ public class AwsHttpServletResponse
      * function while the response is asynchronously written by the underlying container/application
      * @param latch A latch used to inform the <code>ContainerHandler</code> that we are done receiving the response data
      */
-    public AwsHttpServletResponse(AwsHttpServletRequest req, CountDownLatch latch) {
+    public AwsHttpServletResponse(HttpServletRequest req, CountDownLatch latch) {
         writersCountDownLatch = latch;
         characterEncoding = null;
         request = req;
