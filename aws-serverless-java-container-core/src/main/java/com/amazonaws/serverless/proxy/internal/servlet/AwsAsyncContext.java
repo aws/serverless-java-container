@@ -84,7 +84,8 @@ public class AwsAsyncContext implements AsyncContext {
             notifyListeners(NotificationType.COMPLETE, null);
             res.flushBuffer();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Could not flush response buffer", e);
+            throw new RuntimeException(e);
         }
     }
 

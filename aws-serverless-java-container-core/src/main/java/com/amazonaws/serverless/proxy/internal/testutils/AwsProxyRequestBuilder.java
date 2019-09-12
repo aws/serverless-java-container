@@ -209,7 +209,6 @@ public class AwsProxyRequestBuilder {
                 );
                 //}
             } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
                 throw new RuntimeException(e);
             }
 

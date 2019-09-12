@@ -110,7 +110,6 @@ public class AwsAsyncContextTest {
                 this.response.setStatus(desiredStatus);
                 this.response.flushBuffer();
             } catch (Exception e) {
-                e.printStackTrace();
                 throw new ServletException(e);
             }
         }

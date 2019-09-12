@@ -398,8 +398,8 @@ public class SpringAwsProxyTest {
             assertNotNull(response.getValues().get(CUSTOM_HEADER_KEY));
             assertEquals(CUSTOM_HEADER_VALUE, response.getValues().get(CUSTOM_HEADER_KEY));
         } catch (IOException e) {
-            fail("Exception while parsing response body: " + e.getMessage());
             e.printStackTrace();
+            fail("Exception while parsing response body: " + e.getMessage());
         }
     }
 
@@ -409,8 +409,8 @@ public class SpringAwsProxyTest {
             assertNotNull(response.getValue());
             assertEquals(value, response.getValue());
         } catch (IOException e) {
-            fail("Exception while parsing response body: " + e.getMessage());
             e.printStackTrace();
+            fail("Exception while parsing response body: " + e.getMessage());
         }
     }
 }

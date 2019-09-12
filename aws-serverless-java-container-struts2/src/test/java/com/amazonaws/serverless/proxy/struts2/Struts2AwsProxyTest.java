@@ -304,8 +304,8 @@ public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
             assertNotNull(response.get(key));
             assertEquals(value, response.get(key));
         } catch (IOException e) {
-            fail("Exception while parsing response body: " + e.getMessage());
             e.printStackTrace();
+            fail("Exception while parsing response body: " + e.getMessage());
         }
     }
 
@@ -314,8 +314,8 @@ public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
             assertNotNull(output.getBody());
             assertEquals(value, objectMapper.readerFor(String.class).readValue(output.getBody()));
         } catch (Exception e) {
-            fail("Exception while parsing response body: " + e.getMessage());
             e.printStackTrace();
+            fail("Exception while parsing response body: " + e.getMessage());
         }
     }
 }

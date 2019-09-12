@@ -117,8 +117,8 @@ public class AwsProxyHttpServletRequestReaderTest {
             AwsProxyHttpServletRequest servletReq = reader.readRequest(req, null, null, ContainerConfig.defaultConfig());
             assertNotNull(servletReq);
         } catch (InvalidRequestEventException e) {
-            fail("Could not read a request with a null path");
             e.printStackTrace();
+            fail("Could not read a request with a null path");
         }
     }
 
@@ -130,7 +130,6 @@ public class AwsProxyHttpServletRequestReaderTest {
             fail("Expected InvalidRequestEventException");
         } catch (InvalidRequestEventException e) {
             assertEquals(AwsProxyHttpServletRequestReader.INVALID_REQUEST_ERROR, e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -143,7 +142,6 @@ public class AwsProxyHttpServletRequestReaderTest {
             fail("Expected InvalidRequestEventException");
         } catch (InvalidRequestEventException e) {
             assertEquals(AwsProxyHttpServletRequestReader.INVALID_REQUEST_ERROR, e.getMessage());
-            e.printStackTrace();
         }
     }
 

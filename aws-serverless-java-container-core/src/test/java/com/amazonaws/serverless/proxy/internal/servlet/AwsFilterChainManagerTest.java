@@ -193,11 +193,11 @@ public class AwsFilterChainManagerTest {
         try {
             fcHolder2.doFilter(req2, resp2);
         } catch (IOException e) {
+            e.printStackTrace();
             fail("IO Exception while executing filters");
-            e.printStackTrace();
         } catch (ServletException e) {
-            fail("Servlet exception while executing filters");
             e.printStackTrace();
+            fail("Servlet exception while executing filters");
         }
 
         assertTrue(req2.getAttribute(REQUEST_CUSTOM_ATTRIBUTE_NAME) != null);

@@ -94,8 +94,8 @@ public class SpringBootAppTest {
             assertNotNull(response.getValue());
             assertEquals(value, response.getValue());
         } catch (IOException e) {
-            fail("Exception while parsing response body: " + e.getMessage());
             e.printStackTrace();
+            fail("Exception while parsing response body: " + e.getMessage());
         }
     }
 }

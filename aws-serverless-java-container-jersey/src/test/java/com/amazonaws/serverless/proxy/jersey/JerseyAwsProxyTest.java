@@ -408,8 +408,8 @@ public class JerseyAwsProxyTest {
             assertNotNull(response.getValues().get(key));
             assertEquals(value, response.getValues().get(key));
         } catch (IOException e) {
-            fail("Exception while parsing response body: " + e.getMessage());
             e.printStackTrace();
+            fail("Exception while parsing response body: " + e.getMessage());
         }
     }
 
@@ -419,8 +419,8 @@ public class JerseyAwsProxyTest {
             assertNotNull(response.getValue());
             assertEquals(value, response.getValue());
         } catch (IOException e) {
-            fail("Exception while parsing response body: " + e.getMessage());
             e.printStackTrace();
+            fail("Exception while parsing response body: " + e.getMessage());
         }
     }
 }

@@ -239,8 +239,8 @@ public class JerseyParamEncodingTest {
             assertNotNull(response.getValue());
             assertEquals(value, response.getValue());
         } catch (IOException e) {
-            fail("Exception while parsing response body: " + e.getMessage());
             e.printStackTrace();
+            fail("Exception while parsing response body: " + e.getMessage());
         }
     }
 
@@ -250,8 +250,8 @@ public class JerseyParamEncodingTest {
             assertNotNull(response.getValues().get(key));
             assertEquals(value, response.getValues().get(key));
         } catch (IOException e) {
-            fail("Exception while parsing response body: " + e.getMessage());
             e.printStackTrace();
+            fail("Exception while parsing response body: " + e.getMessage());
         }
     }
 }

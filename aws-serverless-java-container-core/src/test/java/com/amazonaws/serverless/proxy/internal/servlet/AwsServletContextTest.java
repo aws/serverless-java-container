@@ -34,8 +34,8 @@ public class AwsServletContextTest {
         try {
             LambdaContainerHandler.getContainerConfig().addValidFilePath(tmpFile.getCanonicalPath());
         } catch (IOException e) {
-            fail("Could not add tmp dir to valid paths");
             e.printStackTrace();
+            fail("Could not add tmp dir to valid paths");
         }
         LambdaContainerHandler.getContainerConfig().addValidFilePath("C:\\MyTestFolder");
     }
@@ -48,8 +48,8 @@ public class AwsServletContextTest {
         } catch (IllegalArgumentException e) {
             assertTrue(e.getMessage().startsWith("File path not allowed"));
         } catch (Exception e) {
-            fail("Unrecognized exception");
             e.printStackTrace();
+            fail("Unrecognized exception");
         }
     }
 

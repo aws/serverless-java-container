@@ -274,11 +274,12 @@ public class AwsProxyHttpServletRequestTest {
          try {
              request.setCharacterEncoding(StandardCharsets.UTF_8.name());
              // we have not specified a content type so the encoding will not be set
-             assertEquals(null, request.getCharacterEncoding());
-             assertEquals(null, request.getContentType());
+             assertNull(request.getCharacterEncoding());
+             assertNull(request.getContentType());
          } catch (UnsupportedEncodingException e) {
-             fail("Unsupported encoding");
              e.printStackTrace();
+             fail("Unsupported encoding");
+
          }
     }
 
@@ -286,7 +287,7 @@ public class AwsProxyHttpServletRequestTest {
     public void charEncoding_getEncoding_expectContentTypeOnly() {
         HttpServletRequest request = getRequest(getRequestWithHeaders(), null, null);
         // we have not specified a content type so the encoding will not be set
-        assertEquals(null, request.getCharacterEncoding());
+        assertNull(request.getCharacterEncoding());
         assertEquals(MediaType.APPLICATION_JSON, request.getContentType());
         try {
             request.setCharacterEncoding(StandardCharsets.UTF_8.name());
@@ -295,8 +296,8 @@ public class AwsProxyHttpServletRequestTest {
             assertEquals(newHeaderValue, request.getContentType());
             assertEquals(StandardCharsets.UTF_8.name(), request.getCharacterEncoding());
         } catch (UnsupportedEncodingException e) {
-            fail("Unsupported encoding");
             e.printStackTrace();
+            fail("Unsupported encoding");
         }
     }
 
@@ -321,8 +322,8 @@ public class AwsProxyHttpServletRequestTest {
             assertEquals(newHeaderValue, request.getContentType());
             assertEquals(StandardCharsets.ISO_8859_1.name(), request.getCharacterEncoding());
         } catch (UnsupportedEncodingException e) {
-            fail("Unsupported encoding");
             e.printStackTrace();
+            fail("Unsupported encoding");
         }
     }
 
@@ -335,10 +336,9 @@ public class AwsProxyHttpServletRequestTest {
             assertEquals(newHeaderValue, request.getHeader(HttpHeaders.CONTENT_TYPE));
             assertEquals(newHeaderValue, request.getContentType());
             assertEquals(StandardCharsets.UTF_8.name(), request.getCharacterEncoding());
-
         } catch (UnsupportedEncodingException e) {
-            fail("Unsupported encoding");
             e.printStackTrace();
+            fail("Unsupported encoding");
         }
     }
 
@@ -352,8 +352,8 @@ public class AwsProxyHttpServletRequestTest {
             assertNotNull(request.getHeader(HttpHeaders.CONTENT_TYPE));
             assertNotNull(request.getHeader(HttpHeaders.CONTENT_TYPE.toLowerCase(Locale.getDefault())));
         } catch (UnsupportedEncodingException e) {
-            fail("Unsupported encoding");
             e.printStackTrace();
+            fail("Unsupported encoding");
         }
     }
 
