@@ -20,13 +20,13 @@
         <module>aws-serverless-java-container-spark</module>
         <module>aws-serverless-java-container-spring</module>
         <module>aws-serverless-java-container-struts2</module>
+        <module>aws-serverless-java-container-springboot2</module>
         <module>aws-serverless-struts2-archetype</module>
         <module>aws-serverless-jersey-archetype</module>
         <module>aws-serverless-spark-archetype</module>
         <module>aws-serverless-spring-archetype</module>
         <module>aws-serverless-springboot-archetype</module>
         <module>aws-serverless-springboot2-archetype</module>
-        <module>aws-serverless-java-container-springboot2</module>
     </modules>
 
     <scm>
