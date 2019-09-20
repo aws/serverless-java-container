@@ -474,7 +474,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         }
 
         String[] bodyParams = getFormBodyParameterCaseInsensitive(s);
-        if (bodyParams == null || bodyParams.length == 0) {
+        if (bodyParams.length == 0) {
             return null;
         } else {
             return bodyParams[0];
@@ -495,16 +495,9 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     @SuppressFBWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS") // suppressing this as according to the specs we should be returning null here if we can't find params
     public String[] getParameterValues(String s) {
-        List<String> values = new ArrayList<>();
-        String queryValue = getFirstQueryParamValue(s, config.isQueryStringCaseSensitive());
-        if (queryValue != null) {
-            values.add(queryValue);
-        }
+        List<String> values = new ArrayList<>(Arrays.asList(getQueryParamValues(s, config.isQueryStringCaseSensitive())));
 
-        String[] formBodyValues = getFormBodyParameterCaseInsensitive(s);
-        if (formBodyValues != null) {
-            values.addAll(Arrays.asList(formBodyValues));
-        }
+        values.addAll(Arrays.asList(getFormBodyParameterCaseInsensitive(s)));
 
         if (values.size() == 0) {
             return null;

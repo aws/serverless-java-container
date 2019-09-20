@@ -64,6 +64,16 @@ public class SpringBootAppTest {
     }
 
     @Test
+    public void queryString_multipleParamsWithSameName_expectUnmarshalAsList() {
+        AwsProxyRequest req = new AwsProxyRequestBuilder("/test/query-string", "GET")
+                .queryString("list", "v1").queryString("list", "v2").build();
+        AwsProxyResponse resp = handler.handleRequest(req, context);
+        assertNotNull(resp);
+        assertEquals(200, resp.getStatusCode());
+        validateSingleValueModel(resp, "2");
+    }
+
+    @Test
     public void staticContent_getHtmlFile_returnsHtmlContent() {
         LambdaContainerHandler.getContainerConfig().addValidFilePath("/Users/bulianis/workspace/aws-serverless-java-container/aws-serverless-java-container-spring");
         AwsProxyRequest request = new AwsProxyRequestBuilder("/static.html", "GET")

@@ -366,6 +366,15 @@ public class AwsProxyRequestBuilder {
         return this;
     }
 
+
+    public AwsProxyRequestBuilder basicAuth(String username, String password) {
+        // we remove the existing authorization strategy
+        request.getMultiValueHeaders().remove(HttpHeaders.AUTHORIZATION);
+        String authHeader = "Basic " + Base64.getMimeEncoder().encodeToString((username + ":" + password).getBytes(Charset.defaultCharset()));
+        request.getMultiValueHeaders().add(HttpHeaders.AUTHORIZATION, authHeader);
+        return this;
+    }
+
     public AwsProxyRequestBuilder fromJsonString(String jsonContent)
             throws IOException {
         request = LambdaContainerHandler.getObjectMapper().readValue(jsonContent, AwsProxyRequest.class);
