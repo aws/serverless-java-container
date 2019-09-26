@@ -18,6 +18,7 @@ import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.services.lambda.runtime.Context;
 
+import javax.servlet.ServletContext;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.SecurityContext;
 
@@ -27,10 +28,14 @@ import javax.ws.rs.core.SecurityContext;
  */
 public class AwsProxyHttpServletRequestReader extends RequestReader<AwsProxyRequest, AwsProxyHttpServletRequest> {
     static final String INVALID_REQUEST_ERROR = "The incoming event is not a valid request from Amazon API Gateway or an Application Load Balancer";
-
+    private ServletContext servletContext;
     //-------------------------------------------------------------
     // Methods - Implementation
     //-------------------------------------------------------------
+
+    public void setServletContext(ServletContext ctx) {
+        servletContext = ctx;
+    }
 
     @Override
     public AwsProxyHttpServletRequest readRequest(AwsProxyRequest request, SecurityContext securityContext, Context lambdaContext, ContainerConfig config)
@@ -48,6 +53,7 @@ public class AwsProxyHttpServletRequestReader extends RequestReader<AwsProxyRequ
             request.getMultiValueHeaders().putSingle(HttpHeaders.CONTENT_TYPE, getContentTypeWithCharset(contentType, config));
         }
         AwsProxyHttpServletRequest servletRequest = new AwsProxyHttpServletRequest(request, lambdaContext, securityContext, config);
+        servletRequest.setServletContext(servletContext);
         servletRequest.setAttribute(API_GATEWAY_CONTEXT_PROPERTY, request.getRequestContext());
         servletRequest.setAttribute(API_GATEWAY_STAGE_VARS_PROPERTY, request.getStageVariables());
         servletRequest.setAttribute(API_GATEWAY_EVENT_PROPERTY, request);

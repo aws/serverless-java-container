@@ -18,6 +18,7 @@ import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
+import com.amazonaws.serverless.proxy.model.Headers;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -31,13 +32,7 @@ import org.apache.commons.io.input.NullInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.AsyncContext;
-import javax.servlet.ReadListener;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -117,10 +112,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     public void setResponse(AwsHttpServletResponse response) {
         this.response = response;
-    }
-
-    public AwsLambdaServletContainerHandler getContainerHandler() {
-        return containerHandler;
     }
 
     public void setContainerHandler(AwsLambdaServletContainerHandler containerHandler) {
@@ -380,6 +371,9 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     public void setCharacterEncoding(String s)
             throws UnsupportedEncodingException {
+        if (request.getMultiValueHeaders() == null) {
+            request.setMultiValueHeaders(new Headers());
+        }
         String currentContentType = request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
         if (currentContentType == null || "".equals(currentContentType)) {
             log.debug("Called set character encoding to " + SecurityUtils.crlf(s) + " on a request without a content type. Character encoding will not be set");
@@ -679,6 +673,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     public AsyncContext startAsync()
             throws IllegalStateException {
         asyncContext = new AwsAsyncContext(this, response, containerHandler);
+        setAttribute(DISPATCHER_TYPE_ATTRIBUTE, DispatcherType.ASYNC);
         log.debug("Starting async context for request: " + SecurityUtils.crlf(request.getRequestContext().getRequestId()));
         return asyncContext;
     }
@@ -688,6 +683,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     public AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse)
             throws IllegalStateException {
         asyncContext = new AwsAsyncContext((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse, containerHandler);
+        setAttribute(DISPATCHER_TYPE_ATTRIBUTE, DispatcherType.ASYNC);
         log.debug("Starting async context for request: " + SecurityUtils.crlf(request.getRequestContext().getRequestId()));
         return asyncContext;
     }
