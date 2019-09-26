@@ -16,7 +16,7 @@
     </parent>
 
     <properties>
-        <jersey.version>2.27</jersey.version>
+        <jersey.version>2.29.1</jersey.version>
     </properties>
 
     <dependencies>
@@ -46,6 +46,12 @@
             <version>${jersey.version}</version>
             <optional>true</optional>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>jakarta.annotation</groupId>
+                    <artifactId>jakarta.annotation-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
