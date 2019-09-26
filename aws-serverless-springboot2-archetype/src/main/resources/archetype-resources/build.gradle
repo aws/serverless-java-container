@@ -11,7 +11,7 @@ repositories {
 
 dependencies {
   compile (
-          'org.springframework.boot:spring-boot-starter-web:2.1.1.RELEASE',
+          'org.springframework.boot:spring-boot-starter-web:2.1.8.RELEASE',
           'com.amazonaws.serverless:aws-serverless-java-container-springboot2:[1.0,)',
           'io.symphonia:lambda-logging:1.0.1'
   )
