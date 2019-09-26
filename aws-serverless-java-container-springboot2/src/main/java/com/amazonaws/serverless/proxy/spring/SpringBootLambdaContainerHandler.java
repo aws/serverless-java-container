@@ -18,7 +18,7 @@ import com.amazonaws.serverless.proxy.internal.servlet.*;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
-import com.amazonaws.serverless.proxy.spring.embedded.ServerlessReactiveEmbeddedServerFactory;
+import com.amazonaws.serverless.proxy.spring.embedded.ServerlessReactiveServletEmbeddedServerFactory;
 import com.amazonaws.serverless.proxy.spring.embedded.ServerlessServletEmbeddedServerFactory;
 import com.amazonaws.services.lambda.runtime.Context;
 import org.slf4j.Logger;
@@ -54,7 +54,7 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
      * We need to rely on the static instance of this for SpringBoot because we need it to access the ServletContext.
      * Normally, SpringBoot would initialize its own embedded container through the <code>SpringApplication.run()</code>
      * method. However, in our case we need to rely on the pre-initialized handler and need to fetch information from it
-     * for our mock {@link com.amazonaws.serverless.proxy.spring.embedded.ServerlessReactiveEmbeddedServerFactory}.
+     * for our mock {@link ServerlessReactiveServletEmbeddedServerFactory}.
      *
      * @return The initialized instance
      */
@@ -167,7 +167,7 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
             // if HandlerAdapter is available we assume they are using WebFlux. Otherwise plain servlet.
             this.getClass().getClassLoader().loadClass("org.springframework.web.reactive.HandlerAdapter");
             log.debug("Found WebFlux HandlerAdapter on classpath, using reactive server factory");
-            classes[0] = ServerlessReactiveEmbeddedServerFactory.class;
+            classes[0] = ServerlessReactiveServletEmbeddedServerFactory.class;
         } catch (ClassNotFoundException e) {
             classes[0] = ServerlessServletEmbeddedServerFactory.class;
         }

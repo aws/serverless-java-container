@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.Enumeration;
 
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
-public class ServerlessReactiveEmbeddedServerFactory extends AbstractReactiveWebServerFactory implements WebServer, Servlet {
+public class ServerlessReactiveServletEmbeddedServerFactory extends AbstractReactiveWebServerFactory implements WebServer, Servlet {
     private ServletHttpHandlerAdapter handler;
     private ServletConfig config;
     static final String SERVLET_NAME = "com.amazonaws.serverless.proxy.spring.embedded.ServerlessReactiveEmbeddedServerFactory";
