@@ -16,7 +16,6 @@
     </parent>
 
     <properties>
-        <jackson.version>2.9.9.3</jackson.version>
         <jaxrs.version>2.1</jaxrs.version>
         <servlet.version>3.1.0</servlet.version>
     </properties>
@@ -54,7 +53,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-afterburner</artifactId>
-            <version>2.9.9</version>
+            <version>${jackson.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
