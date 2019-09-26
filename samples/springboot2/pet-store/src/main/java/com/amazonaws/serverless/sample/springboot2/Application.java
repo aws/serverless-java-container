@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 
 @SpringBootApplication
 @Import({ PetsController.class })
-public class Application extends SpringBootServletInitializer {
+public class Application {
 
     // silence console logging
     @Value("${logging.level.root:OFF}")
