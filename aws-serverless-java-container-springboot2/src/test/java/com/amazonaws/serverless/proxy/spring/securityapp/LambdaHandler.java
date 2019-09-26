@@ -1,4 +1,4 @@
-package com.amazonaws.serverless.proxy.spring.servletapp;
+package com.amazonaws.serverless.proxy.spring.securityapp;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;

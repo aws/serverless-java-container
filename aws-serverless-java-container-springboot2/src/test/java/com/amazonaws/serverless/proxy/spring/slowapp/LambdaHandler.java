@@ -1,22 +1,37 @@
-package com.amazonaws.serverless.proxy.spring.servletapp;
+package com.amazonaws.serverless.proxy.spring.slowapp;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
+import com.amazonaws.serverless.proxy.spring.SpringBootProxyHandlerBuilder;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 
-public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyResponse> {
-    private static SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+import java.time.Instant;
 
-    static {
+public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyResponse> {
+    private SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+    private long constructorTime;
+
+    public LambdaHandler() {
         try {
-            handler = SpringBootLambdaContainerHandler.getAwsProxyHandler(ServletApplication.class);
+            long startTime = Instant.now().toEpochMilli();
+            System.out.println("startCall: " + startTime);
+            handler = new SpringBootProxyHandlerBuilder()
+                    .defaultProxy()
+                    .asyncInit(startTime)
+                    .springBootApplication(SlowTestApplication.class)
+                    .buildAndInitialize();
+            constructorTime = Instant.now().toEpochMilli() - startTime;
         } catch (ContainerInitializationException e) {
             e.printStackTrace();
         }
+    }
+
+    public long getConstructorTime() {
+        return constructorTime;
     }
 
     @Override

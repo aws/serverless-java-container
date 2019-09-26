@@ -1,4 +1,4 @@
-package com.amazonaws.servlerss.proxy.spring.webfluxapp;
+package com.amazonaws.serverless.proxy.spring.webfluxapp;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;

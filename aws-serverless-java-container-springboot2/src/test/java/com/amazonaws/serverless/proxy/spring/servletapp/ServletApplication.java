@@ -1,4 +1,4 @@
-package com.amazonaws.servlerss.proxy.spring.servletapp;
+package com.amazonaws.serverless.proxy.spring.servletapp;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;

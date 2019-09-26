@@ -6,6 +6,8 @@ import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
+import com.amazonaws.serverless.proxy.model.Headers;
+import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.SingleValueModel;
 import com.amazonaws.serverless.proxy.spring.springbootapp.LambdaHandler;
 import com.amazonaws.serverless.proxy.spring.springbootapp.TestController;
@@ -17,6 +19,8 @@ import org.junit.Test;
 import javax.ws.rs.core.HttpHeaders;
 import java.io.IOException;
 
+import static com.amazonaws.serverless.proxy.spring.springbootapp.TestController.CUSTOM_HEADER_NAME;
+import static com.amazonaws.serverless.proxy.spring.springbootapp.TestController.CUSTOM_QS_NAME;
 import static org.junit.Assert.*;
 
 
@@ -32,6 +36,54 @@ public class SpringBootAppTest {
         assertNotNull(resp);
         assertEquals(200, resp.getStatusCode());
         validateSingleValueModel(resp, TestController.TEST_VALUE);
+    }
+
+    @Test
+    public void testMethod_testRequestFromString_doesNotThrowNpe() throws IOException {
+        AwsProxyRequest req = new AwsProxyRequestBuilder().fromJsonString("{\n" +
+                "  \"resource\": \"/missing-params\",\n" +
+                "  \"path\": \"/missing-params\",\n" +
+                "  \"httpMethod\": \"GET\",\n" +
+                "  \"headers\": null,\n" +
+                "  \"multiValueHeaders\": null,\n" +
+                "  \"queryStringParameters\": null,\n" +
+                "  \"multiValueQueryStringParameters\": null,\n" +
+                "  \"pathParameters\": null,\n" +
+                "  \"stageVariables\": null,\n" +
+                "  \"requestContext\": {\n" +
+                "    \"resourcePath\": \"/path/resource\",\n" +
+                "    \"httpMethod\": \"POST\",\n" +
+                "    \"path\": \"//path/resource\",\n" +
+                "    \"accountId\": \"accountIdNumber\",\n" +
+                "    \"protocol\": \"HTTP/1.1\",\n" +
+                "    \"stage\": \"test-invoke-stage\",\n" +
+                "    \"domainPrefix\": \"testPrefix\",\n" +
+                "    \"identity\": {\n" +
+                "      \"cognitoIdentityPoolId\": null,\n" +
+                "      \"cognitoIdentityId\": null,\n" +
+                "      \"apiKey\": \"test-invoke-api-key\",\n" +
+                "      \"principalOrgId\": null,\n" +
+                "      \"cognitoAuthenticationType\": null,\n" +
+                "      \"userArn\": \"actual arn\",\n" +
+                "      \"apiKeyId\": \"test-invoke-api-key-id\"\n" +
+                "    }\n" +
+                "  },\n" +
+                "  \"body\": \"{ \\\"Key1\\\": \\\"Value1\\\", \\\"Key2\\\": \\\"Value2\\\", \\\"Key3\\\": \\\"Vaue3\\\" }\",\n" +
+                "  \"isBase64Encoded\": \"false\"\n" +
+                "}").build();
+
+        AwsProxyResponse resp = handler.handleRequest(req, context);
+        assertNotNull(resp);
+        // Spring identifies the missing header
+        assertEquals(400, resp.getStatusCode());
+        req.setMultiValueHeaders(new Headers());
+        req.getMultiValueHeaders().add(CUSTOM_HEADER_NAME, "val");
+        resp = handler.handleRequest(req, context);
+        assertEquals(400, resp.getStatusCode());
+        req.setMultiValueQueryStringParameters(new MultiValuedTreeMap<>());
+        req.getMultiValueQueryStringParameters().add(CUSTOM_QS_NAME, "val");
+        resp = handler.handleRequest(req, context);
+        assertEquals(200, resp.getStatusCode());
     }
 
     @Test
