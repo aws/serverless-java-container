@@ -16,6 +16,7 @@ public class ContainerConfig {
     public static final String DEFAULT_URI_ENCODING = "UTF-8";
     public static final String DEFAULT_CONTENT_CHARSET = "ISO-8859-1";
     private static final List<String> DEFAULT_FILE_PATHS = new ArrayList<String>() {{ add("/tmp"); add("/var/task"); }};
+    private static final int MAX_INIT_TIMEOUT_MS = 10_000;
 
     public static ContainerConfig defaultConfig() {
         ContainerConfig configuration = new ContainerConfig();
@@ -27,6 +28,7 @@ public class ContainerConfig {
         configuration.setQueryStringCaseSensitive(false);
         configuration.addBinaryContentTypes("application/octet-stream", "image/jpeg", "image/png", "image/gif");
         configuration.setDefaultContentCharset(DEFAULT_CONTENT_CHARSET);
+        configuration.setInitializationTimeout(MAX_INIT_TIMEOUT_MS);
 
         return configuration;
     }
@@ -45,6 +47,7 @@ public class ContainerConfig {
     private List<String> customDomainNames;
     private boolean queryStringCaseSensitive;
     private final HashSet<String> binaryContentTypes;
+    private int initializationTimeout;
 
     public ContainerConfig() {
         validFilePaths = new ArrayList<>();
@@ -270,5 +273,28 @@ public class ContainerConfig {
      */
     public void setDefaultContentCharset(String defaultContentCharset) {
         this.defaultContentCharset = defaultContentCharset;
+    }
+
+    /**
+     * Returns the maximum amount of time (in milliseconds) set for the initialization time. See documentation on the
+     * {@link #setInitializationTimeout(int)} for additional details.
+     * @return The max time allocated for initialization
+     */
+    public int getInitializationTimeout() {
+        return initializationTimeout;
+    }
+
+    /**
+     * Sets the initialization timeout. When using an async {@link com.amazonaws.serverless.proxy.InitializationWrapper}
+     * the underlying framework is initialized in a separate thread. Serverless Java Container will wait for the maximum
+     * time available during AWS Lambda's init step (~10 seconds) and then return control to the main thread. In the meanwhile,
+     * the initialization process of the underlying framework can continue in a separate thread. AWS Lambda will then call
+     * the handler class to handle an event. This timeout is the maximum amount of time Serverless Java Container framework
+     * will wait for the underlying framework to initialize before returning an error. By default, this is set to 10 seconds.
+     * @param initializationTimeout The maximum amount of time to wait for the underlying framework initialization after
+     *                              an event is received in milliseconds.
+     */
+    public void setInitializationTimeout(int initializationTimeout) {
+        this.initializationTimeout = initializationTimeout;
     }
 }

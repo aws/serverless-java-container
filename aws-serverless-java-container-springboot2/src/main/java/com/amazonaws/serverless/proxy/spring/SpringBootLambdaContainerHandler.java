@@ -63,26 +63,6 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
     }
 
     /**
-     * Creates a default SpringLambdaContainerHandler initialized with the `AwsProxyRequest` and `AwsProxyResponse` objects
-     * @param springBootInitializer {@code SpringBootServletInitializer} class
-     * @return An initialized instance of the `SpringLambdaContainerHandler`
-     * @throws ContainerInitializationException If an error occurs while initializing the Spring framework
-     */
-    public static SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(Class<?> springBootInitializer)
-            throws ContainerInitializationException {
-        SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> newHandler = new SpringBootLambdaContainerHandler<>(
-                                                                                                AwsProxyRequest.class,
-                                                                                                AwsProxyResponse.class,
-                                                                                                new AwsProxyHttpServletRequestReader(),
-                                                                                                new AwsProxyHttpServletResponseWriter(),
-                                                                                                new AwsProxySecurityContextWriter(),
-                                                                                                new AwsProxyExceptionHandler(),
-                                                                                                springBootInitializer);
-        newHandler.initialize();
-        return newHandler;
-    }
-
-    /**
      * Creates a default SpringLambdaContainerHandler initialized with the `AwsProxyRequest` and `AwsProxyResponse` objects and the given Spring profiles
      * @param springBootInitializer {@code SpringBootServletInitializer} class
      * @param profiles A list of Spring profiles to activate
@@ -91,17 +71,12 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
      */
     public static SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(Class<?> springBootInitializer, String... profiles)
             throws ContainerInitializationException {
-        SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> newHandler = new SpringBootLambdaContainerHandler<>(
-                AwsProxyRequest.class,
-                AwsProxyResponse.class,
-                new AwsProxyHttpServletRequestReader(),
-                new AwsProxyHttpServletResponseWriter(),
-                new AwsProxySecurityContextWriter(),
-                new AwsProxyExceptionHandler(),
-                springBootInitializer);
-        newHandler.activateSpringProfiles(profiles);
-        newHandler.initialize();
-        return newHandler;
+        return new SpringBootProxyHandlerBuilder()
+                .defaultProxy()
+                .initializationWrapper(new InitializationWrapper())
+                .springBootApplication(springBootInitializer)
+                .profiles(profiles)
+                .buildAndInitialize();
     }
 
     /**
@@ -121,15 +96,16 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
                                             ResponseWriter<AwsHttpServletResponse, ResponseType> responseWriter,
                                             SecurityContextWriter<RequestType> securityContextWriter,
                                             ExceptionHandler<ResponseType> exceptionHandler,
-                                            Class<?> springBootInitializer)
-            throws ContainerInitializationException {
+                                            Class<?> springBootInitializer,
+                                            InitializationWrapper init) {
         super(requestTypeClass, responseTypeClass, requestReader, responseWriter, securityContextWriter, exceptionHandler);
-        Timer.start("SPRINGBOOT_CONTAINER_HANDLER_CONSTRUCTOR");
+        Timer.start("SPRINGBOOT2_CONTAINER_HANDLER_CONSTRUCTOR");
         initialized = false;
         this.springBootInitializer = springBootInitializer;
+        setInitializationWrapper(init);
         SpringBootLambdaContainerHandler.setInstance(this);
 
-        Timer.stop("SPRINGBOOT_CONTAINER_HANDLER_CONSTRUCTOR");
+        Timer.stop("SPRINGBOOT2_CONTAINER_HANDLER_CONSTRUCTOR");
     }
 
     // this is not pretty. However, because SpringBoot wants to control all of the initialization
@@ -153,26 +129,24 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
     @Override
     protected void handleRequest(AwsProxyHttpServletRequest containerRequest, AwsHttpServletResponse containerResponse, Context lambdaContext) throws Exception {
         // this method of the AwsLambdaServletContainerHandler sets the servlet context
-        Timer.start("SPRINGBOOT_HANDLE_REQUEST");
+        Timer.start("SPRINGBOOT2_HANDLE_REQUEST");
 
         // wire up the application context on the first invocation
         if (!initialized) {
             initialize();
         }
 
-        containerRequest.setServletContext(getServletContext());
-
         // process filters & invoke servlet
         Servlet reqServlet = ((AwsServletContext)getServletContext()).getServletForPath(containerRequest.getPathInfo());
         doFilter(containerRequest, containerResponse, reqServlet);
-        Timer.stop("SPRINGBOOT_HANDLE_REQUEST");
+        Timer.stop("SPRINGBOOT2_HANDLE_REQUEST");
     }
 
 
     @Override
     public void initialize()
             throws ContainerInitializationException {
-        Timer.start("SPRINGBOOT_COLD_START");
+        Timer.start("SPRINGBOOT2_COLD_START");
 
         SpringApplication app = new SpringApplication(getEmbeddedContainerClasses());
         if (springProfiles != null && springProfiles.length > 0) {
@@ -184,7 +158,7 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
         app.run();
 
         initialized = true;
-        Timer.stop("SPRINGBOOT_COLD_START");
+        Timer.stop("SPRINGBOOT2_COLD_START");
     }
 
     private Class<?>[] getEmbeddedContainerClasses() {

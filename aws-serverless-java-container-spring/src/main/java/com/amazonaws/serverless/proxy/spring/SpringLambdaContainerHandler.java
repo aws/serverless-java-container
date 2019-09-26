@@ -13,12 +13,7 @@
 package com.amazonaws.serverless.proxy.spring;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
-import com.amazonaws.serverless.proxy.AwsProxyExceptionHandler;
-import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
-import com.amazonaws.serverless.proxy.ExceptionHandler;
-import com.amazonaws.serverless.proxy.RequestReader;
-import com.amazonaws.serverless.proxy.ResponseWriter;
-import com.amazonaws.serverless.proxy.SecurityContextWriter;
+import com.amazonaws.serverless.proxy.*;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
@@ -54,30 +49,11 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
      * @throws ContainerInitializationException
      */
     public static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(Class... config) throws ContainerInitializationException {
-        AnnotationConfigWebApplicationContext applicationContext = new AnnotationConfigWebApplicationContext();
-        applicationContext.register(config);
-
-        return getAwsProxyHandler(applicationContext);
-    }
-
-    /**
-     * Creates a default SpringLambdaContainerHandler initialized with the `AwsProxyRequest` and `AwsProxyResponse` objects
-     * @param applicationContext A custom ConfigurableWebApplicationContext to be used
-     * @return An initialized instance of the `SpringLambdaContainerHandler`
-     * @throws ContainerInitializationException
-     */
-    public static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(ConfigurableWebApplicationContext applicationContext)
-            throws ContainerInitializationException {
-        SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> newHandler = new SpringLambdaContainerHandler<>(
-                                                                                            AwsProxyRequest.class,
-                                                                                            AwsProxyResponse.class,
-                                                                                            new AwsProxyHttpServletRequestReader(),
-                                                                                            new AwsProxyHttpServletResponseWriter(),
-                                                                                            new AwsProxySecurityContextWriter(),
-                                                                                            new AwsProxyExceptionHandler(),
-                                                                                            applicationContext);
-        newHandler.initialize();
-        return newHandler;
+        return new SpringProxyHandlerBuilder()
+                .defaultProxy()
+                .initializationWrapper(new InitializationWrapper())
+                .configurationClasses(config)
+                .buildAndInitialize();
     }
 
     /**
@@ -89,17 +65,12 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
      */
     public static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(ConfigurableWebApplicationContext applicationContext, String... profiles)
             throws ContainerInitializationException {
-        SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> newHandler = new SpringLambdaContainerHandler<>(
-                AwsProxyRequest.class,
-                AwsProxyResponse.class,
-                new AwsProxyHttpServletRequestReader(),
-                new AwsProxyHttpServletResponseWriter(),
-                new AwsProxySecurityContextWriter(),
-                new AwsProxyExceptionHandler(),
-                applicationContext);
-        newHandler.activateSpringProfiles(profiles);
-        newHandler.initialize();
-        return newHandler;
+        return new SpringProxyHandlerBuilder()
+                .defaultProxy()
+                .initializationWrapper(new InitializationWrapper())
+                .springApplicationContext(applicationContext)
+                .profiles(profiles)
+                .buildAndInitialize();
     }
 
     /**
@@ -118,11 +89,13 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
                                         ResponseWriter<AwsHttpServletResponse, ResponseType> responseWriter,
                                         SecurityContextWriter<RequestType> securityContextWriter,
                                         ExceptionHandler<ResponseType> exceptionHandler,
-                                        ConfigurableWebApplicationContext applicationContext)
+                                        ConfigurableWebApplicationContext applicationContext,
+                                        InitializationWrapper init)
             throws ContainerInitializationException {
         super(requestTypeClass, responseTypeClass, requestReader, responseWriter, securityContextWriter, exceptionHandler);
         Timer.start("SPRING_CONTAINER_HANDLER_CONSTRUCTOR");
         appContext = applicationContext;
+        setInitializationWrapper(init);
         Timer.stop("SPRING_CONTAINER_HANDLER_CONSTRUCTOR");
     }
 

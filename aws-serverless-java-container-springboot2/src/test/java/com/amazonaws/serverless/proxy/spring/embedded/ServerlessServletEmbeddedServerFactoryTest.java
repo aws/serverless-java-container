@@ -3,6 +3,7 @@ package com.amazonaws.servlerss.proxy.spring.embedded;
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.AwsProxyExceptionHandler;
 import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
+import com.amazonaws.serverless.proxy.SyncInitializationWrapper;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequestReader;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
@@ -25,7 +26,8 @@ public class ServerlessServletEmbeddedServerFactoryTest {
             new AwsProxyHttpServletResponseWriter(),
             new AwsProxySecurityContextWriter(),
             new AwsProxyExceptionHandler(),
-            null
+            null,
+            new SyncInitializationWrapper()
     );
 
     public ServerlessServletEmbeddedServerFactoryTest() throws ContainerInitializationException {

@@ -14,13 +14,9 @@ package com.amazonaws.serverless.proxy.internal;
 
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
-import com.amazonaws.serverless.proxy.LogFormatter;
+import com.amazonaws.serverless.proxy.*;
 import com.amazonaws.serverless.proxy.internal.servlet.ApacheCombinedServletLogFormatter;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
-import com.amazonaws.serverless.proxy.ExceptionHandler;
-import com.amazonaws.serverless.proxy.RequestReader;
-import com.amazonaws.serverless.proxy.ResponseWriter;
-import com.amazonaws.serverless.proxy.SecurityContextWriter;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -38,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -67,6 +64,7 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
     private ExceptionHandler<ResponseType> exceptionHandler;
     private Class<RequestType> requestTypeClass;
     private Class<ResponseType> responseTypeClass;
+    private InitializationWrapper initializationWrapper;
 
     protected Context lambdaContext;
     private LogFormatter<ContainerRequestType, ContainerResponseType> logFormatter;
@@ -97,7 +95,8 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
                                      RequestReader<RequestType, ContainerRequestType> requestReader,
                                      ResponseWriter<ContainerResponseType, ResponseType> responseWriter,
                                      SecurityContextWriter<RequestType> securityContextWriter,
-                                     ExceptionHandler<ResponseType> exceptionHandler) {
+                                     ExceptionHandler<ResponseType> exceptionHandler,
+                                     InitializationWrapper init) {
         log.info("Starting Lambda Container Handler");
         requestTypeClass = requestClass;
         responseTypeClass = responseClass;
@@ -105,8 +104,19 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
         this.responseWriter = responseWriter;
         this.securityContextWriter = securityContextWriter;
         this.exceptionHandler = exceptionHandler;
+        initializationWrapper = init;
         objectReader = getObjectMapper().readerFor(requestTypeClass);
         objectWriter = getObjectMapper().writerFor(responseTypeClass);
+
+    }
+
+    protected LambdaContainerHandler(Class<RequestType> requestClass,
+                                     Class<ResponseType> responseClass,
+                                     RequestReader<RequestType, ContainerRequestType> requestReader,
+                                     ResponseWriter<ContainerResponseType, ResponseType> responseWriter,
+                                     SecurityContextWriter<RequestType> securityContextWriter,
+                                     ExceptionHandler<ResponseType> exceptionHandler) {
+        this(requestClass, responseClass, requestReader, responseWriter, securityContextWriter, exceptionHandler, new InitializationWrapper());
     }
 
 
@@ -129,6 +139,23 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
 
     public static ObjectMapper getObjectMapper() {
         return objectMapper;
+    }
+
+    /**
+     * Returns the initialization wrapper this container handler will monitor to handle events
+     * @return The initialization wrapper that was passed to the constructor and this instance will use to decide
+     *         whether it can start handling events.
+     */
+    public InitializationWrapper getInitializationWrapper() {
+        return initializationWrapper;
+    }
+
+    /**
+     * Sets a new initialization wrapper.
+     * @param wrapper The wrapper this instance will use to decide whether it can start handling events.
+     */
+    public void setInitializationWrapper(InitializationWrapper wrapper) {
+        initializationWrapper = wrapper;
     }
 
     /**
@@ -173,6 +200,13 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
             CountDownLatch latch = new CountDownLatch(1);
             ContainerRequestType containerRequest = requestReader.readRequest(request, securityContext, context, config);
             ContainerResponseType containerResponse = getContainerResponse(containerRequest, latch);
+
+            if (initializationWrapper != null && initializationWrapper.getInitializationLatch() != null) {
+                // we let the potential InterruptedException bubble up
+                if (!initializationWrapper.getInitializationLatch().await(config.getInitializationTimeout(), TimeUnit.MILLISECONDS)) {
+                    throw new ContainerInitializationException("Could not initialize framework within the " + config.getInitializationTimeout() + "ms timeout", null);
+                }
+            }
 
             handleRequest(containerRequest, containerResponse, context);
 
