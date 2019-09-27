@@ -35,6 +35,8 @@ public class HelloWorldSparkTest {
     private static final String COOKIE_DOMAIN = "mydomain.com";
     private static final String COOKIE_PATH = "/";
 
+    private static final String READ_COOKIE_NAME = "customCookie";
+
     private static SparkLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
 
     private boolean isAlb;
@@ -122,6 +124,13 @@ public class HelloWorldSparkTest {
         assertEquals(BODY_TEXT_RESPONSE, response.getBody());
     }
 
+    @Test
+    public void readCookie_customDomainName_expectValidCookie() {
+        AwsProxyRequest req = getRequestBuilder().method("GET").path("/cookie-read").cookie(READ_COOKIE_NAME, "test").build();
+        AwsProxyResponse response = handler.proxy(req, new MockLambdaContext());
+        assertEquals("test", response.getBody());
+    }
+
     private static void configureRoutes() {
         get("/", (req, res) -> {
             res.status(200);
@@ -154,5 +163,7 @@ public class HelloWorldSparkTest {
             res.raw().addCookie(testCookie2);
             return BODY_TEXT_RESPONSE;
         });
+
+        get("/cookie-read", (req, res) -> req.cookie(READ_COOKIE_NAME));
     }
 }
