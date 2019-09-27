@@ -195,9 +195,9 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
      */
     public ResponseType proxy(RequestType request, Context context) {
         lambdaContext = context;
+        CountDownLatch latch = new CountDownLatch(1);
         try {
             SecurityContext securityContext = securityContextWriter.writeSecurityContext(request, context);
-            CountDownLatch latch = new CountDownLatch(1);
             ContainerRequestType containerRequest = requestReader.readRequest(request, securityContext, context, config);
             ContainerResponseType containerResponse = getContainerResponse(containerRequest, latch);
 
@@ -219,6 +219,9 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
             return responseWriter.writeResponse(containerResponse, context);
         } catch (Exception e) {
             log.error("Error while handling request", e);
+            // release all waiting threads. This is safe here because if the count was already 0
+            // the latch will do nothing
+            latch.countDown();
 
             return exceptionHandler.handle(e);
         }
