@@ -91,7 +91,7 @@ public class AwsAsyncContext implements AsyncContext {
 
     @Override
     public void start(Runnable runnable) {
-        throw new UnsupportedOperationException("Cannot start background tasks");
+        throw new UnsupportedOperationException("Operation not supported");
     }
 
     @Override
@@ -109,7 +109,11 @@ public class AwsAsyncContext implements AsyncContext {
 
     @Override
     public <T extends AsyncListener> T createListener(Class<T> aClass) throws ServletException {
-        return null;
+        try {
+            return aClass.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new ServletException(e);
+        }
     }
 
     @Override
