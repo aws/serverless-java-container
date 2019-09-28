@@ -668,6 +668,11 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         return true;
     }
 
+    @Override
+    public boolean isAsyncStarted() {
+        return asyncContext != null;
+    }
+
 
     @Override
     public AsyncContext startAsync()
