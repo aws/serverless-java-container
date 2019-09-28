@@ -39,10 +39,6 @@ public class AwsProxyRequestDispatcher implements RequestDispatcher {
 
 
     public AwsProxyRequestDispatcher(final String target, final boolean namedDispatcher, final AwsLambdaServletContainerHandler handler) {
-        if (!namedDispatcher && !target.startsWith("/")) {
-            throw new UnsupportedOperationException("Only dispatchers with absolute paths are supported");
-        }
-
         isNamedDispatcher = namedDispatcher;
         dispatchTo = target;
         lambdaContainerHandler = handler;
