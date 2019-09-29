@@ -76,7 +76,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     private AwsProxyRequest request;
     private SecurityContext securityContext;
-    private AsyncContext asyncContext;
+    private AwsAsyncContext asyncContext;
     private Map<String, List<String>> urlEncodedFormParameters;
     private Map<String, Part> multipartFormParameters;
     private static Logger log = LoggerFactory.getLogger(AwsProxyHttpServletRequest.class);
@@ -670,7 +670,13 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public boolean isAsyncStarted() {
-        return asyncContext != null;
+        if (asyncContext == null) {
+            return false;
+        }
+        if (asyncContext.isCompleted() || asyncContext.isDispatched()) {
+            return false;
+        }
+        return true;
     }
 
 

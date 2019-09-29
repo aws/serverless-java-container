@@ -143,6 +143,7 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
 
         // process filters
         Servlet reqServlet = ((AwsServletContext)getServletContext()).getServletForPath(containerRequest.getPathInfo());
+        containerRequest.setResponse(containerResponse);
         doFilter(containerRequest, containerResponse, reqServlet);
         Timer.stop("SPRING_HANDLE_REQUEST");
     }

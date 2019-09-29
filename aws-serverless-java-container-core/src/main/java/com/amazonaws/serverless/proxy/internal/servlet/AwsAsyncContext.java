@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Async context for Serverless Java Container. This is used to support reactive embedded servers for our support for
@@ -23,6 +24,8 @@ public class AwsAsyncContext implements AsyncContext {
     private AwsLambdaServletContainerHandler handler;
     private List<AsyncListenerHolder> listeners;
     private long timeout;
+    private AtomicBoolean dispatched;
+    private AtomicBoolean completed;
 
     private Logger log = LoggerFactory.getLogger(AwsAsyncContext.class);
 
@@ -33,6 +36,8 @@ public class AwsAsyncContext implements AsyncContext {
         handler = servletHandler;
         listeners = new ArrayList<>();
         timeout = 3000;
+        dispatched = new AtomicBoolean(false);
+        completed = new AtomicBoolean(false);
     }
 
     @Override
@@ -57,6 +62,7 @@ public class AwsAsyncContext implements AsyncContext {
             notifyListeners(NotificationType.START_ASYNC, null);
             Servlet servlet = ((AwsServletContext)handler.getServletContext()).getServletForPath(req.getPathInfo());
             handler.doFilter(req, res, servlet);
+            dispatched.set(true);
         } catch (ServletException | IOException e) {
             notifyListeners(NotificationType.ERROR, e);
         }
@@ -83,6 +89,7 @@ public class AwsAsyncContext implements AsyncContext {
             log.debug("Completing request");
             notifyListeners(NotificationType.COMPLETE, null);
             res.flushBuffer();
+            completed.set(true);
         } catch (IOException e) {
             log.error("Could not flush response buffer", e);
             throw new RuntimeException(e);
@@ -124,6 +131,14 @@ public class AwsAsyncContext implements AsyncContext {
     @Override
     public long getTimeout() {
         return timeout;
+    }
+
+    public boolean isDispatched() {
+        return dispatched.get();
+    }
+
+    public boolean isCompleted() {
+        return completed.get();
     }
 
     private void notifyListeners(NotificationType type, Throwable t) {

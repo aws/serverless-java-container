@@ -138,6 +138,7 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
 
         // process filters & invoke servlet
         Servlet reqServlet = ((AwsServletContext)getServletContext()).getServletForPath(containerRequest.getPathInfo());
+        containerRequest.setResponse(containerResponse);
         doFilter(containerRequest, containerResponse, reqServlet);
         Timer.stop("SPRINGBOOT2_HANDLE_REQUEST");
     }
