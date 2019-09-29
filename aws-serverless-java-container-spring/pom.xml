@@ -278,6 +278,7 @@
                         <suppressionFile>${project.basedir}/../owasp-suppression.xml</suppressionFile>
                     </suppressionFiles>
                     <failBuildOnCVSS>7</failBuildOnCVSS>
+                    <failOnError>false</failOnError>
                 </configuration>
                 <executions>
                     <execution>
