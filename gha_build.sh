@@ -4,7 +4,7 @@ WORKING_DIR=$(pwd)
 FRAMEWORK=$1
 RUN_ARCHETYPE=$2
 RUN_SAMPLES=$3
-EXTRA_PARAMS=${@:4}
+EXTRA_PARAMS=${*:4}
 
 echo "Starting build script for ${FRAMEWORK} with params ${EXTRA_PARAMS}"
 
@@ -19,7 +19,7 @@ function install {
     if [[ "$?" -ne 0 ]]; then
         exit 1
     fi
-    cd ${WORKING_DIR}/aws-serverless-java-container-$1 && mvn -q clean install $2
+    cd ${WORKING_DIR}/aws-serverless-java-container-$1 && mvn -q clean install  ${@:2}
     if [[ "$?" -ne 0 ]]; then
         exit 1
     fi
@@ -61,6 +61,39 @@ function archetype {
     fi
 }
 
+function sample {
+    # force to pet store for now. In the future we may loop over all samples
+    SAMPLE_FOLDER=${WORKING_DIR}/samples/$1/pet-store
+    cd ${SAMPLE_FOLDER} && mvn -q clean package
+    if [[ "$?" -ne 0 ]]; then
+        exit 1
+    fi
+    cd ${SAMPLE_FOLDER} && gradle -q wrapper
+    if [[ "$?" -ne 0 ]]; then
+        exit 1
+    fi
+    cd ${SAMPLE_FOLDER} && ./gradlew wrapper --gradle-version 5.0
+    if [[ "$?" -ne 0 ]]; then
+        exit 1
+    fi
+    cd ${SAMPLE_FOLDER} && ./gradlew -q clean build
+    if [[ "$?" -ne 0 ]]; then
+        exit 1
+    fi
+
+    SAM_FILE=${SAMPLE_FOLDER}/sam.yaml
+    if [[ -f "$SAM_FILE" ]]; then
+        TARGET_ZIP=$(cat ${SAM_FILE} | grep CodeUri | sed -e 's/^.*:\ //g')
+        if [[ ! -f "${SAMPLE_FOLDER}/${TARGET_ZIP}" ]]; then
+            echo "COULD NOT FIND TARGET ZIP FILE $TARGET_ZIP FOR $1 SAMPLE"
+            exit 1
+        fi
+    else
+        echo "COULD NOT FIND SAM FILE: '${SAM_FILE}'"
+        exit 1
+    fi
+}
+
 # set up the master pom otherwise we won't be able to find new dependencies
 cd ${WORKING_DIR}/ && mvn -q --non-recursive clean install
 
@@ -72,12 +105,19 @@ case $1 in
             archetype ${FRAMEWORK}
             archetype springboot
         fi
+        if [[ "$RUN_SAMPLES" = true ]] ; then
+            sample ${FRAMEWORK}
+            sample springboot
+        fi
         break
         ;;
     *)
         install ${FRAMEWORK} ${EXTRA_PARAMS}
         if [[ "$RUN_ARCHETYPE" = true ]] ; then
             archetype ${FRAMEWORK}
+        fi
+        if [[ "$RUN_SAMPLES" = true ]] ; then
+            sample ${FRAMEWORK}
         fi
         ;;
 esac

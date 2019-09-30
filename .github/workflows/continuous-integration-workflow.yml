@@ -47,7 +47,7 @@ jobs:
       - name: Build latest
         run: ./gha_build.sh spring true true
       - name: Build Spring 4.3
-        run: ./gha_build.sh spring false false -Dspring.version=4.3.25.RELEASE -Dspring-security.version=4.2.13.RELEASE
+        run: ./gha_build.sh spring false false -Dspring.version=4.3.25.RELEASE -Dspring-security.version=4.2.13.RELEASE -Dspringboot.version=1.5.2.RELEASE
       - name: Build Spring 5.0
         run: ./gha_build.sh spring false false -Dspring.version=5.0.15.RELEASE -Dspring-security.version=5.0.13.RELEASE
 
@@ -59,7 +59,7 @@ jobs:
       - name: Build latest
         run: ./gha_build.sh springboot2 true true
       - name: Build Spring Boot 2.0
-        run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.0.9.RELEASE
+        run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.0.9.RELEASE -Dspring.version=5.0.13.RELEASE -Dspringsecurity.version=5.0.12.RELEASE
 
   build_struts2:
     name: Build and test Struts 2
