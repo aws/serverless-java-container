@@ -12,7 +12,7 @@ jobs:
     container:
       image: maven:3-jdk-8
     steps:
-      - uses: actions/checkout@latest
+      - uses: actions/checkout@v1
       - name: Install core
         run: mvn clean install
         working-directory: ./aws-serverless-java-container-core
@@ -38,7 +38,7 @@ jobs:
     container:
       image: maven:3-jdk-8
     steps:
-      - uses: actions/checkout@latest
+      - uses: actions/checkout@v1
       - name: Install core
         run: mvn clean install
         working-directory: ./aws-serverless-java-container-core
@@ -58,7 +58,7 @@ jobs:
     container:
       image: maven:3-jdk-8
     steps:
-      - uses: actions/checkout@latest
+      - uses: actions/checkout@v1
       - name: Install core
         run: mvn clean install
         working-directory: ./aws-serverless-java-container-core
@@ -83,7 +83,7 @@ jobs:
     container:
       image: maven:3-jdk-8
     steps:
-      - uses: actions/checkout@latest
+      - uses: actions/checkout@v1
       - name: Install core
         run: mvn clean install
         working-directory: ./aws-serverless-java-container-core
@@ -102,7 +102,7 @@ jobs:
     container:
       image: maven:3-jdk-8
     steps:
-      - uses: actions/checkout@latest
+      - uses: actions/checkout@v1
       - name: Install core
         run: mvn clean install
         working-directory: ./aws-serverless-java-container-core
