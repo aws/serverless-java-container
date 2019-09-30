@@ -11,15 +11,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.SecurityContext;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.Locale;
 
-import static com.amazonaws.serverless.proxy.RequestReader.API_GATEWAY_CONTEXT_PROPERTY;
 import static com.amazonaws.serverless.proxy.RequestReader.API_GATEWAY_EVENT_PROPERTY;
 import static java.time.temporal.ChronoField.DAY_OF_MONTH;
 import static java.time.temporal.ChronoField.HOUR_OF_DAY;
@@ -37,10 +33,16 @@ import static java.time.temporal.ChronoField.YEAR;
  */
 public class ApacheCombinedServletLogFormatter<ContainerRequestType extends HttpServletRequest, ContainerResponseType extends HttpServletResponse>
         implements LogFormatter<ContainerRequestType, ContainerResponseType> {
-    DateTimeFormatter dateFormat;
+    private final DateTimeFormatter dateFormat;
+    private final Clock clock;
 
     public ApacheCombinedServletLogFormatter() {
-        dateFormat = new DateTimeFormatterBuilder()
+        this(Clock.systemDefaultZone());
+    }
+
+    ApacheCombinedServletLogFormatter(Clock clock) {
+        this.clock = clock;
+        this.dateFormat = new DateTimeFormatterBuilder()
             .parseCaseInsensitive()
             .appendLiteral("[")
             .appendValue(DAY_OF_MONTH, 2)
@@ -93,17 +95,17 @@ public class ApacheCombinedServletLogFormatter<ContainerRequestType extends Http
 
 
         // %t
-        if (gatewayContext != null) {
+        if (gatewayContext != null && gatewayContext.getRequestTimeEpoch() > 0) {
             logLineBuilder.append(
                     dateFormat.format(
                             ZonedDateTime.of(
                                     LocalDateTime.ofEpochSecond(gatewayContext.getRequestTimeEpoch() / 1000, 0, ZoneOffset.UTC),
-                                    ZoneId.systemDefault()
+                                    clock.getZone()
                             )
                     )
             );
         } else {
-            logLineBuilder.append(dateFormat.format(ZonedDateTime.now()));
+            logLineBuilder.append(dateFormat.format(ZonedDateTime.now(clock)));
         }
         logLineBuilder.append(" ");
 
