@@ -1,0 +1,114 @@
+name: Serverless Java Container Continuous Integration
+on:
+  push:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build_jersey:
+    name: Build and test Jersey
+    runs-on: ubuntu-latest
+    container:
+      image: maven:3-jdk-8
+    steps:
+      - uses: actions/checkout@latest
+      - name: Install core
+        run: mvn clean install
+        working-directory: ./aws-serverless-java-container-core
+      - name: Build latest
+        run: mvn -q clean install
+        working-directory: ./aws-serverless-java-container-jersey
+      - name: Build Jersey 2.26
+        run: mvn -q clean install -Djersey.version=2.26
+        working-directory: ./aws-serverless-java-container-jersey
+      - name: Build Jersey 2.27
+        run: mvn -q clean install -Djersey.version=2.27
+        working-directory: ./aws-serverless-java-container-jersey
+      - name: Build Jersey 2.28
+        run: mvn -q clean install -Djersey.version=2.28
+        working-directory: ./aws-serverless-java-container-jersey
+      - name: Build Archetype
+        run: mvn -q clean install
+        working-directory: ./aws-serverless-jersey-archetype
+
+  build_spark:
+    name: Build and test Spark
+    runs-on: ubuntu-latest
+    container:
+      image: maven:3-jdk-8
+    steps:
+      - uses: actions/checkout@latest
+      - name: Install core
+        run: mvn clean install
+        working-directory: ./aws-serverless-java-container-core
+      - name: Build latest
+        run: mvn -q clean install
+        working-directory: ./aws-serverless-java-container-spark
+      - name: Build Spark 2.8.0
+        run: mvn -q clean install -Dspark.version=2.8.0
+        working-directory: ./aws-serverless-java-container-spark
+      - name: Build Archetype
+        run: mvn -q clean install
+        working-directory: ./aws-serverless-spark-archetype
+
+  build_spring:
+    name: Build and test Spring & SpringBoot
+    runs-on: ubuntu-latest
+    container:
+      image: maven:3-jdk-8
+    steps:
+      - uses: actions/checkout@latest
+      - name: Install core
+        run: mvn clean install
+        working-directory: ./aws-serverless-java-container-core
+      - name: Build latest
+        run: mvn -q clean install
+        working-directory: ./aws-serverless-java-container-spring
+      - name: Build Spring 4.3
+        run: mvn -q clean install -Dspring.version=4.3.25.RELEASE -Dspring-security.version=4.2.13.RELEASE
+        working-directory: ./aws-serverless-java-container-spring
+      - name: Build Spring 5.0
+        run: mvn -q clean install -Dspring.version=5.0.15.RELEASE -Dspring-security.version=5.0.13.RELEASE
+        working-directory: ./aws-serverless-java-container-spring
+      - name: Build Spring Archetype
+        run: mvn -q clean install
+        working-directory: ./aws-serverless-spring-archetype
+      - name: Build Spring Boot Archetype
+        run: mvn -q clean install
+        working-directory: ./aws-serverless-springboot-archetype
+  build_springboot2:
+    name: Build and test SpringBoot 2
+    runs-on: ubuntu-latest
+    container:
+      image: maven:3-jdk-8
+    steps:
+      - uses: actions/checkout@latest
+      - name: Install core
+        run: mvn clean install
+        working-directory: ./aws-serverless-java-container-core
+      - name: Build latest
+        run: mvn -q clean install
+        working-directory: ./aws-serverless-java-container-springboot2
+      - name: Build Spring Boot 2.0
+        run: mvn -q clean install -Dspringboot.version=2.0.9.RELEASE
+        working-directory: ./aws-serverless-java-container-springboot2
+      - name: Build Spring Boot 2 Archetype
+        run: mvn -q clean install
+        working-directory: ./aws-serverless-springboot2-archetype
+  build_struts2:
+    name: Build and test Struts 2
+    runs-on: ubuntu-latest
+    container:
+      image: maven:3-jdk-8
+    steps:
+      - uses: actions/checkout@latest
+      - name: Install core
+        run: mvn clean install
+        working-directory: ./aws-serverless-java-container-core
+      - name: Build latest
+        run: mvn -q clean install
+        working-directory: ./aws-serverless-java-container-struts2
+      - name: Build Archetype
+        run: mvn -q clean install
+        working-directory: ./aws-serverless-struts2-archetype
