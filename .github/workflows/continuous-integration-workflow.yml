@@ -47,7 +47,7 @@ jobs:
       - name: Build latest
         run: ./gha_build.sh spring true true
       - name: Build Spring 4.3
-        run: ./gha_build.sh spring false false -Dspring.version=4.3.25.RELEASE -Dspring-security.version=4.2.13.RELEASE -Dspringboot.version=1.5.2.RELEASE
+        run: ./gha_build.sh spring false false -Dspring.version=4.3.25.RELEASE -Dspring-security.version=4.2.13.RELEASE
       - name: Build Spring 5.0
         run: ./gha_build.sh spring false false -Dspring.version=5.0.15.RELEASE -Dspring-security.version=5.0.13.RELEASE
 
