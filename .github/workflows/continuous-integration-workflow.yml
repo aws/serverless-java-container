@@ -46,7 +46,6 @@ jobs:
       - uses: actions/checkout@v1
       - name: Build latest
         run: ./gha_build.sh spring true true
-        working-directory: ./aws-serverless-java-container-spring
       - name: Build Spring 4.3
         run: ./gha_build.sh spring false false -Dspring.version=4.3.25.RELEASE -Dspring-security.version=4.2.13.RELEASE
       - name: Build Spring 5.0
@@ -56,6 +55,7 @@ jobs:
     name: Build and test SpringBoot 2
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v1
       - name: Build latest
         run: ./gha_build.sh springboot2 true true
       - name: Build Spring Boot 2.0
@@ -68,4 +68,3 @@ jobs:
       - uses: actions/checkout@v1
       - name: Build latest
         run: ./gha_build.sh struts2 true true
-        working-directory: ./aws-serverless-java-container-struts2
