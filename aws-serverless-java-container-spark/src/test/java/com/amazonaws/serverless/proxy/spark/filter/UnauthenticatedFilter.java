@@ -27,13 +27,10 @@ public class UnauthenticatedFilter implements Filter {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
             throws IOException, ServletException {
-        System.out.println("Running unauth filter");
         if (((HttpServletRequest)servletRequest).getHeader(HEADER_NAME) != null) {
             ((HttpServletResponse) servletResponse).setStatus(401);
-            System.out.println("Returning 401");
             return;
         }
-        System.out.println("Continue chain");
         filterChain.doFilter(servletRequest, servletResponse);
     }
 

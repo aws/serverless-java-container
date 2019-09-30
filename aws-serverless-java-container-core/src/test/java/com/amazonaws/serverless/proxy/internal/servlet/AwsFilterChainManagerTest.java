@@ -193,11 +193,11 @@ public class AwsFilterChainManagerTest {
         try {
             fcHolder2.doFilter(req2, resp2);
         } catch (IOException e) {
+            e.printStackTrace();
             fail("IO Exception while executing filters");
-            e.printStackTrace();
         } catch (ServletException e) {
-            fail("Servlet exception while executing filters");
             e.printStackTrace();
+            fail("Servlet exception while executing filters");
         }
 
         assertTrue(req2.getAttribute(REQUEST_CUSTOM_ATTRIBUTE_NAME) != null);
@@ -230,19 +230,18 @@ public class AwsFilterChainManagerTest {
 
         @Override
         public void init(FilterConfig filterConfig) throws ServletException {
-            System.out.println("Init");
+
         }
 
         @Override
         public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-            System.out.println("DoFilter");
             servletRequest.setAttribute(REQUEST_CUSTOM_ATTRIBUTE_NAME, REQUEST_CUSTOM_ATTRIBUTE_VALUE);
             filterChain.doFilter(servletRequest, servletResponse);
         }
 
         @Override
         public void destroy() {
-            System.out.println("Destroy");
+
         }
     }
 }

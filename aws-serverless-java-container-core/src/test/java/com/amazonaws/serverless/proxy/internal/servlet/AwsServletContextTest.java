@@ -3,19 +3,14 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.servlet.filters.UrlPathValidator;
 
+import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.FilterRegistration;
-import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,6 +19,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.concurrent.CountDownLatch;
 
 import static org.junit.Assert.*;
 
@@ -38,8 +34,8 @@ public class AwsServletContextTest {
         try {
             LambdaContainerHandler.getContainerConfig().addValidFilePath(tmpFile.getCanonicalPath());
         } catch (IOException e) {
-            fail("Could not add tmp dir to valid paths");
             e.printStackTrace();
+            fail("Could not add tmp dir to valid paths");
         }
         LambdaContainerHandler.getContainerConfig().addValidFilePath("C:\\MyTestFolder");
     }
@@ -52,8 +48,8 @@ public class AwsServletContextTest {
         } catch (IllegalArgumentException e) {
             assertTrue(e.getMessage().startsWith("File path not allowed"));
         } catch (Exception e) {
-            fail("Unrecognized exception");
             e.printStackTrace();
+            fail("Unrecognized exception");
         }
     }
 
@@ -155,7 +151,38 @@ public class AwsServletContextTest {
     }
 
     @Test
-    public void unsupportedOprations_expectExceptions() {
+    public void startAsync_expectPopulatedAsyncContext() {
+        HttpServletRequest req = new AwsProxyHttpServletRequest(
+                new AwsProxyRequestBuilder("/", "GET").build(),
+                null,
+                null
+        );
+        assertNotNull(req);
+        AsyncContext ctx = req.startAsync();
+        assertNotNull(ctx);
+        assertEquals(req, ctx.getRequest());
+    }
+
+    @Test
+    public void startAsyncWithNewRequest_expectPopulatedAsyncContext() {
+        HttpServletRequest req = new AwsProxyHttpServletRequest(
+                new AwsProxyRequestBuilder("/", "GET").build(),
+                null,
+                null
+        );
+        assertNotNull(req);
+        HttpServletRequest newReq = new AwsHttpServletRequestWrapper(req, "/new");
+        HttpServletResponse newResp = new AwsHttpServletResponse(newReq, new CountDownLatch(1));
+        AsyncContext ctx = req.startAsync(newReq, newResp);
+        assertNotNull(ctx);
+        assertNotNull(req.getAsyncContext());
+        assertNotNull(newReq.getAsyncContext());
+        assertEquals(newReq, ctx.getRequest());
+        assertEquals(newResp, ctx.getResponse());
+    }
+
+    @Test
+    public void unsupportedOperations_expectExceptions() {
         int exCount = 0;
         try {
             STATIC_CTX.getResourcePaths("1");
@@ -167,59 +194,82 @@ public class AwsServletContextTest {
         } catch (UnsupportedOperationException e) {
             exCount++;
         }
-        try {
-            STATIC_CTX.getServlet("1");
-        } catch (UnsupportedOperationException e) {
-            exCount++;
-        } catch (ServletException e) {
-            fail("Unexpected exception from unimplemented method");
-            e.printStackTrace();
-        }
-        try {
-            STATIC_CTX.addServlet("1", "");
-        } catch (UnsupportedOperationException e) {
-            exCount++;
-        }
-        try {
-            STATIC_CTX.addServlet("1", new Servlet() {
-                @Override
-                public void init(ServletConfig config)
-                        throws ServletException {
-
-                }
-
-
-                @Override
-                public ServletConfig getServletConfig() {
-                    return null;
-                }
-
-
-                @Override
-                public void service(ServletRequest req, ServletResponse res)
-                        throws ServletException, IOException {
-
-                }
-
-
-                @Override
-                public String getServletInfo() {
-                    return null;
-                }
-
-
-                @Override
-                public void destroy() {
-
-                }
-            });
-        } catch (UnsupportedOperationException e) {
-            exCount++;
-        }
-        assertEquals(5, exCount);
+       assertEquals(2, exCount);
 
         assertNull(STATIC_CTX.getServletRegistration("1"));
-        assertNull(STATIC_CTX.getServletRegistrations());
+    }
+
+    @Test
+    public void servletMappings_expectCorrectServlet() {
+        AwsServletContext ctx = new AwsServletContext(null);
+        TestServlet srv1 = new TestServlet("srv1");
+        TestServlet srv2 = new TestServlet("srv2");
+
+        ServletRegistration.Dynamic reg1 = ctx.addServlet("srv1", srv1);
+        ServletRegistration.Dynamic reg2 = ctx.addServlet("srv2", srv2);
+
+        reg1.addMapping("/srv1");
+        reg2.addMapping("/srv2");
+
+        assertEquals(srv1, ctx.getServletForPath("/srv1/hello"));
+        assertEquals(srv1, ctx.getServletForPath("/srv1/hello/test"));
+        assertEquals(srv2, ctx.getServletForPath("/srv2"));
+        assertEquals(srv2, ctx.getServletForPath("/srv2/hello"));
+        assertNull(ctx.getServletForPath("/srv3"));
+        assertNull(ctx.getServletForPath(""));
+
+        reg2.addMapping("/");
+        assertEquals(srv2, ctx.getServletForPath("/srv3"));
+    }
+
+    @Test
+    public void addServlet_callsDefaultConstructor() throws ServletException {
+        AwsServletContext ctx = new AwsServletContext(null);
+        ctx.addServlet("srv1", TestServlet.class);
+        assertNotNull(ctx.getServlet("srv1"));
+        assertNotNull(ctx.getServletRegistration("srv1"));
+        assertEquals("", ((TestServlet)ctx.getServlet("srv1")).getId());
+    }
+
+    public static class TestServlet implements Servlet {
+        private String id;
+
+        public TestServlet() {
+            this("");
+        }
+
+        public TestServlet(String identifier) {
+            id = identifier;
+        }
+
+        @Override
+        public void init(ServletConfig servletConfig) throws ServletException {
+
+        }
+
+        @Override
+        public ServletConfig getServletConfig() {
+            return null;
+        }
+
+        @Override
+        public void service(ServletRequest servletRequest, ServletResponse servletResponse) throws ServletException, IOException {
+
+        }
+
+        @Override
+        public String getServletInfo() {
+            return null;
+        }
+
+        @Override
+        public void destroy() {
+
+        }
+
+        public String getId() {
+            return id;
+        }
     }
 
     public static class TestFilter implements Filter {

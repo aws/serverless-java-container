@@ -24,6 +24,7 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
+import javax.inject.Inject;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -59,6 +60,9 @@ public class EchoJerseyResource {
     @Context
     SecurityContext securityCtx;
 
+    @Inject
+    JerseyDependency jerseyDependency;
+
     @Path("/decoded-param") @GET
     @Produces(MediaType.APPLICATION_JSON)
     public SingleValueModel echoDecodedParam(@QueryParam("param") String param) {
@@ -82,7 +86,6 @@ public class EchoJerseyResource {
     @Path("/list-query-string") @GET
     @Produces(MediaType.APPLICATION_JSON)
     public SingleValueModel echoQueryStringLength(@QueryParam("list") List<String> param) {
-        System.out.println("param: " + param + " = " + param.size());
         SingleValueModel model = new SingleValueModel();
         model.setValue(param.size() + "");
         return model;
@@ -153,7 +156,6 @@ public class EchoJerseyResource {
     @Produces(MediaType.APPLICATION_JSON)
     public SingleValueModel echoRequestScheme(@Context UriInfo context) {
         SingleValueModel model = new SingleValueModel();
-        System.out.println("RequestUri: " + context.getRequestUri().toString());
         model.setValue(context.getRequestUri().getScheme());
         return model;
     }
@@ -256,11 +258,6 @@ public class EchoJerseyResource {
                              @FormDataParam("file") FormDataContentDisposition fileDetail,
                              @Context ContainerRequestContext req) {
         SingleValueModel sv = new SingleValueModel();
-
-        System.out.println(
-                "Is base64 encoded: " +
-                ((AwsProxyHttpServletRequest)req.getProperty(JERSEY_SERVLET_REQUEST_PROPERTY)).getAwsProxyRequest().isBase64Encoded()
-        );
 
         try {
             InputStream fileIs = new FileInputStream(uploadedFile);

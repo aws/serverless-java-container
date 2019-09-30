@@ -16,7 +16,6 @@
     </parent>
 
     <properties>
-        <jackson.version>2.9.9</jackson.version>
         <jaxrs.version>2.1</jaxrs.version>
         <servlet.version>3.1.0</servlet.version>
     </properties>
@@ -55,6 +54,12 @@
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-afterburner</artifactId>
             <version>${jackson.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
 
@@ -86,6 +91,12 @@
             <version>4.4.10</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-web</artifactId>
+            <version>5.1.5.RELEASE</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -97,6 +108,9 @@
                 <configuration>
                     <destFile>${basedir}/target/coverage-reports/jacoco-unit.exec</destFile>
                     <dataFile>${basedir}/target/coverage-reports/jacoco-unit.exec</dataFile>
+                    <excludes>
+                        <exclude>com/amazonaws/serverless/proxy/internal/testutils/**</exclude>
+                    </excludes>
                 </configuration>
                 <executions>
                     <execution>
@@ -183,6 +197,7 @@
                         <suppressionFile>${project.basedir}/../owasp-suppression.xml</suppressionFile>
                     </suppressionFiles>
                     <failBuildOnCVSS>7</failBuildOnCVSS>
+                    <failOnError>false</failOnError>
                 </configuration>
                 <executions>
                     <execution>

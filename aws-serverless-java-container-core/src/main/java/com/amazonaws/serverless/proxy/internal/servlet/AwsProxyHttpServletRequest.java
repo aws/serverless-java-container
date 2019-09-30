@@ -18,6 +18,7 @@ import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
+import com.amazonaws.serverless.proxy.model.Headers;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -31,17 +32,8 @@ import org.apache.commons.io.input.NullInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.AsyncContext;
-import javax.servlet.ReadListener;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpUpgradeHandler;
-import javax.servlet.http.Part;
+import javax.servlet.*;
+import javax.servlet.http.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
@@ -84,10 +76,13 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     private AwsProxyRequest request;
     private SecurityContext securityContext;
+    private AwsAsyncContext asyncContext;
     private Map<String, List<String>> urlEncodedFormParameters;
     private Map<String, Part> multipartFormParameters;
     private static Logger log = LoggerFactory.getLogger(AwsProxyHttpServletRequest.class);
     private ContainerConfig config;
+    private AwsHttpServletResponse response;
+    private AwsLambdaServletContainerHandler containerHandler;
 
     //-------------------------------------------------------------
     // Constructors
@@ -109,6 +104,18 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     public AwsProxyRequest getAwsProxyRequest() {
         return this.request;
+    }
+
+    public AwsHttpServletResponse getResponse() {
+        return response;
+    }
+
+    public void setResponse(AwsHttpServletResponse response) {
+        this.response = response;
+    }
+
+    public void setContainerHandler(AwsLambdaServletContainerHandler containerHandler) {
+        this.containerHandler = containerHandler;
     }
 
     //-------------------------------------------------------------
@@ -364,6 +371,9 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     public void setCharacterEncoding(String s)
             throws UnsupportedEncodingException {
+        if (request.getMultiValueHeaders() == null) {
+            request.setMultiValueHeaders(new Headers());
+        }
         String currentContentType = request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
         if (currentContentType == null || "".equals(currentContentType)) {
             log.debug("Called set character encoding to " + SecurityUtils.crlf(s) + " on a request without a content type. Character encoding will not be set");
@@ -458,7 +468,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         }
 
         String[] bodyParams = getFormBodyParameterCaseInsensitive(s);
-        if (bodyParams == null || bodyParams.length == 0) {
+        if (bodyParams.length == 0) {
             return null;
         } else {
             return bodyParams[0];
@@ -479,16 +489,9 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     @SuppressFBWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS") // suppressing this as according to the specs we should be returning null here if we can't find params
     public String[] getParameterValues(String s) {
-        List<String> values = new ArrayList<>();
-        String queryValue = getFirstQueryParamValue(s, config.isQueryStringCaseSensitive());
-        if (queryValue != null) {
-            values.add(queryValue);
-        }
+        List<String> values = new ArrayList<>(Arrays.asList(getQueryParamValues(s, config.isQueryStringCaseSensitive())));
 
-        String[] formBodyValues = getFormBodyParameterCaseInsensitive(s);
-        if (formBodyValues != null) {
-            values.addAll(Arrays.asList(formBodyValues));
-        }
+        values.addAll(Arrays.asList(getFormBodyParameterCaseInsensitive(s)));
 
         if (values.size() == 0) {
             return null;
@@ -661,18 +664,49 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
 
     @Override
+    public boolean isAsyncSupported() {
+        return true;
+    }
+
+    @Override
+    public boolean isAsyncStarted() {
+        if (asyncContext == null) {
+            return false;
+        }
+        if (asyncContext.isCompleted() || asyncContext.isDispatched()) {
+            return false;
+        }
+        return true;
+    }
+
+
+    @Override
     public AsyncContext startAsync()
             throws IllegalStateException {
-        return null;
+        asyncContext = new AwsAsyncContext(this, response, containerHandler);
+        setAttribute(DISPATCHER_TYPE_ATTRIBUTE, DispatcherType.ASYNC);
+        log.debug("Starting async context for request: " + SecurityUtils.crlf(request.getRequestContext().getRequestId()));
+        return asyncContext;
     }
 
 
     @Override
     public AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse)
             throws IllegalStateException {
-        return null;
+        asyncContext = new AwsAsyncContext((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse, containerHandler);
+        setAttribute(DISPATCHER_TYPE_ATTRIBUTE, DispatcherType.ASYNC);
+        log.debug("Starting async context for request: " + SecurityUtils.crlf(request.getRequestContext().getRequestId()));
+        return asyncContext;
     }
 
+    @Override
+    public AsyncContext getAsyncContext() {
+        if (asyncContext == null) {
+            throw new IllegalStateException("Request " + SecurityUtils.crlf(request.getRequestContext().getRequestId())
+                    + " is not in asynchronous mode. Call startAsync before atttempting to get the async context.");
+        }
+        return asyncContext;
+    }
 
     //-------------------------------------------------------------
     // Methods - Private
@@ -728,7 +762,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     }
 
 
-    private String cleanUri(String uri) {
+    static String cleanUri(String uri) {
         String finalUri = (uri == null ? "/" : uri);
         if (finalUri.equals("/")) {
             return finalUri;

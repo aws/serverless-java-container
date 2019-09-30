@@ -16,7 +16,6 @@
 
     <properties>
         <struts2.version>2.5.20</struts2.version>
-        <jackson.version>2.9.9</jackson.version>
     </properties>
 
     <dependencies>
@@ -205,6 +204,7 @@
                         <suppressionFile>${project.basedir}/../owasp-suppression.xml</suppressionFile>
                     </suppressionFiles>
                     <failBuildOnCVSS>7</failBuildOnCVSS>
+                    <failOnError>false</failOnError>
                 </configuration>
                 <executions>
                     <execution>

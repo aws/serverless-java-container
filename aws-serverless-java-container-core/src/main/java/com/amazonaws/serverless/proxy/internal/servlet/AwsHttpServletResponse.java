@@ -12,6 +12,7 @@
  */
 package com.amazonaws.serverless.proxy.internal.servlet;
 
+import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.Headers;
@@ -20,9 +21,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.DispatcherType;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.HttpHeaders;
 import java.io.ByteArrayOutputStream;
@@ -60,10 +63,11 @@ public class AwsHttpServletResponse
     private int statusCode;
     private String statusMessage;
     private String responseBody;
+    private String characterEncoding;
     private PrintWriter writer;
     private ByteArrayOutputStream bodyOutputStream = new ByteArrayOutputStream();
     private CountDownLatch writersCountDownLatch;
-    private AwsHttpServletRequest request;
+    private HttpServletRequest request;
     private boolean isCommitted = false;
 
     private Logger log = LoggerFactory.getLogger(AwsHttpServletResponse.class);
@@ -78,8 +82,9 @@ public class AwsHttpServletResponse
      * function while the response is asynchronously written by the underlying container/application
      * @param latch A latch used to inform the <code>ContainerHandler</code> that we are done receiving the response data
      */
-    public AwsHttpServletResponse(AwsHttpServletRequest req, CountDownLatch latch) {
+    public AwsHttpServletResponse(HttpServletRequest req, CountDownLatch latch) {
         writersCountDownLatch = latch;
+        characterEncoding = null;
         request = req;
         statusCode = 0;
     }
@@ -93,6 +98,9 @@ public class AwsHttpServletResponse
     @SuppressFBWarnings("COOKIE_USAGE")
     @Override
     public void addCookie(Cookie cookie) {
+        if (request != null && request.getDispatcherType() == DispatcherType.INCLUDE && isCommitted()) {
+            throw new IllegalStateException("Cannot add Cookies for include request when response is committed");
+        }
         String cookieData = cookie.getName() + "=" + cookie.getValue();
         if (cookie.getPath() != null) {
             cookieData += "; Path=" + cookie.getPath();
@@ -159,6 +167,7 @@ public class AwsHttpServletResponse
 
     @Override
     public void sendError(int i, String s) throws IOException {
+        request.setAttribute(AwsHttpServletRequest.DISPATCHER_TYPE_ATTRIBUTE, DispatcherType.ERROR);
         setStatus(i, s);
         flushBuffer();
     }
@@ -166,6 +175,7 @@ public class AwsHttpServletResponse
 
     @Override
     public void sendError(int i) throws IOException {
+        request.setAttribute(AwsHttpServletRequest.DISPATCHER_TYPE_ATTRIBUTE, DispatcherType.ERROR);
         setStatus(i);
         flushBuffer();
     }
@@ -181,6 +191,7 @@ public class AwsHttpServletResponse
 
     @Override
     public void setDateHeader(String s, long l) {
+        if (!canSetHeader()) return;
         SimpleDateFormat sdf = new SimpleDateFormat(HEADER_DATE_PATTERN);
         Date responseDate = new Date();
         responseDate.setTime(l);
@@ -190,6 +201,7 @@ public class AwsHttpServletResponse
 
     @Override
     public void addDateHeader(String s, long l) {
+        if (!canSetHeader()) return;
         SimpleDateFormat sdf = new SimpleDateFormat(HEADER_DATE_PATTERN);
         Date responseDate = new Date();
         responseDate.setTime(l);
@@ -199,15 +211,17 @@ public class AwsHttpServletResponse
 
     @Override
     public void setHeader(String s, String s1) {
+        if (!canSetHeader()) return;
         setHeader(s, s1, true);
     }
 
 
     @Override
     public void addHeader(String s, String s1) {
+        if (!canSetHeader()) return;
         // TODO: We should probably have a list of headers that we are not allowed to have multiple values for
         if (s.toLowerCase(Locale.getDefault()).equals(HttpHeaders.CONTENT_TYPE.toLowerCase(Locale.getDefault()))) {
-            setHeader(s, s1, true);
+            setContentType(s1);
         } else {
             setHeader(s, s1, false);
         }
@@ -216,18 +230,21 @@ public class AwsHttpServletResponse
 
     @Override
     public void setIntHeader(String s, int i) {
+        if (!canSetHeader()) return;
         setHeader(s, "" + i, true);
     }
 
 
     @Override
     public void addIntHeader(String s, int i) {
+        if (!canSetHeader()) return;
         setHeader(s, "" + i, false);
     }
 
 
     @Override
     public void setStatus(int i) {
+        if (!canSetHeader()) return;
         statusCode = i;
     }
 
@@ -235,6 +252,7 @@ public class AwsHttpServletResponse
     @Override
     @Deprecated
     public void setStatus(int i, String s) {
+        if (!canSetHeader()) return;
         statusCode = i;
         statusMessage = s;
     }
@@ -273,12 +291,7 @@ public class AwsHttpServletResponse
 
     @Override
     public String getCharacterEncoding() {
-        final String contentType = Optional.ofNullable(getContentType()).orElse("");
-        if (contentType.contains(";")) {
-            return contentType.split(";")[1].split("=")[1].trim().toLowerCase(Locale.getDefault());
-        } else {
-            return "";
-        }
+        return characterEncoding;
     }
 
 
@@ -345,28 +358,47 @@ public class AwsHttpServletResponse
 
     @Override
     public void setCharacterEncoding(String s) {
-        final String characterEncoding = Optional.ofNullable(s).orElse("").toLowerCase(Locale.getDefault());
-        final String oldValue = Optional.ofNullable(getHeader(HttpHeaders.CONTENT_TYPE)).orElse("");
-        String contentType = oldValue.contains(";") ? oldValue.split(";")[0].trim(): oldValue;
-        setHeader(HttpHeaders.CONTENT_TYPE, String.format("%s; charset=%s", contentType, characterEncoding), true);
+        if (!canSetHeader()) return;
+        characterEncoding = s.toUpperCase(Locale.getDefault());
+        // The char encoding is being forced, if we already have a content-type header we recreate it
+        if (headers.getFirst(HttpHeaders.CONTENT_TYPE) != null) {
+            setContentType(headers.getFirst(HttpHeaders.CONTENT_TYPE));
+        }
     }
 
 
     @Override
     public void setContentLength(int i) {
+        if (!canSetHeader()) return;
         setHeader(HttpHeaders.CONTENT_LENGTH, "" + i, true);
     }
 
 
     @Override
     public void setContentLengthLong(long l) {
+        if (!canSetHeader()) return;
         setHeader(HttpHeaders.CONTENT_LENGTH, "" + l, true);
     }
 
 
     @Override
     public void setContentType(String s) {
-        setHeader(HttpHeaders.CONTENT_TYPE, s, true);
+        if (!canSetHeader()) return;
+        if (s == null) {
+            return;
+        }
+
+        // we have no forced character encoding
+        if (characterEncoding == null) {
+            setHeader(HttpHeaders.CONTENT_TYPE, s, true);
+            return;
+        }
+
+        if (s.contains(";")) { // we have a forced charset
+            setHeader(HttpHeaders.CONTENT_TYPE, String.format("%s; charset=%s", s.split(";")[0], characterEncoding), true);
+        } else {
+            setHeader(HttpHeaders.CONTENT_TYPE, String.format("%s; charset=%s", s, characterEncoding), true);
+        }
     }
 
 
@@ -387,7 +419,7 @@ public class AwsHttpServletResponse
         if (null != writer) {
             writer.flush();
         }
-        responseBody = new String(bodyOutputStream.toByteArray(), StandardCharsets.UTF_8);
+        responseBody = new String(bodyOutputStream.toByteArray(), LambdaContainerHandler.getContainerConfig().getDefaultContentCharset());
         log.debug("Response buffer flushed with {} bytes, latch={}", responseBody.length(), writersCountDownLatch.getCount());
         isCommitted = true;
         writersCountDownLatch.countDown();
@@ -417,6 +449,7 @@ public class AwsHttpServletResponse
 
     @Override
     public void setLocale(Locale locale) {
+        if (!canSetHeader()) return;
         setHeader(HttpHeaders.CONTENT_LANGUAGE, locale.getLanguage(), true);
     }
 
@@ -457,6 +490,7 @@ public class AwsHttpServletResponse
     //-------------------------------------------------------------
 
     private void setHeader(String key, String value, boolean overwrite) {
+        if (!canSetHeader()) return;
         String encodedKey = SecurityUtils.crlf(key);
         String encodedValue = SecurityUtils.crlf(value);
         List<String> values = headers.get(encodedKey);
@@ -468,5 +502,9 @@ public class AwsHttpServletResponse
         values.add(encodedValue);
 
         headers.put(encodedKey, values);
+    }
+
+    private boolean canSetHeader() {
+        return request == null || request.getDispatcherType() != DispatcherType.INCLUDE;
     }
 }

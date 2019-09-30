@@ -23,12 +23,10 @@ import org.apache.http.message.BasicHeaderValueParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.AsyncContext;
-import javax.servlet.DispatcherType;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import javax.servlet.*;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import java.io.UnsupportedEncodingException;
@@ -60,6 +58,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     static final String FORM_DATA_SEPARATOR = "&";
     static final DateTimeFormatter dateFormatter = DateTimeFormatter.RFC_1123_DATE_TIME;
     static final String ENCODING_VALUE_KEY = "charset";
+    static final String DISPATCHER_TYPE_ATTRIBUTE = "com.amazonaws.serverless.javacontainer.dispatchertype";
 
     // We need this to pickup the protocol from the CloudFront header since Lambda doesn't receive this
     // information from anywhere else
@@ -80,9 +79,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     private String queryString;
     private BasicHeaderValueParser headerParser;
 
-    protected DispatcherType dispatcherType;
-
-    private Logger log = LoggerFactory.getLogger(AwsHttpServletRequest.class);
+    private static Logger log = LoggerFactory.getLogger(AwsHttpServletRequest.class);
 
 
     //-------------------------------------------------------------
@@ -98,6 +95,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         this.lambdaContext = lambdaContext;
         attributes = new HashMap<>();
         headerParser = new BasicHeaderValueParser();
+        setAttribute(DISPATCHER_TYPE_ATTRIBUTE, DispatcherType.REQUEST);
     }
 
 
@@ -241,15 +239,11 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         return false;
     }
 
-
-    @Override
-    public AsyncContext getAsyncContext() {
-        return null;
-    }
-
-
     @Override
     public DispatcherType getDispatcherType() {
+        if (getAttribute(DISPATCHER_TYPE_ATTRIBUTE) != null) {
+            return (DispatcherType) getAttribute(DISPATCHER_TYPE_ATTRIBUTE);
+        }
         return DispatcherType.REQUEST;
     }
 
@@ -257,10 +251,6 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     //-------------------------------------------------------------
     // Methods - Getter/Setter
     //-------------------------------------------------------------
-
-    public void setDispatcherType(DispatcherType type) {
-        dispatcherType = type;
-    }
 
     public void setServletContext(ServletContext context) {
         servletContext = context;
@@ -425,7 +415,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         return values;
     }
 
-    protected String decodeRequestPath(String requestPath, ContainerConfig config) {
+    static String decodeRequestPath(String requestPath, ContainerConfig config) {
         try {
             return URLDecoder.decode(requestPath, config.getUriEncoding());
         } catch (UnsupportedEncodingException ex) {

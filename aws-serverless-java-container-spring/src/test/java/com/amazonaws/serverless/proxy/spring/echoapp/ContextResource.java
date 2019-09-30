@@ -47,7 +47,6 @@ public class ContextResource implements ServletContextAware {
     public ResponseEntity<ValidatedUserModel> createUser(@Valid @RequestBody ValidatedUserModel newUser, BindingResult results) {
 
         if (results.hasErrors()) {
-            System.out.println("Has errors");
             return new ResponseEntity<ValidatedUserModel>(newUser, HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<ValidatedUserModel>(newUser, HttpStatus.OK);

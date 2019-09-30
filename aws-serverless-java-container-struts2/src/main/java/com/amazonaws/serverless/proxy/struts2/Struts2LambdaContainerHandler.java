@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
+import javax.servlet.Servlet;
 import java.util.EnumSet;
 import java.util.concurrent.CountDownLatch;
 
@@ -100,7 +101,9 @@ public class Struts2LambdaContainerHandler<RequestType, ResponseType> extends Aw
             StrutsPrepareAndExecuteFilter filter = new StrutsPrepareAndExecuteFilter();
             FilterRegistration.Dynamic filterRegistration = this.getServletContext()
                     .addFilter(STRUTS_FILTER_NAME, filter);
-            filterRegistration.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/*");
+            filterRegistration.addMappingForUrlPatterns(
+                    EnumSet.of(DispatcherType.REQUEST, DispatcherType.ASYNC, DispatcherType.INCLUDE, DispatcherType.FORWARD),
+                    true, "/*");
         } catch (Exception e) {
             throw new ContainerInitializationException("Could not initialize Struts2", e);
         }
@@ -108,5 +111,9 @@ public class Struts2LambdaContainerHandler<RequestType, ResponseType> extends Aw
         this.initialized = true;
         Timer.stop(TIMER_STRUTS_2_COLD_START_INIT);
         log.info("... initialize of Struts2 Lambda Application completed!");
+    }
+
+    public Servlet getServlet() {
+        return null;
     }
 }

@@ -85,7 +85,6 @@ public class CognitoAuthorizerClaimsTest {
             assertEquals(EMAIL, req.getRequestContext().getAuthorizer().getClaims().getEmail());
             assertTrue(req.getRequestContext().getAuthorizer().getClaims().isEmailVerified());
         } catch (IOException e) {
-            e.printStackTrace();
             fail();
         }
     }

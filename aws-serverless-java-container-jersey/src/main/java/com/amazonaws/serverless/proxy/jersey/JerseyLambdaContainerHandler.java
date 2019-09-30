@@ -40,6 +40,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
+import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -192,7 +193,10 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
 
         // manually add the spark filter to the chain. This should the last one and match all uris
         FilterRegistration.Dynamic jerseyFilterReg = getServletContext().addFilter("JerseyFilter", jerseyFilter);
-        jerseyFilterReg.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/*");
+        jerseyFilterReg.addMappingForUrlPatterns(
+                EnumSet.of(DispatcherType.REQUEST, DispatcherType.ASYNC, DispatcherType.INCLUDE, DispatcherType.FORWARD),
+                true, "/*"
+        );
 
         Timer.stop("JERSEY_COLD_START_INIT");
         initialized = true;
@@ -204,5 +208,9 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
             initialize();
         }
         return jerseyFilter.getApplicationHandler().getInjectionManager();
+    }
+
+    public Servlet getServlet() {
+        return null;
     }
 }

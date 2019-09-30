@@ -13,34 +13,26 @@
 package com.amazonaws.serverless.proxy.spring;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
-import com.amazonaws.serverless.proxy.AwsProxyExceptionHandler;
-import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
-import com.amazonaws.serverless.proxy.ExceptionHandler;
-import com.amazonaws.serverless.proxy.RequestReader;
-import com.amazonaws.serverless.proxy.ResponseWriter;
-import com.amazonaws.serverless.proxy.SecurityContextWriter;
+import com.amazonaws.serverless.proxy.*;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.*;
+import com.amazonaws.serverless.proxy.spring.embedded.ServerlessServletEmbeddedServerFactory;
 import com.amazonaws.services.lambda.runtime.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.SpringApplication;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.StandardEnvironment;
-import org.springframework.web.SpringServletContainerInitializer;
 import org.springframework.web.WebApplicationInitializer;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
-import org.springframework.web.servlet.DispatcherServlet;
 
 import javax.servlet.*;
 
-import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * Spring implementation of the `LambdaContainerHandler` abstract class. This class uses the `LambdaSpringApplicationInitializer`
+ * SpringBoot 1.x implementation of the `LambdaContainerHandler` abstract class. This class uses the `LambdaSpringApplicationInitializer`
  * object behind the scenes to proxy requests. The default implementation leverages the `AwsProxyHttpServletRequest` and
  * `AwsHttpServletResponse` implemented in the `aws-serverless-java-container-core` package.
  *
@@ -53,29 +45,22 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
     private final Class<? extends WebApplicationInitializer> springBootInitializer;
     private static final Logger log = LoggerFactory.getLogger(SpringBootLambdaContainerHandler.class);
     private String[] springProfiles = null;
-    private DispatcherServlet dispatcherServlet;
+
+    private static SpringBootLambdaContainerHandler instance;
 
     // State vars
     private boolean initialized;
 
     /**
-     * Creates a default SpringLambdaContainerHandler initialized with the `AwsProxyRequest` and `AwsProxyResponse` objects
-     * @param springBootInitializer {@code SpringBootServletInitializer} class
-     * @return An initialized instance of the `SpringLambdaContainerHandler`
-     * @throws ContainerInitializationException If an error occurs while initializing the Spring framework
+     * We need to rely on the static instance of this for SpringBoot because we need it to access the ServletContext.
+     * Normally, SpringBoot would initialize its own embedded container through the <code>SpringApplication.run()</code>
+     * method. However, in our case we need to rely on the pre-initialized handler and need to fetch information from it
+     * for our mock {@link com.amazonaws.serverless.proxy.spring.embedded.ServerlessServletEmbeddedServerFactory}.
+     *
+     * @return The initialized instance
      */
-    public static SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(Class<? extends WebApplicationInitializer> springBootInitializer)
-            throws ContainerInitializationException {
-        SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> newHandler = new SpringBootLambdaContainerHandler<>(
-                                                                                                AwsProxyRequest.class,
-                                                                                                AwsProxyResponse.class,
-                                                                                                new AwsProxyHttpServletRequestReader(),
-                                                                                                new AwsProxyHttpServletResponseWriter(),
-                                                                                                new AwsProxySecurityContextWriter(),
-                                                                                                new AwsProxyExceptionHandler(),
-                                                                                                springBootInitializer);
-        newHandler.initialize();
-        return newHandler;
+    public static SpringBootLambdaContainerHandler getInstance() {
+        return instance;
     }
 
     /**
@@ -87,17 +72,12 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
      */
     public static SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(Class<? extends WebApplicationInitializer> springBootInitializer, String... profiles)
             throws ContainerInitializationException {
-        SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> newHandler = new SpringBootLambdaContainerHandler<>(
-                AwsProxyRequest.class,
-                AwsProxyResponse.class,
-                new AwsProxyHttpServletRequestReader(),
-                new AwsProxyHttpServletResponseWriter(),
-                new AwsProxySecurityContextWriter(),
-                new AwsProxyExceptionHandler(),
-                springBootInitializer);
-        newHandler.activateSpringProfiles(profiles);
-        newHandler.initialize();
-        return newHandler;
+        return new SpringBootProxyHandlerBuilder()
+                .defaultProxy()
+                .initializationWrapper(new InitializationWrapper())
+                .springBootApplication(springBootInitializer)
+                .profiles(profiles)
+                .buildAndInitialize();
     }
 
     /**
@@ -117,14 +97,24 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
                                             ResponseWriter<AwsHttpServletResponse, ResponseType> responseWriter,
                                             SecurityContextWriter<RequestType> securityContextWriter,
                                             ExceptionHandler<ResponseType> exceptionHandler,
-                                            Class<? extends WebApplicationInitializer> springBootInitializer)
+                                            Class<? extends WebApplicationInitializer> springBootInitializer,
+                                            InitializationWrapper init)
             throws ContainerInitializationException {
         super(requestTypeClass, responseTypeClass, requestReader, responseWriter, securityContextWriter, exceptionHandler);
         Timer.start("SPRINGBOOT_CONTAINER_HANDLER_CONSTRUCTOR");
-        setServletContext(new SpringBootAwsServletContext());
         initialized = false;
         this.springBootInitializer = springBootInitializer;
+        setInitializationWrapper(init);
+        SpringBootLambdaContainerHandler.setInstance(this);
+
         Timer.stop("SPRINGBOOT_CONTAINER_HANDLER_CONSTRUCTOR");
+    }
+
+    // this is not pretty. However, because SpringBoot wants to control all of the initialization
+    // we need to access this handler as a singleton from the EmbeddedContainer to set the servlet
+    // context and from the ServletConfigurationSupport implementation
+    private static void setInstance(SpringBootLambdaContainerHandler h) {
+        SpringBootLambdaContainerHandler.instance = h;
     }
 
     public void activateSpringProfiles(String... profiles) {
@@ -151,7 +141,9 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
         containerRequest.setServletContext(getServletContext());
 
         // process filters & invoke servlet
-        doFilter(containerRequest, containerResponse, dispatcherServlet);
+        Servlet reqServlet = ((AwsServletContext)getServletContext()).getServletForPath(containerRequest.getPathInfo());
+        containerRequest.setResponse(containerResponse);
+        doFilter(containerRequest, containerResponse, reqServlet);
         Timer.stop("SPRINGBOOT_HANDLE_REQUEST");
     }
 
@@ -161,159 +153,19 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
             throws ContainerInitializationException {
         Timer.start("SPRINGBOOT_COLD_START");
 
-        if (springProfiles != null && springProfiles.length > 0) {
-            System.setProperty("spring.profiles.active", String.join(",", springProfiles));
-        }
-        SpringServletContainerInitializer springServletContainerInitializer = new SpringServletContainerInitializer();
-        LinkedHashSet<Class<?>> webAppInitializers = new LinkedHashSet<>();
-        webAppInitializers.add(springBootInitializer);
-        try {
-            springServletContainerInitializer.onStartup(webAppInitializers, getServletContext());
-        } catch (ServletException e) {
-            throw new ContainerInitializationException("Could not initialize Spring Boot", e);
-        }
-
+        SpringApplication app = new SpringApplication(
+                springBootInitializer,
+                ServerlessServletEmbeddedServerFactory.class,
+                SpringBootServletConfigurationSupport.class
+        );
         if (springProfiles != null && springProfiles.length > 0) {
             ConfigurableEnvironment springEnv = new StandardEnvironment();
             springEnv.setActiveProfiles(springProfiles);
+            app.setEnvironment(springEnv);
         }
-
-        WebApplicationContext applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
-
-        dispatcherServlet = applicationContext.getBean("dispatcherServlet", DispatcherServlet.class);
+        app.run();
 
         initialized = true;
         Timer.stop("SPRINGBOOT_COLD_START");
-    }
-
-
-    private class SpringBootAwsServletContext extends AwsServletContext {
-        public SpringBootAwsServletContext() {
-            super(SpringBootLambdaContainerHandler.this);
-        }
-
-        @Override
-        public ServletRegistration.Dynamic addServlet(String s, String s1) {
-            throw new UnsupportedOperationException("Only dispatcherServlet is supported");
-        }
-
-        @Override
-        public ServletRegistration.Dynamic addServlet(String s, Class<? extends Servlet> aClass) {
-            throw new UnsupportedOperationException("Only dispatcherServlet is supported");
-        }
-
-        @Override
-        public ServletRegistration.Dynamic addServlet(String s, Servlet servlet) {
-            if ("dispatcherServlet".equals(s)) {
-                try {
-                    servlet.init(new ServletConfig() {
-                        @Override
-                        public String getServletName() {
-                            return s;
-                        }
-
-                        @Override
-                        public ServletContext getServletContext() {
-                            return SpringBootAwsServletContext.this;
-                        }
-
-                        @Override
-                        public String getInitParameter(String name) {
-                            return null;
-                        }
-
-                        @Override
-                        public Enumeration<String> getInitParameterNames() {
-                            return new Enumeration<String>() {
-                                @Override
-                                public boolean hasMoreElements() {
-                                    return false;
-                                }
-
-                                @Override
-                                public String nextElement() {
-                                    return null;
-                                }
-                            };
-                        }
-                    });
-                } catch (ServletException e) {
-                    throw new RuntimeException("Cannot add servlet " + servlet, e);
-                }
-                return new ServletRegistration.Dynamic() {
-                    @Override
-                    public String getName() {
-                        return s;
-                    }
-
-                    @Override
-                    public String getClassName() {
-                        return null;
-                    }
-
-                    @Override
-                    public boolean setInitParameter(String name, String value) {
-                        return false;
-                    }
-
-                    @Override
-                    public String getInitParameter(String name) {
-                        return null;
-                    }
-
-                    @Override
-                    public Set<String> setInitParameters(Map<String, String> initParameters) {
-                        return null;
-                    }
-
-                    @Override
-                    public Map<String, String> getInitParameters() {
-                        return null;
-                    }
-
-                    @Override
-                    public Set<String> addMapping(String... urlPatterns) {
-                        return null;
-                    }
-
-                    @Override
-                    public Collection<String> getMappings() {
-                        return null;
-                    }
-
-                    @Override
-                    public String getRunAsRole() {
-                        return null;
-                    }
-
-                    @Override
-                    public void setAsyncSupported(boolean isAsyncSupported) {
-
-                    }
-
-                    @Override
-                    public void setLoadOnStartup(int loadOnStartup) {
-
-                    }
-
-                    @Override
-                    public Set<String> setServletSecurity(ServletSecurityElement constraint) {
-                        return null;
-                    }
-
-                    @Override
-                    public void setMultipartConfig(MultipartConfigElement multipartConfig) {
-
-                    }
-
-                    @Override
-                    public void setRunAsRole(String roleName) {
-
-                    }
-                };
-            } else {
-                throw new UnsupportedOperationException("Only dispatcherServlet is supported");
-            }
-        }
     }
 }

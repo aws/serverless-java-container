@@ -13,12 +13,7 @@
 package com.amazonaws.serverless.proxy.spring;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
-import com.amazonaws.serverless.proxy.AwsProxyExceptionHandler;
-import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
-import com.amazonaws.serverless.proxy.ExceptionHandler;
-import com.amazonaws.serverless.proxy.RequestReader;
-import com.amazonaws.serverless.proxy.ResponseWriter;
-import com.amazonaws.serverless.proxy.SecurityContextWriter;
+import com.amazonaws.serverless.proxy.*;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
@@ -26,8 +21,10 @@ import com.amazonaws.serverless.proxy.internal.servlet.*;
 import com.amazonaws.services.lambda.runtime.Context;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
+import org.springframework.web.servlet.DispatcherServlet;
 
-import javax.servlet.ServletException;
+import javax.servlet.Servlet;
+import javax.servlet.ServletRegistration;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -39,10 +36,11 @@ import java.util.concurrent.CountDownLatch;
  * @param <ResponseType> The expected return type
  */
 public class SpringLambdaContainerHandler<RequestType, ResponseType> extends AwsLambdaServletContainerHandler<RequestType, ResponseType, AwsProxyHttpServletRequest, AwsHttpServletResponse> {
-    private LambdaSpringApplicationInitializer initializer;
+    private ConfigurableWebApplicationContext appContext;
+    private String[] profiles;
 
     // State vars
-    private boolean initialized;
+    private boolean refreshContext = false;
 
     /**
      * Creates a default SpringLambdaContainerHandler initialized with the `AwsProxyRequest` and `AwsProxyResponse` objects
@@ -51,30 +49,11 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
      * @throws ContainerInitializationException
      */
     public static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(Class... config) throws ContainerInitializationException {
-        AnnotationConfigWebApplicationContext applicationContext = new AnnotationConfigWebApplicationContext();
-        applicationContext.register(config);
-
-        return getAwsProxyHandler(applicationContext);
-    }
-
-    /**
-     * Creates a default SpringLambdaContainerHandler initialized with the `AwsProxyRequest` and `AwsProxyResponse` objects
-     * @param applicationContext A custom ConfigurableWebApplicationContext to be used
-     * @return An initialized instance of the `SpringLambdaContainerHandler`
-     * @throws ContainerInitializationException
-     */
-    public static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(ConfigurableWebApplicationContext applicationContext)
-            throws ContainerInitializationException {
-        SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> newHandler = new SpringLambdaContainerHandler<>(
-                                                                                            AwsProxyRequest.class,
-                                                                                            AwsProxyResponse.class,
-                                                                                            new AwsProxyHttpServletRequestReader(),
-                                                                                            new AwsProxyHttpServletResponseWriter(),
-                                                                                            new AwsProxySecurityContextWriter(),
-                                                                                            new AwsProxyExceptionHandler(),
-                                                                                            applicationContext);
-        newHandler.initialize();
-        return newHandler;
+        return new SpringProxyHandlerBuilder()
+                .defaultProxy()
+                .initializationWrapper(new InitializationWrapper())
+                .configurationClasses(config)
+                .buildAndInitialize();
     }
 
     /**
@@ -86,17 +65,12 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
      */
     public static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(ConfigurableWebApplicationContext applicationContext, String... profiles)
             throws ContainerInitializationException {
-        SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> newHandler = new SpringLambdaContainerHandler<>(
-                AwsProxyRequest.class,
-                AwsProxyResponse.class,
-                new AwsProxyHttpServletRequestReader(),
-                new AwsProxyHttpServletResponseWriter(),
-                new AwsProxySecurityContextWriter(),
-                new AwsProxyExceptionHandler(),
-                applicationContext);
-        newHandler.activateSpringProfiles(profiles);
-        newHandler.initialize();
-        return newHandler;
+        return new SpringProxyHandlerBuilder()
+                .defaultProxy()
+                .initializationWrapper(new InitializationWrapper())
+                .springApplicationContext(applicationContext)
+                .profiles(profiles)
+                .buildAndInitialize();
     }
 
     /**
@@ -115,33 +89,26 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
                                         ResponseWriter<AwsHttpServletResponse, ResponseType> responseWriter,
                                         SecurityContextWriter<RequestType> securityContextWriter,
                                         ExceptionHandler<ResponseType> exceptionHandler,
-                                        ConfigurableWebApplicationContext applicationContext)
+                                        ConfigurableWebApplicationContext applicationContext,
+                                        InitializationWrapper init)
             throws ContainerInitializationException {
         super(requestTypeClass, responseTypeClass, requestReader, responseWriter, securityContextWriter, exceptionHandler);
         Timer.start("SPRING_CONTAINER_HANDLER_CONSTRUCTOR");
-        initialized = false;
-        initializer = new LambdaSpringApplicationInitializer(applicationContext);
+        appContext = applicationContext;
+        setInitializationWrapper(init);
         Timer.stop("SPRING_CONTAINER_HANDLER_CONSTRUCTOR");
     }
 
 
     /**
      * Asks the custom web application initializer to refresh the Spring context.
-     * @param refreshContext true if the context should be refreshed
+     * @param refresh true if the context should be refreshed
      */
-    public void setRefreshContext(boolean refreshContext) {
-        this.initializer.setRefreshContext(refreshContext);
+    public void setRefreshContext(boolean refresh) {
+        //this.initializer.setRefreshContext(refreshContext);
+        refreshContext = refresh;
     }
 
-
-    /**
-     * Returns the custom web application initializer used by the object. The custom application initializer gives you access
-     * to the dispatcher servlet.
-     * @return The instance of the custom {@link org.springframework.web.WebApplicationInitializer}
-     */
-    public LambdaSpringApplicationInitializer getApplicationInitializer() {
-        return initializer;
-    }
 
     @Override
     protected AwsHttpServletResponse getContainerResponse(AwsProxyHttpServletRequest request, CountDownLatch latch) {
@@ -152,33 +119,32 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
     /**
      * Activates the given Spring profiles in the application. This method will cause the context to be
      * refreshed. To use a single Spring profile, use the static method {@link SpringLambdaContainerHandler#getAwsProxyHandler(ConfigurableWebApplicationContext, String...)}
-     * @param profiles A number of spring profiles
+     * @param p A number of spring profiles
      * @throws ContainerInitializationException if the initializer is not set yet.
      */
-    public void activateSpringProfiles(String... profiles) throws ContainerInitializationException {
-        if (initializer == null) {
-            throw new ContainerInitializationException(LambdaSpringApplicationInitializer.ERROR_NO_CONTEXT, null);
-        }
+    public void activateSpringProfiles(String... p) throws ContainerInitializationException {
+        profiles = p;
         setServletContext(new AwsServletContext(this));
-        initializer.setSpringProfiles(getServletContext(), profiles);
+        appContext.registerShutdownHook();
+        appContext.close();
+        initialize();
     }
 
     @Override
     protected void handleRequest(AwsProxyHttpServletRequest containerRequest, AwsHttpServletResponse containerResponse, Context lambdaContext) throws Exception {
         Timer.start("SPRING_HANDLE_REQUEST");
-        if (initializer == null) {
-            throw new ContainerInitializationException(LambdaSpringApplicationInitializer.ERROR_NO_CONTEXT, null);
-        }
 
-        // wire up the application context on the first invocation
-        if (!initialized) {
-            initialize();
+        if (refreshContext) {
+            appContext.refresh();
+            refreshContext = false;
         }
 
         containerRequest.setServletContext(getServletContext());
 
         // process filters
-        doFilter(containerRequest, containerResponse, initializer);
+        Servlet reqServlet = ((AwsServletContext)getServletContext()).getServletForPath(containerRequest.getPathInfo());
+        containerRequest.setResponse(containerResponse);
+        doFilter(containerRequest, containerResponse, reqServlet);
         Timer.stop("SPRING_HANDLE_REQUEST");
     }
 
@@ -187,14 +153,13 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
     public void initialize()
             throws ContainerInitializationException {
         Timer.start("SPRING_COLD_START");
-
-        try {
-            initializer.onStartup(getServletContext());
-        } catch (ServletException e) {
-            throw new ContainerInitializationException("Could not initialize Spring", e);
+        if (profiles != null) {
+            appContext.getEnvironment().setActiveProfiles(profiles);
         }
-
-        initialized = true;
+        appContext.setServletContext(getServletContext());
+        DispatcherServlet dispatcher = new DispatcherServlet(appContext);
+        ServletRegistration.Dynamic reg = getServletContext().addServlet("dispatcherServlet", dispatcher);
+        reg.addMapping("/");
         Timer.stop("SPRING_COLD_START");
     }
 }

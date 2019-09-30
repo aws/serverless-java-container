@@ -58,7 +58,7 @@ public class AwsHttpSession implements HttpSession {
 
     @Override
     public long getLastAccessedTime() {
-        return 0;
+        return lastAccessedTime;
     }
 
     @Override

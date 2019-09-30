@@ -25,6 +25,14 @@ public class StreamLambdaHandler implements RequestStreamHandler {
         try {
             handler = SpringBootLambdaContainerHandler.getAwsProxyHandler(Application.class);
 
+            // For applications that take longer than 10 seconds to start, use the async builder:
+            // long startTime = Instant.now().toEpochMilli();
+            // handler = new SpringBootProxyHandlerBuilder()
+            //                    .defaultProxy()
+            //                    .asyncInit(startTime)
+            //                    .springBootApplication(Application.class)
+            //                    .buildAndInitialize();
+
             // we use the onStartup method of the handler to register our custom filter
             handler.onStartup(servletContext -> {
                 FilterRegistration.Dynamic registration = servletContext.addFilter("CognitoIdentityFilter", CognitoIdentityFilter.class);

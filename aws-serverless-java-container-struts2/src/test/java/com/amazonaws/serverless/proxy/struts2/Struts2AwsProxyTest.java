@@ -92,12 +92,8 @@ public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
                 .queryString("contentType", "true")
                 .build();
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
-        for (String header : output.getMultiValueHeaders().keySet()) {
-            System.out.println(header + ": " + output.getMultiValueHeaders().getFirst(header));
-        }
         assertEquals(200, output.getStatusCode());
         assertEquals(CONTENT_TYPE_APPLICATION_JSON, output.getMultiValueHeaders().getFirst("Content-Type"));
-        System.out.println("Body: " + output.getBody());
 
         validateSingleValueModel(output, "Hello Struts2");
     }
@@ -271,7 +267,6 @@ public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
         String decodedParam = "";
         try {
             decodedParam = URLDecoder.decode(paramValue, "UTF-8");
-            System.out.println(decodedParam);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
             fail("Could not decode parameter");
@@ -309,8 +304,8 @@ public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
             assertNotNull(response.get(key));
             assertEquals(value, response.get(key));
         } catch (IOException e) {
-            fail("Exception while parsing response body: " + e.getMessage());
             e.printStackTrace();
+            fail("Exception while parsing response body: " + e.getMessage());
         }
     }
 
@@ -319,8 +314,8 @@ public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
             assertNotNull(output.getBody());
             assertEquals(value, objectMapper.readerFor(String.class).readValue(output.getBody()));
         } catch (Exception e) {
-            fail("Exception while parsing response body: " + e.getMessage());
             e.printStackTrace();
+            fail("Exception while parsing response body: " + e.getMessage());
         }
     }
 }

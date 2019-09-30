@@ -14,16 +14,15 @@ package com.amazonaws.serverless.proxy.jersey;
 
 
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
+import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
+import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
+import com.amazonaws.serverless.proxy.jersey.model.MapResponseModel;
+import com.amazonaws.serverless.proxy.jersey.model.SingleValueModel;
 import com.amazonaws.serverless.proxy.jersey.providers.ServletRequestFilter;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
-import com.amazonaws.serverless.proxy.jersey.model.MapResponseModel;
-import com.amazonaws.serverless.proxy.jersey.model.SingleValueModel;
-import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
-import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.services.lambda.runtime.Context;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
@@ -37,13 +36,15 @@ import org.junit.runners.Parameterized;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.UUID;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Unit test class for the Jersey AWS_PROXY default implementation
@@ -57,12 +58,25 @@ public class JerseyAwsProxyTest {
 
 
     private static ObjectMapper objectMapper = new ObjectMapper();
+
     private static ResourceConfig app = new ResourceConfig().packages("com.amazonaws.serverless.proxy.jersey")
             .register(LoggingFeature.class)
             .register(ServletRequestFilter.class)
             .register(MultiPartFeature.class)
+            .register(new ResourceBinder())
             .property(LoggingFeature.LOGGING_FEATURE_VERBOSITY_SERVER, LoggingFeature.Verbosity.PAYLOAD_ANY);
+
+    private static ResourceConfig appWithoutRegisteredDependencies = new ResourceConfig()
+            .packages("com.amazonaws.serverless.proxy.jersey")
+            .register(LoggingFeature.class)
+            .register(ServletRequestFilter.class)
+            .register(MultiPartFeature.class)
+            .property(LoggingFeature.LOGGING_FEATURE_VERBOSITY_SERVER, LoggingFeature.Verbosity.PAYLOAD_ANY);
+
     private static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = JerseyLambdaContainerHandler.getAwsProxyHandler(app);
+
+    private static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handlerWithoutRegisteredDependencies
+            = JerseyLambdaContainerHandler.getAwsProxyHandler(appWithoutRegisteredDependencies);
 
     private static Context lambdaContext = new MockLambdaContext();
 
@@ -76,14 +90,13 @@ public class JerseyAwsProxyTest {
     public static Collection<Object> data() {
         return Arrays.asList(new Object[] { false, true });
     }
-    
+
     private AwsProxyRequestBuilder getRequestBuilder(String path, String method) {
         AwsProxyRequestBuilder builder = new AwsProxyRequestBuilder(path, method);
         if (isAlb) builder.alb();
-        
+
         return builder;
     }
-
 
     @Test
     public void alb_basicRequest_expectSuccess() {
@@ -97,7 +110,6 @@ public class JerseyAwsProxyTest {
         assertEquals(200, output.getStatusCode());
         assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
         assertNotNull(output.getStatusDescription());
-        System.out.println(output.getStatusDescription());
 
         validateMapResponseModel(output);
     }
@@ -131,6 +143,18 @@ public class JerseyAwsProxyTest {
     }
 
     @Test
+    public void headers_servletRequest_failedDependencyInjection_expectInternalServerError() {
+        AwsProxyRequest request = getRequestBuilder("/echo/servlet-headers", "GET")
+                .json()
+                .header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
+                .build();
+
+        AwsProxyResponse output = handlerWithoutRegisteredDependencies.proxy(request, lambdaContext);
+        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), output.getStatusCode());
+    }
+
+    @Test
     public void context_servletResponse_setCustomHeader() {
         AwsProxyRequest request = getRequestBuilder("/echo/servlet-response", "GET")
                                           .json()
@@ -145,9 +169,6 @@ public class JerseyAwsProxyTest {
     public void context_serverInfo_correctContext() {
         AwsProxyRequest request = getRequestBuilder("/echo/servlet-context", "GET").build();
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
-        for (String header : output.getMultiValueHeaders().keySet()) {
-            System.out.println(header + ": " + output.getMultiValueHeaders().getFirst(header));
-        }
         assertEquals(200, output.getStatusCode());
         assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
 
@@ -387,8 +408,8 @@ public class JerseyAwsProxyTest {
             assertNotNull(response.getValues().get(key));
             assertEquals(value, response.getValues().get(key));
         } catch (IOException e) {
-            fail("Exception while parsing response body: " + e.getMessage());
             e.printStackTrace();
+            fail("Exception while parsing response body: " + e.getMessage());
         }
     }
 
@@ -398,8 +419,8 @@ public class JerseyAwsProxyTest {
             assertNotNull(response.getValue());
             assertEquals(value, response.getValue());
         } catch (IOException e) {
-            fail("Exception while parsing response body: " + e.getMessage());
             e.printStackTrace();
+            fail("Exception while parsing response body: " + e.getMessage());
         }
     }
 }

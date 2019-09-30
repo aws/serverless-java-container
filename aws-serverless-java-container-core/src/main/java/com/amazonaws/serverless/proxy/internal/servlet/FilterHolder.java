@@ -289,6 +289,7 @@ public class FilterHolder {
         public void addMappingForUrlPatterns(EnumSet<DispatcherType> types, boolean isLast, String... patterns) {
             if (types == null) {
                 dispatcherTypes.add(DispatcherType.REQUEST);
+                dispatcherTypes.add(DispatcherType.ASYNC);
             } else {
                 dispatcherTypes.addAll(types);
             }

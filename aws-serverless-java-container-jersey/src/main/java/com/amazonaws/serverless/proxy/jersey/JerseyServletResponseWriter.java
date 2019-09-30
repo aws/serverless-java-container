@@ -122,14 +122,8 @@ class JerseyServletResponseWriter
 
 
     public void failure(Throwable throwable) {
-        try {
-            log.error("failure", throwable);
-            jerseyLatch.countDown();
-            servletResponse.flushBuffer();
-        } catch (IOException e) {
-            log.error("Could not fail response", e);
-            throw new InternalServerErrorException(e);
-        }
+        log.error("failure", throwable);
+        throw new InternalServerErrorException("Jersey failed to process request", throwable);
     }
 
 

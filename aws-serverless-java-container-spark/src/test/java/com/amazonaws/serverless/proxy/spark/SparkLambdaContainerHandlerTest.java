@@ -38,7 +38,6 @@ public class SparkLambdaContainerHandlerTest {
 
         handler.onStartup(c -> {
             if (c == null) {
-                System.out.println("Null servlet context");
                 fail();
             }
             FilterRegistration.Dynamic registration = c.addFilter("CustomHeaderFilter", CustomHeaderFilter.class);
@@ -75,7 +74,6 @@ public class SparkLambdaContainerHandlerTest {
 
         handler.onStartup(c -> {
             if (c == null) {
-                System.out.println("Null servlet context");
                 fail();
             }
             FilterRegistration.Dynamic registration = c.addFilter("UnauthenticatedFilter", UnauthenticatedFilter.class);

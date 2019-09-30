@@ -20,6 +20,7 @@
         <module>aws-serverless-java-container-spark</module>
         <module>aws-serverless-java-container-spring</module>
         <module>aws-serverless-java-container-struts2</module>
+        <module>aws-serverless-java-container-springboot2</module>
         <module>aws-serverless-struts2-archetype</module>
         <module>aws-serverless-jersey-archetype</module>
         <module>aws-serverless-spark-archetype</module>
@@ -43,8 +44,9 @@
     </licenses>
 
     <properties>
-        <jacoco.minCoverage>0.5</jacoco.minCoverage>
-        <dependencyCheck.version>5.0.0</dependencyCheck.version>
+        <jacoco.minCoverage>0.7</jacoco.minCoverage>
+        <dependencyCheck.version>5.2.2</dependencyCheck.version>
+        <jackson.version>2.9.10</jackson.version>
     </properties>
 
     <dependencies>
