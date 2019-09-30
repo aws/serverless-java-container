@@ -1,4 +1,4 @@
-name: Serverless Java Container Continuous Integration
+name: Continuous Integration
 on:
   push:
   pull_request:
