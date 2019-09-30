@@ -83,12 +83,13 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
      * Creates a new container handler with the given reader and writer objects
      *
      * @param requestTypeClass The class for the incoming Lambda event
+     * @param responseTypeClass The class for the Lambda function output
      * @param requestReader An implementation of `RequestReader`
      * @param responseWriter An implementation of `ResponseWriter`
      * @param securityContextWriter An implementation of `SecurityContextWriter`
      * @param exceptionHandler An implementation of `ExceptionHandler`
      * @param springBootInitializer {@code SpringBootServletInitializer} class
-     * @throws ContainerInitializationException If an error occurs while initializing the Spring framework
+     * @param init The initialization Wrapper that will be used to start Spring Boot
      */
     public SpringBootLambdaContainerHandler(Class<RequestType> requestTypeClass,
                                             Class<ResponseType> responseTypeClass,
