@@ -1,0 +1,49 @@
+[ {
+  "name" : "com.amazonaws.serverless.proxy.model.AwsProxyRequest",
+  "allPublicMethods" : true,
+  "allDeclaredConstructors" : true
+}, {
+  "name" : "com.amazonaws.serverless.proxy.model.AlbContext",
+  "allPublicMethods" : true,
+  "allDeclaredConstructors" : true
+}, {
+  "name" : "com.amazonaws.serverless.proxy.model.ApiGatewayAuthorizerContext",
+  "allPublicMethods" : true,
+  "allDeclaredConstructors" : true
+}, {
+  "name" : "com.amazonaws.serverless.proxy.model.ApiGatewayRequestIdentity",
+  "allPublicMethods" : true,
+  "allDeclaredConstructors" : true
+}, {
+  "name" : "com.amazonaws.serverless.proxy.model.AwsProxyRequestContext",
+  "allPublicMethods" : true,
+  "allDeclaredConstructors" : true
+}, {
+  "name" : "com.amazonaws.serverless.proxy.model.AwsProxyResponse",
+  "allPublicMethods" : true,
+  "allDeclaredConstructors" : true
+}, {
+  "name" : "com.amazonaws.serverless.proxy.model.CognitoAuthorizerClaims",
+  "allPublicMethods" : true,
+  "allDeclaredConstructors" : true
+}, {
+  "name" : "com.amazonaws.serverless.proxy.model.ContainerConfig",
+  "allPublicMethods" : true,
+  "allDeclaredConstructors" : true
+}, {
+  "name" : "com.amazonaws.serverless.proxy.model.ErrorModel",
+  "allPublicMethods" : true,
+  "allDeclaredConstructors" : true
+}, {
+  "name" : "com.amazonaws.serverless.proxy.model.Headers",
+  "allPublicMethods" : true,
+  "allDeclaredConstructors" : true
+}, {
+  "name" : "com.amazonaws.serverless.proxy.model.MultiValuedTreeMap",
+  "allPublicMethods" : true,
+  "allDeclaredConstructors" : true
+}, {
+  "name" : "io.micronaut.http.client.ServiceHttpClientCondition",
+  "allPublicMethods" : true,
+  "allDeclaredConstructors" : true
+}]
