@@ -31,6 +31,15 @@ total 75M
 -rwxr-xr-x 1 user user 57M Oct  1 16:01 server
 ```
 
+To run the lambda locally, you can utilize the SAM cli by running `./sam-local.sh`. This should start up the listeners in the `PetsController`, and you can test locally with your preferred http client.
+
+For example, to test the GET /pets endpoint via curl:
+```bash
+curl localhost:3000/pets
+```
+
+You should see JSON output of pets.
+
 To deploy the application to AWS Lambda you can use the pre-configured `sam-native.yaml` file included in the repo. Using the AWS or SAM CLI, run the following commands:
 
 ```bash
@@ -57,8 +66,9 @@ aws cloudformation describe-stacks --stack-name MicronautGraalVmDemo --query Sta
 "https://xxxxxxxxxx.execute-api.xx-xxxx-1.amazonaws.com/Prod/pets"
 ```
 
-Make a test request to the API endpoint using curl or your preferred http client:
+Make a test request to the API endpoint using curl or your preferred http client. 
 
+For example, to check the GET /pets endpoint via curl:
 ```bash
-
+curl https://xxxxxxxxxx.execute-api.xx-xxxx-1.amazonaws.com/Prod/pets
 ```
