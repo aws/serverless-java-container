@@ -12,9 +12,12 @@
  */
 package com.amazonaws.micronaut.demo.model;
 
+import org.springframework.stereotype.Component;
+
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
+@Component
 public class PetData {
     private static List<String> breeds = new ArrayList<>();
     static {

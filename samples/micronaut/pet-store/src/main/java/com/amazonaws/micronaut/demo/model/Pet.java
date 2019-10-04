@@ -12,14 +12,20 @@
  */
 package com.amazonaws.micronaut.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.micronaut.core.annotation.Introspected;
+
 import java.util.Date;
 
+@Introspected
 public class Pet {
     private String id;
     private String breed;
     private String name;
     private Date dateOfBirth;
 
+    @JsonProperty("petId")
     public String getId() {
         return id;
     }
@@ -44,6 +50,7 @@ public class Pet {
         this.name = name;
     }
 
+    @JsonFormat(pattern = "YYYY-mm-dd")
     public Date getDateOfBirth() {
         return dateOfBirth;
     }

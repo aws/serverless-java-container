@@ -4,7 +4,12 @@ The Micronaut framework is compatible with Spring's annotations and makes it eas
 
 This demo application shows how to use Micronaut to compile an application that uses Spring annotations into a native binary with GraalVM and execute it in AWS Lambda. To run this demo, you will need to have Gradle installed as well as Docker to run the GraalVM build.
 
-With all the pre-requisites installed, you should be able to build a native image of the application by running the `docker-build.sh` from the repository's root.
+With all the pre-requisites installed including:
+
+* JDK 8 or above
+* Gradle 5.6.x
+ 
+You should be able to build a native image of the application by running the `docker-build.sh` from the repository's root.
 
 ```bash
 $ ./docker-build.sh
