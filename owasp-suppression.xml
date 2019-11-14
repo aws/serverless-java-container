@@ -36,10 +36,5 @@
         <notes><![CDATA[ Temporary suppression of slf4j vulnerability ]]></notes>
         <cpe>cpe:/a:slf4j:slf4j:1.8.0</cpe>
     </suppress>
-    <!-- TODO: Update Jackson and remove suppression -->
-    <suppress>
-        <notes><![CDATA[ Jackson 2.9.9 vulnerability ]]></notes>
-        <cpe>cpe:/a:fasterxml:jackson-databind:2.9.9</cpe>
-    </suppress>
 
 </suppressions>
