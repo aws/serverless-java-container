@@ -1,6 +1,6 @@
 #!/bin/sh
 echo "Startin GraalVM build"
-/usr/lib/graalvm/bin/native-image --no-server -cp /func/build/libs/pet-store-*-all.jar --initialize-at-build-time=com.amazonaws.serverless.proxy.model.ContainerConfig --initialize-at-build-time=reactor.core.publisher.Mono --initialize-at-build-time=reactor.core.publisher.Flux --initialize-at-build-time='com.amazonaws.serverless.proxy.model.ContainerConfig$1'
+/usr/lib/graalvm/bin/native-image -H:+TraceClassInitialization --initialize-at-build-time=reactor.core.publisher.Mono --initialize-at-build-time=reactor.core.publisher.Flux --no-fallback --no-server -cp /func/build/libs/pet-store-*-all.jar
 rm -rf /func/native-image/*
 
 chmod 755 /func/server

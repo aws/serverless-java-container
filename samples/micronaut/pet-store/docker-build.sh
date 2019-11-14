@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 DOCKER_IMAGE_NAME=graalvm-lambda-build
 
 if [[ -d "${PWD}/native-image" ]]; then

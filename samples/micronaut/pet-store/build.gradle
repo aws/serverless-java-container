@@ -7,8 +7,6 @@ plugins {
     id "io.spring.dependency-management" version "1.0.6.RELEASE"
 }
 
-
-
 version "0.1"
 group "graal.spring.demo"
 
@@ -38,13 +36,13 @@ dependencies {
     implementation "io.micronaut:micronaut-inject"
     implementation "io.micronaut:micronaut-validation"
     implementation "io.micronaut:micronaut-runtime"
-    implementation("io.micronaut.aws:micronaut-function-aws-custom-runtime") {
+    implementation("io.micronaut.aws:micronaut-function-aws-custom-runtime:1.3.2") {
         exclude group: "com.fasterxml.jackson.module", module: "jackson-module-afterburner"
     }
-    implementation("io.micronaut.aws:micronaut-function-aws-api-proxy") {
+    implementation("io.micronaut.aws:micronaut-function-aws-api-proxy:1.3.2") {
         exclude group: "com.fasterxml.jackson.module", module: "jackson-module-afterburner"
     }
-    implementation "io.micronaut:micronaut-http-server-netty"
+    developmentOnly "io.micronaut:micronaut-http-server-netty"
     runtimeOnly "ch.qos.logback:logback-classic:1.2.3"
     testAnnotationProcessor platform("io.micronaut:micronaut-bom:$micronautVersion")
     testAnnotationProcessor "io.micronaut:micronaut-inject-java"
@@ -55,10 +53,8 @@ dependencies {
 
     // spring support
     compile("org.springframework.boot:spring-boot-starter-web")
-    compile("io.micronaut:micronaut-http-server:1.0.4")
     runtime("io.micronaut.spring:micronaut-spring-boot:1.0.1")
     runtime("io.micronaut.spring:micronaut-spring-web:1.0.1")
-    runtime("io.micronaut:micronaut-http-server-netty:1.0.4")
 }
 
 test.classpath += configurations.developmentOnly

@@ -4,7 +4,12 @@ The [Micronaut framework](https://micronaut.io/) is compatible with Spring's ann
 
 This demo application shows how to use Micronaut to compile our standard pet store example, using Spring annotations, into a native binary with GraalVM and execute it in AWS Lambda. To run this demo, you will need to have [Gradle](https://gradle.org/) installed as well as [Docker](https://www.docker.com/) to run the GraalVM build.
 
-With all the pre-requisites installed, you should be able to build a native image of the application by running the `docker-build.sh` from the repository's root.
+With all the pre-requisites installed including:
+
+* JDK 8 or above
+* Gradle 5.6.x
+ 
+You should be able to build a native image of the application by running the `docker-build.sh` from the repository's root.
 
 ```bash
 $ ./docker-build.sh
@@ -25,6 +30,15 @@ total 75M
 -rw-r--r-- 1 user user 18M Oct  1 16:01 function.zip
 -rwxr-xr-x 1 user user 57M Oct  1 16:01 server
 ```
+
+To run the lambda locally, you can utilize the SAM cli by running `./sam-local.sh`. This should start up the listeners in the `PetsController`, and you can test locally with your preferred http client.
+
+For example, to test the GET /pets endpoint via curl:
+```bash
+curl localhost:3000/pets
+```
+
+You should see JSON output of pets.
 
 To deploy the application to AWS Lambda you can use the pre-configured `sam-native.yaml` file included in the repo. Using the AWS or SAM CLI, run the following commands:
 
@@ -52,8 +66,9 @@ aws cloudformation describe-stacks --stack-name MicronautGraalVmDemo --query Sta
 "https://xxxxxxxxxx.execute-api.xx-xxxx-1.amazonaws.com/Prod/pets"
 ```
 
-Make a test request to the API endpoint using curl or your preferred http client:
+Make a test request to the API endpoint using curl or your preferred http client. 
 
+For example, to check the GET /pets endpoint via curl:
 ```bash
-
+curl https://xxxxxxxxxx.execute-api.xx-xxxx-1.amazonaws.com/Prod/pets
 ```

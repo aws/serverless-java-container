@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import javax.annotation.Nullable;
 import java.security.Principal;
 import java.util.Optional;
 import java.util.UUID;
@@ -45,7 +46,7 @@ public class PetsController {
     }
 
     @RequestMapping(path = "/pets", method = RequestMethod.GET)
-    public Pet[] listPets(@RequestParam("limit") Optional<Integer> limit, Principal principal) {
+    public Pet[] listPets(@RequestParam("limit") Optional<Integer> limit, @Nullable Principal principal) {
         int queryLimit = 10;
         if (limit.isPresent()) {
             queryLimit = limit.get();
