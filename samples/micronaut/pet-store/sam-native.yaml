@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AWS Serverless Micronaut API - graal.spring.demo::graal-spring-demo
+Globals:
+  Api:
+    EndpointConfiguration: REGIONAL
+Resources:
+  GraalVMApiService:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: not.used.in.provided.runtime
+      Runtime: provided
+      CodeUri: native-image/function.zip
+      MemorySize: 512
+      Policies: AWSLambdaBasicExecutionRole
+      Tracing: Active
+      Timeout: 15
+      Events:
+        GetResource:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: any
+
+Outputs:
+  MicronautNativeServiceApi:
+    Description: URL for application
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/pets'
+    Export:
+      Name: MicronautNativeServiceApi

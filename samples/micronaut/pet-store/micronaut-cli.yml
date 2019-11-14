@@ -1,0 +1,5 @@
+profile: service
+defaultPackage: com.amazonaws.micronaut.demo
+---
+testFramework: junit
+sourceLanguage: java
