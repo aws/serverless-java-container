@@ -1,4 +1,4 @@
-package com.amazon.quarkus.demo.model;
+package com.amazonaws.serverless.sample.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;

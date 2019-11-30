@@ -11,7 +11,7 @@
     PetStoreNativeFunction:
       Type: AWS::Serverless::Function
       Properties:
-        Handler: not.used.in.provided.runtimei
+        Handler: not.used.in.provided.runtime
         Runtime: provided
         CodeUri: target/function.zip
         MemorySize: 128

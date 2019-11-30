@@ -56,3 +56,13 @@ For example, to check the GET /pets endpoint via curl:
 ```bash
 curl https://xxxxxxxxxx.execute-api.xx-xxxx-1.amazonaws.com/Prod/pets
 ```
+
+Finally, there’s an environment variable that must be set for native GraalVM deployments. If you look at sam.native.yaml you’ll see this:
+
+```bash
+        Environment:
+          Variables:
+            DISABLE_SIGNAL_HANDLERS: true
+```
+
+This environment variable resolves some incompatibilites between GraalVM and the Amazon Lambda Custom Runtime environment.
