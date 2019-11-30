@@ -1,7 +1,7 @@
-package com.amazonaws.serverless.sample;
+package com.amazonaws.serverless.sample.quarkus;
 
-import com.amazonaws.serverless.sample.model.Pet;
-import com.amazonaws.serverless.sample.model.PetData;
+import com.amazonaws.serverless.sample.quarkus.model.Pet;
+import com.amazonaws.serverless.sample.quarkus.model.PetData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
