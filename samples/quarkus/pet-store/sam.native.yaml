@@ -1,0 +1,36 @@
+  AWSTemplateFormatVersion: '2010-09-09'
+  Transform: AWS::Serverless-2016-10-31
+  Description: AWS Serverless Quarkus HTTP - com.amazon.quarkus.demo::pet-store
+  Globals:
+    Api:
+      EndpointConfiguration: REGIONAL
+      BinaryMediaTypes:
+        - "*/*"
+
+  Resources:
+    PetStoreNativeFunction:
+      Type: AWS::Serverless::Function
+      Properties:
+        Handler: not.used.in.provided.runtime
+        Runtime: provided
+        CodeUri: target/function.zip
+        MemorySize: 128
+        Policies: AWSLambdaBasicExecutionRole
+        Tracing: Active
+        Timeout: 15
+        Environment:
+          Variables:
+            DISABLE_SIGNAL_HANDLERS: true
+        Events:
+          GetResource:
+            Type: Api
+            Properties:
+              Path: /{proxy+}
+              Method: any
+
+  Outputs:
+    PetStoreNativeApi:
+      Description: URL for application
+      Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/'
+      Export:
+        Name: PetStoreNativeApi
