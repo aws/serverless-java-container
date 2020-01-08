@@ -10,7 +10,7 @@ jobs:
     name: Build and test core
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Build latest
         run: mvn -q clean install
         working-directory: ./aws-serverless-java-container-core
@@ -19,7 +19,7 @@ jobs:
     name: Build and test Jersey
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Build latest
         run: ./gha_build.sh jersey true true
       - name: Build Jersey 2.26
@@ -33,7 +33,7 @@ jobs:
     name: Build and test Spark
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Build latest
         run: ./gha_build.sh spark true true
       - name: Build Spark 2.8.0
@@ -43,7 +43,7 @@ jobs:
     name: Build and test Spring & SpringBoot
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Build latest
         run: ./gha_build.sh spring true true
       - name: Build Spring 4.3
@@ -55,7 +55,7 @@ jobs:
     name: Build and test SpringBoot 2
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Build latest
         run: ./gha_build.sh springboot2 true true
       - name: Build Spring Boot 2.0
@@ -69,6 +69,6 @@ jobs:
     name: Build and test Struts 2
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Build latest
         run: ./gha_build.sh struts2 true true
