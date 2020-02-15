@@ -45,6 +45,7 @@ public class SpringAwsProxyTest {
     private static final String CUSTOM_HEADER_KEY = "x-custom-header";
     private static final String CUSTOM_HEADER_VALUE = "my-custom-value";
     private static final String AUTHORIZER_PRINCIPAL_ID = "test-principal-" + UUID.randomUUID().toString();
+    private static final String UNICODE_VALUE = "שלום לכולם";
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -247,6 +248,21 @@ public class SpringAwsProxyTest {
         assertEquals(200, output.getStatusCode());
         assertNotNull(output.getBody());
         validateSingleValueModel(output, CUSTOM_HEADER_VALUE);
+    }
+
+    @Test
+    public void responseBody_responseWriter_validBody_UTF() throws JsonProcessingException {
+        SingleValueModel singleValueModel = new SingleValueModel();
+        singleValueModel.setValue(UNICODE_VALUE);
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/json-body", "POST")
+          .header("Content-Type", "application/json; charset=UTF-8")
+          .body(objectMapper.writeValueAsString(singleValueModel))
+          .build();
+
+        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        assertEquals(200, output.getStatusCode());
+        assertNotNull(output.getBody());
+        validateSingleValueModel(output, UNICODE_VALUE);
     }
 
     @Test
