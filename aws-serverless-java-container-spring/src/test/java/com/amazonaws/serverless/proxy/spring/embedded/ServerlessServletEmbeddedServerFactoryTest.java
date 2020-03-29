@@ -3,17 +3,29 @@ package com.amazonaws.serverless.proxy.spring.embedded;
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
 import com.amazonaws.serverless.proxy.spring.springbootapp.TestApplication;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.boot.context.embedded.EmbeddedServletContainer;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerException;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
+import org.springframework.core.SpringVersion;
 
 import javax.servlet.*;
 import java.io.IOException;
+import java.util.Objects;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeFalse;
 
 public class ServerlessServletEmbeddedServerFactoryTest {
+
+    @BeforeClass
+    public static void before() {
+        // We skip the tests if we are running against Spring 5.2.x - SpringBoot 1.5 is deprecated and no longer
+        // breaking changes in the latest Spring releases have not been supported in it.
+        // TODO: Update the check to verify any Spring version above 5.2
+        assumeFalse(Objects.requireNonNull(SpringVersion.getVersion()).startsWith("5.2"));
+    }
 
     // initialize a container handler to that the embedded factory can grab its instnace
     private SpringBootLambdaContainerHandler h = SpringBootLambdaContainerHandler.getAwsProxyHandler(TestApplication.class);

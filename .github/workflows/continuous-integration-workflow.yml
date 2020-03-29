@@ -50,6 +50,12 @@ jobs:
         run: ./gha_build.sh spring false false -Dspring.version=4.3.25.RELEASE -Dspring-security.version=4.2.13.RELEASE
       - name: Build Spring 5.0
         run: ./gha_build.sh spring false false -Dspring.version=5.0.15.RELEASE -Dspring-security.version=5.0.13.RELEASE
+      - name: Build Spring 5.1
+        run: ./gha_build.sh spring false false -Dspring.version=5.1.14.RELEASE -Dspring-security.version=5.1.8.RELEASE
+      - name: Build Spring 5.2
+        # we reduce the minCoverage for this run because it will skip the SpringBoot 1.5 tests since they are no longer compatible with
+        # Spring core 5.2 and above. SpringBoot 1.5 is deprecated
+        run: ./gha_build.sh spring false false -Dspring.version=5.2.5.RELEASE -Dspring-security.version=5.2.2.RELEASE -Djacoco.minCoverage=0.4
 
   build_springboot2:
     name: Build and test SpringBoot 2
