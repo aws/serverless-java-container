@@ -160,6 +160,19 @@ public class SpringBootAppTest {
         assertTrue(output.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE).contains("charset=UTF-8"));
     }
 
+    @Test
+    public void utf8_returnUtf8String_expectCorrectHeaderMediaAndCharsetNoDefault() {
+
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/test/utf8", "GET")
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .build();
+        AwsProxyResponse output = handler.handleRequest(request, context);
+        validateSingleValueModel(output, TestController.UTF8_TEST_STRING);
+        assertTrue(output.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
+        assertTrue(output.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE).contains(";"));
+        assertTrue(output.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE).contains("charset=UTF-8"));
+    }
+
 
     private void validateSingleValueModel(AwsProxyResponse output, String value) {
         try {
