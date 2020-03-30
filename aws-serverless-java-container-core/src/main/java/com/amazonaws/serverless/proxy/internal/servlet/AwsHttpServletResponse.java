@@ -419,7 +419,13 @@ public class AwsHttpServletResponse
         if (null != writer) {
             writer.flush();
         }
-        responseBody = new String(bodyOutputStream.toByteArray(), LambdaContainerHandler.getContainerConfig().getDefaultContentCharset());
+        String charset = characterEncoding;
+
+        if(charset == null) {
+            charset = LambdaContainerHandler.getContainerConfig().getDefaultContentCharset();
+        }
+
+        responseBody = new String(bodyOutputStream.toByteArray(), charset);
         log.debug("Response buffer flushed with {} bytes, latch={}", responseBody.length(), writersCountDownLatch.getCount());
         isCommitted = true;
         writersCountDownLatch.countDown();
