@@ -16,9 +16,9 @@
     </parent>
 
     <properties>
-        <spring.version>5.1.13.RELEASE</spring.version>
+        <spring.version>5.2.5.RELEASE</spring.version>
         <springboot.version>1.5.22.RELEASE</springboot.version>
-        <spring-security.version>5.1.5.RELEASE</spring-security.version>
+        <spring-security.version>5.2.2.RELEASE</spring-security.version>
     </properties>
 
     <dependencies>

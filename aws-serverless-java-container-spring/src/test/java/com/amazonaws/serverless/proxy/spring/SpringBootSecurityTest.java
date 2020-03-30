@@ -12,19 +12,31 @@ import com.amazonaws.serverless.proxy.spring.sbsecurityapp.TestSecurityConfig;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.core.SpringVersion;
 
 import javax.ws.rs.core.HttpHeaders;
 import java.io.IOException;
 import java.util.Base64;
+import java.util.Objects;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeFalse;
 
 
 public class SpringBootSecurityTest {
     private LambdaHandler handler = new LambdaHandler();
     private MockLambdaContext context = new MockLambdaContext();
     private ObjectMapper mapper = new ObjectMapper();
+
+    @BeforeClass
+    public static void before() {
+        // We skip the tests if we are running against Spring 5.2.x - SpringBoot 1.5 is deprecated and no longer
+        // breaking changes in the latest Spring releases have not been supported in it.
+        // TODO: Update the check to verify any Spring version above 5.2
+        assumeFalse(Objects.requireNonNull(SpringVersion.getVersion()).startsWith("5.2"));
+    }
 
     @Test
     public void correctUser_springSecurityBasicAuth_requestSucceeds() throws JsonProcessingException {

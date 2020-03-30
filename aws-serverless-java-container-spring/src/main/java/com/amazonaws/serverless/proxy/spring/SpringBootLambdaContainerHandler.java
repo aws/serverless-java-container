@@ -38,9 +38,15 @@ import java.util.concurrent.CountDownLatch;
  *
  * Important: Make sure to add <code>LambdaFlushResponseListener</code> in your SpringBootServletInitializer subclass configure().
  *
+ * @deprecated Spring <a href="https://spring.io/blog/2018/07/30/spring-boot-1-x-eol-aug-1st-2019">officially deprecated</a>
+ *   SpringBoot 1.5.x as of August 2019. We recommend upgrading to SpringBoot 2.1 or above. SpringBoot 2 is supported
+ *   in the <a href="https://mvnrepository.com/artifact/com.amazonaws.serverless/aws-serverless-java-container-springboot2">
+ *   <code>aws-serverless-java-container-springboot2</code></a> module.
+ *
  * @param <RequestType> The incoming event type
  * @param <ResponseType> The expected return type
  */
+@Deprecated
 public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends AwsLambdaServletContainerHandler<RequestType, ResponseType, AwsProxyHttpServletRequest, AwsHttpServletResponse> {
     private final Class<? extends WebApplicationInitializer> springBootInitializer;
     private static final Logger log = LoggerFactory.getLogger(SpringBootLambdaContainerHandler.class);

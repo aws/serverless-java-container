@@ -11,10 +11,13 @@ import com.amazonaws.serverless.proxy.spring.springslowapp.MessageController;
 import com.amazonaws.serverless.proxy.spring.springslowapp.SlowAppConfig;
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.core.SpringVersion;
 
 import java.time.Instant;
+import java.util.Objects;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeFalse;
 
 public class SlowAppTest {
 
@@ -40,6 +43,11 @@ public class SlowAppTest {
 
     @Test
     public void springBootSlowApp_continuesInBackgroundThread_returnsCorrect() {
+        // We skip the tests if we are running against Spring 5.2.x - SpringBoot 1.5 is deprecated and no longer
+        // breaking changes in the latest Spring releases have not been supported in it.
+        // TODO: Update the check to verify any Spring version above 5.2
+        assumeFalse(Objects.requireNonNull(SpringVersion.getVersion()).startsWith("5.2"));
+
         SBLambdaHandler slowApp = null;
         try {
             slowApp = new SBLambdaHandler();
