@@ -6,6 +6,7 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
+import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.serverless.proxy.spring.echoapp.EchoResource;
 import com.amazonaws.serverless.proxy.spring.echoapp.EchoSpringAppConfig;
 import com.amazonaws.serverless.proxy.spring.echoapp.RestControllerAdvice;
@@ -258,11 +259,12 @@ public class SpringAwsProxyTest {
           .header("Content-Type", "application/json; charset=UTF-8")
           .body(objectMapper.writeValueAsString(singleValueModel))
           .build();
-
+        LambdaContainerHandler.getContainerConfig().setDefaultContentCharset("UTF-8");
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
         assertNotNull(output.getBody());
         validateSingleValueModel(output, UNICODE_VALUE);
+        LambdaContainerHandler.getContainerConfig().setDefaultContentCharset(ContainerConfig.DEFAULT_CONTENT_CHARSET);
     }
 
     @Test
