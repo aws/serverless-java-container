@@ -5,6 +5,7 @@ import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletReques
 import com.amazonaws.serverless.proxy.internal.servlet.ServletLambdaContainerHandlerBuilder;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
+import org.springframework.boot.WebApplicationType;
 
 public final class SpringBootProxyHandlerBuilder extends ServletLambdaContainerHandlerBuilder<
             AwsProxyRequest,
@@ -14,6 +15,7 @@ public final class SpringBootProxyHandlerBuilder extends ServletLambdaContainerH
             SpringBootProxyHandlerBuilder> {
     private Class<?> springBootInitializer;
     private String[] profiles;
+    private WebApplicationType applicationType = WebApplicationType.REACTIVE;
 
     @Override
     protected SpringBootProxyHandlerBuilder self() {
@@ -31,6 +33,11 @@ public final class SpringBootProxyHandlerBuilder extends ServletLambdaContainerH
         return self();
     }
 
+    public SpringBootProxyHandlerBuilder servletApplication() {
+        this.applicationType = WebApplicationType.SERVLET;
+        return self();
+    }
+
     @Override
     public SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> build() throws ContainerInitializationException {
         validate();
@@ -45,7 +52,8 @@ public final class SpringBootProxyHandlerBuilder extends ServletLambdaContainerH
                 securityContextWriter,
                 exceptionHandler,
                 springBootInitializer,
-                initializationWrapper
+                initializationWrapper,
+                applicationType
         );
         if (profiles != null) {
             handler.activateSpringProfiles(profiles);

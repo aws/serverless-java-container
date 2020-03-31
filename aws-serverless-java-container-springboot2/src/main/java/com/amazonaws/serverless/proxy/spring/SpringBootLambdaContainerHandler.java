@@ -24,10 +24,16 @@ import com.amazonaws.services.lambda.runtime.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.web.context.ConfigurableWebApplicationContext;
 
 import javax.servlet.Servlet;
+import javax.servlet.ServletRegistration;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -44,6 +50,8 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
     private final Class<?> springBootInitializer;
     private static final Logger log = LoggerFactory.getLogger(SpringBootLambdaContainerHandler.class);
     private String[] springProfiles = null;
+    private WebApplicationType springWebApplicationType;
+    private ConfigurableApplicationContext applicationContext;
 
     private static SpringBootLambdaContainerHandler instance;
 
@@ -90,6 +98,7 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
      * @param exceptionHandler An implementation of `ExceptionHandler`
      * @param springBootInitializer {@code SpringBootServletInitializer} class
      * @param init The initialization Wrapper that will be used to start Spring Boot
+     * @param applicationType The Spring Web Application Type
      */
     public SpringBootLambdaContainerHandler(Class<RequestType> requestTypeClass,
                                             Class<ResponseType> responseTypeClass,
@@ -98,11 +107,13 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
                                             SecurityContextWriter<RequestType> securityContextWriter,
                                             ExceptionHandler<ResponseType> exceptionHandler,
                                             Class<?> springBootInitializer,
-                                            InitializationWrapper init) {
+                                            InitializationWrapper init,
+                                            WebApplicationType applicationType) {
         super(requestTypeClass, responseTypeClass, requestReader, responseWriter, securityContextWriter, exceptionHandler);
         Timer.start("SPRINGBOOT2_CONTAINER_HANDLER_CONSTRUCTOR");
         initialized = false;
         this.springBootInitializer = springBootInitializer;
+        springWebApplicationType = applicationType;
         setInitializationWrapper(init);
         SpringBootLambdaContainerHandler.setInstance(this);
 
@@ -150,14 +161,15 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
             throws ContainerInitializationException {
         Timer.start("SPRINGBOOT2_COLD_START");
 
-        SpringApplication app = new SpringApplication(getEmbeddedContainerClasses());
-        if (springProfiles != null && springProfiles.length > 0) {
-            ConfigurableEnvironment springEnv = new StandardEnvironment();
-            springEnv.setActiveProfiles(springProfiles);
-            app.setEnvironment(springEnv);
+        SpringApplicationBuilder builder = new SpringApplicationBuilder(getEmbeddedContainerClasses())
+                .web(springWebApplicationType); // .REACTIVE, .SERVLET
+        if (springProfiles != null) {
+            builder.profiles(springProfiles);
         }
-
-        app.run();
+        applicationContext = builder.run();
+        if (springWebApplicationType == WebApplicationType.SERVLET) {
+            ((AnnotationConfigServletWebServerApplicationContext)applicationContext).setServletContext(getServletContext());
+        }
 
         initialized = true;
         Timer.stop("SPRINGBOOT2_COLD_START");
@@ -165,12 +177,17 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
 
     private Class<?>[] getEmbeddedContainerClasses() {
         Class<?>[] classes = new Class[2];
-        try {
-            // if HandlerAdapter is available we assume they are using WebFlux. Otherwise plain servlet.
-            this.getClass().getClassLoader().loadClass("org.springframework.web.reactive.HandlerAdapter");
-            log.debug("Found WebFlux HandlerAdapter on classpath, using reactive server factory");
-            classes[0] = ServerlessReactiveServletEmbeddedServerFactory.class;
-        } catch (ClassNotFoundException e) {
+        if (springWebApplicationType == WebApplicationType.REACTIVE) {
+            try {
+                // if HandlerAdapter is available we assume they are using WebFlux. Otherwise plain servlet.
+                this.getClass().getClassLoader().loadClass("org.springframework.web.reactive.HandlerAdapter");
+                log.debug("Found WebFlux HandlerAdapter on classpath, using reactive server factory");
+                classes[0] = ServerlessReactiveServletEmbeddedServerFactory.class;
+            } catch (ClassNotFoundException e) {
+                springWebApplicationType = WebApplicationType.SERVLET;
+                classes[0] = ServerlessServletEmbeddedServerFactory.class;
+            }
+        } else {
             classes[0] = ServerlessServletEmbeddedServerFactory.class;
         }
 

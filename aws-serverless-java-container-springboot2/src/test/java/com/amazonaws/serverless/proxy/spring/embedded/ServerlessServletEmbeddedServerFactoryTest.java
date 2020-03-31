@@ -10,6 +10,7 @@ import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
 import org.junit.Test;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 
 import javax.servlet.ServletContext;
@@ -26,7 +27,8 @@ public class ServerlessServletEmbeddedServerFactoryTest {
             new AwsProxySecurityContextWriter(),
             new AwsProxyExceptionHandler(),
             null,
-            new InitializationWrapper()
+            new InitializationWrapper(),
+            WebApplicationType.REACTIVE
     );
 
     public ServerlessServletEmbeddedServerFactoryTest() throws ContainerInitializationException {
