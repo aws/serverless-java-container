@@ -521,6 +521,24 @@ public class AwsProxyHttpServletRequestTest {
         assertEquals(443, req.getServerPort());
     }
 
+    @Test
+    public void serverName_emptyHeaders_doesNotThrowNullPointer() {
+        AwsProxyRequest proxyReq = new AwsProxyRequestBuilder("/test", "GET").build();
+        proxyReq.setMultiValueHeaders(null);
+        HttpServletRequest servletReq = getRequest(proxyReq, null, null);
+        String serverName = servletReq.getServerName();
+        assertTrue(serverName.startsWith("null.execute-api"));
+    }
+
+    @Test
+    public void serverName_hostHeader_returnsHostHeaderOnly() {
+        AwsProxyRequest proxyReq = new AwsProxyRequestBuilder("/test", "GET")
+                .header(HttpHeaders.HOST, "testapi.com").build();
+        LambdaContainerHandler.getContainerConfig().addCustomDomain("testapi.com");
+        HttpServletRequest servletReq = getRequest(proxyReq, null, null);
+        String serverName = servletReq.getServerName();
+        assertEquals("testapi.com", serverName);
+    }
 
     private AwsProxyRequest getRequestWithHeaders() {
         return new AwsProxyRequestBuilder("/hello", "GET")

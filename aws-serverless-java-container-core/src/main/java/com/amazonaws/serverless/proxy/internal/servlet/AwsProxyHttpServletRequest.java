@@ -558,9 +558,11 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             region = "us-east-1";
         }
 
-        String hostHeader = request.getMultiValueHeaders().getFirst(HOST_HEADER_NAME);
-        if (hostHeader != null && SecurityUtils.isValidHost(hostHeader, request.getRequestContext().getApiId(), region)) {
-            return hostHeader;
+        if (request.getMultiValueHeaders() != null && request.getMultiValueHeaders().containsKey(HOST_HEADER_NAME)) {
+            String hostHeader = request.getMultiValueHeaders().getFirst(HOST_HEADER_NAME);
+            if (SecurityUtils.isValidHost(hostHeader, request.getRequestContext().getApiId(), region)) {
+                return hostHeader;
+            }
         }
 
         return new StringBuilder().append(request.getRequestContext().getApiId())
