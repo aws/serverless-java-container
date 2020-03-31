@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>aws-serverless-java-container</artifactId>
         <groupId>com.amazonaws.serverless</groupId>
@@ -16,9 +17,8 @@
 
     <properties>
         <spring.version>5.2.5.RELEASE</spring.version>
-        <springsecurity.version>5.2.2.RELEASE</springsecurity.version>
         <springboot.version>2.2.6.RELEASE</springboot.version>
-
+        <springsecurity.version>5.2.2.RELEASE</springsecurity.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
@@ -49,6 +49,24 @@
             <version>${springboot.version}</version>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>${spring.version}</version>
+            <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-aop</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-expression</artifactId>
+                </exclusion>
+            </exclusions>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-config</artifactId>
@@ -94,6 +112,18 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>2.0.1.Final</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>6.1.2.Final</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
             <version>17.0.0</version>
@@ -133,16 +163,18 @@
                         </goals>
                         <configuration>
                             <haltOnFailure>true</haltOnFailure>
-                            <rules><rule>
-                                <element>BUNDLE</element>
-                                <limits>
-                                    <limit>
-                                        <counter>INSTRUCTION</counter>
-                                        <value>COVEREDRATIO</value>
-                                        <minimum>${jacoco.minCoverage}</minimum>
-                                    </limit>
-                                </limits>
-                            </rule></rules>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>INSTRUCTION</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>${jacoco.minCoverage}</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
                         </configuration>
                     </execution>
                 </executions>
