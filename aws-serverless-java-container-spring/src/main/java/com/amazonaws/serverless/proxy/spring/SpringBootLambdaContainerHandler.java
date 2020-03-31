@@ -23,9 +23,11 @@ import com.amazonaws.services.lambda.runtime.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.web.WebApplicationInitializer;
+import org.springframework.web.context.ConfigurableWebApplicationContext;
 
 import javax.servlet.*;
 
@@ -48,6 +50,8 @@ import java.util.concurrent.CountDownLatch;
  */
 @Deprecated
 public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends AwsLambdaServletContainerHandler<RequestType, ResponseType, AwsProxyHttpServletRequest, AwsHttpServletResponse> {
+    private static final String DISPATCHER_SERVLET_REGISTRATION_NAME = "dispatcherServlet";
+
     private final Class<? extends WebApplicationInitializer> springBootInitializer;
     private static final Logger log = LoggerFactory.getLogger(SpringBootLambdaContainerHandler.class);
     private String[] springProfiles = null;
@@ -169,8 +173,14 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
             springEnv.setActiveProfiles(springProfiles);
             app.setEnvironment(springEnv);
         }
-        app.run();
+        ConfigurableApplicationContext applicationContext = app.run();
 
+        ((ConfigurableWebApplicationContext)applicationContext).setServletContext(getServletContext());
+        AwsServletRegistration reg = (AwsServletRegistration)getServletContext().getServletRegistration(DISPATCHER_SERVLET_REGISTRATION_NAME);
+        if (reg != null) {
+            reg.setLoadOnStartup(1);
+        }
+        super.initialize();
         initialized = true;
         Timer.stop("SPRINGBOOT_COLD_START");
     }
