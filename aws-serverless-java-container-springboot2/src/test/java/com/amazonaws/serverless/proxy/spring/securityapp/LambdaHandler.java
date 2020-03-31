@@ -1,7 +1,6 @@
 package com.amazonaws.serverless.proxy.spring.securityapp;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
@@ -13,7 +12,7 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 
     static {
         try {
-            handler = SpringBootLambdaContainerHandler.getAwsProxyHandler(ServletApplication.class);
+            handler = SpringBootLambdaContainerHandler.getAwsProxyHandler(SecurityApplication.class);
         } catch (ContainerInitializationException e) {
             e.printStackTrace();
         }

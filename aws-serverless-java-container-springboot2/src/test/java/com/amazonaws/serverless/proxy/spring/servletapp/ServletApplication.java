@@ -2,6 +2,8 @@ package com.amazonaws.serverless.proxy.spring.servletapp;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
 
 @SpringBootApplication(exclude = {
         org.springframework.boot.autoconfigure.security.reactive.ReactiveUserDetailsServiceAutoConfiguration.class,
@@ -9,5 +11,6 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
         org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration.class,
         org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class
 })
-public class ServletApplication  extends SpringBootServletInitializer {
+@Import(MessageController.class)
+public class ServletApplication {
 }
