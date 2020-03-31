@@ -149,8 +149,8 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
         FilterChain chain = getFilterChain(request, servlet);
         chain.doFilter(request, response);
 
-        // if for some reason the response wasn't flushed yet, we force it here.
-        if (!response.isCommitted()) {
+        // if for some reason the response wasn't flushed yet, we force it here unless it's being processed asynchronously (WebFlux)
+        if (!response.isCommitted() && request.getDispatcherType() != DispatcherType.ASYNC) {
             response.flushBuffer();
         }
     }
