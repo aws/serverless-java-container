@@ -86,7 +86,6 @@
                     <artifactId>spring-expression</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>test</scope>
         </dependency>
 
         <dependency>

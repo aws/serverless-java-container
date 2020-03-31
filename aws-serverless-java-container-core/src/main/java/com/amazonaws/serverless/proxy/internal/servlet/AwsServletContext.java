@@ -185,25 +185,21 @@ public class AwsServletContext
         String[] pathParts = path.split("/");
         for (AwsServletRegistration reg : servletRegistrations.values()) {
             for (String p : reg.getMappings()) {
-                try {
-                    if ("".equals(p) || "/".equals(p) || "/*".equals(p)) {
+                if ("".equals(p) || "/".equals(p) || "/*".equals(p)) {
+                    return reg.getServlet();
+                }
+                // if  I have no path and I haven't matched something now I'll just move on to the next
+                if ("".equals(path) || "/".equals(path)) {
+                    continue;
+                }
+                String[] regParts = p.split("/");
+                for (int i = 0; i < regParts.length; i++) {
+                    if (!regParts[i].equals(pathParts[i]) && !"*".equals(regParts[i])) {
+                        break;
+                    }
+                    if (i == regParts.length - 1 && (regParts[i].equals(pathParts[i]) || "*".equals(regParts[i]))) {
                         return reg.getServlet();
                     }
-                    // if  I have no path and I haven't matched something now I'll just move on to the next
-                    if ("".equals(path) || "/".equals(path)) {
-                        continue;
-                    }
-                    String[] regParts = p.split("/");
-                    for (int i = 0; i < regParts.length; i++) {
-                        if (!regParts[i].equals(pathParts[i]) && !"*".equals(regParts[i])) {
-                            break;
-                        }
-                        if (i == regParts.length - 1 && (regParts[i].equals(pathParts[i]) || "*".equals(regParts[i]))) {
-                            return reg.getServlet();
-                        }
-                    }
-                } catch (ServletException e) {
-                    return null;
                 }
             }
         }
@@ -216,12 +212,7 @@ public class AwsServletContext
     public Enumeration<Servlet> getServlets() {
         return Collections.enumeration(servletRegistrations.entrySet().stream()
                 .map((e) -> {
-                    try {
-                        return e.getValue().getServlet();
-                    } catch (ServletException ex) {
-                        ex.printStackTrace();
-                        return null;
-                    }
+                    return e.getValue().getServlet();
                 } )
                 .collect(Collectors.toList()));
     }

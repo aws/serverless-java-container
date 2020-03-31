@@ -14,15 +14,7 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
@@ -31,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Predicate;
 
 /**
  * This object in in charge of matching a servlet request to a set of filter, creating the filter chain for a request,
@@ -104,12 +97,17 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
             return getFilterChainCache(type, targetPath, servlet);
         }
 
+        AwsServletRegistration servletRegistration = (AwsServletRegistration)servletContext.getServletRegistrations()
+                .values().stream()
+                .filter((Predicate<ServletRegistration>) servletRegistration1 -> ((AwsServletRegistration) servletRegistration1).getServlet().equals(servlet))
+                .findFirst().orElse(null);
+
         FilterChainHolder chainHolder = new FilterChainHolder();
 
         Map<String, FilterHolder> registrations = getFilterHolders();
         if (registrations == null || registrations.size() == 0) {
-            if (servlet != null) {
-                chainHolder.addFilter(new FilterHolder(new ServletExecutionFilter(servlet), servletContext));
+            if (servletRegistration != null) {
+                chainHolder.addFilter(new FilterHolder(new ServletExecutionFilter(servletRegistration), servletContext));
             }
             return chainHolder;
         }
@@ -130,8 +128,8 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
             // we assume we only ever have one servlet.
         }
 
-        if (servlet != null) {
-            chainHolder.addFilter(new FilterHolder(new ServletExecutionFilter(servlet), servletContext));
+        if (servletRegistration != null) {
+            chainHolder.addFilter(new FilterHolder(new ServletExecutionFilter(servletRegistration), servletContext));
         }
 
         putFilterChainCache(type, targetPath, chainHolder);
@@ -332,23 +330,30 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
     private class ServletExecutionFilter implements Filter {
 
         private FilterConfig config;
-        private Servlet handlerServlet;
+        private AwsServletRegistration handlerServlet;
+        private boolean initialized;
 
-        public ServletExecutionFilter(Servlet handler) {
-            handlerServlet = handler;
+        public ServletExecutionFilter(AwsServletRegistration servletReg) {
+            handlerServlet = servletReg;
+            initialized = handlerServlet.getServlet().getServletInfo() != null;
         }
 
         @Override
         public void init(FilterConfig filterConfig)
                 throws ServletException {
+            if (initialized) {
+                return;
+            }
             config = filterConfig;
+            handlerServlet.getServlet().init(handlerServlet.getServletConfig());
+            initialized = true;
         }
 
 
         @Override
         public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
                 throws IOException, ServletException {
-            handlerServlet.service(servletRequest, servletResponse);
+            handlerServlet.getServlet().service(servletRequest, servletResponse);
             filterChain.doFilter(servletRequest, servletResponse);
         }
 

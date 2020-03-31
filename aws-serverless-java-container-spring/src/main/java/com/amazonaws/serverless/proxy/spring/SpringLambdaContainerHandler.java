@@ -24,6 +24,7 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 import org.springframework.web.servlet.DispatcherServlet;
 
 import javax.servlet.Servlet;
+import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 
 import java.util.concurrent.CountDownLatch;
@@ -160,6 +161,9 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
         DispatcherServlet dispatcher = new DispatcherServlet(appContext);
         ServletRegistration.Dynamic reg = getServletContext().addServlet("dispatcherServlet", dispatcher);
         reg.addMapping("/");
+        reg.setLoadOnStartup(1);
+        // call initialize on AwsLambdaServletContainerHandler to initialize servlets that are set to load on startup
+        super.initialize();
         Timer.stop("SPRING_COLD_START");
     }
 }

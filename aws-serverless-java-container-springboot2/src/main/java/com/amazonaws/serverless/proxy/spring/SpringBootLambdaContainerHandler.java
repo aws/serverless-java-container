@@ -14,6 +14,7 @@ package com.amazonaws.serverless.proxy.spring;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.*;
+import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.servlet.*;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
@@ -31,6 +32,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
+import org.springframework.web.servlet.DispatcherServlet;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletRegistration;
@@ -47,6 +49,8 @@ import java.util.concurrent.CountDownLatch;
  * @param <ResponseType> The expected return type
  */
 public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends AwsLambdaServletContainerHandler<RequestType, ResponseType, AwsProxyHttpServletRequest, AwsHttpServletResponse> {
+    private static final String DISPATCHER_SERVLET_REGISTRATION_NAME = "dispatcherServlet";
+
     private final Class<?> springBootInitializer;
     private static final Logger log = LoggerFactory.getLogger(SpringBootLambdaContainerHandler.class);
     private String[] springProfiles = null;
@@ -169,8 +173,12 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
         applicationContext = builder.run();
         if (springWebApplicationType == WebApplicationType.SERVLET) {
             ((AnnotationConfigServletWebServerApplicationContext)applicationContext).setServletContext(getServletContext());
+            AwsServletRegistration reg = (AwsServletRegistration)getServletContext().getServletRegistration(DISPATCHER_SERVLET_REGISTRATION_NAME);
+            if (reg != null) {
+                reg.setLoadOnStartup(1);
+            }
         }
-
+        super.initialize();
         initialized = true;
         Timer.stop("SPRINGBOOT2_COLD_START");
     }

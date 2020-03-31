@@ -51,11 +51,8 @@ public class EchoSpringAppConfig {
             // servlet name mappings are disabled and will throw an exception
 
             //handler.getApplicationInitializer().getDispatcherServlet().setThrowExceptionIfNoHandlerFound(true);
-            try {
-                ((DispatcherServlet)((AwsServletRegistration)c.getServletRegistration("dispatcherServlet")).getServlet()).setThrowExceptionIfNoHandlerFound(true);
-            } catch (ServletException e) {
-                e.printStackTrace();
-            }
+            ((DispatcherServlet)((AwsServletRegistration)c.getServletRegistration("dispatcherServlet")).getServlet()).setThrowExceptionIfNoHandlerFound(true);
+
         });
         return handler;
     }

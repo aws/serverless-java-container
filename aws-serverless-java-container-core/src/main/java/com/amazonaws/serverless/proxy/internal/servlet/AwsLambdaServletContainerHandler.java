@@ -12,6 +12,7 @@
  */
 package com.amazonaws.serverless.proxy.internal.servlet;
 
+import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.ExceptionHandler;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.RequestReader;
@@ -28,7 +29,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -152,6 +154,25 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
         // if for some reason the response wasn't flushed yet, we force it here unless it's being processed asynchronously (WebFlux)
         if (!response.isCommitted() && request.getDispatcherType() != DispatcherType.ASYNC) {
             response.flushBuffer();
+        }
+    }
+
+    @Override
+    public void initialize() throws ContainerInitializationException {
+        // we expect all servlets to be wrapped in an AwsServletRegistration
+        ArrayList<AwsServletRegistration> registrations = new ArrayList<>((Collection<AwsServletRegistration>)getServletContext().getServletRegistrations().values());
+        registrations.sort(AwsServletRegistration::compareTo);
+        for (AwsServletRegistration r : registrations) {
+            if (r.getLoadOnStartup() == -1) { // skip Servlets that can be lazily loaded
+                continue;
+            }
+            try {
+                if (r.getServlet() != null) {
+                        r.getServlet().init(r.getServletConfig());
+                }
+            } catch (ServletException e) {
+                throw new ContainerInitializationException("Could not initialize servlet " + r.getName(), e);
+            }
         }
     }
 
