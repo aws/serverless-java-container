@@ -132,8 +132,26 @@ public abstract class ServletLambdaContainerHandlerBuilder<
         return self();
     }
 
+    /**
+     * Uses an async initializer with the given start time to calculate the 10 seconds timeout.
+     *
+     * @deprecated As of release 1.5 this method is deprecated in favor of the parameters-less one {@link ServletLambdaContainerHandlerBuilder#asyncInit()}.
+     * @param actualStartTime An epoch in milliseconds that should be used to calculate the 10 seconds timeout since the start of the application
+     * @return A builder configured to use the async initializer
+     */
+    @Deprecated
     public Builder asyncInit(long actualStartTime) {
         this.initializationWrapper = new AsyncInitializationWrapper(actualStartTime);
+        return self();
+    }
+
+    /**
+     * Uses a new {@link AsyncInitializationWrapper} with the no-parameter constructor that takes the actual JVM
+     * start time
+     * @return A builder configured to use an async initializer
+     */
+    public Builder asyncInit() {
+        this.initializationWrapper = new AsyncInitializationWrapper();
         return self();
     }
 

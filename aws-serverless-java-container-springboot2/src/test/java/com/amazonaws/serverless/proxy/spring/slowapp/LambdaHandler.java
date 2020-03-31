@@ -21,7 +21,7 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
             System.out.println("startCall: " + startTime);
             handler = new SpringBootProxyHandlerBuilder()
                     .defaultProxy()
-                    .asyncInit(startTime)
+                    .asyncInit()
                     .springBootApplication(SlowTestApplication.class)
                     .buildAndInitialize();
             constructorTime = Instant.now().toEpochMilli() - startTime;
