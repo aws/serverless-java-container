@@ -24,7 +24,7 @@ public class SecurityConfig
         return http.authorizeExchange()
                 .anyExchange().authenticated().and().csrf().disable()
                 .httpBasic()
-                .and().anonymous().disable().build();
+                .and().build();
     }
 
     @Bean
