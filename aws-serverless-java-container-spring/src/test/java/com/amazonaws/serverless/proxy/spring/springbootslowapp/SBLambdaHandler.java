@@ -22,7 +22,7 @@ public class SBLambdaHandler
         long startTime = Instant.now().toEpochMilli();
         handler = new SpringBootProxyHandlerBuilder()
                 .defaultProxy()
-                .asyncInit()
+                .asyncInit(Instant.now().toEpochMilli())
                 .springBootApplication(TestApplication.class)
                 .buildAndInitialize();
         constructorTime = Instant.now().toEpochMilli() - startTime;
