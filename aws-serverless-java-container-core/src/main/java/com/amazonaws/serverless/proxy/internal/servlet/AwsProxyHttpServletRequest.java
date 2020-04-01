@@ -77,12 +77,8 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     private AwsProxyRequest request;
     private SecurityContext securityContext;
     private AwsAsyncContext asyncContext;
-    private Map<String, List<String>> urlEncodedFormParameters;
-    private Map<String, Part> multipartFormParameters;
     private static Logger log = LoggerFactory.getLogger(AwsProxyHttpServletRequest.class);
     private ContainerConfig config;
-    private AwsHttpServletResponse response;
-    private AwsLambdaServletContainerHandler containerHandler;
 
     //-------------------------------------------------------------
     // Constructors
@@ -101,21 +97,8 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         this.config = config;
     }
 
-
     public AwsProxyRequest getAwsProxyRequest() {
         return this.request;
-    }
-
-    public AwsHttpServletResponse getResponse() {
-        return response;
-    }
-
-    public void setResponse(AwsHttpServletResponse response) {
-        this.response = response;
-    }
-
-    public void setContainerHandler(AwsLambdaServletContainerHandler containerHandler) {
-        this.containerHandler = containerHandler;
     }
 
     //-------------------------------------------------------------
@@ -224,16 +207,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getContextPath() {
-        String contextPath = "";
-        if (config.isUseStageAsServletContext() && request.getRequestContext().getStage() != null) {
-            log.debug("Using stage as context path");
-            contextPath = cleanUri(request.getRequestContext().getStage());
-        }
-        if (config.getServiceBasePath() != null) {
-            contextPath += cleanUri(config.getServiceBasePath());
-        }
-
-        return contextPath;
+        return generateContextPath(config, request.getRequestContext().getStage());
     }
 
 
@@ -279,19 +253,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public StringBuffer getRequestURL() {
-        String url = "";
-        url += getServerName();
-        url += cleanUri(getContextPath());
-        url += cleanUri(request.getPath());
-
-        return new StringBuffer(getScheme() + "://" + url);
-    }
-
-
-    @Override
-    public String getServletPath() {
-        // we always work on the root path
-        return "";
+        return generateRequestURL(request.getPath());
     }
 
 
@@ -333,7 +295,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     public <T extends HttpUpgradeHandler> T upgrade(Class<T> aClass)
             throws IOException, ServletException {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     //-------------------------------------------------------------
@@ -343,28 +305,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getCharacterEncoding() {
-        // we only look at content-type because content-encoding should only be used for
-        // "binary" requests such as gzip/deflate.
-        String contentTypeHeader = request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
-        if (contentTypeHeader == null) {
-            return null;
-        }
-
-        String[] contentTypeValues = contentTypeHeader.split(HEADER_VALUE_SEPARATOR);
-        if (contentTypeValues.length <= 1) {
-            return null;
-        }
-
-        for (String contentTypeValue : contentTypeValues) {
-            if (contentTypeValue.trim().startsWith(ENCODING_VALUE_KEY)) {
-                String[] encodingValues = contentTypeValue.split(HEADER_KEY_VALUE_SEPARATOR);
-                if (encodingValues.length <= 1) {
-                    return null;
-                }
-                return encodingValues[1];
-            }
-        }
-        return null;
+        return parseCharacterEncoding(request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
     }
 
 
@@ -380,25 +321,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             return;
         }
 
-        if (currentContentType.contains(HEADER_VALUE_SEPARATOR)) {
-            String[] contentTypeValues = currentContentType.split(HEADER_VALUE_SEPARATOR);
-            StringBuilder contentType = new StringBuilder(contentTypeValues[0]);
-
-            for (int i = 1; i < contentTypeValues.length; i++) {
-                String contentTypeValue = contentTypeValues[i];
-                String contentTypeString = HEADER_VALUE_SEPARATOR + " " + contentTypeValue;
-                if (contentTypeValue.trim().startsWith(ENCODING_VALUE_KEY)) {
-                    contentTypeString = HEADER_VALUE_SEPARATOR + " " + ENCODING_VALUE_KEY + HEADER_KEY_VALUE_SEPARATOR + s;
-                }
-                contentType.append(contentTypeString);
-            }
-
-            request.getMultiValueHeaders().putSingle(HttpHeaders.CONTENT_TYPE, contentType.toString());
-        } else {
-            request.getMultiValueHeaders().putSingle(
-                    HttpHeaders.CONTENT_TYPE,
-                    currentContentType + HEADER_VALUE_SEPARATOR + " " + ENCODING_VALUE_KEY + HEADER_KEY_VALUE_SEPARATOR + s);
-        }
+        request.getMultiValueHeaders().putSingle(HttpHeaders.CONTENT_TYPE, appendCharacterEncoding(currentContentType, s));
     }
 
 
@@ -436,33 +359,13 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     public ServletInputStream getInputStream()
             throws IOException {
-        if (request.getBody() == null) {
-            return new AwsServletInputStream(new NullInputStream(0, false, false));
-        }
-        byte[] bodyBytes;
-        if (request.isBase64Encoded()) {
-            bodyBytes = Base64.getMimeDecoder().decode(request.getBody());
-        } else {
-            String encoding = getCharacterEncoding();
-            if (encoding == null) {
-                encoding = StandardCharsets.ISO_8859_1.name();
-            }
-            try {
-                bodyBytes = request.getBody().getBytes(encoding);
-            } catch (Exception e) {
-                log.error("Could not read request with character encoding: " + SecurityUtils.crlf(encoding), e);
-                bodyBytes = request.getBody().getBytes(StandardCharsets.ISO_8859_1.name());
-            }
-
-        }
-        ByteArrayInputStream requestBodyStream = new ByteArrayInputStream(bodyBytes);
-        return new AwsServletInputStream(requestBodyStream);
+        return bodyStringToInputStream(request.getBody(), request.isBase64Encoded());
     }
 
 
     @Override
     public String getParameter(String s) {
-       String queryStringParameter = getFirstQueryParamValue(s, config.isQueryStringCaseSensitive());
+       String queryStringParameter = getFirstQueryParamValue(request.getMultiValueQueryStringParameters(), s, config.isQueryStringCaseSensitive());
         if (queryStringParameter != null) {
             return queryStringParameter;
         }
@@ -489,7 +392,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     @SuppressFBWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS") // suppressing this as according to the specs we should be returning null here if we can't find params
     public String[] getParameterValues(String s) {
-        List<String> values = new ArrayList<>(Arrays.asList(getQueryParamValues(s, config.isQueryStringCaseSensitive())));
+        List<String> values = new ArrayList<>(Arrays.asList(getQueryParamValues(request.getMultiValueQueryStringParameters(), s, config.isQueryStringCaseSensitive())));
 
         values.addAll(Arrays.asList(getFormBodyParameterCaseInsensitive(s)));
 
@@ -503,26 +406,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public Map<String, String[]> getParameterMap() {
-        Map<String, String[]> output = new HashMap<>();
-
-        Map<String, List<String>> params = getFormUrlEncodedParametersMap();
-        params.entrySet().stream().parallel().forEach(e -> {
-            output.put(e.getKey(), e.getValue().toArray(new String[0]));
-        });
-
-        if (request.getMultiValueQueryStringParameters() != null) {
-            request.getMultiValueQueryStringParameters().keySet().stream().parallel().forEach(e -> {
-                List<String> newValues = new ArrayList<>();
-                if (output.containsKey(e)) {
-                    String[] values = output.get(e);
-                    newValues.addAll(Arrays.asList(values));
-                }
-                newValues.addAll(Arrays.asList(getQueryParamValues(e, config.isQueryStringCaseSensitive())));
-                output.put(e, newValues.toArray(new String[0]));
-            });
-        }
-
-        return output;
+        return generateParameterMap(request.getMultiValueQueryStringParameters(), config);
     }
 
 
@@ -534,20 +418,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getScheme() {
-        // if we don't have any headers to deduce the value we assume HTTPS - API Gateway's default
-        if (request.getMultiValueHeaders() == null) {
-            return "https";
-        }
-        String cfScheme = request.getMultiValueHeaders().getFirst(CF_PROTOCOL_HEADER_NAME);
-        if (cfScheme != null && SecurityUtils.isValidScheme(cfScheme)) {
-            return cfScheme;
-        }
-        String gwScheme = request.getMultiValueHeaders().getFirst(PROTOCOL_HEADER_NAME);
-        if (gwScheme != null && SecurityUtils.isValidScheme(gwScheme)) {
-            return gwScheme;
-        }
-        // https is our default scheme
-        return "https";
+        return getSchemeFromHeader(request.getMultiValueHeaders());
     }
 
     @Override
@@ -705,7 +576,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     public AsyncContext getAsyncContext() {
         if (asyncContext == null) {
             throw new IllegalStateException("Request " + SecurityUtils.crlf(request.getRequestContext().getRequestId())
-                    + " is not in asynchronous mode. Call startAsync before atttempting to get the async context.");
+                    + " is not in asynchronous mode. Call startAsync before attempting to get the async context.");
         }
         return asyncContext;
     }
@@ -713,128 +584,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     //-------------------------------------------------------------
     // Methods - Private
     //-------------------------------------------------------------
-
-    private String[] getFormBodyParameterCaseInsensitive(String key) {
-        List<String> values = getFormUrlEncodedParametersMap().get(key);
-        if (values != null) {
-            String[] valuesArray = new String[values.size()];
-            valuesArray = values.toArray(valuesArray);
-            return valuesArray;
-        } else {
-            return new String[0];
-        }
-    }
-
-
-    @SuppressFBWarnings({"FILE_UPLOAD_FILENAME", "WEAK_FILENAMEUTILS"})
-    private Map<String, Part> getMultipartFormParametersMap() {
-        if (multipartFormParameters != null) {
-            return multipartFormParameters;
-        }
-        if (!ServletFileUpload.isMultipartContent(this)) { // isMultipartContent also checks the content type
-            multipartFormParameters = new HashMap<>();
-            return multipartFormParameters;
-        }
-        Timer.start("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
-        multipartFormParameters = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-
-        ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
-
-        try {
-            List<FileItem> items = upload.parseRequest(this);
-            for (FileItem item : items) {
-                String fileName = FilenameUtils.getName(item.getName());
-                AwsProxyRequestPart newPart = new AwsProxyRequestPart(item.get());
-                newPart.setName(item.getFieldName());
-                newPart.setSubmittedFileName(fileName);
-                newPart.setContentType(item.getContentType());
-                newPart.setSize(item.getSize());
-                item.getHeaders().getHeaderNames().forEachRemaining(h -> {
-                    newPart.addHeader(h, item.getHeaders().getHeader(h));
-                });
-
-                multipartFormParameters.put(item.getFieldName(), newPart);
-            }
-        } catch (FileUploadException e) {
-            Timer.stop("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
-            log.error("Could not read multipart upload file", e);
-        }
-        Timer.stop("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
-        return multipartFormParameters;
-    }
-
-
-    static String cleanUri(String uri) {
-        String finalUri = (uri == null ? "/" : uri);
-        if (finalUri.equals("/")) {
-            return finalUri;
-        }
-
-        if (!finalUri.startsWith("/")) {
-            finalUri = "/" + finalUri;
-        }
-
-        if (finalUri.endsWith("/")) {
-            finalUri = finalUri.substring(0, finalUri.length() - 1);
-        }
-
-        finalUri = finalUri.replaceAll("/+", "/");
-
-        return finalUri;
-    }
-
-
-    private Map<String, List<String>> getFormUrlEncodedParametersMap() {
-        if (urlEncodedFormParameters != null) {
-            return urlEncodedFormParameters;
-        }
-        String contentType = getContentType();
-        if (contentType == null) {
-            urlEncodedFormParameters = new HashMap<>();
-            return urlEncodedFormParameters;
-        }
-        if (!contentType.startsWith(MediaType.APPLICATION_FORM_URLENCODED) || !getMethod().toLowerCase(Locale.ENGLISH).equals("post")) {
-            urlEncodedFormParameters = new HashMap<>();
-            return urlEncodedFormParameters;
-        }
-        Timer.start("SERVLET_REQUEST_GET_FORM_PARAMS");
-        String rawBodyContent = null;
-        try {
-            rawBodyContent = IOUtils.toString(getInputStream());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        urlEncodedFormParameters = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        for (String parameter : rawBodyContent.split(FORM_DATA_SEPARATOR)) {
-            String[] parameterKeyValue = parameter.split(HEADER_KEY_VALUE_SEPARATOR);
-            if (parameterKeyValue.length < 2) {
-                continue;
-            }
-            List<String> values = new ArrayList<>();
-            if (urlEncodedFormParameters.containsKey(parameterKeyValue[0])) {
-                values = urlEncodedFormParameters.get(parameterKeyValue[0]);
-            }
-            values.add(decodeValueIfEncoded(parameterKeyValue[1]));
-            urlEncodedFormParameters.put(decodeValueIfEncoded(parameterKeyValue[0]), values);
-        }
-        Timer.stop("SERVLET_REQUEST_GET_FORM_PARAMS");
-        return urlEncodedFormParameters;
-    }
-
-
-    public static String decodeValueIfEncoded(String value) {
-        if (value == null) {
-            return null;
-        }
-
-        try {
-            return URLDecoder.decode(value, LambdaContainerHandler.getContainerConfig().getUriEncoding());
-        } catch (UnsupportedEncodingException e) {
-            log.warn("Could not decode body content - proceeding as if it was already decoded", e);
-            return value;
-        }
-    }
 
     private List<String> getHeaderValues(String key) {
         // special cases for referer and user agent headers
@@ -856,39 +605,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         }
 
         return request.getMultiValueHeaders().get(key);
-    }
-
-
-    private String getFirstQueryParamValue(String key, boolean isCaseSensitive) {
-        if (request.getMultiValueQueryStringParameters() != null) {
-            if (isCaseSensitive) {
-                return request.getMultiValueQueryStringParameters().getFirst(key);
-            }
-            
-            for (String k : request.getMultiValueQueryStringParameters().keySet()) {
-                if (k.toLowerCase(Locale.getDefault()).equals(key.toLowerCase(Locale.getDefault()))) {
-                    return request.getMultiValueQueryStringParameters().getFirst(k);
-                }
-            }
-        }
-
-        return null;
-    }
-
-    public String[] getQueryParamValues(String key, boolean isCaseSensitive) {
-        if (request.getMultiValueQueryStringParameters() != null) {
-            if (isCaseSensitive) {
-                return request.getMultiValueQueryStringParameters().get(key).toArray(new String[0]);
-            }
-
-            for (String k : request.getMultiValueQueryStringParameters().keySet()) {
-                if (k.toLowerCase(Locale.getDefault()).equals(key.toLowerCase(Locale.getDefault()))) {
-                    return request.getMultiValueQueryStringParameters().get(k).toArray(new String[0]);
-                }
-            }
-        }
-
-        return new String[0];
     }
 
 

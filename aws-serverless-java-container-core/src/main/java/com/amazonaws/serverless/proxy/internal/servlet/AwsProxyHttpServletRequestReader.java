@@ -28,6 +28,7 @@ import javax.ws.rs.core.SecurityContext;
  */
 public class AwsProxyHttpServletRequestReader extends RequestReader<AwsProxyRequest, AwsProxyHttpServletRequest> {
     static final String INVALID_REQUEST_ERROR = "The incoming event is not a valid request from Amazon API Gateway or an Application Load Balancer";
+
     private ServletContext servletContext;
     //-------------------------------------------------------------
     // Methods - Implementation

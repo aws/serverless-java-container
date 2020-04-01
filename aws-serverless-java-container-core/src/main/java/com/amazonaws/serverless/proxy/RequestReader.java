@@ -65,7 +65,20 @@ public abstract class RequestReader<RequestType, ContainerRequestType> {
      */
     public static final String JAX_SECURITY_CONTEXT_PROPERTY = "com.amazonaws.serverless.jaxrs.securityContext";
 
+    /**
+     * The key for the <strong>HTTP API</strong> request context passed by the services
+     */
+    public static final String HTTP_API_CONTEXT_PROPERTY = "com.amazonaws.httpapi.request.context";
 
+    /**
+     * The key for the <strong>HTTP API</strong> stage variables
+     */
+    public static final String HTTP_API_STAGE_VARS_PROPERTY = "com.amazonaws.httpapi.stage.variables";
+
+    /**
+     * The key for the <strong>HTTP API</strong> proxy request event
+     */
+    public static final String HTTP_API_EVENT_PROPERTY = "com.amazonaws.httpapi.request";
 
     //-------------------------------------------------------------
     // Methods - Abstract
