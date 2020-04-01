@@ -114,7 +114,7 @@ public class AwsProxyHttpServletRequestReaderTest {
     public void readRequest_validEventEmptyPath_expectException() {
         try {
             AwsProxyRequest req = new AwsProxyRequestBuilder(null, "GET").build();
-            AwsProxyHttpServletRequest servletReq = reader.readRequest(req, null, null, ContainerConfig.defaultConfig());
+            HttpServletRequest servletReq = reader.readRequest(req, null, null, ContainerConfig.defaultConfig());
             assertNotNull(servletReq);
         } catch (InvalidRequestEventException e) {
             e.printStackTrace();
@@ -150,7 +150,7 @@ public class AwsProxyHttpServletRequestReaderTest {
         AwsProxyRequest req = new AwsProxyRequestBuilder("/path", "GET").build();
         req.setMultiValueHeaders(null);
         try {
-            AwsProxyHttpServletRequest servletReq = reader.readRequest(req, null, null, ContainerConfig.defaultConfig());
+            HttpServletRequest servletReq = reader.readRequest(req, null, null, ContainerConfig.defaultConfig());
             String headerValue = servletReq.getHeader(HttpHeaders.CONTENT_TYPE);
             assertNull(headerValue);
         } catch (InvalidRequestEventException e) {
@@ -163,7 +163,7 @@ public class AwsProxyHttpServletRequestReaderTest {
     public void readRequest_emptyHeaders_expectSuccess() {
         AwsProxyRequest req = new AwsProxyRequestBuilder("/path", "GET").build();
         try {
-            AwsProxyHttpServletRequest servletReq = reader.readRequest(req, null, null, ContainerConfig.defaultConfig());
+            HttpServletRequest servletReq = reader.readRequest(req, null, null, ContainerConfig.defaultConfig());
             String headerValue = servletReq.getHeader(HttpHeaders.CONTENT_TYPE);
             assertNull(headerValue);
         } catch (InvalidRequestEventException e) {

@@ -83,7 +83,7 @@ public class AwsAsyncContextTest {
         return ctx;
     }
 
-    public static class MockContainerHandler extends AwsLambdaServletContainerHandler<AwsProxyRequest, AwsProxyResponse, AwsProxyHttpServletRequest, AwsHttpServletResponse> {
+    public static class MockContainerHandler extends AwsLambdaServletContainerHandler<AwsProxyRequest, AwsProxyResponse, HttpServletRequest, AwsHttpServletResponse> {
         private int desiredStatus;
         private HttpServletResponse response;
         private Servlet selectedServlet;
@@ -94,7 +94,7 @@ public class AwsAsyncContextTest {
         }
 
         @Override
-        protected AwsHttpServletResponse getContainerResponse(AwsProxyHttpServletRequest request, CountDownLatch latch) {
+        protected AwsHttpServletResponse getContainerResponse(HttpServletRequest request, CountDownLatch latch) {
             return new AwsHttpServletResponse(request, latch);
         }
 
@@ -115,7 +115,7 @@ public class AwsAsyncContextTest {
         }
 
         @Override
-        protected void handleRequest(AwsProxyHttpServletRequest containerRequest, AwsHttpServletResponse containerResponse, Context lambdaContext) throws Exception {
+        protected void handleRequest(HttpServletRequest containerRequest, AwsHttpServletResponse containerResponse, Context lambdaContext) throws Exception {
 
         }
 
