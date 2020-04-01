@@ -101,6 +101,21 @@ public class AwsProxyRequestBuilder {
         this.request.getRequestContext().getElb().setTargetGroupArn(
                 "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/lambda-target/d6190d154bc908a5"
         );
+
+        // ALB does not decode query string parameters so we re-encode them all
+        if (request.getMultiValueQueryStringParameters() != null) {
+            MultiValuedTreeMap<String, String> newQs = new MultiValuedTreeMap<>();
+            for (Map.Entry<String, List<String>> e : request.getMultiValueQueryStringParameters().entrySet()) {
+                for (String v : e.getValue()) {
+                    try {
+                        newQs.add(URLEncoder.encode(e.getKey(), "UTF-8"), URLEncoder.encode(v, "UTF-8"));
+                    } catch (UnsupportedEncodingException ex) {
+                        throw new RuntimeException("Could not encode query string parameters: " + e.getKey() + "=" + v, ex);
+                    }
+                }
+            }
+            request.setMultiValueQueryStringParameters(newQs);
+        }
         return this;
     }
 

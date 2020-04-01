@@ -13,17 +13,8 @@
 package com.amazonaws.serverless.proxy.jersey;
 
 
-import com.amazonaws.serverless.proxy.AwsProxyExceptionHandler;
-import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
-import com.amazonaws.serverless.proxy.ExceptionHandler;
-import com.amazonaws.serverless.proxy.RequestReader;
-import com.amazonaws.serverless.proxy.ResponseWriter;
-import com.amazonaws.serverless.proxy.SecurityContextWriter;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletResponse;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsLambdaServletContainerHandler;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequestReader;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
+import com.amazonaws.serverless.proxy.*;
+import com.amazonaws.serverless.proxy.internal.servlet.*;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.jersey.suppliers.AwsProxyServletContextSupplier;
 import com.amazonaws.serverless.proxy.jersey.suppliers.AwsProxyServletRequestSupplier;
@@ -31,6 +22,7 @@ import com.amazonaws.serverless.proxy.jersey.suppliers.AwsProxyServletResponseSu
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 
+import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import org.glassfish.jersey.internal.inject.AbstractBinder;
@@ -42,6 +34,7 @@ import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Application;
@@ -74,7 +67,7 @@ import java.util.concurrent.CountDownLatch;
  * @param <RequestType> The type for the incoming Lambda event
  * @param <ResponseType> The type for Lambda's return value
  */
-public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends AwsLambdaServletContainerHandler<RequestType, ResponseType, AwsProxyHttpServletRequest, AwsHttpServletResponse> {
+public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends AwsLambdaServletContainerHandler<RequestType, ResponseType, HttpServletRequest, AwsHttpServletResponse> {
 
     //-------------------------------------------------------------
     // Variables - Private
@@ -97,13 +90,36 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
      * @return A <code>JerseyLambdaContainerHandler</code> object
      */
     public static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(Application jaxRsApplication) {
-        JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> newHandler = new JerseyLambdaContainerHandler<>(AwsProxyRequest.class,
-                                                                                          AwsProxyResponse.class,
-                                                                                          new AwsProxyHttpServletRequestReader(),
-                                                                                          new AwsProxyHttpServletResponseWriter(),
-                                                                                          new AwsProxySecurityContextWriter(),
-                                                                                          new AwsProxyExceptionHandler(),
-                                                                                          jaxRsApplication);
+        JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> newHandler = new JerseyLambdaContainerHandler<>(
+                AwsProxyRequest.class,
+                AwsProxyResponse.class,
+                new AwsProxyHttpServletRequestReader(),
+                new AwsProxyHttpServletResponseWriter(),
+                new AwsProxySecurityContextWriter(),
+                new AwsProxyExceptionHandler(),
+                jaxRsApplication);
+        newHandler.initialize();
+        return newHandler;
+    }
+
+    /**
+     * Returns an initialized <code>JerseyLambdaContainerHandler</code> that includes <code>RequestReader</code> and
+     * <code>ResponseWriter</code> objects for the <code>HttpApiV2ProxyRequest</code> and <code>AwsProxyResponse</code>
+     * objects.
+     *
+     * @param jaxRsApplication A configured Jax-Rs application object. For Jersey apps this can be the default
+     *                         <code>ResourceConfig</code> object
+     * @return A <code>JerseyLambdaContainerHandler</code> object
+     */
+    public static JerseyLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> getHttpApiV2ProxyHandler(Application jaxRsApplication) {
+        JerseyLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> newHandler = new JerseyLambdaContainerHandler<>(
+                HttpApiV2ProxyRequest.class,
+                AwsProxyResponse.class,
+                new AwsHttpApiV2HttpServletRequestReader(),
+                new AwsProxyHttpServletResponseWriter(),
+                new AwsHttpApiV2SecurityContextWriter(),
+                new AwsProxyExceptionHandler(),
+                jaxRsApplication);
         newHandler.initialize();
         return newHandler;
     }
@@ -126,7 +142,7 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
      */
     public JerseyLambdaContainerHandler(Class<RequestType> requestTypeClass,
                                         Class<ResponseType> responseTypeClass,
-                                        RequestReader<RequestType, AwsProxyHttpServletRequest> requestReader,
+                                        RequestReader<RequestType, HttpServletRequest> requestReader,
                                         ResponseWriter<AwsHttpServletResponse, ResponseType> responseWriter,
                                         SecurityContextWriter<RequestType> securityContextWriter,
                                         ExceptionHandler<ResponseType> exceptionHandler,
@@ -167,12 +183,7 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
     //-------------------------------------------------------------
 
     @Override
-    protected AwsHttpServletResponse getContainerResponse(AwsProxyHttpServletRequest request, CountDownLatch latch) {
-        return new AwsHttpServletResponse(request, latch);
-    }
-
-    @Override
-    protected void handleRequest(AwsProxyHttpServletRequest httpServletRequest, AwsHttpServletResponse httpServletResponse, Context lambdaContext)
+    protected void handleRequest(HttpServletRequest httpServletRequest, AwsHttpServletResponse httpServletResponse, Context lambdaContext)
             throws Exception {
         // we retain the initialized property for backward compatibility
         if (!initialized) {
@@ -180,12 +191,18 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
         }
         Timer.start("JERSEY_HANDLE_REQUEST");
 
-        httpServletRequest.setServletContext(getServletContext());
+        if (AwsHttpServletRequest.class.isAssignableFrom(httpServletRequest.getClass())) {
+            ((AwsHttpServletRequest)httpServletRequest).setServletContext(getServletContext());
+        }
 
         doFilter(httpServletRequest, httpServletResponse, null);
         Timer.stop("JERSEY_HANDLE_REQUEST");
     }
 
+    @Override
+    protected AwsHttpServletResponse getContainerResponse(HttpServletRequest request, CountDownLatch latch) {
+        return new AwsHttpServletResponse(request, latch);
+    }
 
     @Override
     public void initialize() {
