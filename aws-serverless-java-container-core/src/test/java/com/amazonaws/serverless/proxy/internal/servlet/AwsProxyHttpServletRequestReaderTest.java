@@ -26,13 +26,6 @@ public class AwsProxyHttpServletRequestReaderTest {
     private static final String DECODED_REQUEST_PATH = "/foo/bar/Some Thing";
 
     @Test
-    public void readRequest_reflection_returnType() throws NoSuchMethodException {
-        Method readRequestMethod = AwsProxyHttpServletRequestReader.class.getMethod("readRequest", AwsProxyRequest.class, SecurityContext.class, Context.class, ContainerConfig.class);
-
-        assertTrue(readRequestMethod.getReturnType() == AwsProxyHttpServletRequest.class);
-    }
-
-    @Test
     public void readRequest_validAwsProxy_populatedRequest() {
         AwsProxyRequest request = new AwsProxyRequestBuilder("/path", "GET").header(TEST_HEADER_KEY, TEST_HEADER_VALUE).build();
         try {
