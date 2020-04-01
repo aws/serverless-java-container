@@ -13,15 +13,7 @@
 package com.amazonaws.serverless.proxy.internal.testutils;
 
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
-import com.amazonaws.serverless.proxy.model.AlbContext;
-import com.amazonaws.serverless.proxy.model.ApiGatewayAuthorizerContext;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
-import com.amazonaws.serverless.proxy.model.ApiGatewayRequestIdentity;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
-import com.amazonaws.serverless.proxy.model.CognitoAuthorizerClaims;
-import com.amazonaws.serverless.proxy.model.ContainerConfig;
-import com.amazonaws.serverless.proxy.model.Headers;
-import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
+import com.amazonaws.serverless.proxy.model.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -42,8 +34,13 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 
 /**
@@ -69,6 +66,10 @@ public class AwsProxyRequestBuilder {
 
     public AwsProxyRequestBuilder(String path) {
         this(path, null);
+    }
+
+    public AwsProxyRequestBuilder(AwsProxyRequest req) {
+        request = req;
     }
 
 
@@ -188,6 +189,11 @@ public class AwsProxyRequestBuilder {
         return this;
     }
 
+    public AwsProxyRequestBuilder multiValueHeaders(Headers h) {
+        this.request.setMultiValueHeaders(h);
+        return this;
+    }
+
 
     public AwsProxyRequestBuilder queryString(String key, String value) {
         if (this.request.getMultiValueQueryStringParameters() == null) {
@@ -237,6 +243,14 @@ public class AwsProxyRequestBuilder {
         } else {
             throw new UnsupportedOperationException("Unsupported content type in request");
         }
+    }
+
+    public AwsProxyRequestBuilder apiId(String id) {
+        if (request.getRequestContext() == null) {
+            request.setRequestContext(new AwsProxyRequestContext());
+        }
+        request.getRequestContext().setApiId(id);
+        return this;
     }
 
     public AwsProxyRequestBuilder binaryBody(InputStream is)
@@ -399,5 +413,90 @@ public class AwsProxyRequestBuilder {
         } catch (JsonProcessingException e) {
             return null;
         }
+    }
+
+    public HttpApiV2ProxyRequest toHttpApiV2Request() {
+        HttpApiV2ProxyRequest req = new HttpApiV2ProxyRequest();
+        req.setRawPath(request.getPath());
+        req.setBase64Encoded(request.isBase64Encoded());
+        req.setBody(request.getBody());
+        if (request.getMultiValueHeaders() != null && request.getMultiValueHeaders().containsKey(HttpHeaders.COOKIE)) {
+            req.setCookies(Arrays.asList(request.getMultiValueHeaders().getFirst(HttpHeaders.COOKIE).split(";")));
+        }
+        req.setHeaders(new HashMap<>());
+        if (request.getMultiValueHeaders() != null) {
+            request.getMultiValueHeaders().forEach((key, value) -> req.getHeaders().put(key, value.get(0)));
+        }
+        if (request.getRequestContext() != null && request.getRequestContext().getIdentity() != null) {
+            if (request.getRequestContext().getIdentity().getCaller() != null) {
+                req.getHeaders().put("Referer", request.getRequestContext().getIdentity().getCaller());
+            }
+            if (request.getRequestContext().getIdentity().getUserAgent() != null) {
+                req.getHeaders().put(HttpHeaders.USER_AGENT, request.getRequestContext().getIdentity().getUserAgent());
+            }
+
+        }
+        if (request.getMultiValueQueryStringParameters() != null) {
+            StringBuilder rawQueryString = new StringBuilder();
+            request.getMultiValueQueryStringParameters().forEach((k, v) -> {
+                for (String s : v) {
+                    rawQueryString.append("&");
+                    rawQueryString.append(k);
+                    rawQueryString.append("=");
+                    try {
+                        rawQueryString.append(URLEncoder.encode(s, "UTF-8"));
+                    } catch (UnsupportedEncodingException e) {
+                        System.out.println("Ex!");
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+            String qs = rawQueryString.toString();
+            if (qs.length() > 1) {
+                req.setRawQueryString(qs.substring(1));
+            }
+        }
+        req.setRouteKey("$default");
+        req.setVersion("2.0");
+        req.setStageVariables(request.getStageVariables());
+
+        HttpApiV2ProxyRequestContext ctx = new HttpApiV2ProxyRequestContext();
+        HttpApiV2HttpContext httpCtx = new HttpApiV2HttpContext();
+        httpCtx.setMethod(request.getHttpMethod());
+        httpCtx.setPath(request.getPath());
+        httpCtx.setProtocol("HTTP/1.1");
+        if (request.getRequestContext() != null && request.getRequestContext().getIdentity() != null && request.getRequestContext().getIdentity().getSourceIp() != null) {
+            httpCtx.setSourceIp(request.getRequestContext().getIdentity().getSourceIp());
+        } else {
+            httpCtx.setSourceIp("127.0.0.1");
+        }
+        if (request.getRequestContext() != null && request.getRequestContext().getIdentity() != null && request.getRequestContext().getIdentity().getUserAgent() != null) {
+            httpCtx.setUserAgent(request.getRequestContext().getIdentity().getUserAgent());
+        }
+        ctx.setHttp(httpCtx);
+        if (request.getRequestContext() != null) {
+            ctx.setAccountId(request.getRequestContext().getAccountId());
+            ctx.setApiId(request.getRequestContext().getApiId());
+            ctx.setDomainName(request.getRequestContext().getApiId() + ".execute-api.us-east-1.apigateway.com");
+            ctx.setDomainPrefix(request.getRequestContext().getApiId());
+            ctx.setRequestId(request.getRequestContext().getRequestId());
+            ctx.setRouteKey("$default");
+            ctx.setStage(request.getRequestContext().getStage());
+            ctx.setTimeEpoch(request.getRequestContext().getRequestTimeEpoch());
+            ctx.setTime(request.getRequestContext().getRequestTime());
+
+            if (request.getRequestContext().getAuthorizer() != null) {
+                HttpApiV2AuthorizerMap auth = new HttpApiV2AuthorizerMap();
+                HttpApiV2JwtAuthorizer jwt = new HttpApiV2JwtAuthorizer();
+                // TODO: Anything we should map here?
+                jwt.setClaims(new HashMap<>());
+                jwt.setScopes(new ArrayList<>());
+                auth.putJwtAuthorizer(jwt);
+                ctx.setAuthorizer(auth);
+            }
+        }
+        req.setRequestContext(ctx);
+
+        return req;
     }
 }

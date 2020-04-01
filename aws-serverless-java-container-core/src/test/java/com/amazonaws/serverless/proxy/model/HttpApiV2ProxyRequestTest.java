@@ -126,7 +126,7 @@ public class HttpApiV2ProxyRequestTest {
         HttpApiV2ProxyRequest req = new HttpApiV2ProxyRequest();
         req.setBase64Encoded(false);
         req.setRequestContext(new HttpApiV2ProxyRequestContext());
-        req.getRequestContext().setAuthorizer(new HttpApiV2ProxyRequestContext.HttpApiV2AuthorizerMap());
+        req.getRequestContext().setAuthorizer(new HttpApiV2AuthorizerMap());
         req.getRequestContext().getAuthorizer().putJwtAuthorizer(new HttpApiV2JwtAuthorizer());
         ArrayList<String> scopes = new ArrayList<>();
         scopes.add("first");
