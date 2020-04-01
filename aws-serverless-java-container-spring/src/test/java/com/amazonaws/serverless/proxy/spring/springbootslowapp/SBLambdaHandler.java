@@ -20,7 +20,7 @@ public class SBLambdaHandler
 
     public SBLambdaHandler() throws ContainerInitializationException {
         long startTime = Instant.now().toEpochMilli();
-        handler = new SpringBootProxyHandlerBuilder()
+        handler = new SpringBootProxyHandlerBuilder<AwsProxyRequest>()
                 .defaultProxy()
                 .asyncInit(Instant.now().toEpochMilli())
                 .springBootApplication(TestApplication.class)

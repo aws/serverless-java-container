@@ -4,6 +4,7 @@ import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.*;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
+import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -87,6 +88,23 @@ public abstract class ServletLambdaContainerHandlerBuilder<
                 .requestTypeClass((Class<RequestType>) AwsProxyRequest.class)
                 .responseTypeClass((Class<ResponseType>) AwsProxyResponse.class);
         return self();
+    }
+
+    /**
+     * Sets all of the required fields in the builder to the default settings for a Servlet-compatible framework that wants
+     * to support HTTP API's v2 proxy event
+     * @return A populated builder
+     */
+    public Builder defaultHttpApiV2Proxy() {
+        initializationWrapper(new InitializationWrapper())
+                .requestReader((RequestReader<RequestType, ContainerRequestType>) new AwsHttpApiV2HttpServletRequestReader())
+                .responseWriter((ResponseWriter<AwsHttpServletResponse, ResponseType>) new AwsProxyHttpServletResponseWriter())
+                .securityContextWriter((SecurityContextWriter<RequestType>) new AwsHttpApiV2SecurityContextWriter())
+                .exceptionHandler((ExceptionHandler<ResponseType>) new AwsProxyExceptionHandler())
+                .requestTypeClass((Class<RequestType>) HttpApiV2ProxyRequest.class)
+                .responseTypeClass((Class<ResponseType>) AwsProxyResponse.class);
+        return self();
+
     }
 
     /**

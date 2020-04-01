@@ -15,10 +15,14 @@ import com.amazonaws.serverless.proxy.spring.springbootapp.TestController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.springframework.core.SpringVersion;
 
 import javax.ws.rs.core.HttpHeaders;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Objects;
 
 import static com.amazonaws.serverless.proxy.spring.springbootapp.TestController.CUSTOM_HEADER_NAME;
@@ -27,10 +31,18 @@ import static org.junit.Assert.*;
 import static org.junit.Assume.assumeFalse;
 
 
+@RunWith(Parameterized.class)
 public class SpringBootAppTest {
-    private LambdaHandler handler = new LambdaHandler();
+    private LambdaHandler handler;
     private MockLambdaContext context = new MockLambdaContext();
     private ObjectMapper mapper = new ObjectMapper();
+
+    private String type;
+
+    @Parameterized.Parameters
+    public static Collection<Object> data() {
+        return Arrays.asList(new Object[] { "API_GW", "ALB", "HTTP_API" });
+    }
 
     @BeforeClass
     public static void before() {
@@ -40,9 +52,14 @@ public class SpringBootAppTest {
         assumeFalse(Objects.requireNonNull(SpringVersion.getVersion()).startsWith("5.2"));
     }
 
+    public SpringBootAppTest(String reqType) {
+        type = reqType;
+        handler = new LambdaHandler(type);
+    }
+
     @Test
     public void testMethod_springSecurity_doesNotThrowException() {
-        AwsProxyRequest req = new AwsProxyRequestBuilder("/test", "GET").build();
+        AwsProxyRequestBuilder req = new AwsProxyRequestBuilder("/test", "GET");
         AwsProxyResponse resp = handler.handleRequest(req, context);
         assertNotNull(resp);
         assertEquals(200, resp.getStatusCode());
@@ -51,7 +68,7 @@ public class SpringBootAppTest {
 
     @Test
     public void testMethod_testRequestFromString_doesNotThrowNpe() throws IOException {
-        AwsProxyRequest req = new AwsProxyRequestBuilder().fromJsonString("{\n" +
+        AwsProxyRequestBuilder req = new AwsProxyRequestBuilder().fromJsonString("{\n" +
                 "  \"resource\": \"/missing-params\",\n" +
                 "  \"path\": \"/missing-params\",\n" +
                 "  \"httpMethod\": \"GET\",\n" +
@@ -81,25 +98,25 @@ public class SpringBootAppTest {
                 "  },\n" +
                 "  \"body\": \"{ \\\"Key1\\\": \\\"Value1\\\", \\\"Key2\\\": \\\"Value2\\\", \\\"Key3\\\": \\\"Vaue3\\\" }\",\n" +
                 "  \"isBase64Encoded\": \"false\"\n" +
-                "}").build();
+                "}");
 
         AwsProxyResponse resp = handler.handleRequest(req, context);
         assertNotNull(resp);
         // Spring identifies the missing header
         assertEquals(400, resp.getStatusCode());
-        req.setMultiValueHeaders(new Headers());
-        req.getMultiValueHeaders().add(CUSTOM_HEADER_NAME, "val");
+        req.multiValueHeaders(new Headers());
+        req.header(CUSTOM_HEADER_NAME, "val");
         resp = handler.handleRequest(req, context);
         assertEquals(400, resp.getStatusCode());
-        req.setMultiValueQueryStringParameters(new MultiValuedTreeMap<>());
-        req.getMultiValueQueryStringParameters().add(CUSTOM_QS_NAME, "val");
+        req.multiValueQueryString(new MultiValuedTreeMap<>());
+        req.queryString(CUSTOM_QS_NAME, "val");
         resp = handler.handleRequest(req, context);
         assertEquals(200, resp.getStatusCode());
     }
 
     @Test
     public void defaultError_requestForward_springBootForwardsToDefaultErrorPage() {
-        AwsProxyRequest req = new AwsProxyRequestBuilder("/test2", "GET").build();
+        AwsProxyRequestBuilder req = new AwsProxyRequestBuilder("/test2", "GET");
         AwsProxyResponse resp = handler.handleRequest(req, context);
         assertNotNull(resp);
         assertEquals(404, resp.getStatusCode());
@@ -108,7 +125,7 @@ public class SpringBootAppTest {
 
     @Test
     public void requestUri_dotInPathParam_expectRoutingToMethod() {
-        AwsProxyRequest req = new AwsProxyRequestBuilder("/test/testdomain.com", "GET").build();
+        AwsProxyRequestBuilder req = new AwsProxyRequestBuilder("/test/testdomain.com", "GET");
 
         AwsProxyResponse resp = handler.handleRequest(req, context);
         assertNotNull(resp);
@@ -118,8 +135,8 @@ public class SpringBootAppTest {
 
     @Test
     public void queryString_commaSeparatedList_expectUnmarshalAsList() {
-        AwsProxyRequest req = new AwsProxyRequestBuilder("/test/query-string", "GET")
-                                      .queryString("list", "v1,v2,v3").build();
+        AwsProxyRequestBuilder req = new AwsProxyRequestBuilder("/test/query-string", "GET")
+                                      .queryString("list", "v1,v2,v3");
         AwsProxyResponse resp = handler.handleRequest(req, context);
         assertNotNull(resp);
         assertEquals(200, resp.getStatusCode());
@@ -128,8 +145,8 @@ public class SpringBootAppTest {
 
     @Test
     public void queryString_multipleParamsWithSameName_expectUnmarshalAsList() {
-        AwsProxyRequest req = new AwsProxyRequestBuilder("/test/query-string", "GET")
-                .queryString("list", "v1").queryString("list", "v2").build();
+        AwsProxyRequestBuilder req = new AwsProxyRequestBuilder("/test/query-string", "GET")
+                .queryString("list", "v1").queryString("list", "v2");
         AwsProxyResponse resp = handler.handleRequest(req, context);
         assertNotNull(resp);
         assertEquals(200, resp.getStatusCode());
@@ -138,11 +155,10 @@ public class SpringBootAppTest {
 
     @Test
     public void staticContent_getHtmlFile_returnsHtmlContent() {
-        LambdaContainerHandler.getContainerConfig().addValidFilePath("/Users/bulianis/workspace/aws-serverless-java-container/aws-serverless-java-container-spring");
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/static.html", "GET")
+        LambdaContainerHandler.getContainerConfig().addValidFilePath(System.getProperty("user.dir"));
+        AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/static.html", "GET")
                 .header(HttpHeaders.ACCEPT, "text/html")
-                .header(HttpHeaders.CONTENT_TYPE, "text/plain")
-                .build();
+                .header(HttpHeaders.CONTENT_TYPE, "text/plain");
         AwsProxyResponse output = handler.handleRequest(request, context);
         assertEquals(200, output.getStatusCode());
         assertTrue(output.getBody().contains("<h1>Static</h1>"));
@@ -151,8 +167,7 @@ public class SpringBootAppTest {
     @Test
     public void utf8_returnUtf8String_expectCorrectHeaderMediaAndCharset() {
         LambdaContainerHandler.getContainerConfig().setDefaultContentCharset("UTF-8");
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/test/utf8", "GET")
-                .build();
+        AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/test/utf8", "GET");
         AwsProxyResponse output = handler.handleRequest(request, context);
         validateSingleValueModel(output, TestController.UTF8_TEST_STRING);
         assertTrue(output.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
@@ -163,9 +178,8 @@ public class SpringBootAppTest {
     @Test
     public void utf8_returnUtf8String_expectCorrectHeaderMediaAndCharsetNoDefault() {
 
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/test/utf8", "GET")
-                .header("Content-Type", "application/json; charset=UTF-8")
-                .build();
+        AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/test/utf8", "GET")
+                .header("Content-Type", "application/json; charset=UTF-8");
         AwsProxyResponse output = handler.handleRequest(request, context);
         validateSingleValueModel(output, TestController.UTF8_TEST_STRING);
         assertTrue(output.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));

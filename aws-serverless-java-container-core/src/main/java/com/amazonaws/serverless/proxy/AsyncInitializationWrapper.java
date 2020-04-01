@@ -75,6 +75,10 @@ public class AsyncInitializationWrapper extends InitializationWrapper {
         }
     }
 
+    public long getActualStartTimeMs() {
+        return actualStartTime;
+    }
+
     @Override
     public CountDownLatch getInitializationLatch() {
         return initializationLatch;

@@ -16,7 +16,7 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 
     public LambdaHandler() throws ContainerInitializationException {
         long startTime = Instant.now().toEpochMilli();
-        handler = new SpringProxyHandlerBuilder()
+        handler = new SpringProxyHandlerBuilder<AwsProxyRequest>()
                 .defaultProxy()
                 .asyncInit()
                 .configurationClasses(SlowAppConfig.class)

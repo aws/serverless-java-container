@@ -486,7 +486,9 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
         Headers h = new Headers();
         for (Map.Entry<String, String> hkv : headers.entrySet()) {
             // Exceptions for known header values that contain commas
-            if (hkv.getKey().equalsIgnoreCase(HttpHeaders.DATE) || hkv.getKey().toLowerCase(Locale.getDefault()).startsWith("accept-")) {
+            if (hkv.getKey().equalsIgnoreCase(HttpHeaders.DATE) ||
+                            hkv.getKey().equalsIgnoreCase(HttpHeaders.IF_MODIFIED_SINCE) ||
+                            hkv.getKey().toLowerCase(Locale.getDefault()).startsWith("accept-")) {
                 h.add(hkv.getKey(), hkv.getValue());
                 continue;
             }

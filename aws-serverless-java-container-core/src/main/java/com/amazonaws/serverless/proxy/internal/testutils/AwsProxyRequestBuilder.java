@@ -108,7 +108,11 @@ public class AwsProxyRequestBuilder {
             for (Map.Entry<String, List<String>> e : request.getMultiValueQueryStringParameters().entrySet()) {
                 for (String v : e.getValue()) {
                     try {
-                        newQs.add(URLEncoder.encode(e.getKey(), "UTF-8"), URLEncoder.encode(v, "UTF-8"));
+                        // this is a terrible hack. In our Spring tests we use the comma as a control character for lists
+                        // this is allowed by the HTTP specs although not recommended.
+                        String key = URLEncoder.encode(e.getKey(), "UTF-8").replaceAll("%2C", ",");
+                        String value = URLEncoder.encode(v, "UTF-8").replaceAll("%2C", ",");
+                        newQs.add(key, value);
                     } catch (UnsupportedEncodingException ex) {
                         throw new RuntimeException("Could not encode query string parameters: " + e.getKey() + "=" + v, ex);
                     }
@@ -206,6 +210,11 @@ public class AwsProxyRequestBuilder {
 
     public AwsProxyRequestBuilder multiValueHeaders(Headers h) {
         this.request.setMultiValueHeaders(h);
+        return this;
+    }
+
+    public AwsProxyRequestBuilder multiValueQueryString(MultiValuedTreeMap<String, String> params) {
+        this.request.setMultiValueQueryStringParameters(params);
         return this;
     }
 
@@ -469,7 +478,9 @@ public class AwsProxyRequestBuilder {
                     rawQueryString.append(k);
                     rawQueryString.append("=");
                     try {
-                        rawQueryString.append(URLEncoder.encode(s, "UTF-8"));
+                        // same terrible hack as the alb() method. Because our spring tests use commas as control characters
+                        // we do not encode it
+                        rawQueryString.append(URLEncoder.encode(s, "UTF-8").replaceAll("%2C", ","));
                     } catch (UnsupportedEncodingException e) {
                         System.out.println("Ex!");
                         throw new RuntimeException(e);
