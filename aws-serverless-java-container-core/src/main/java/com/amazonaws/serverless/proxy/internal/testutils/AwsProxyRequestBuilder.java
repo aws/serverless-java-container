@@ -430,6 +430,16 @@ public class AwsProxyRequestBuilder {
         }
     }
 
+    public InputStream toHttpApiV2RequestStream() {
+        HttpApiV2ProxyRequest req = toHttpApiV2Request();
+        try {
+            String requestJson = LambdaContainerHandler.getObjectMapper().writeValueAsString(req);
+            return new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
+        } catch (JsonProcessingException e) {
+            return null;
+        }
+    }
+
     public HttpApiV2ProxyRequest toHttpApiV2Request() {
         HttpApiV2ProxyRequest req = new HttpApiV2ProxyRequest();
         req.setRawPath(request.getPath());
