@@ -5,6 +5,7 @@ import com.amazonaws.serverless.proxy.LogFormatter;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
 
+import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequestContext;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import javax.servlet.http.HttpServletRequest;
@@ -16,7 +17,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.Locale;
 
-import static com.amazonaws.serverless.proxy.RequestReader.API_GATEWAY_EVENT_PROPERTY;
+import static com.amazonaws.serverless.proxy.RequestReader.*;
 import static java.time.temporal.ChronoField.DAY_OF_MONTH;
 import static java.time.temporal.ChronoField.HOUR_OF_DAY;
 import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
@@ -68,45 +69,45 @@ public class ApacheCombinedServletLogFormatter<ContainerRequestType extends Http
     public String format(ContainerRequestType servletRequest, ContainerResponseType servletResponse, SecurityContext ctx) {
         //LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\"" combined
         StringBuilder logLineBuilder = new StringBuilder();
-        AwsProxyRequest req = (AwsProxyRequest)servletRequest.getAttribute(API_GATEWAY_EVENT_PROPERTY);
-        AwsProxyRequestContext gatewayContext = req.getRequestContext();
+        AwsProxyRequestContext gatewayContext = (AwsProxyRequestContext)servletRequest.getAttribute(API_GATEWAY_CONTEXT_PROPERTY);
+        HttpApiV2ProxyRequestContext httpApiContext = (HttpApiV2ProxyRequestContext)servletRequest.getAttribute(HTTP_API_CONTEXT_PROPERTY);
 
         // %h
         logLineBuilder.append(servletRequest.getRemoteAddr());
         logLineBuilder.append(" ");
 
         // %l
-        if (gatewayContext != null && req.getRequestSource() == AwsProxyRequest.RequestSource.API_GATEWAY) {
-            if (gatewayContext.getIdentity().getUserArn() != null) {
+        if (servletRequest.getUserPrincipal() != null) {
+            logLineBuilder.append(servletRequest.getUserPrincipal().getName());
+        } else {
+            logLineBuilder.append("-");
+        }
+        if (gatewayContext != null && gatewayContext.getIdentity() != null && gatewayContext.getIdentity().getUserArn() != null) {
                 logLineBuilder.append(gatewayContext.getIdentity().getUserArn());
-            } else {
-                logLineBuilder.append("-");
-            }
         } else {
             logLineBuilder.append("-");
         }
         logLineBuilder.append(" ");
 
         // %u
-        if (ctx != null && ctx.getUserPrincipal().getName() != null) {
-            logLineBuilder.append(ctx.getUserPrincipal().getName());
-            logLineBuilder.append(" ");
+        if (servletRequest.getUserPrincipal() != null) {
+            logLineBuilder.append(servletRequest.getUserPrincipal().getName());
         }
+        logLineBuilder.append(" ");
 
 
         // %t
+        long timeEpoch = ZonedDateTime.now(clock).toEpochSecond();
         if (gatewayContext != null && gatewayContext.getRequestTimeEpoch() > 0) {
-            logLineBuilder.append(
-                    dateFormat.format(
-                            ZonedDateTime.of(
-                                    LocalDateTime.ofEpochSecond(gatewayContext.getRequestTimeEpoch() / 1000, 0, ZoneOffset.UTC),
-                                    clock.getZone()
-                            )
-                    )
-            );
-        } else {
-            logLineBuilder.append(dateFormat.format(ZonedDateTime.now(clock)));
+            timeEpoch = gatewayContext.getRequestTimeEpoch() / 1000;
+        } else if (httpApiContext != null && httpApiContext.getTimeEpoch() > 0) {
+            timeEpoch = httpApiContext.getTimeEpoch() / 1000;
         }
+        logLineBuilder.append(
+                dateFormat.format(ZonedDateTime.of(
+                        LocalDateTime.ofEpochSecond(timeEpoch, 0, ZoneOffset.UTC),
+                        clock.getZone())
+                ));
         logLineBuilder.append(" ");
 
         // %r
@@ -154,7 +155,6 @@ public class ApacheCombinedServletLogFormatter<ContainerRequestType extends Http
         logLineBuilder.append("\" ");
 
         logLineBuilder.append("combined");
-
 
         return logLineBuilder.toString();
     }
