@@ -59,10 +59,12 @@ public class AwsAsyncContext implements AsyncContext {
     public void dispatch() {
         try {
             log.debug("Dispatching request");
-            notifyListeners(NotificationType.START_ASYNC, null);
-            Servlet servlet = ((AwsServletContext)handler.getServletContext()).getServletForPath(req.getPathInfo());
-            handler.doFilter(req, res, servlet);
+            if (dispatched.get()) {
+                throw new IllegalStateException("Dispatching already started");
+            }
             dispatched.set(true);
+            notifyListeners(NotificationType.START_ASYNC, null);
+            handler.doFilter(req, res, ((AwsServletContext)req.getServletContext()).getServletForPath(req.getRequestURI()));
         } catch (ServletException | IOException e) {
             notifyListeners(NotificationType.ERROR, e);
         }

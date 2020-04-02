@@ -9,14 +9,14 @@ import reactor.core.publisher.Flux;
 public class MessageController {
     public static final String MESSAGE = "Hello";
 
-    @RequestMapping(path="/single", method= RequestMethod.GET)
+    @RequestMapping(path="/single", method= RequestMethod.GET, produces = {"text/plain"})
     Flux<String> singleMessage(){
         return Flux.just(
                 MESSAGE
         );
     }
 
-    @RequestMapping(path="/double", method= RequestMethod.GET)
+    @RequestMapping(path="/double", method= RequestMethod.GET, produces={"text/plain"})
     Flux<String> doubleMessage(){
         return Flux.just(
                 MESSAGE,

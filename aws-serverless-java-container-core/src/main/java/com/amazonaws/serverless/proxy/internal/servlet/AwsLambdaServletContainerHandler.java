@@ -148,6 +148,10 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
      * @throws ServletException
      */
     protected void doFilter(HttpServletRequest request, HttpServletResponse response, Servlet servlet) throws IOException, ServletException {
+        if (AwsHttpServletRequest.class.isAssignableFrom(request.getClass())) {
+            ((AwsHttpServletRequest)request).setContainerHandler(this);
+        }
+
         FilterChain chain = getFilterChain(request, servlet);
         chain.doFilter(request, response);
 

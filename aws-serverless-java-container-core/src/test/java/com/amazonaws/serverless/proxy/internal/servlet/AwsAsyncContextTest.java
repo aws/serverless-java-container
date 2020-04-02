@@ -1,8 +1,10 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
+import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.proxy.AwsProxyExceptionHandler;
 import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
+import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
@@ -25,6 +27,7 @@ import static org.junit.Assert.assertEquals;
 public class AwsAsyncContextTest {
     private MockLambdaContext lambdaCtx = new MockLambdaContext();
     private MockContainerHandler handler = new MockContainerHandler();
+    private AwsProxyHttpServletRequestReader reader = new AwsProxyHttpServletRequestReader();
     private AwsServletContextTest.TestServlet srv1 = new AwsServletContextTest.TestServlet("srv1");
     private AwsServletContextTest.TestServlet srv2 = new AwsServletContextTest.TestServlet("srv2");
     private AwsServletContext ctx = getCtx();
@@ -56,8 +59,8 @@ public class AwsAsyncContextTest {
     }
 
     @Test
-    public void dispatchNewPath_sendsToCorrectServlet() {
-        AwsProxyHttpServletRequest req = new AwsProxyHttpServletRequest(new AwsProxyRequestBuilder("/srv1/hello", "GET").build(), lambdaCtx, null);
+    public void dispatchNewPath_sendsToCorrectServlet() throws InvalidRequestEventException {
+        AwsProxyHttpServletRequest req = (AwsProxyHttpServletRequest) reader.readRequest(new AwsProxyRequestBuilder("/srv1/hello", "GET").build(), null, lambdaCtx, LambdaContainerHandler.getContainerConfig());
         req.setResponse(handler.getContainerResponse(req, new CountDownLatch(1)));
         req.setServletContext(ctx);
         req.setContainerHandler(handler);
