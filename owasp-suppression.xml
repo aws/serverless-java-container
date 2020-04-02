@@ -27,14 +27,4 @@
         <notes><![CDATA[ Drupal issues for AWS is not relevant here ]]></notes>
         <cpe>cpe:/a:restful_web_services_project:restful_web_services:7.x-2.1::~~~drupal~~</cpe>
     </suppress>
-
-    <!-- Temporary suppression of slf4j vulnerability. Version 1.8.0-beta2 is not affected by the bug.
-         However, because of a bug in the dependency check plugin the version is not parsed correctly:
-         https://github.com/jeremylong/DependencyCheck/issues/1229 -->
-    <!-- TODO: remove this suppression once the bug in the dep check plugin is fixed -->
-    <suppress>
-        <notes><![CDATA[ Temporary suppression of slf4j vulnerability ]]></notes>
-        <cpe>cpe:/a:slf4j:slf4j:1.8.0</cpe>
-    </suppress>
-
 </suppressions>

@@ -9,17 +9,17 @@ dependencies {
   compile (
           'com.amazonaws:aws-lambda-java-core:1.2.0',
           'com.amazonaws.serverless:aws-serverless-java-container-jersey:[1.0,)',
-          'com.fasterxml.jackson.core:jackson-databind:2.9.10',
+          'com.fasterxml.jackson.core:jackson-databind:2.10.3',
           'io.symphonia:lambda-logging:1.0.1'
   )
 
-  compile("org.glassfish.jersey.media:jersey-media-json-jackson:2.10.1") {
+  compile("org.glassfish.jersey.media:jersey-media-json-jackson:2.30.1") {
     exclude group: 'com.fasterxml.jackson.core', module: "jackson-annotations"
     exclude group: 'com.fasterxml.jackson.core', module: "jackson-databind"
     exclude group: 'com.fasterxml.jackson.core', module: "jackson-core"
   }
 
-  compile("org.glassfish.jersey.inject:jersey-hk2:2.29.1") {
+  compile("org.glassfish.jersey.inject:jersey-hk2:2.30.1") {
     exclude group: 'javax.inject', module: "javax.inject"
   }
 }

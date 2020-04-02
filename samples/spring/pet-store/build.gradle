@@ -7,13 +7,13 @@ repositories {
 
 dependencies {
   compile (
-          'org.springframework:spring-webmvc:5.1.13.RELEASE',
-          'org.springframework:spring-context:5.1.13.RELEASE',
+          'org.springframework:spring-webmvc:5.2.5.RELEASE',
+          'org.springframework:spring-context:5.2.5.RELEASE',
           'com.amazonaws.serverless:aws-serverless-java-container-spring:[1.0,)',
           'org.apache.logging.log4j:log4j-core:2.8.2',
           'org.apache.logging.log4j:log4j-api:2.8.2',
           'org.apache.logging.log4j:log4j-slf4j-impl:2.8.2',
-          'com.fasterxml.jackson.core:jackson-databind:2.9.10',
+          'com.fasterxml.jackson.core:jackson-databind:2.10.3',
           'com.amazonaws:aws-lambda-java-log4j2:1.1.0',
   )
 }

@@ -22,12 +22,12 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build latest
         run: ./gha_build.sh jersey true true
-      - name: Build Jersey 2.26
-        run: ./gha_build.sh jersey false false -Djersey.version=2.26
       - name: Build Jersey 2.27
         run: ./gha_build.sh jersey false false -Djersey.version=2.27
       - name: Build Jersey 2.28
         run: ./gha_build.sh jersey false false -Djersey.version=2.28
+      - name: Build Jersey 2.29
+        run: ./gha_build.sh jersey false false -Djersey.version=2.29.1
 
   build_spark:
     name: Build and test Spark
