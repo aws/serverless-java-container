@@ -51,6 +51,10 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
         headers = headersMapToMultiValue(request.getHeaders());
     }
 
+    public HttpApiV2ProxyRequest getRequest() {
+        return request;
+    }
+
     @Override
     public String getAuthType() {
         // TODO
