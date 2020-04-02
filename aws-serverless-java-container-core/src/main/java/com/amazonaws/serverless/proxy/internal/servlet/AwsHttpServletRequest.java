@@ -89,6 +89,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
 
     protected AwsHttpServletResponse response;
     protected AwsLambdaServletContainerHandler containerHandler;
+    protected ServletInputStream requestInputStream;
 
 
     private static Logger log = LoggerFactory.getLogger(AwsHttpServletRequest.class);
@@ -425,7 +426,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
 
     protected ServletInputStream bodyStringToInputStream(String body, boolean isBase64Encoded) throws IOException {
         if (body == null) {
-            return new AwsProxyHttpServletRequest.AwsServletInputStream(new NullInputStream(0, false, false));
+            return new AwsServletInputStream(new NullInputStream(0, false, false));
         }
         byte[] bodyBytes;
         if (isBase64Encoded) {
@@ -443,7 +444,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
             }
         }
         ByteArrayInputStream requestBodyStream = new ByteArrayInputStream(bodyBytes);
-        return new AwsProxyHttpServletRequest.AwsServletInputStream(requestBodyStream);
+        return new AwsServletInputStream(requestBodyStream);
     }
 
     protected String getFirstQueryParamValue(MultiValuedTreeMap<String, String> queryString, String key, boolean isCaseSensitive) {

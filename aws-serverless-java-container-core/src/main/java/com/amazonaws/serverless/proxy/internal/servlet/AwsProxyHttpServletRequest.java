@@ -21,7 +21,6 @@ import com.amazonaws.serverless.proxy.model.Headers;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.apache.commons.io.input.NullInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +31,6 @@ import javax.ws.rs.core.SecurityContext;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
@@ -291,6 +289,9 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getCharacterEncoding() {
+        if (request.getMultiValueHeaders() == null) {
+            return config.getDefaultContentCharset();
+        }
         return parseCharacterEncoding(request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
     }
 
@@ -340,14 +341,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
         return contentTypeHeader;
     }
-
-
-    @Override
-    public ServletInputStream getInputStream()
-            throws IOException {
-        return bodyStringToInputStream(request.getBody(), request.isBase64Encoded());
-    }
-
 
     @Override
     public String getParameter(String s) {
@@ -439,6 +432,14 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         } else {
             return 443; // default port
         }
+    }
+
+    @Override
+    public ServletInputStream getInputStream() throws IOException {
+        if (requestInputStream == null) {
+            requestInputStream = new AwsServletInputStream(bodyStringToInputStream(request.getBody(), request.isBase64Encoded()));
+        }
+        return requestInputStream;
     }
 
 
@@ -594,51 +595,4 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     }
 
 
-    public static class AwsServletInputStream extends ServletInputStream {
-
-        private InputStream bodyStream;
-        private ReadListener listener;
-
-        public AwsServletInputStream(InputStream body) {
-            bodyStream = body;
-        }
-
-
-        @Override
-        public boolean isFinished() {
-            return true;
-        }
-
-
-        @Override
-        public boolean isReady() {
-            return true;
-        }
-
-
-        @Override
-        public void setReadListener(ReadListener readListener) {
-            listener = readListener;
-            try {
-                listener.onDataAvailable();
-            } catch (IOException e) {
-                log.error("Data not available on input stream", e);
-            }
-        }
-
-
-        @Override
-        public int read()
-                throws IOException {
-            if (bodyStream == null || bodyStream instanceof NullInputStream) {
-                return -1;
-            }
-            int readByte = bodyStream.read();
-            if (bodyStream.available() == 0 && listener != null) {
-                listener.onAllDataRead();
-            }
-            return readByte;
-        }
-
-    }
 }

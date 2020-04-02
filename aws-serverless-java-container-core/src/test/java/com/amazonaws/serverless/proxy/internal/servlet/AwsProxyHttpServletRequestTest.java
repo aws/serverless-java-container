@@ -497,7 +497,7 @@ public class AwsProxyHttpServletRequestTest {
 
         try {
             InputStream is = req.getInputStream();
-            assertTrue(is.getClass() == AwsProxyHttpServletRequest.AwsServletInputStream.class);
+            assertTrue(is.getClass() == AwsServletInputStream.class);
             assertEquals(0, is.available());
         } catch (IOException e) {
             fail("Could not get input stream");

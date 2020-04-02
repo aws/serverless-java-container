@@ -3,11 +3,10 @@ package com.amazonaws.serverless.proxy.spring;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
-import com.amazonaws.serverless.proxy.spring.securityapp.SecurityConfig;
 import com.amazonaws.serverless.proxy.spring.servletapp.LambdaHandler;
 import com.amazonaws.serverless.proxy.spring.servletapp.MessageController;
+import com.amazonaws.serverless.proxy.spring.servletapp.MessageData;
 import com.amazonaws.serverless.proxy.spring.servletapp.UserData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.Assert;
@@ -22,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(Parameterized.class)
 public class ServletAppTest {
@@ -75,5 +75,16 @@ public class ServletAppTest {
         resp = handler.handleRequest(req, lambdaContext);
         assertEquals("1", resp.getBody());
         assertEquals(400, resp.getStatusCode());
+    }
+
+    @Test
+    public void messageObject_parsesObject_returnsCorrectMessage() throws JsonProcessingException {
+        AwsProxyRequestBuilder req = new AwsProxyRequestBuilder("/message", "POST")
+                .json()
+                .body(new MessageData("test message"));
+        AwsProxyResponse resp = handler.handleRequest(req, lambdaContext);
+        assertNotNull(resp);
+        assertEquals(200, resp.getStatusCode());
+        assertEquals("test message", resp.getBody());
     }
 }

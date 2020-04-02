@@ -217,7 +217,7 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     public String getCharacterEncoding() {
         if (headers == null) {
-            return null;
+            return config.getDefaultContentCharset();
         }
         return parseCharacterEncoding(headers.getFirst(HttpHeaders.CONTENT_TYPE));
     }
@@ -256,11 +256,6 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
             return null;
         }
         return headers.getFirst(HttpHeaders.CONTENT_TYPE);
-    }
-
-    @Override
-    public ServletInputStream getInputStream() throws IOException {
-        return bodyStringToInputStream(request.getBody(), request.isBase64Encoded());
     }
 
     @Override
@@ -345,6 +340,14 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
             return Integer.parseInt(port);
         }
         return 443; // default port
+    }
+
+    @Override
+    public ServletInputStream getInputStream() throws IOException {
+        if (requestInputStream == null) {
+            requestInputStream = new AwsServletInputStream(bodyStringToInputStream(request.getBody(), request.isBase64Encoded()));
+        }
+        return requestInputStream;
     }
 
     @Override

@@ -1,15 +1,11 @@
 package com.amazonaws.serverless.proxy.spring.servletapp;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.reactive.function.server.ServerResponse;
-import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
 
@@ -29,5 +25,13 @@ public class MessageController {
             return ResponseEntity.badRequest().body(errors.getErrorCount() + "");
         }
         return ResponseEntity.ok(VALID_MESSAGE);
+    }
+
+    @RequestMapping(path="/message", method = RequestMethod.POST, produces={"text/plain"}, consumes = {"application/json"})
+    public String returnMessage(@RequestBody MessageData data) {
+        if (data == null) {
+            throw new RuntimeException("No message data");
+        }
+        return data.getMessage();
     }
 }
