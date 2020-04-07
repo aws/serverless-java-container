@@ -2,10 +2,7 @@ package com.amazonaws.serverless.proxy.spring.servletapp;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
@@ -33,5 +30,10 @@ public class MessageController {
             throw new RuntimeException("No message data");
         }
         return data.getMessage();
+    }
+
+    @RequestMapping(path="/echo/{message}", method=RequestMethod.GET)
+    public String returnPathMessage(@PathVariable(value="message") String message) {
+        return message;
     }
 }

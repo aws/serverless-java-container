@@ -78,7 +78,7 @@ public class ServletAppTest {
     }
 
     @Test
-    public void messageObject_parsesObject_returnsCorrectMessage() throws JsonProcessingException {
+    public void messageObject_parsesObject_returnsCorrectMessage() {
         AwsProxyRequestBuilder req = new AwsProxyRequestBuilder("/message", "POST")
                 .json()
                 .body(new MessageData("test message"));
@@ -86,5 +86,14 @@ public class ServletAppTest {
         assertNotNull(resp);
         assertEquals(200, resp.getStatusCode());
         assertEquals("test message", resp.getBody());
+    }
+
+    @Test
+    public void echoMessage_fileNameLikeParameter_returnsMessage() {
+        AwsProxyRequestBuilder req = new AwsProxyRequestBuilder("/echo/test.test.test", "GET");
+        AwsProxyResponse resp = handler.handleRequest(req, lambdaContext);
+        assertNotNull(resp);
+        assertEquals(200, resp.getStatusCode());
+        assertEquals("test.test.test", resp.getBody());
     }
 }
