@@ -258,7 +258,7 @@ public class AwsProxyRequestBuilder {
     }
 
     public AwsProxyRequestBuilder body(Object body) {
-        if (request.getMultiValueHeaders() != null && request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE).equals(MediaType.APPLICATION_JSON)) {
+        if (request.getMultiValueHeaders() != null && request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE).startsWith(MediaType.APPLICATION_JSON)) {
             try {
                 return body(LambdaContainerHandler.getObjectMapper().writeValueAsString(body));
             } catch (JsonProcessingException e) {

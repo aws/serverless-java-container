@@ -24,7 +24,7 @@ public class MessageController {
         return ResponseEntity.ok(VALID_MESSAGE);
     }
 
-    @RequestMapping(path="/message", method = RequestMethod.POST, produces={"text/plain"}, consumes = {"application/json"})
+    @RequestMapping(path="/message", method = RequestMethod.POST)
     public String returnMessage(@RequestBody MessageData data) {
         if (data == null) {
             throw new RuntimeException("No message data");

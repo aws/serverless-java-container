@@ -89,6 +89,18 @@ public class ServletAppTest {
     }
 
     @Test
+    public void messageObject_propertiesInContentType_returnsCorrectMessage() {
+        AwsProxyRequestBuilder req = new AwsProxyRequestBuilder("/message", "POST")
+                .header(HttpHeaders.CONTENT_TYPE, "application/json;v=1")
+                .header(HttpHeaders.ACCEPT, "application/json;v=1")
+                .body(new MessageData("test message"));
+        AwsProxyResponse resp = handler.handleRequest(req, lambdaContext);
+        assertNotNull(resp);
+        assertEquals(200, resp.getStatusCode());
+        assertEquals("test message", resp.getBody());
+    }
+
+    @Test
     public void echoMessage_fileNameLikeParameter_returnsMessage() {
         AwsProxyRequestBuilder req = new AwsProxyRequestBuilder("/echo/test.test.test", "GET");
         AwsProxyResponse resp = handler.handleRequest(req, lambdaContext);
