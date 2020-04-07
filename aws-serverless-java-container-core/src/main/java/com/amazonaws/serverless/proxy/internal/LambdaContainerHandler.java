@@ -224,7 +224,7 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
             latch.countDown();
 
             if (getContainerConfig().isDisableExceptionMapper()) {
-                if (RuntimeException.class.isAssignableFrom(e.getClass())) {
+                if (e instanceof RuntimeException) {
                     throw (RuntimeException) e;
                 } else {
                     throw new RuntimeException(e);
