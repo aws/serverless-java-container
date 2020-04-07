@@ -48,6 +48,7 @@ public class ContainerConfig {
     private boolean queryStringCaseSensitive;
     private final HashSet<String> binaryContentTypes;
     private int initializationTimeout;
+    private boolean disableExceptionMapper;
 
     public ContainerConfig() {
         validFilePaths = new ArrayList<>();
@@ -296,5 +297,24 @@ public class ContainerConfig {
      */
     public void setInitializationTimeout(int initializationTimeout) {
         this.initializationTimeout = initializationTimeout;
+    }
+
+    /**
+     * Whether the framework will run exception thrown by the application through the implementation of
+     * {@link com.amazonaws.serverless.proxy.ExceptionHandler}. When this parameter is set to false the Lambda
+     * container handler object lets the Exception propagate upwards to the Lambda handler class.
+     * @return <code>true</code> if exception mapping is disabled, <code>false</code> otherwise.
+     */
+    public boolean isDisableExceptionMapper() {
+        return disableExceptionMapper;
+    }
+
+    /**
+     * This configuration parameter tells the container whether it should skip exception mapping and simply let any
+     * Exception thrown by the underlying application bubble up to the Lambda handler class.
+     * @param disable Set this value to <code>true</code> to disable exception mapping, <code>false</code> otherwise.
+     */
+    public void setDisableExceptionMapper(boolean disable) {
+        this.disableExceptionMapper = disable;
     }
 }
