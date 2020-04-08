@@ -20,37 +20,40 @@ The \${artifactId} project, created with [`aws-serverless-java-container`](https
 
 The starter project defines a simple `/ping` resource that can accept `GET` requests with its tests.
 
-The project folder also includes a `sam.yaml` file. You can use this [SAM](https://github.com/awslabs/serverless-application-model) file to deploy the project to AWS Lambda and Amazon API Gateway or test in local with [SAM Local](https://github.com/awslabs/aws-sam-local).
+The project folder also includes a `template.yml` file. You can use this [SAM](https://github.com/awslabs/serverless-application-model) file to deploy the project to AWS Lambda and Amazon API Gateway or test in local with the [SAM CLI](https://github.com/awslabs/aws-sam-cli). 
 
-## Building the project
-Using [Maven](https://maven.apache.org/), you can create an AWS Lambda-compatible zip file simply by running the maven package command from the project folder.
+#[[##]]# Pre-requisites
+* [AWS CLI](https://aws.amazon.com/cli/)
+* [SAM CLI](https://github.com/awslabs/aws-sam-cli)
+* [Gradle](https://gradle.org/) or [Maven](https://maven.apache.org/)
+
+#[[##]]# Building the project
+You can use the SAM CLI to quickly build the project
 ```bash
-$ mvn archetype:generate -DartifactId=\${artifactId} -DarchetypeGroupId=com.amazonaws.serverless.archetypes -DarchetypeArtifactId=aws-serverless-springboot-archetype -DarchetypeVersion=${project.version} -DgroupId=\${groupId} -Dversion=\${version} -Dinteractive=false
+$ mvn archetype:generate -DartifactId=\${artifactId} -DarchetypeGroupId=com.amazonaws.serverless.archetypes -DarchetypeArtifactId=aws-serverless-jersey-archetype -DarchetypeVersion=${project.version} -DgroupId=\${groupId} -Dversion=\${version} -Dinteractive=false
 $ cd \${artifactId}
-$ mvn clean package
+$ sam build
+Building resource '\${resourceName}Function'
+Running JavaGradleWorkflow:GradleBuild
+Running JavaGradleWorkflow:CopyArtifacts
 
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time: 6.546 s
-[INFO] Finished at: 2018-02-15T08:39:33-08:00
-[INFO] Final Memory: XXM/XXXM
-[INFO] ------------------------------------------------------------------------
+Build Succeeded
+
+Built Artifacts  : .aws-sam/build
+Built Template   : .aws-sam/build/template.yaml
+
+Commands you can use next
+=========================
+[*] Invoke Function: sam local invoke
+[*] Deploy: sam deploy --guided
 ```
 
-## Testing locally with SAM local
-You can use [AWS SAM Local](https://github.com/awslabs/aws-sam-local) to start your project.
+#[[##]]# Testing locally with the SAM CLI
 
-First, install SAM local:
-
-```bash
-$ npm install -g aws-sam-local
-```
-
-Next, from the project root folder - where the `sam.yaml` file is located - start the API with the SAM Local CLI.
+From the project root folder - where the `template.yml` file is located - start the API with the SAM CLI.
 
 ```bash
-$ sam local start-api --template sam.yaml
+$ sam local start-api
 
 ...
 Mounting ${groupId}.StreamLambdaHandler::handleRequest (java8) at http://127.0.0.1:3000/{proxy+} [OPTIONS GET HEAD POST PUT DELETE PATCH]
@@ -67,54 +70,22 @@ $ curl -s http://127.0.0.1:3000/ping | python -m json.tool
 }
 ``` 
 
-## Deploying to AWS
-You can use the [AWS CLI](https://aws.amazon.com/cli/) to quickly deploy your application to AWS Lambda and Amazon API Gateway with your SAM template.
-
-You will need an S3 bucket to store the artifacts for deployment. Once you have created the S3 bucket, run the following command from the project's root folder - where the `sam.yaml` file is located:
+#[[##]]# Deploying to AWS
+To deploy the application in your AWS account, you can use the SAM CLI's guided deployment process and follow the instructions on the screen
 
 ```
-$ aws cloudformation package --template-file sam.yaml --output-template-file output-sam.yaml --s3-bucket <YOUR S3 BUCKET NAME>
-Uploading to xxxxxxxxxxxxxxxxxxxxxxxxxx  6464692 / 6464692.0  (100.00%)
-Successfully packaged artifacts and wrote output template to file output-sam.yaml.
-Execute the following command to deploy the packaged template
-aws cloudformation deploy --template-file /your/path/output-sam.yaml --stack-name <YOUR STACK NAME>
+$ sam deploy --guided
 ```
 
-As the command output suggests, you can now use the cli to deploy the application. Choose a stack name and run the `aws cloudformation deploy` command from the output of the package command.
- 
-```
-$ aws cloudformation deploy --template-file output-sam.yaml --stack-name ServerlessSpringApi --capabilities CAPABILITY_IAM
-```
-
-Once the application is deployed, you can describe the stack to show the API endpoint that was created. The endpoint should be the `ServerlessSpringApi` key of the `Outputs` property:
+Once the deployment is completed, the SAM CLI will print out the stack's outputs, including the new application URL. You can use `curl` or a web browser to make a call to the URL
 
 ```
-$ aws cloudformation describe-stacks --stack-name ServerlessSpringApi
-{
-    "Stacks": [
-        {
-            "StackId": "arn:aws:cloudformation:us-west-2:xxxxxxxx:stack/ServerlessSpringApi/xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx", 
-            "Description": "AWS Serverless Spring API - ${groupId}::${artifactId}", 
-            "Tags": [], 
-            "Outputs": [
-                {
-                    "Description": "URL for application",
-                    "ExportName": "\${resourceName}Api",
-                    "OutputKey": "\${resourceName}Api",
-                    "OutputValue": "https://xxxxxxx.execute-api.us-west-2.amazonaws.com/Prod/ping"
-                }
-            ], 
-            "CreationTime": "2016-12-13T22:59:31.552Z", 
-            "Capabilities": [
-                "CAPABILITY_IAM"
-            ], 
-            "StackName": "ServerlessSpringApi", 
-            "NotificationARNs": [], 
-            "StackStatus": "UPDATE_COMPLETE"
-        }
-    ]
-}
-
+...
+-------------------------------------------------------------------------------------------------------------
+OutputKey-Description                        OutputValue
+-------------------------------------------------------------------------------------------------------------
+\${resourceName}Api - URL for application            https://xxxxxxxxxx.execute-api.us-west-2.amazonaws.com/Prod/pets
+-------------------------------------------------------------------------------------------------------------
 ```
 
 Copy the `OutputValue` into a browser or use curl to test your first request:

@@ -1,6 +1,3 @@
-plugins {
-  id 'org.springframework.boot' version '1.5.22.RELEASE'
-}
 apply plugin: 'java'
 
 repositories {
@@ -11,7 +8,7 @@ repositories {
 
 dependencies {
   compile (
-          'org.springframework.boot:spring-boot-starter-web',
+          'org.springframework.boot:spring-boot-starter-web:1.5.22.RELEASE',
           'com.amazonaws.serverless:aws-serverless-java-container-spring:[1.0,)',
           'io.symphonia:lambda-logging:1.0.1'
   )
