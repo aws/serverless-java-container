@@ -11,22 +11,22 @@ Resources:
   PetStoreFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: com.amazonaws.serverless.sample.springboot.StreamLambdaHandler::handleRequest
+      Handler: com.amazonaws.serverless.sample.springboot2.StreamLambdaHandler::handleRequest
       Runtime: java8
-      CodeUri: target/serverless-spring-boot-example-1.0-SNAPSHOT-lambda-package.zip
+      CodeUri: .
       MemorySize: 1512
       Policies: AWSLambdaBasicExecutionRole
       Timeout: 60
       Events:
-        GetResource:
-          Type: Api
+        HttpApiEvent:
+          Type: HttpApi
           Properties:
-            Path: /{proxy+}
-            Method: any
+            TimeoutInMillis: 20000
+            PayloadFormatVersion: '1.0'
 
 Outputs:
   SpringBootPetStoreApi:
     Description: URL for application
-    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/pets'
+    Value: !Sub 'https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/pets'
     Export:
       Name: SpringBootPetStoreApi

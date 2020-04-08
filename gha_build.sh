@@ -80,18 +80,6 @@ function sample {
     if [[ "$?" -ne 0 ]]; then
         exit 1
     fi
-
-    SAM_FILE=${SAMPLE_FOLDER}/sam.yaml
-    if [[ -f "$SAM_FILE" ]]; then
-        TARGET_ZIP=$(cat ${SAM_FILE} | grep CodeUri | sed -e 's/^.*:\ //g')
-        if [[ ! -f "${SAMPLE_FOLDER}/${TARGET_ZIP}" ]]; then
-            echo "COULD NOT FIND TARGET ZIP FILE $TARGET_ZIP FOR $1 SAMPLE"
-            exit 1
-        fi
-    else
-        echo "COULD NOT FIND SAM FILE: '${SAM_FILE}'"
-        exit 1
-    fi
 }
 
 # set up the master pom otherwise we won't be able to find new dependencies

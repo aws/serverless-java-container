@@ -29,3 +29,7 @@ gradlew*
 
 # Exclude maven wrapper
 !/.mvn/wrapper/maven-wrapper.jar
+
+# SAM files
+samconfig.toml
+.aws-sam/

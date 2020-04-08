@@ -13,20 +13,20 @@ Resources:
     Properties:
       Handler: com.amazonaws.serverless.sample.spring.StreamLambdaHandler::handleRequest
       Runtime: java8
-      CodeUri: target/serverless-spring-example-1.0-SNAPSHOT-lambda-package.zip
+      CodeUri: .
       MemorySize: 512
       Policies: AWSLambdaBasicExecutionRole
       Timeout: 30
       Events:
-        GetResource:
-          Type: Api
+        HttpApiEvent:
+          Type: HttpApi
           Properties:
-            Path: /{proxy+}
-            Method: any
+            TimeoutInMillis: 20000
+            PayloadFormatVersion: '1.0'
 
 Outputs:
   SpringPetStoreApi:
     Description: URL for application
-    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/pets'
+    Value: !Sub 'https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/pets'
     Export:
       Name: SpringPetStoreApi
