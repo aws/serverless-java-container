@@ -39,6 +39,7 @@ public class ContainerConfig {
         configuration.addBinaryContentTypes("application/octet-stream", "image/jpeg", "image/png", "image/gif");
         configuration.setDefaultContentCharset(DEFAULT_CONTENT_CHARSET);
         configuration.setInitializationTimeout(MAX_INIT_TIMEOUT_MS);
+        configuration.setDisableExceptionMapper(false);
 
         return configuration;
     }
