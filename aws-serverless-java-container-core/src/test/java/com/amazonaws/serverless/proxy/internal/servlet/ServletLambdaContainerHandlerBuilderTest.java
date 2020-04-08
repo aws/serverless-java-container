@@ -8,6 +8,7 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
 import org.junit.Test;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.concurrent.CountDownLatch;
 
 import static org.junit.Assert.*;
@@ -44,18 +45,18 @@ public class ServletLambdaContainerHandlerBuilderTest {
         assertEquals("test", test.name);
     }
 
-    public static final class TestHandler extends AwsLambdaServletContainerHandler<AwsProxyRequest, AwsProxyResponse, AwsProxyHttpServletRequest, AwsHttpServletResponse> {
+    public static final class TestHandler extends AwsLambdaServletContainerHandler<AwsProxyRequest, AwsProxyResponse, HttpServletRequest, AwsHttpServletResponse> {
 
         public TestHandler() {
             super(AwsProxyRequest.class, AwsProxyResponse.class, new AwsProxyHttpServletRequestReader(), new AwsProxyHttpServletResponseWriter(), new AwsProxySecurityContextWriter(), new AwsProxyExceptionHandler());
         }
         @Override
-        protected AwsHttpServletResponse getContainerResponse(AwsProxyHttpServletRequest request, CountDownLatch latch) {
+        protected AwsHttpServletResponse getContainerResponse(HttpServletRequest request, CountDownLatch latch) {
             return null;
         }
 
         @Override
-        protected void handleRequest(AwsProxyHttpServletRequest containerRequest, AwsHttpServletResponse containerResponse, Context lambdaContext) throws Exception {
+        protected void handleRequest(HttpServletRequest containerRequest, AwsHttpServletResponse containerResponse, Context lambdaContext) throws Exception {
 
         }
 
@@ -69,7 +70,7 @@ public class ServletLambdaContainerHandlerBuilderTest {
             extends ServletLambdaContainerHandlerBuilder<
             AwsProxyRequest,
             AwsProxyResponse,
-            AwsProxyHttpServletRequest,
+            HttpServletRequest,
             TestHandler,
             TestBuilder> {
 

@@ -223,7 +223,15 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
             // the latch will do nothing
             latch.countDown();
 
-            return exceptionHandler.handle(e);
+            if (getContainerConfig().isDisableExceptionMapper()) {
+                if (e instanceof RuntimeException) {
+                    throw (RuntimeException) e;
+                } else {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                return exceptionHandler.handle(e);
+            }
         }
     }
 

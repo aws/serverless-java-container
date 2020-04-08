@@ -14,6 +14,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 
+import static com.amazonaws.serverless.proxy.RequestReader.API_GATEWAY_CONTEXT_PROPERTY;
 import static com.amazonaws.serverless.proxy.RequestReader.API_GATEWAY_EVENT_PROPERTY;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertThat;
@@ -35,13 +36,13 @@ public class ApacheCombinedServletLogFormatterTest {
     proxyRequest = new AwsProxyRequest();
     Clock fixedClock = Clock.fixed(Instant.ofEpochSecond(665888523L), ZoneId.of("UTC"));
     mockServletRequest = mock(HttpServletRequest.class);
-    when(mockServletRequest.getAttribute(eq(API_GATEWAY_EVENT_PROPERTY)))
-        .thenReturn(proxyRequest);
+    context = new AwsProxyRequestContext();
+    context.setIdentity(new ApiGatewayRequestIdentity());
+    when(mockServletRequest.getAttribute(eq(API_GATEWAY_CONTEXT_PROPERTY)))
+        .thenReturn(context);
     when(mockServletRequest.getMethod())
         .thenReturn("GET");
     mockServletResponse = mock(HttpServletResponse.class);
-    context = new AwsProxyRequestContext();
-    context.setIdentity(new ApiGatewayRequestIdentity());
     proxyRequest.setRequestContext(context);
 
     sut = new ApacheCombinedServletLogFormatter(fixedClock);

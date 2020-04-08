@@ -1,4 +1,18 @@
+/*
+ * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance
+ * with the License. A copy of the License is located at
+ *
+ * http://aws.amazon.com/apache2.0/
+ *
+ * or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
+ * OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
+ * and limitations under the License.
+ */
 package com.amazonaws.serverless.proxy.internal.servlet;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import javax.servlet.*;
 import java.util.*;
@@ -6,7 +20,7 @@ import java.util.*;
 /**
  * Stores information about a servlet registered with Serverless Java Container's <code>ServletContext</code>.
  */
-public class AwsServletRegistration implements ServletRegistration, ServletRegistration.Dynamic {
+public class AwsServletRegistration implements ServletRegistration, ServletRegistration.Dynamic, Comparable<AwsServletRegistration> {
     private String servletName;
     private Servlet servlet;
     private AwsServletContext ctx;
@@ -91,10 +105,7 @@ public class AwsServletRegistration implements ServletRegistration, ServletRegis
         return initParameters;
     }
 
-    public Servlet getServlet() throws ServletException {
-        if (servlet.getServletConfig() == null) {
-            servlet.init(getServletConfig());
-        }
+    public Servlet getServlet() {
         return servlet;
     }
 
@@ -125,6 +136,20 @@ public class AwsServletRegistration implements ServletRegistration, ServletRegis
     @Override
     public void setAsyncSupported(boolean b) {
         asyncSupported = b;
+    }
+
+    @Override
+    public int compareTo(AwsServletRegistration r) {
+        return Integer.compare(loadOnStartup, r.getLoadOnStartup());
+    }
+
+    @Override
+    @SuppressFBWarnings("HE_EQUALS_USE_HASHCODE")
+    public boolean equals(Object r) {
+        if (r == null || !AwsServletRegistration.class.isAssignableFrom(r.getClass())) {
+            return false;
+        }
+        return ((AwsServletRegistration)r).getName().equals(getName()) && ((AwsServletRegistration)r).getServlet() == getServlet();
     }
 
     public boolean isAsyncSupported() {

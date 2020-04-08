@@ -14,16 +14,12 @@ package com.amazonaws.serverless.proxy.spark;
 
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
-import com.amazonaws.serverless.proxy.AwsProxyExceptionHandler;
-import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
-import com.amazonaws.serverless.proxy.ExceptionHandler;
-import com.amazonaws.serverless.proxy.RequestReader;
-import com.amazonaws.serverless.proxy.ResponseWriter;
-import com.amazonaws.serverless.proxy.SecurityContextWriter;
+import com.amazonaws.serverless.proxy.*;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.*;
+import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.serverless.proxy.spark.embeddedserver.LambdaEmbeddedServer;
 import com.amazonaws.serverless.proxy.spark.embeddedserver.LambdaEmbeddedServerFactory;
 
@@ -38,6 +34,7 @@ import spark.embeddedserver.EmbeddedServers;
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.servlet.Servlet;
+import javax.servlet.http.HttpServletRequest;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -75,7 +72,7 @@ import java.util.concurrent.CountDownLatch;
  * @param <ResponseType> The response object produced by the <code>ResponseWriter</code> implementation in the constructor
  */
 public class SparkLambdaContainerHandler<RequestType, ResponseType>
-        extends AwsLambdaServletContainerHandler<RequestType, ResponseType, AwsProxyHttpServletRequest, AwsHttpServletResponse> {
+        extends AwsLambdaServletContainerHandler<RequestType, ResponseType, HttpServletRequest, AwsHttpServletResponse> {
 
     //-------------------------------------------------------------
     // Constants
@@ -121,6 +118,31 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType>
         return newHandler;
     }
 
+    /**
+     * Returns a new instance of an SparkLambdaContainerHandler initialized to work with <code>HttpApiV2ProxyRequest</code>
+     * and <code>AwsProxyResponse</code> objects.
+     *
+     * @return a new instance of <code>SparkLambdaContainerHandler</code>
+     *
+     * @throws ContainerInitializationException Throws this exception if we fail to initialize the Spark container.
+     * This could be caused by the introspection used to insert the library as the default embedded container
+     */
+    public static SparkLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> getHttpApiV2ProxyHandler()
+            throws ContainerInitializationException {
+        SparkLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> newHandler = new SparkLambdaContainerHandler<>(HttpApiV2ProxyRequest.class,
+                AwsProxyResponse.class,
+                new AwsHttpApiV2HttpServletRequestReader(),
+                new AwsProxyHttpServletResponseWriter(),
+                new AwsHttpApiV2SecurityContextWriter(),
+                new AwsProxyExceptionHandler(),
+                new LambdaEmbeddedServerFactory());
+
+        // For Spark we cannot call initialize here. It needs to be called manually after the routes are set
+        //newHandler.initialize();
+
+        return newHandler;
+    }
+
     //-------------------------------------------------------------
     // Constructors
     //-------------------------------------------------------------
@@ -128,7 +150,7 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType>
 
     public SparkLambdaContainerHandler(Class<RequestType> requestTypeClass,
                                        Class<ResponseType> responseTypeClass,
-                                       RequestReader<RequestType, AwsProxyHttpServletRequest> requestReader,
+                                       RequestReader<RequestType, HttpServletRequest> requestReader,
                                        ResponseWriter<AwsHttpServletResponse, ResponseType> responseWriter,
                                        SecurityContextWriter<RequestType> securityContextWriter,
                                        ExceptionHandler<ResponseType> exceptionHandler,
@@ -177,13 +199,13 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType>
 
 
     @Override
-    protected AwsHttpServletResponse getContainerResponse(AwsProxyHttpServletRequest request, CountDownLatch latch) {
+    protected AwsHttpServletResponse getContainerResponse(HttpServletRequest request, CountDownLatch latch) {
         return new AwsHttpServletResponse(request, latch);
     }
 
 
     @Override
-    protected void handleRequest(AwsProxyHttpServletRequest httpServletRequest, AwsHttpServletResponse httpServletResponse, Context lambdaContext)
+    protected void handleRequest(HttpServletRequest httpServletRequest, AwsHttpServletResponse httpServletResponse, Context lambdaContext)
             throws Exception {
         Timer.start("SPARK_HANDLE_REQUEST");
 
@@ -191,7 +213,9 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType>
             initialize();
         }
 
-        httpServletRequest.setServletContext(getServletContext());
+        if (AwsHttpServletRequest.class.isAssignableFrom(httpServletRequest.getClass())) {
+            ((AwsHttpServletRequest)httpServletRequest).setServletContext(getServletContext());
+        }
 
         doFilter(httpServletRequest, httpServletResponse, null);
         Timer.stop("SPARK_HANDLE_REQUEST");

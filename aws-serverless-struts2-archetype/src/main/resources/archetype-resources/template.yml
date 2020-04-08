@@ -33,12 +33,12 @@ Resources:
     Properties:
       Handler: com.amazonaws.serverless.proxy.struts2.Struts2LambdaHandler::handleRequest
       Runtime: java8
-      CodeUri: target/${artifactId}-${version}-lambda.zip
+      CodeUri: .
       MemorySize: 512
       Policies: AWSLambdaBasicExecutionRole
       Timeout: 30
       Events:
-        GetResource:
+        ProxyResource:
           Type: Api
           Properties:
             Path: /{proxy+}

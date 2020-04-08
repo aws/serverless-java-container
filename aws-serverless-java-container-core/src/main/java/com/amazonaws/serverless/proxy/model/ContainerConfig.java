@@ -1,5 +1,16 @@
+/*
+ * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance
+ * with the License. A copy of the License is located at
+ *
+ * http://aws.amazon.com/apache2.0/
+ *
+ * or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
+ * OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
+ * and limitations under the License.
+ */
 package com.amazonaws.serverless.proxy.model;
-
 
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
 
@@ -8,7 +19,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-
 /**
  * Configuration parameters for the framework
  */
@@ -16,7 +26,7 @@ public class ContainerConfig {
     public static final String DEFAULT_URI_ENCODING = "UTF-8";
     public static final String DEFAULT_CONTENT_CHARSET = "ISO-8859-1";
     private static final List<String> DEFAULT_FILE_PATHS = new ArrayList<String>() {{ add("/tmp"); add("/var/task"); }};
-    private static final int MAX_INIT_TIMEOUT_MS = 10_000;
+    private static final int MAX_INIT_TIMEOUT_MS = 20_000;
 
     public static ContainerConfig defaultConfig() {
         ContainerConfig configuration = new ContainerConfig();
@@ -29,6 +39,7 @@ public class ContainerConfig {
         configuration.addBinaryContentTypes("application/octet-stream", "image/jpeg", "image/png", "image/gif");
         configuration.setDefaultContentCharset(DEFAULT_CONTENT_CHARSET);
         configuration.setInitializationTimeout(MAX_INIT_TIMEOUT_MS);
+        configuration.setDisableExceptionMapper(false);
 
         return configuration;
     }
@@ -48,6 +59,7 @@ public class ContainerConfig {
     private boolean queryStringCaseSensitive;
     private final HashSet<String> binaryContentTypes;
     private int initializationTimeout;
+    private boolean disableExceptionMapper;
 
     public ContainerConfig() {
         validFilePaths = new ArrayList<>();
@@ -296,5 +308,24 @@ public class ContainerConfig {
      */
     public void setInitializationTimeout(int initializationTimeout) {
         this.initializationTimeout = initializationTimeout;
+    }
+
+    /**
+     * Whether the framework will run exception thrown by the application through the implementation of
+     * {@link com.amazonaws.serverless.proxy.ExceptionHandler}. When this parameter is set to false the Lambda
+     * container handler object lets the Exception propagate upwards to the Lambda handler class.
+     * @return <code>true</code> if exception mapping is disabled, <code>false</code> otherwise.
+     */
+    public boolean isDisableExceptionMapper() {
+        return disableExceptionMapper;
+    }
+
+    /**
+     * This configuration parameter tells the container whether it should skip exception mapping and simply let any
+     * Exception thrown by the underlying application bubble up to the Lambda handler class.
+     * @param disable Set this value to <code>true</code> to disable exception mapping, <code>false</code> otherwise.
+     */
+    public void setDisableExceptionMapper(boolean disable) {
+        this.disableExceptionMapper = disable;
     }
 }

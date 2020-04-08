@@ -17,6 +17,7 @@ import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
+import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.serverless.proxy.struts2.echoapp.EchoAction;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -25,23 +26,25 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.struts2.StrutsJUnit4TestCase;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Unit test class for the Struts2 AWS_PROXY default implementation
  */
+@RunWith(Parameterized.class)
 public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
     private static final String CUSTOM_HEADER_KEY = "x-custom-header";
     private static final String CUSTOM_HEADER_VALUE = "my-custom-value";
@@ -55,17 +58,42 @@ public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
     private static ObjectMapper objectMapper = new ObjectMapper();
     private final Struts2LambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = Struts2LambdaContainerHandler
             .getAwsProxyHandler();
+    private final Struts2LambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> httpApiHandler = Struts2LambdaContainerHandler
+            .getHttpApiV2ProxyHandler();
     private static Context lambdaContext = new MockLambdaContext();
 
+    private String type;
+
+    public Struts2AwsProxyTest(String reqType) {
+        type = reqType;
+    }
+
+    @Parameterized.Parameters
+    public static Collection<Object> data() {
+        return Arrays.asList(new Object[] { "API_GW", "ALB", "HTTP_API" });
+    }
+
+    private AwsProxyResponse executeRequest(AwsProxyRequestBuilder requestBuilder, Context lambdaContext) {
+        switch (type) {
+            case "API_GW":
+                return handler.proxy(requestBuilder.build(), lambdaContext);
+            case "ALB":
+                return handler.proxy(requestBuilder.alb().build(), lambdaContext);
+            case "HTTP_API":
+                return httpApiHandler.proxy(requestBuilder.toHttpApiV2Request(), lambdaContext);
+            default:
+                throw new RuntimeException("Unknown request type: " + type);
+        }
+    }
+    
     @Test
     public void headers_getHeaders_echo() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo-request-info", "GET")
+        AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/echo-request-info", "GET")
                 .queryString("mode", "headers")
                 .header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
-                .json()
-                .build();
+                .json();
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
         assertEquals(CONTENT_TYPE_APPLICATION_JSON, output.getMultiValueHeaders().getFirst("Content-Type"));
 
@@ -74,24 +102,23 @@ public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
 
     @Test
     public void context_servletResponse_setCustomHeader() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo", "GET")
+        AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/echo", "GET")
                 .queryString("customHeader", "true")
-                .json()
-                .build();
+                .json();
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
         assertTrue(output.getMultiValueHeaders().containsKey("XX"));
     }
 
     @Test
     public void context_serverInfo_correctContext() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo", "GET")
+        assumeTrue("API_GW".equals(type));
+        AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/echo", "GET")
                 .queryString(QUERY_STRING_KEY, "Hello Struts2")
                 .header("Content-Type", "application/json")
-                .queryString("contentType", "true")
-                .build();
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+                .queryString("contentType", "true");
+        AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
         assertEquals(CONTENT_TYPE_APPLICATION_JSON, output.getMultiValueHeaders().getFirst("Content-Type"));
 
@@ -100,14 +127,13 @@ public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
 
     @Test
     public void queryString_uriInfo_echo() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo-request-info", "GET")
+        AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/echo-request-info", "GET")
                 .queryString("mode", "query-string")
                 .queryString(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
-                .json()
-                .build();
+                .json();
 
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
         assertEquals(CONTENT_TYPE_APPLICATION_JSON, output.getMultiValueHeaders().getFirst("Content-Type"));
 
@@ -116,13 +142,12 @@ public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
 
     @Test
     public void requestScheme_valid_expectHttps() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo-request-info", "GET")
+        AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/echo-request-info", "GET")
                 .queryString("mode", "scheme")
                 .queryString(QUERY_STRING_KEY, QUERY_STRING_ENCODED_VALUE)
-                .json()
-                .build();
+                .json();
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
         assertEquals(CONTENT_TYPE_APPLICATION_JSON, output.getMultiValueHeaders().getFirst("Content-Type"));
 
@@ -131,13 +156,13 @@ public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
 
     @Test
     public void authorizer_securityContext_customPrincipalSuccess() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo-request-info", "GET")
+        assumeTrue("API_GW".equals(type));
+        AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/echo-request-info", "GET")
                 .queryString("mode", "principal")
                 .json()
-                .authorizerPrincipal(AUTHORIZER_PRINCIPAL_ID)
-                .build();
+                .authorizerPrincipal(AUTHORIZER_PRINCIPAL_ID);
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
         assertEquals(CONTENT_TYPE_APPLICATION_JSON, output.getMultiValueHeaders().getFirst("Content-Type"));
 
@@ -146,32 +171,30 @@ public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
 
     @Test
     public void errors_unknownRoute_expect404() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/unknown", "GET").build();
+        AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/unknown", "GET");
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(404, output.getStatusCode());
     }
 
     @Test
     public void error_contentType_invalidContentType() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo-request-info", "POST")
+        AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/echo-request-info", "POST")
                 .queryString("mode", "content-type")
                 .header("Content-Type", "application/octet-stream")
-                .body("asdasdasd")
-                .build();
+                .body("asdasdasd");
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(415, output.getStatusCode());
     }
 
     @Test
     public void error_statusCode_methodNotAllowed() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo-request-info", "POST")
+        AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/echo-request-info", "POST")
                 .queryString("mode", "not-allowed")
-                .json()
-                .build();
+                .json();
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(405, output.getStatusCode());
     }
 
@@ -180,12 +203,11 @@ public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
     public void responseBody_responseWriter_validBody() throws JsonProcessingException {
         Map<String, String> value = new HashMap<>();
         value.put(QUERY_STRING_KEY, CUSTOM_HEADER_VALUE);
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo", "POST")
+        AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/echo", "POST")
                 .json()
-                .body(objectMapper.writeValueAsString(value))
-                .build();
+                .body(objectMapper.writeValueAsString(value));
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
         assertNotNull(output.getBody());
 
@@ -194,32 +216,30 @@ public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
 
     @Test
     public void statusCode_responseStatusCode_customStatusCode() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo-request-info", "GET")
+        AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/echo-request-info", "GET")
                 .queryString("mode", "custom-status-code")
                 .queryString("status", "201")
-                .json()
-                .build();
+                .json();
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(201, output.getStatusCode());
     }
 
     @Test
     public void base64_binaryResponse_base64Encoding() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo", "GET").build();
+        AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/echo", "GET");
 
-        AwsProxyResponse response = handler.proxy(request, lambdaContext);
+        AwsProxyResponse response = executeRequest(request, lambdaContext);
         assertNotNull(response.getBody());
         assertTrue(Base64.isBase64(response.getBody()));
     }
 
     @Test
     public void exception_mapException_mapToNotImplemented() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo-request-info", "POST")
-                .queryString("mode", "not-implemented")
-                .build();
+        AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/echo-request-info", "POST")
+                .queryString("mode", "not-implemented");
 
-        AwsProxyResponse response = handler.proxy(request, lambdaContext);
+        AwsProxyResponse response = executeRequest(request, lambdaContext);
         assertNotNull(response.getBody());
         assertEquals("null", response.getBody());
         assertEquals(Response.Status.NOT_IMPLEMENTED.getStatusCode(), response.getStatusCode());
@@ -227,12 +247,11 @@ public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
 
     @Test
     public void stripBasePath_route_shouldRouteCorrectly() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/custompath/echo", "GET")
+        AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/custompath/echo", "GET")
                 .json()
-                .queryString(QUERY_STRING_KEY, "stripped")
-                .build();
+                .queryString(QUERY_STRING_KEY, "stripped");
         handler.stripBasePath("/custompath");
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
         validateSingleValueModel(output, "stripped");
         handler.stripBasePath("");
@@ -240,29 +259,30 @@ public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
 
     @Test
     public void stripBasePath_route_shouldReturn404() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/custompath/echo/status-code", "GET")
+        AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/custompath/echo/status-code", "GET")
                 .json()
-                .queryString("status", "201")
-                .build();
+                .queryString("status", "201");
         handler.stripBasePath("/custom");
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(404, output.getStatusCode());
         handler.stripBasePath("");
     }
 
     @Test
     public void securityContext_injectPrincipal_expectPrincipalName() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo-request-info", "GET")
+        assumeTrue("API_GW".equals(type));
+        AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/echo-request-info", "GET")
                 .queryString("mode", "principal")
-                .authorizerPrincipal(USER_PRINCIPAL).build();
+                .authorizerPrincipal(USER_PRINCIPAL);
 
-        AwsProxyResponse resp = handler.proxy(request, lambdaContext);
+        AwsProxyResponse resp = executeRequest(request, lambdaContext);
         assertEquals(200, resp.getStatusCode());
         validateSingleValueModel(resp, USER_PRINCIPAL);
     }
 
     @Test
     public void queryParam_encoding_expectUnencodedParam() {
+        assumeTrue("API_GW".equals(type));
         String paramValue = "p%2Fz%2B3";
         String decodedParam = "";
         try {
@@ -271,21 +291,20 @@ public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
             e.printStackTrace();
             fail("Could not decode parameter");
         }
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo", "GET").queryString(QUERY_STRING_KEY, decodedParam)
-                .build();
+        AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/echo", "GET").queryString(QUERY_STRING_KEY, decodedParam);
 
-        AwsProxyResponse resp = handler.proxy(request, lambdaContext);
+        AwsProxyResponse resp = executeRequest(request, lambdaContext);
         assertEquals(200, resp.getStatusCode());
         validateSingleValueModel(resp, decodedParam);
     }
 
     @Test
     public void queryParam_encoding_expectEncodedParam() {
+        assumeTrue("API_GW".equals(type));
         String paramValue = "p%2Fz%2B3";
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo", "GET").queryString(QUERY_STRING_KEY, paramValue)
-                .build();
+        AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/echo", "GET").queryString(QUERY_STRING_KEY, paramValue);
 
-        AwsProxyResponse resp = handler.proxy(request, lambdaContext);
+        AwsProxyResponse resp = executeRequest(request, lambdaContext);
         assertEquals(200, resp.getStatusCode());
         validateSingleValueModel(resp, paramValue);
     }

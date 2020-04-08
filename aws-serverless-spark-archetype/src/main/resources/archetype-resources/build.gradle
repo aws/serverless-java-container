@@ -9,7 +9,7 @@ dependencies {
   compile (
           'com.sparkjava:spark-core:2.9.1',
           'com.amazonaws.serverless:aws-serverless-java-container-spark:[1.0,)',
-          'com.fasterxml.jackson.core:jackson-databind:2.9.10',
+          'com.fasterxml.jackson.core:jackson-databind:2.10.3',
           'io.symphonia:lambda-logging:1.0.1'
   )
 

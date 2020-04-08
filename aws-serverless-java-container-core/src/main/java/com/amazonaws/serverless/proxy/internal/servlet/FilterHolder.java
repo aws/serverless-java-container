@@ -83,6 +83,9 @@ public class FilterHolder {
      * @throws ServletException Propagates any servlet exception thrown by the filter initialization
      */
     public void init() throws ServletException {
+        if (this.filterInitialized) {
+            return;
+        }
         this.getFilter().init(filterConfig);
         this.filterInitialized = true;
     }

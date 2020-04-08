@@ -33,7 +33,7 @@ public class AwsProxyRequestDispatcherTest {
     @Test
     public void setPath_forwardByPath_proxyRequestObjectInPropertyReferencesSameProxyRequest() throws InvalidRequestEventException {
         AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/hello", "GET").build();
-        AwsProxyHttpServletRequest servletRequest = requestReader.readRequest(proxyRequest,null, new MockLambdaContext(), ContainerConfig.defaultConfig());
+        HttpServletRequest servletRequest = requestReader.readRequest(proxyRequest,null, new MockLambdaContext(), ContainerConfig.defaultConfig());
 
         AwsProxyRequestDispatcher dispatcher = new AwsProxyRequestDispatcher(FORWARD_PATH, false, null);
         dispatcher.setRequestPath(servletRequest, FORWARD_PATH);
@@ -43,7 +43,7 @@ public class AwsProxyRequestDispatcherTest {
     @Test
     public void setPathForWrappedRequest_forwardByPath_proxyRequestObjectInPropertyReferencesSameProxyRequest() throws InvalidRequestEventException {
         AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/hello", "GET").build();
-        AwsProxyHttpServletRequest servletRequest = requestReader.readRequest(proxyRequest,null, new MockLambdaContext(), ContainerConfig.defaultConfig());
+        HttpServletRequest servletRequest = requestReader.readRequest(proxyRequest,null, new MockLambdaContext(), ContainerConfig.defaultConfig());
         SecurityContextHolderAwareRequestWrapper springSecurityRequest = new SecurityContextHolderAwareRequestWrapper(servletRequest, "ADMIN");
 
         AwsProxyRequestDispatcher dispatcher = new AwsProxyRequestDispatcher(FORWARD_PATH, false, null);
@@ -70,7 +70,7 @@ public class AwsProxyRequestDispatcherTest {
     @Test
     public void forwardRequest_nullHandler_throwsIllegalStateException() throws InvalidRequestEventException {
         AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/hello", "GET").build();
-        AwsProxyHttpServletRequest servletRequest = requestReader.readRequest(proxyRequest,null, new MockLambdaContext(), ContainerConfig.defaultConfig());
+        HttpServletRequest servletRequest = requestReader.readRequest(proxyRequest,null, new MockLambdaContext(), ContainerConfig.defaultConfig());
         AwsProxyRequestDispatcher dispatcher = new AwsProxyRequestDispatcher(FORWARD_PATH, false, null);
         try {
             dispatcher.forward(servletRequest, new AwsHttpServletResponse(servletRequest, new CountDownLatch(1)));
@@ -88,7 +88,7 @@ public class AwsProxyRequestDispatcherTest {
     @Test
     public void forwardRequest_committedResponse_throwsIllegalStateException() throws InvalidRequestEventException {
         AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/hello", "GET").build();
-        AwsProxyHttpServletRequest servletRequest = requestReader.readRequest(proxyRequest,null, new MockLambdaContext(), ContainerConfig.defaultConfig());
+        HttpServletRequest servletRequest = requestReader.readRequest(proxyRequest,null, new MockLambdaContext(), ContainerConfig.defaultConfig());
         AwsProxyRequestDispatcher dispatcher = new AwsProxyRequestDispatcher(FORWARD_PATH, false, mockLambdaHandler(null));
         AwsHttpServletResponse resp = new AwsHttpServletResponse(servletRequest, new CountDownLatch(1));
 
@@ -109,7 +109,7 @@ public class AwsProxyRequestDispatcherTest {
     @Test
     public void forwardRequest_partiallyWrittenResponse_resetsBuffer() throws InvalidRequestEventException {
         AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/hello", "GET").build();
-        AwsProxyHttpServletRequest servletRequest = requestReader.readRequest(proxyRequest,null, new MockLambdaContext(), ContainerConfig.defaultConfig());
+        HttpServletRequest servletRequest = requestReader.readRequest(proxyRequest,null, new MockLambdaContext(), ContainerConfig.defaultConfig());
         AwsProxyRequestDispatcher dispatcher = new AwsProxyRequestDispatcher(FORWARD_PATH, false, mockLambdaHandler(null));
         AwsHttpServletResponse resp = new AwsHttpServletResponse(servletRequest, new CountDownLatch(1));
 
@@ -174,8 +174,8 @@ public class AwsProxyRequestDispatcherTest {
     }
 
 
-    private AwsLambdaServletContainerHandler<AwsProxyRequest, AwsProxyResponse, AwsProxyHttpServletRequest, AwsHttpServletResponse> mockLambdaHandler(RequestHandler h) {
-        return new AwsLambdaServletContainerHandler<AwsProxyRequest, AwsProxyResponse, AwsProxyHttpServletRequest, AwsHttpServletResponse>(
+    private AwsLambdaServletContainerHandler<AwsProxyRequest, AwsProxyResponse, HttpServletRequest, AwsHttpServletResponse> mockLambdaHandler(RequestHandler h) {
+        return new AwsLambdaServletContainerHandler<AwsProxyRequest, AwsProxyResponse, HttpServletRequest, AwsHttpServletResponse>(
                 AwsProxyRequest.class,
                 AwsProxyResponse.class,
                 new AwsProxyHttpServletRequestReader(),
@@ -192,18 +192,18 @@ public class AwsProxyRequestDispatcherTest {
             }
 
             @Override
-            protected AwsHttpServletResponse getContainerResponse(AwsProxyHttpServletRequest request, CountDownLatch latch) {
+            protected AwsHttpServletResponse getContainerResponse(HttpServletRequest request, CountDownLatch latch) {
                 return new AwsHttpServletResponse(request, latch);
             }
 
             @Override
-            protected void handleRequest(AwsProxyHttpServletRequest containerRequest, AwsHttpServletResponse containerResponse, Context lambdaContext) throws Exception {
+            protected void handleRequest(HttpServletRequest containerRequest, AwsHttpServletResponse containerResponse, Context lambdaContext) throws Exception {
                 if (h != null) {
 
                     setServletContext(new AwsServletContext(this));
-                    containerRequest.setServletContext(getServletContext());
+                    ((AwsHttpServletRequest)containerRequest).setServletContext(getServletContext());
 
-                    h.handleRequest(containerRequest, containerResponse);
+                    h.handleRequest((AwsProxyHttpServletRequest)containerRequest, containerResponse);
                 }
                 containerResponse.flushBuffer();
             }

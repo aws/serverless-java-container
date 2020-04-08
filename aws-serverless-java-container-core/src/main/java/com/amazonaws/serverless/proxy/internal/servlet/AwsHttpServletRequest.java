@@ -13,32 +13,36 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.proxy.RequestReader;
+import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
-import com.amazonaws.serverless.proxy.model.ContainerConfig;
-import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
+import com.amazonaws.serverless.proxy.internal.testutils.Timer;
+import com.amazonaws.serverless.proxy.model.*;
 import com.amazonaws.services.lambda.runtime.Context;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.NullInputStream;
 import org.apache.http.message.BasicHeaderValueParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.*;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.*;
+import javax.ws.rs.core.MediaType;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -59,6 +63,8 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     static final DateTimeFormatter dateFormatter = DateTimeFormatter.RFC_1123_DATE_TIME;
     static final String ENCODING_VALUE_KEY = "charset";
     static final String DISPATCHER_TYPE_ATTRIBUTE = "com.amazonaws.serverless.javacontainer.dispatchertype";
+    static final String QUERY_STRING_SEPARATOR = "&";
+    static final String QUERY_STRING_KEY_VALUE_SEPARATOR = "=";
 
     // We need this to pickup the protocol from the CloudFront header since Lambda doesn't receive this
     // information from anywhere else
@@ -78,6 +84,13 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     private AwsHttpSession session;
     private String queryString;
     private BasicHeaderValueParser headerParser;
+    private Map<String, Part> multipartFormParameters;
+    private Map<String, List<String>> urlEncodedFormParameters;
+
+    protected AwsHttpServletResponse response;
+    protected AwsLambdaServletContainerHandler containerHandler;
+    protected ServletInputStream requestInputStream;
+
 
     private static Logger log = LoggerFactory.getLogger(AwsHttpServletRequest.class);
 
@@ -96,6 +109,18 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         attributes = new HashMap<>();
         headerParser = new BasicHeaderValueParser();
         setAttribute(DISPATCHER_TYPE_ATTRIBUTE, DispatcherType.REQUEST);
+    }
+
+    public AwsHttpServletResponse getResponse() {
+        return response;
+    }
+
+    public void setResponse(AwsHttpServletResponse response) {
+        this.response = response;
+    }
+
+    public void setContainerHandler(AwsLambdaServletContainerHandler containerHandler) {
+        this.containerHandler = containerHandler;
     }
 
 
@@ -247,6 +272,12 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         return DispatcherType.REQUEST;
     }
 
+    @Override
+    public String getServletPath() {
+        // we always work on the root path
+        return "";
+    }
+
 
     //-------------------------------------------------------------
     // Methods - Getter/Setter
@@ -323,6 +354,257 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         return queryString;
     }
 
+    protected String generateContextPath(ContainerConfig config, String apiStage) {
+        String contextPath = "";
+        if (config.isUseStageAsServletContext() && apiStage != null) {
+            log.debug("Using stage as context path");
+            contextPath = cleanUri(apiStage);
+        }
+        if (config.getServiceBasePath() != null) {
+            contextPath += cleanUri(config.getServiceBasePath());
+        }
+
+        return contextPath;
+    }
+
+    protected StringBuffer generateRequestURL(String requestPath) {
+        String url = "";
+        url += getServerName();
+        url += cleanUri(getContextPath());
+        url += cleanUri(requestPath);
+
+        return new StringBuffer(getScheme() + "://" + url);
+    }
+
+    protected String parseCharacterEncoding(String contentTypeHeader) {
+        // we only look at content-type because content-encoding should only be used for
+        // "binary" requests such as gzip/deflate.
+        if (contentTypeHeader == null) {
+            return null;
+        }
+
+        String[] contentTypeValues = contentTypeHeader.split(HEADER_VALUE_SEPARATOR);
+        if (contentTypeValues.length <= 1) {
+            return null;
+        }
+
+        for (String contentTypeValue : contentTypeValues) {
+            if (contentTypeValue.trim().startsWith(ENCODING_VALUE_KEY)) {
+                String[] encodingValues = contentTypeValue.split(HEADER_KEY_VALUE_SEPARATOR);
+                if (encodingValues.length <= 1) {
+                    return null;
+                }
+                return encodingValues[1];
+            }
+        }
+        return null;
+    }
+
+    protected String appendCharacterEncoding(String currentContentType, String newEncoding) {
+        if (currentContentType == null || "".equals(currentContentType.trim())) {
+            return null;
+        }
+
+        if (currentContentType.contains(HEADER_VALUE_SEPARATOR)) {
+            String[] contentTypeValues = currentContentType.split(HEADER_VALUE_SEPARATOR);
+            StringBuilder contentType = new StringBuilder(contentTypeValues[0]);
+
+            for (int i = 1; i < contentTypeValues.length; i++) {
+                String contentTypeValue = contentTypeValues[i];
+                String contentTypeString = HEADER_VALUE_SEPARATOR + " " + contentTypeValue;
+                if (contentTypeValue.trim().startsWith(ENCODING_VALUE_KEY)) {
+                    contentTypeString = HEADER_VALUE_SEPARATOR + " " + ENCODING_VALUE_KEY + HEADER_KEY_VALUE_SEPARATOR + newEncoding;
+                }
+                contentType.append(contentTypeString);
+            }
+
+            return contentType.toString();
+        } else {
+            return currentContentType + HEADER_VALUE_SEPARATOR + " " + ENCODING_VALUE_KEY + HEADER_KEY_VALUE_SEPARATOR + newEncoding;
+        }
+    }
+
+    protected ServletInputStream bodyStringToInputStream(String body, boolean isBase64Encoded) throws IOException {
+        if (body == null) {
+            return new AwsServletInputStream(new NullInputStream(0, false, false));
+        }
+        byte[] bodyBytes;
+        if (isBase64Encoded) {
+            bodyBytes = Base64.getMimeDecoder().decode(body);
+        } else {
+            String encoding = getCharacterEncoding();
+            if (encoding == null) {
+                encoding = StandardCharsets.ISO_8859_1.name();
+            }
+            try {
+                bodyBytes = body.getBytes(encoding);
+            } catch (Exception e) {
+                log.error("Could not read request with character encoding: " + SecurityUtils.crlf(encoding), e);
+                bodyBytes = body.getBytes(StandardCharsets.ISO_8859_1.name());
+            }
+        }
+        ByteArrayInputStream requestBodyStream = new ByteArrayInputStream(bodyBytes);
+        return new AwsServletInputStream(requestBodyStream);
+    }
+
+    protected String getFirstQueryParamValue(MultiValuedTreeMap<String, String> queryString, String key, boolean isCaseSensitive) {
+        if (queryString != null) {
+            if (isCaseSensitive) {
+                return queryString.getFirst(key);
+            }
+
+            for (String k : queryString.keySet()) {
+                if (k.toLowerCase(Locale.getDefault()).equals(key.toLowerCase(Locale.getDefault()))) {
+                    return queryString.getFirst(k);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    protected String[] getFormBodyParameterCaseInsensitive(String key) {
+        List<String> values = getFormUrlEncodedParametersMap().get(key);
+        if (values != null) {
+            String[] valuesArray = new String[values.size()];
+            valuesArray = values.toArray(valuesArray);
+            return valuesArray;
+        } else {
+            return new String[0];
+        }
+    }
+
+
+    protected Map<String, List<String>> getFormUrlEncodedParametersMap() {
+        if (urlEncodedFormParameters != null) {
+            return urlEncodedFormParameters;
+        }
+        String contentType = getContentType();
+        if (contentType == null) {
+            urlEncodedFormParameters = new HashMap<>();
+            return urlEncodedFormParameters;
+        }
+        if (!contentType.startsWith(MediaType.APPLICATION_FORM_URLENCODED) || !getMethod().toLowerCase(Locale.ENGLISH).equals("post")) {
+            urlEncodedFormParameters = new HashMap<>();
+            return urlEncodedFormParameters;
+        }
+        Timer.start("SERVLET_REQUEST_GET_FORM_PARAMS");
+        String rawBodyContent = null;
+        try {
+            rawBodyContent = IOUtils.toString(getInputStream());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        urlEncodedFormParameters = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        for (String parameter : rawBodyContent.split(FORM_DATA_SEPARATOR)) {
+            String[] parameterKeyValue = parameter.split(HEADER_KEY_VALUE_SEPARATOR);
+            if (parameterKeyValue.length < 2) {
+                continue;
+            }
+            List<String> values = new ArrayList<>();
+            if (urlEncodedFormParameters.containsKey(parameterKeyValue[0])) {
+                values = urlEncodedFormParameters.get(parameterKeyValue[0]);
+            }
+            values.add(decodeValueIfEncoded(parameterKeyValue[1]));
+            urlEncodedFormParameters.put(decodeValueIfEncoded(parameterKeyValue[0]), values);
+        }
+        Timer.stop("SERVLET_REQUEST_GET_FORM_PARAMS");
+        return urlEncodedFormParameters;
+    }
+
+    @SuppressFBWarnings({"FILE_UPLOAD_FILENAME", "WEAK_FILENAMEUTILS"})
+    protected Map<String, Part> getMultipartFormParametersMap() {
+        if (multipartFormParameters != null) {
+            return multipartFormParameters;
+        }
+        if (!ServletFileUpload.isMultipartContent(this)) { // isMultipartContent also checks the content type
+            multipartFormParameters = new HashMap<>();
+            return multipartFormParameters;
+        }
+        Timer.start("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
+        multipartFormParameters = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+        ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
+
+        try {
+            List<FileItem> items = upload.parseRequest(this);
+            for (FileItem item : items) {
+                String fileName = FilenameUtils.getName(item.getName());
+                AwsProxyRequestPart newPart = new AwsProxyRequestPart(item.get());
+                newPart.setName(item.getFieldName());
+                newPart.setSubmittedFileName(fileName);
+                newPart.setContentType(item.getContentType());
+                newPart.setSize(item.getSize());
+                item.getHeaders().getHeaderNames().forEachRemaining(h -> {
+                    newPart.addHeader(h, item.getHeaders().getHeader(h));
+                });
+
+                multipartFormParameters.put(item.getFieldName(), newPart);
+            }
+        } catch (FileUploadException e) {
+            Timer.stop("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
+            log.error("Could not read multipart upload file", e);
+        }
+        Timer.stop("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
+        return multipartFormParameters;
+    }
+
+    protected String[] getQueryParamValues(MultiValuedTreeMap<String, String> qs, String key, boolean isCaseSensitive) {
+        if (qs != null) {
+            if (isCaseSensitive) {
+                return qs.get(key).toArray(new String[0]);
+            }
+
+            for (String k : qs.keySet()) {
+                if (k.toLowerCase(Locale.getDefault()).equals(key.toLowerCase(Locale.getDefault()))) {
+                    return qs.get(k).toArray(new String[0]);
+                }
+            }
+        }
+
+        return new String[0];
+    }
+
+    protected Map<String, String[]> generateParameterMap(MultiValuedTreeMap<String, String> qs, ContainerConfig config) {
+        Map<String, String[]> output = new HashMap<>();
+
+        Map<String, List<String>> params = getFormUrlEncodedParametersMap();
+        params.entrySet().stream().parallel().forEach(e -> {
+            output.put(e.getKey(), e.getValue().toArray(new String[0]));
+        });
+
+        if (qs != null) {
+            qs.keySet().stream().parallel().forEach(e -> {
+                List<String> newValues = new ArrayList<>();
+                if (output.containsKey(e)) {
+                    String[] values = output.get(e);
+                    newValues.addAll(Arrays.asList(values));
+                }
+                newValues.addAll(Arrays.asList(getQueryParamValues(qs, e, config.isQueryStringCaseSensitive())));
+                output.put(e, newValues.toArray(new String[0]));
+            });
+        }
+
+        return output;
+    }
+
+    protected String getSchemeFromHeader(Headers headers) {
+        // if we don't have any headers to deduce the value we assume HTTPS - API Gateway's default
+        if (headers == null) {
+            return "https";
+        }
+        String cfScheme = headers.getFirst(CF_PROTOCOL_HEADER_NAME);
+        if (cfScheme != null && SecurityUtils.isValidScheme(cfScheme)) {
+            return cfScheme;
+        }
+        String gwScheme = headers.getFirst(PROTOCOL_HEADER_NAME);
+        if (gwScheme != null && SecurityUtils.isValidScheme(gwScheme)) {
+            return gwScheme;
+        }
+        // https is our default scheme
+        return "https";
+    }
 
     /**
      * Prases a header value using the default value separator "," and qualifier separator ";".
@@ -425,6 +707,39 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         }
 
     }
+
+    static String cleanUri(String uri) {
+        String finalUri = (uri == null ? "/" : uri);
+        if (finalUri.equals("/")) {
+            return finalUri;
+        }
+
+        if (!finalUri.startsWith("/")) {
+            finalUri = "/" + finalUri;
+        }
+
+        if (finalUri.endsWith("/")) {
+            finalUri = finalUri.substring(0, finalUri.length() - 1);
+        }
+
+        finalUri = finalUri.replaceAll("/+", "/");
+
+        return finalUri;
+    }
+
+    static String decodeValueIfEncoded(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        try {
+            return URLDecoder.decode(value, LambdaContainerHandler.getContainerConfig().getUriEncoding());
+        } catch (UnsupportedEncodingException e) {
+            log.warn("Could not decode body content - proceeding as if it was already decoded", e);
+            return value;
+        }
+    }
+
 
     /**
      * Class that represents a header value.

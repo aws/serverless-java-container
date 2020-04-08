@@ -8,13 +8,13 @@ repositories {
 dependencies {
   compile (
           'com.amazonaws.serverless:aws-serverless-java-container-struts2:[1.0,)',
-          'org.apache.struts:struts2-convention-plugin:2.5.20',
-          'org.apache.struts:struts2-rest-plugin:2.5.20',
-          'org.apache.struts:struts2-bean-validation-plugin:2.5.20',
-          'org.apache.struts:struts2-junit-plugin:2.5.20',
+          'org.apache.struts:struts2-convention-plugin:2.5.22',
+          'org.apache.struts:struts2-rest-plugin:2.5.22',
+          'org.apache.struts:struts2-bean-validation-plugin:2.5.22',
+          'org.apache.struts:struts2-junit-plugin:2.5.22',
           'com.jgeppert.struts2:struts2-aws-lambda-support-plugin:1.1.0',
           'org.hibernate:hibernate-validator:4.3.2.Final',
-          'com.fasterxml.jackson.core:jackson-databind:2.10.1',
+          'com.fasterxml.jackson.core:jackson-databind:2.10.3',
           'org.apache.logging.log4j:log4j-core:2.8.2',
           'org.apache.logging.log4j:log4j-api:2.8.2',
           'org.apache.logging.log4j:log4j-slf4j-impl:2.8.2',

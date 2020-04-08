@@ -19,6 +19,7 @@ import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.SecurityContext;
 
@@ -26,8 +27,9 @@ import javax.ws.rs.core.SecurityContext;
  * Simple implementation of the <code>RequestReader</code> interface that receives an <code>AwsProxyRequest</code>
  * object and uses it to initialize a <code>AwsProxyHttpServletRequest</code> object.
  */
-public class AwsProxyHttpServletRequestReader extends RequestReader<AwsProxyRequest, AwsProxyHttpServletRequest> {
+public class AwsProxyHttpServletRequestReader extends RequestReader<AwsProxyRequest, HttpServletRequest> {
     static final String INVALID_REQUEST_ERROR = "The incoming event is not a valid request from Amazon API Gateway or an Application Load Balancer";
+
     private ServletContext servletContext;
     //-------------------------------------------------------------
     // Methods - Implementation
@@ -38,7 +40,7 @@ public class AwsProxyHttpServletRequestReader extends RequestReader<AwsProxyRequ
     }
 
     @Override
-    public AwsProxyHttpServletRequest readRequest(AwsProxyRequest request, SecurityContext securityContext, Context lambdaContext, ContainerConfig config)
+    public HttpServletRequest readRequest(AwsProxyRequest request, SecurityContext securityContext, Context lambdaContext, ContainerConfig config)
             throws InvalidRequestEventException {
         // Expect the HTTP method and context to be populated. If they are not, we are handling an
         // unsupported event type.

@@ -41,6 +41,7 @@ public class CognitoIdentityFilter implements Filter {
         if (apiGwContext == null) {
             log.warn("API Gateway context is null");
             filterChain.doFilter(servletRequest, servletResponse);
+            return;
         }
         if (!AwsProxyRequestContext.class.isAssignableFrom(apiGwContext.getClass())) {
             log.warn("API Gateway context object is not of valid type");

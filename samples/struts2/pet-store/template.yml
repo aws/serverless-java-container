@@ -13,20 +13,20 @@ Resources:
     Properties:
       Handler: com.amazonaws.serverless.proxy.struts2.Struts2LambdaHandler::handleRequest
       Runtime: java8
-      CodeUri: target/serverless-struts-example-1.0-SNAPSHOT-lambda.zip
+      CodeUri: .
       MemorySize: 256
       Policies: AWSLambdaBasicExecutionRole
       Timeout: 30
       Events:
-        GetResource:
-          Type: Api
+        HttpApiEvent:
+          Type: HttpApi
           Properties:
-            Path: /{proxy+}
-            Method: any
+            TimeoutInMillis: 20000
+            PayloadFormatVersion: '1.0'
 
 Outputs:
   SpringPetStoreApi:
     Description: URL for application
-    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/pets'
+    Value: !Sub 'https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/pets'
     Export:
       Name: Struts2PetStoreApi

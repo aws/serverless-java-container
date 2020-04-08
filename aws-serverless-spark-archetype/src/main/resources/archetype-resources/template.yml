@@ -22,7 +22,7 @@
 #set($awsRegion = $awsRegion.replaceAll("\n", "").trim())
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: AWS Serverless Spring Boot 2 API - ${groupId}::${artifactId}
+Description: AWS Serverless Spark API - ${groupId}::${artifactId}
 Globals:
   Api:
     EndpointConfiguration: REGIONAL
@@ -33,12 +33,12 @@ Resources:
     Properties:
       Handler: ${groupId}.StreamLambdaHandler::handleRequest
       Runtime: java8
-      CodeUri: target/${artifactId}-${version}-lambda-package.zip
+      CodeUri: .
       MemorySize: 512
       Policies: AWSLambdaBasicExecutionRole
-      Timeout: 30
+      Timeout: 15
       Events:
-        GetResource:
+        ProxyResource:
           Type: Api
           Properties:
             Path: /{proxy+}

@@ -16,7 +16,7 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <jackson.version>2.9.10</jackson.version>
+        <jackson.version>2.10.3</jackson.version>
         <spark.version>2.9.1</spark.version>
     </properties>
 

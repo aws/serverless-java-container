@@ -24,7 +24,7 @@
         <fileSet filtered="true">
             <directory></directory>
             <includes>
-                <include>sam.yaml</include>
+                <include>template.yml</include>
                 <include>README.md</include>
                 <include>build.gradle</include>
             </includes>

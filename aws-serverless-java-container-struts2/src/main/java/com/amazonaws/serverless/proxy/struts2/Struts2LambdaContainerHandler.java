@@ -1,20 +1,24 @@
+/*
+ * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance
+ * with the License. A copy of the License is located at
+ *
+ * http://aws.amazon.com/apache2.0/
+ *
+ * or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
+ * OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
+ * and limitations under the License.
+ */
 package com.amazonaws.serverless.proxy.struts2;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
-import com.amazonaws.serverless.proxy.AwsProxyExceptionHandler;
-import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
-import com.amazonaws.serverless.proxy.ExceptionHandler;
-import com.amazonaws.serverless.proxy.RequestReader;
-import com.amazonaws.serverless.proxy.ResponseWriter;
-import com.amazonaws.serverless.proxy.SecurityContextWriter;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletResponse;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsLambdaServletContainerHandler;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequestReader;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
+import com.amazonaws.serverless.proxy.*;
+import com.amazonaws.serverless.proxy.internal.servlet.*;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
+import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.services.lambda.runtime.Context;
 import org.apache.struts2.dispatcher.filter.StrutsPrepareAndExecuteFilter;
 import org.slf4j.Logger;
@@ -23,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.servlet.Servlet;
+import javax.servlet.http.HttpServletRequest;
 import java.util.EnumSet;
 import java.util.concurrent.CountDownLatch;
 
@@ -32,7 +37,7 @@ import java.util.concurrent.CountDownLatch;
  * @param <RequestType>  request type
  * @param <ResponseType> response type
  */
-public class Struts2LambdaContainerHandler<RequestType, ResponseType> extends AwsLambdaServletContainerHandler<RequestType, ResponseType, AwsProxyHttpServletRequest, AwsHttpServletResponse> {
+public class Struts2LambdaContainerHandler<RequestType, ResponseType> extends AwsLambdaServletContainerHandler<RequestType, ResponseType, HttpServletRequest, AwsHttpServletResponse> {
 
     private static final Logger log = LoggerFactory.getLogger(Struts2LambdaContainerHandler.class);
 
@@ -55,9 +60,19 @@ public class Struts2LambdaContainerHandler<RequestType, ResponseType> extends Aw
                 new AwsProxyExceptionHandler());
     }
 
+    public static Struts2LambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> getHttpApiV2ProxyHandler() {
+        return new Struts2LambdaContainerHandler(
+                HttpApiV2ProxyRequest.class,
+                AwsProxyResponse.class,
+                new AwsHttpApiV2HttpServletRequestReader(),
+                new AwsProxyHttpServletResponseWriter(),
+                new AwsHttpApiV2SecurityContextWriter(),
+                new AwsProxyExceptionHandler());
+    }
+
     public Struts2LambdaContainerHandler(Class<RequestType> requestTypeClass,
                                          Class<ResponseType> responseTypeClass,
-                                         RequestReader<RequestType, AwsProxyHttpServletRequest> requestReader,
+                                         RequestReader<RequestType, HttpServletRequest> requestReader,
                                          ResponseWriter<AwsHttpServletResponse, ResponseType> responseWriter,
                                          SecurityContextWriter<RequestType> securityContextWriter,
                                          ExceptionHandler<ResponseType> exceptionHandler) {
@@ -68,12 +83,13 @@ public class Struts2LambdaContainerHandler<RequestType, ResponseType> extends Aw
         Timer.stop(TIMER_STRUTS_2_CONTAINER_CONSTRUCTOR);
     }
 
-    protected AwsHttpServletResponse getContainerResponse(AwsProxyHttpServletRequest request, CountDownLatch latch) {
+    @Override
+    protected AwsHttpServletResponse getContainerResponse(HttpServletRequest request, CountDownLatch latch) {
         return new AwsHttpServletResponse(request, latch);
     }
 
     @Override
-    protected void handleRequest(AwsProxyHttpServletRequest httpServletRequest,
+    protected void handleRequest(HttpServletRequest httpServletRequest,
                                  AwsHttpServletResponse httpServletResponse,
                                  Context lambdaContext) throws Exception {
         Timer.start(TIMER_STRUTS_2_HANDLE_REQUEST);
@@ -81,7 +97,9 @@ public class Struts2LambdaContainerHandler<RequestType, ResponseType> extends Aw
             initialize();
         }
 
-        httpServletRequest.setServletContext(this.getServletContext());
+        if (AwsHttpServletRequest.class.isAssignableFrom(httpServletRequest.getClass())) {
+            ((AwsHttpServletRequest)httpServletRequest).setServletContext(this.getServletContext());
+        }
         this.doFilter(httpServletRequest, httpServletResponse, null);
         String responseStatusCode = httpServletResponse.getHeader(HEADER_STRUTS_STATUS_CODE);
         if (responseStatusCode != null) {

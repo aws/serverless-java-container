@@ -1,14 +1,11 @@
 package com.amazonaws.serverless.proxy.spring;
 
-import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.securityapp.LambdaHandler;
-import com.amazonaws.serverless.proxy.spring.securityapp.MessageController;
 import com.amazonaws.serverless.proxy.spring.securityapp.SecurityConfig;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.Test;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -38,9 +35,5 @@ public class SecurityAppTest {
                 .build();
         resp = handler.handleRequest(req, lambdaContext);
         assertEquals(200, resp.getStatusCode());
-    }
-
-    public void helloRequest_withoutAuith_respondsWithError() {
-
     }
 }

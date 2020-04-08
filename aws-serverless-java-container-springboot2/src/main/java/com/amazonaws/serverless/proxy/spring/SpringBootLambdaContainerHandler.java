@@ -14,20 +14,30 @@ package com.amazonaws.serverless.proxy.spring;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.*;
+import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.servlet.*;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
+import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.serverless.proxy.spring.embedded.ServerlessReactiveServletEmbeddedServerFactory;
 import com.amazonaws.serverless.proxy.spring.embedded.ServerlessServletEmbeddedServerFactory;
 import com.amazonaws.services.lambda.runtime.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.web.context.ConfigurableWebApplicationContext;
+import org.springframework.web.servlet.DispatcherServlet;
 
 import javax.servlet.Servlet;
+import javax.servlet.ServletRegistration;
+import javax.servlet.http.HttpServletRequest;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -40,10 +50,14 @@ import java.util.concurrent.CountDownLatch;
  * @param <RequestType> The incoming event type
  * @param <ResponseType> The expected return type
  */
-public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends AwsLambdaServletContainerHandler<RequestType, ResponseType, AwsProxyHttpServletRequest, AwsHttpServletResponse> {
+public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends AwsLambdaServletContainerHandler<RequestType, ResponseType, HttpServletRequest, AwsHttpServletResponse> {
+    private static final String DISPATCHER_SERVLET_REGISTRATION_NAME = "dispatcherServlet";
+
     private final Class<?> springBootInitializer;
     private static final Logger log = LoggerFactory.getLogger(SpringBootLambdaContainerHandler.class);
     private String[] springProfiles = null;
+    private WebApplicationType springWebApplicationType;
+    private ConfigurableApplicationContext applicationContext;
 
     private static SpringBootLambdaContainerHandler instance;
 
@@ -71,8 +85,25 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
      */
     public static SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(Class<?> springBootInitializer, String... profiles)
             throws ContainerInitializationException {
-        return new SpringBootProxyHandlerBuilder()
+        return new SpringBootProxyHandlerBuilder<AwsProxyRequest>()
                 .defaultProxy()
+                .initializationWrapper(new InitializationWrapper())
+                .springBootApplication(springBootInitializer)
+                .profiles(profiles)
+                .buildAndInitialize();
+    }
+
+    /**
+     * Creates a default SpringLambdaContainerHandler initialized with the `AwsProxyRequest` and `HttpApiV2ProxyRequest` objects and the given Spring profiles
+     * @param springBootInitializer {@code SpringBootServletInitializer} class
+     * @param profiles A list of Spring profiles to activate
+     * @return An initialized instance of the `SpringLambdaContainerHandler`
+     * @throws ContainerInitializationException If an error occurs while initializing the Spring framework
+     */
+    public static SpringBootLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> getHttpApiV2ProxyHandler(Class<?> springBootInitializer, String... profiles)
+            throws ContainerInitializationException {
+        return new SpringBootProxyHandlerBuilder<HttpApiV2ProxyRequest>()
+                .defaultHttpApiV2Proxy()
                 .initializationWrapper(new InitializationWrapper())
                 .springBootApplication(springBootInitializer)
                 .profiles(profiles)
@@ -90,19 +121,22 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
      * @param exceptionHandler An implementation of `ExceptionHandler`
      * @param springBootInitializer {@code SpringBootServletInitializer} class
      * @param init The initialization Wrapper that will be used to start Spring Boot
+     * @param applicationType The Spring Web Application Type
      */
     public SpringBootLambdaContainerHandler(Class<RequestType> requestTypeClass,
                                             Class<ResponseType> responseTypeClass,
-                                            RequestReader<RequestType, AwsProxyHttpServletRequest> requestReader,
+                                            RequestReader<RequestType, HttpServletRequest> requestReader,
                                             ResponseWriter<AwsHttpServletResponse, ResponseType> responseWriter,
                                             SecurityContextWriter<RequestType> securityContextWriter,
                                             ExceptionHandler<ResponseType> exceptionHandler,
                                             Class<?> springBootInitializer,
-                                            InitializationWrapper init) {
+                                            InitializationWrapper init,
+                                            WebApplicationType applicationType) {
         super(requestTypeClass, responseTypeClass, requestReader, responseWriter, securityContextWriter, exceptionHandler);
         Timer.start("SPRINGBOOT2_CONTAINER_HANDLER_CONSTRUCTOR");
         initialized = false;
         this.springBootInitializer = springBootInitializer;
+        springWebApplicationType = applicationType;
         setInitializationWrapper(init);
         SpringBootLambdaContainerHandler.setInstance(this);
 
@@ -123,12 +157,12 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
     }
 
     @Override
-    protected AwsHttpServletResponse getContainerResponse(AwsProxyHttpServletRequest request, CountDownLatch latch) {
+    protected AwsHttpServletResponse getContainerResponse(HttpServletRequest request, CountDownLatch latch) {
         return new AwsHttpServletResponse(request, latch);
     }
 
     @Override
-    protected void handleRequest(AwsProxyHttpServletRequest containerRequest, AwsHttpServletResponse containerResponse, Context lambdaContext) throws Exception {
+    protected void handleRequest(HttpServletRequest containerRequest, AwsHttpServletResponse containerResponse, Context lambdaContext) throws Exception {
         // this method of the AwsLambdaServletContainerHandler sets the servlet context
         Timer.start("SPRINGBOOT2_HANDLE_REQUEST");
 
@@ -139,7 +173,10 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
 
         // process filters & invoke servlet
         Servlet reqServlet = ((AwsServletContext)getServletContext()).getServletForPath(containerRequest.getPathInfo());
-        containerRequest.setResponse(containerResponse);
+        if (AwsHttpServletRequest.class.isAssignableFrom(containerRequest.getClass())) {
+            ((AwsHttpServletRequest)containerRequest).setServletContext(getServletContext());
+            ((AwsHttpServletRequest)containerRequest).setResponse(containerResponse);
+        }
         doFilter(containerRequest, containerResponse, reqServlet);
         Timer.stop("SPRINGBOOT2_HANDLE_REQUEST");
     }
@@ -150,27 +187,37 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
             throws ContainerInitializationException {
         Timer.start("SPRINGBOOT2_COLD_START");
 
-        SpringApplication app = new SpringApplication(getEmbeddedContainerClasses());
-        if (springProfiles != null && springProfiles.length > 0) {
-            ConfigurableEnvironment springEnv = new StandardEnvironment();
-            springEnv.setActiveProfiles(springProfiles);
-            app.setEnvironment(springEnv);
+        SpringApplicationBuilder builder = new SpringApplicationBuilder(getEmbeddedContainerClasses())
+                .web(springWebApplicationType); // .REACTIVE, .SERVLET
+        if (springProfiles != null) {
+            builder.profiles(springProfiles);
         }
-
-        app.run();
-
+        applicationContext = builder.run();
+        if (springWebApplicationType == WebApplicationType.SERVLET) {
+            ((AnnotationConfigServletWebServerApplicationContext)applicationContext).setServletContext(getServletContext());
+            AwsServletRegistration reg = (AwsServletRegistration)getServletContext().getServletRegistration(DISPATCHER_SERVLET_REGISTRATION_NAME);
+            if (reg != null) {
+                reg.setLoadOnStartup(1);
+            }
+        }
+        super.initialize();
         initialized = true;
         Timer.stop("SPRINGBOOT2_COLD_START");
     }
 
     private Class<?>[] getEmbeddedContainerClasses() {
         Class<?>[] classes = new Class[2];
-        try {
-            // if HandlerAdapter is available we assume they are using WebFlux. Otherwise plain servlet.
-            this.getClass().getClassLoader().loadClass("org.springframework.web.reactive.HandlerAdapter");
-            log.debug("Found WebFlux HandlerAdapter on classpath, using reactive server factory");
-            classes[0] = ServerlessReactiveServletEmbeddedServerFactory.class;
-        } catch (ClassNotFoundException e) {
+        if (springWebApplicationType == WebApplicationType.REACTIVE) {
+            try {
+                // if HandlerAdapter is available we assume they are using WebFlux. Otherwise plain servlet.
+                this.getClass().getClassLoader().loadClass("org.springframework.web.reactive.HandlerAdapter");
+                log.debug("Found WebFlux HandlerAdapter on classpath, using reactive server factory");
+                classes[0] = ServerlessReactiveServletEmbeddedServerFactory.class;
+            } catch (ClassNotFoundException e) {
+                springWebApplicationType = WebApplicationType.SERVLET;
+                classes[0] = ServerlessServletEmbeddedServerFactory.class;
+            }
+        } else {
             classes[0] = ServerlessServletEmbeddedServerFactory.class;
         }
 

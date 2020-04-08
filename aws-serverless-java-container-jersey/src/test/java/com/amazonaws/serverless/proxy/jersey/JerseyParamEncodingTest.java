@@ -8,6 +8,7 @@ import com.amazonaws.serverless.proxy.jersey.model.MapResponseModel;
 import com.amazonaws.serverless.proxy.jersey.model.SingleValueModel;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
+import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -67,37 +68,62 @@ public class JerseyParamEncodingTest {
                                                             .register(new ResourceBinder())
                                                             .property("jersey.config.server.tracing.type", "ALL")
                                                             .property("jersey.config.server.tracing.threshold", "VERBOSE");
-    private static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = JerseyLambdaContainerHandler.getAwsProxyHandler(app);
+    private static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+
+    private static ResourceConfig httpApiApp = new ResourceConfig().packages("com.amazonaws.serverless.proxy.jersey")
+            .register(MultiPartFeature.class)
+            .register(new ResourceBinder())
+            .property("jersey.config.server.tracing.type", "ALL")
+            .property("jersey.config.server.tracing.threshold", "VERBOSE");
+    private static JerseyLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> httpApiHandler;
 
     private static Context lambdaContext = new MockLambdaContext();
 
-    private boolean isAlb;
+    private String type;
 
-    public JerseyParamEncodingTest(boolean alb) {
-        isAlb = alb;
+    public JerseyParamEncodingTest(String reqType) {
+        type = reqType;
         LambdaContainerHandler.getContainerConfig().addBinaryContentTypes(MediaType.MULTIPART_FORM_DATA);
     }
 
     @Parameterized.Parameters
     public static Collection<Object> data() {
-        return Arrays.asList(new Object[] { false, true });
+        return Arrays.asList(new Object[] { "API_GW", "ALB", "HTTP_API" });
     }
 
     private AwsProxyRequestBuilder getRequestBuilder(String path, String method) {
-        AwsProxyRequestBuilder builder = new AwsProxyRequestBuilder(path, method);
-        if (isAlb) builder.alb();
+        return new AwsProxyRequestBuilder(path, method);
+    }
 
-        return builder;
+    private AwsProxyResponse executeRequest(AwsProxyRequestBuilder requestBuilder, Context lambdaContext) {
+        switch (type) {
+            case "API_GW":
+                if (handler == null) {
+                    handler = JerseyLambdaContainerHandler.getAwsProxyHandler(app);
+                }
+                return handler.proxy(requestBuilder.build(), lambdaContext);
+            case "ALB":
+                if (handler == null) {
+                    handler = JerseyLambdaContainerHandler.getAwsProxyHandler(app);
+                }
+                return handler.proxy(requestBuilder.alb().build(), lambdaContext);
+            case "HTTP_API":
+                if (httpApiHandler == null) {
+                    httpApiHandler = JerseyLambdaContainerHandler.getHttpApiV2ProxyHandler(httpApiApp);
+                }
+                return httpApiHandler.proxy(requestBuilder.toHttpApiV2Request(), lambdaContext);
+            default:
+                throw new RuntimeException("Unknown request type: " + type);
+        }
     }
 
     @Test
     public void queryString_uriInfo_echo() {
-        AwsProxyRequest request = getRequestBuilder("/echo/query-string", "GET")
+        AwsProxyRequestBuilder request = getRequestBuilder("/echo/query-string", "GET")
                                           .json()
-                                          .queryString(QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE)
-                                          .build();
+                                          .queryString(QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE);
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
         assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
 
@@ -106,12 +132,11 @@ public class JerseyParamEncodingTest {
 
     @Test
     public void queryString_notEncoded_echo() {
-        AwsProxyRequest request = getRequestBuilder("/echo/query-string", "GET")
+        AwsProxyRequestBuilder request = getRequestBuilder("/echo/query-string", "GET")
                                           .json()
-                                          .queryString(QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE)
-                                          .build();
+                                          .queryString(QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE);
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
         assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
 
@@ -121,12 +146,11 @@ public class JerseyParamEncodingTest {
     @Test
     @Ignore("We expect to only receive decoded values from API Gateway")
     public void queryString_encoded_echo() {
-        AwsProxyRequest request = getRequestBuilder("/echo/query-string", "GET")
+        AwsProxyRequestBuilder request = getRequestBuilder("/echo/query-string", "GET")
                                           .json()
-                                          .queryString(QUERY_STRING_KEY, QUERY_STRING_ENCODED_VALUE)
-                                          .build();
+                                          .queryString(QUERY_STRING_KEY, QUERY_STRING_ENCODED_VALUE);
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
         assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
 
@@ -135,46 +159,46 @@ public class JerseyParamEncodingTest {
 
     @Test
     public void simpleQueryParam_encoding_expectDecodedParam() {
-        AwsProxyRequest request = getRequestBuilder("/echo/decoded-param", "GET").queryString("param", SIMPLE_ENCODED_PARAM).build();
+        AwsProxyRequestBuilder request = getRequestBuilder("/echo/decoded-param", "GET").queryString("param", SIMPLE_ENCODED_PARAM);
 
-        AwsProxyResponse resp = handler.proxy(request, lambdaContext);
+        AwsProxyResponse resp = executeRequest(request, lambdaContext);
         assertEquals(200, resp.getStatusCode());
         validateSingleValueModel(resp, SIMPLE_ENCODED_PARAM);
     }
 
     @Test
     public void jsonQueryParam_encoding_expectDecodedParam() {
-        AwsProxyRequest request = getRequestBuilder("/echo/decoded-param", "GET").queryString("param", JSON_ENCODED_PARAM).build();
+        AwsProxyRequestBuilder request = getRequestBuilder("/echo/decoded-param", "GET").queryString("param", JSON_ENCODED_PARAM);
 
-        AwsProxyResponse resp = handler.proxy(request, lambdaContext);
+        AwsProxyResponse resp = executeRequest(request, lambdaContext);
         assertEquals(200, resp.getStatusCode());
         validateSingleValueModel(resp, JSON_ENCODED_PARAM);
     }
 
     @Test
     public void simpleQueryParam_encoding_expectEncodedParam() {
-        AwsProxyRequest request = getRequestBuilder("/echo/encoded-param", "GET").queryString("param", SIMPLE_ENCODED_PARAM).build();
+        AwsProxyRequestBuilder request = getRequestBuilder("/echo/encoded-param", "GET").queryString("param", SIMPLE_ENCODED_PARAM);
         String encodedVal = "";
         try {
             encodedVal = URLEncoder.encode(SIMPLE_ENCODED_PARAM, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             fail("Could not encode parameter value");
         }
-        AwsProxyResponse resp = handler.proxy(request, lambdaContext);
+        AwsProxyResponse resp = executeRequest(request, lambdaContext);
         assertEquals(200, resp.getStatusCode());
         validateSingleValueModel(resp, encodedVal);
     }
 
     @Test
     public void jsonQueryParam_encoding_expectEncodedParam() {
-        AwsProxyRequest request = getRequestBuilder("/echo/encoded-param", "GET").queryString("param", JSON_ENCODED_PARAM).build();
+        AwsProxyRequestBuilder request = getRequestBuilder("/echo/encoded-param", "GET").queryString("param", JSON_ENCODED_PARAM);
         String encodedVal = "";
         try {
             encodedVal = URLEncoder.encode(JSON_ENCODED_PARAM, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             fail("Could not encode parameter value");
         }
-        AwsProxyResponse resp = handler.proxy(request, lambdaContext);
+        AwsProxyResponse resp = executeRequest(request, lambdaContext);
         assertEquals(200, resp.getStatusCode());
         validateSingleValueModel(resp, encodedVal);
     }
@@ -182,8 +206,8 @@ public class JerseyParamEncodingTest {
     @Test
     public void queryParam_encoding_expectFullyEncodedUrl() {
         String paramValue = "/+=";
-        AwsProxyRequest request = getRequestBuilder("/echo/encoded-param", "GET").queryString("param", paramValue).build();
-        AwsProxyResponse resp = handler.proxy(request, lambdaContext);
+        AwsProxyRequestBuilder request = getRequestBuilder("/echo/encoded-param", "GET").queryString("param", paramValue);
+        AwsProxyResponse resp = executeRequest(request, lambdaContext);
         assertNotNull(resp);
         assertEquals(resp.getStatusCode(), 200);
         validateSingleValueModel(resp, "%2F%2B%3D");
@@ -193,8 +217,8 @@ public class JerseyParamEncodingTest {
     public void pathParam_encoded_routesToCorrectPath() {
         String encodedParam = "http%3A%2F%2Fhelloresource.com";
         String path = "/echo/encoded-path/" + encodedParam;
-        AwsProxyRequest request = getRequestBuilder(path, "GET").build();
-        AwsProxyResponse resp = handler.proxy(request, lambdaContext);
+        AwsProxyRequestBuilder request = getRequestBuilder(path, "GET");
+        AwsProxyResponse resp = executeRequest(request, lambdaContext);
         assertNotNull(resp);
         assertEquals(resp.getStatusCode(), 200);
         validateSingleValueModel(resp, encodedParam);
@@ -204,8 +228,8 @@ public class JerseyParamEncodingTest {
     public void pathParam_encoded_returns404() {
         String encodedParam = "http://helloresource.com";
         String path = "/echo/encoded-path/" + encodedParam;
-        AwsProxyRequest request = getRequestBuilder(path, "GET").build();
-        AwsProxyResponse resp = handler.proxy(request, lambdaContext);
+        AwsProxyRequestBuilder request = getRequestBuilder(path, "GET");
+        AwsProxyResponse resp = executeRequest(request, lambdaContext);
         assertNotNull(resp);
         assertEquals(resp.getStatusCode(), 404);
     }
@@ -213,8 +237,8 @@ public class JerseyParamEncodingTest {
     @Test
     @Ignore
     public void queryParam_listOfString_expectCorrectLength() {
-        AwsProxyRequest request = getRequestBuilder("/echo/list-query-string", "GET").queryString("list", "v1,v2,v3").build();
-        AwsProxyResponse resp = handler.proxy(request, lambdaContext);
+        AwsProxyRequestBuilder request = getRequestBuilder("/echo/list-query-string", "GET").queryString("list", "v1,v2,v3");
+        AwsProxyResponse resp = executeRequest(request, lambdaContext);
         assertNotNull(resp);
         assertEquals(resp.getStatusCode(), 200);
         validateSingleValueModel(resp, "3");
@@ -223,11 +247,9 @@ public class JerseyParamEncodingTest {
     @Test
     public void multipart_getFileSize_expectCorrectLength()
             throws IOException {
-        AwsProxyRequest request = getRequestBuilder("/echo/file-size", "POST")
-                .formFilePart("file", "myfile.jpg", FILE_CONTENTS)
-                //.formFieldPart("name", QUERY_STRING_ENCODED_VALUE)
-                .build();
-        AwsProxyResponse resp = handler.proxy(request, lambdaContext);
+        AwsProxyRequestBuilder request = getRequestBuilder("/echo/file-size", "POST")
+                .formFilePart("file", "myfile.jpg", FILE_CONTENTS);
+        AwsProxyResponse resp = executeRequest(request, lambdaContext);
         assertNotNull(resp);
         assertEquals(200, resp.getStatusCode());
         validateSingleValueModel(resp, "" + FILE_CONTENTS.length);
