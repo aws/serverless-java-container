@@ -6,12 +6,12 @@
     <name>AWS Serverless Java container support - Spark implementation</name>
     <description>Allows Java applications written for Spark to run in AWS Lambda</description>
     <url>https://aws.amazon.com/lambda</url>
-    <version>1.5</version>
+    <version>1.6-SNAPSHOT</version>
 
     <parent>
         <groupId>com.amazonaws.serverless</groupId>
         <artifactId>aws-serverless-java-container</artifactId>
-        <version>1.5</version>
+        <version>1.6-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
 
@@ -24,7 +24,7 @@
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
             <artifactId>aws-serverless-java-container-core</artifactId>
-            <version>1.5</version>
+            <version>1.6-SNAPSHOT</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.sparkjava/spark-core -->
