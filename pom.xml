@@ -6,6 +6,23 @@
     <packaging>pom</packaging>
     <version>1.5-SNAPSHOT</version>
     <name>AWS Serverless Java container</name>
+    <description>A Java framework to run Spring, Spring Boot, Jersey, Spark, and Struts applications inside AWS Lambda</description>
+    <url>https://github.com/awslabs/aws-serverless-java-container</url>
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/awslabs/aws-serverless-java-container/issues</url>
+    </issueManagement>
+    
+    <developers>
+        <developer>
+            <id>amazonwebservices</id>
+            <organization>Amazon Web Services</organization>
+            <organizationUrl>https://aws.amazon.com</organizationUrl>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
 
     <modules>
         <module>aws-serverless-java-container-core</module>
@@ -28,11 +45,30 @@
         <developerConnection>scm:git:git@github.com:awslabs/aws-serverless-java-container.git</developerConnection>
     </scm>
 
-    <distributionManagement>
+    <repositories>
         <repository>
-            <id>aws-oss-sonatype-staging</id>
-            <name>AWS Sonatype staging</name>
-            <url>https://aws.oss.sonatype.org</url>
+            <id>sonatype-nexus-snapshots</id>
+            <name>Sonatype Nexus Snapshots</name>
+            <url>https://aws.oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>sonatype-nexus-snapshots</id>
+            <name>Sonatype Nexus Snapshots</name>
+            <url>https://aws.oss.sonatype.org/content/repositories/snapshots/</url>
+        </snapshotRepository>
+        <repository>
+            <id>sonatype-nexus-staging</id>
+            <name>Nexus Release Repository</name>
+            <url>https://aws.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
 
