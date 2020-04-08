@@ -26,7 +26,7 @@ public class ContainerConfig {
     public static final String DEFAULT_URI_ENCODING = "UTF-8";
     public static final String DEFAULT_CONTENT_CHARSET = "ISO-8859-1";
     private static final List<String> DEFAULT_FILE_PATHS = new ArrayList<String>() {{ add("/tmp"); add("/var/task"); }};
-    private static final int MAX_INIT_TIMEOUT_MS = 10_000;
+    private static final int MAX_INIT_TIMEOUT_MS = 20_000;
 
     public static ContainerConfig defaultConfig() {
         ContainerConfig configuration = new ContainerConfig();
