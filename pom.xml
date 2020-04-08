@@ -7,13 +7,6 @@
     <version>1.5-SNAPSHOT</version>
     <name>AWS Serverless Java container</name>
 
-    <!-- https://mvnrepository.com/artifact/org.sonatype.oss/oss-parent -->
-    <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>7</version>
-    </parent>
-
     <modules>
         <module>aws-serverless-java-container-core</module>
         <module>aws-serverless-java-container-jersey</module>
@@ -34,6 +27,14 @@
         <connection>scm:git:git@github.com:awslabs/aws-serverless-java-container.git</connection>
         <developerConnection>scm:git:git@github.com:awslabs/aws-serverless-java-container.git</developerConnection>
     </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>aws-oss-sonatype-staging</id>
+            <name>AWS Sonatype staging</name>
+            <url>https://aws.oss.sonatype.org</url>
+        </repository>
+    </distributionManagement>
 
     <licenses>
         <license>
