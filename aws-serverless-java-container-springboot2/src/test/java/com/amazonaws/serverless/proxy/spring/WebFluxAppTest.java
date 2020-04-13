@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import javax.ws.rs.core.HttpHeaders;
 import java.util.Arrays;
 import java.util.Collection;
 

@@ -4,7 +4,6 @@ package com.amazonaws.serverless.proxy.spring;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.Headers;
 import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
@@ -25,8 +24,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 
-import static com.amazonaws.serverless.proxy.spring.springbootapp.TestController.CUSTOM_HEADER_NAME;
-import static com.amazonaws.serverless.proxy.spring.springbootapp.TestController.CUSTOM_QS_NAME;
+import static com.amazonaws.serverless.proxy.spring.springbootapp.TestController.*;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeFalse;
 
@@ -186,7 +184,6 @@ public class SpringBootAppTest {
         assertTrue(output.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE).contains(";"));
         assertTrue(output.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE).contains("charset=UTF-8"));
     }
-
 
     private void validateSingleValueModel(AwsProxyResponse output, String value) {
         try {
