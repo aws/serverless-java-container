@@ -1,8 +1,5 @@
 package com.amazonaws.serverless.runtime;
 
-import com.amazonaws.serverless.exceptions.ContainerInitializationException;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
@@ -15,16 +12,16 @@ import java.io.OutputStream;
 public class Runtime implements RequestStreamHandler {
     private static final int MAX_RETRIES = 3;
 
-    private int maxRetries;
-    private SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+    private final int maxRetries;
+    private final SpringBootLambdaContainerHandler<?, ?> handler;
 
-    public Runtime(Class<?> initializer) throws ContainerInitializationException {
-        this(initializer, MAX_RETRIES);
+    public Runtime(SpringBootLambdaContainerHandler<?, ?> handler) {
+        this(handler, MAX_RETRIES);
     }
 
-    public Runtime(Class<?> initializer, int retries) throws ContainerInitializationException {
+    public Runtime(SpringBootLambdaContainerHandler<?, ?> handler, int retries) {
         maxRetries = retries;
-        handler = SpringBootLambdaContainerHandler.getAwsProxyHandler(initializer);
+        this.handler = handler;
     }
 
     public void start() {
@@ -52,7 +49,7 @@ public class Runtime implements RequestStreamHandler {
     }
 
     private InvocationRequest getNextRequest(RuntimeClient client) {
-        InvocationRequest req = null;
+        InvocationRequest req;
         for (int i = 0; i < maxRetries; i++) {
             try {
                 req = client.getNextEvent();

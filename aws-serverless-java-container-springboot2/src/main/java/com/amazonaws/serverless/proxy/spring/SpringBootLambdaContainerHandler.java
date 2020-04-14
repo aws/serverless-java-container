@@ -14,7 +14,6 @@ package com.amazonaws.serverless.proxy.spring;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.*;
-import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.servlet.*;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
@@ -25,18 +24,12 @@ import com.amazonaws.serverless.proxy.spring.embedded.ServerlessServletEmbeddedS
 import com.amazonaws.services.lambda.runtime.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext;
+import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.core.env.StandardEnvironment;
-import org.springframework.web.context.ConfigurableWebApplicationContext;
-import org.springframework.web.servlet.DispatcherServlet;
 
 import javax.servlet.Servlet;
-import javax.servlet.ServletRegistration;
 import javax.servlet.http.HttpServletRequest;
 import java.util.concurrent.CountDownLatch;
 
@@ -194,7 +187,7 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
         }
         applicationContext = builder.run();
         if (springWebApplicationType == WebApplicationType.SERVLET) {
-            ((AnnotationConfigServletWebServerApplicationContext)applicationContext).setServletContext(getServletContext());
+            ((ServletWebServerApplicationContext)applicationContext).setServletContext(getServletContext());
             AwsServletRegistration reg = (AwsServletRegistration)getServletContext().getServletRegistration(DISPATCHER_SERVLET_REGISTRATION_NAME);
             if (reg != null) {
                 reg.setLoadOnStartup(1);
