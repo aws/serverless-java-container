@@ -25,18 +25,19 @@
         </repository>
     </repositories>
 
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.3.0.M4</version>
-    </parent>
-
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <start-class>com.amazonaws.serverless.sample.springboot2.Application</start-class>
         <docker.memory.gb>5</docker.memory.gb>
+        <springboot.version>2.3.0.M4</springboot.version>
     </properties>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.3.0.M4</version>
+    </parent>
 
     <dependencies>
         <dependency>
@@ -46,10 +47,6 @@
                 <exclusion>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-starter-tomcat</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-logging</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -62,43 +59,62 @@
         <dependency>
             <groupId>org.springframework.experimental</groupId>
             <artifactId>spring-graal-native</artifactId>
-            <version>0.6.0.RELEASE</version>
+            <version>0.6.1.RELEASE</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>2.13.1</version>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>2.0.1.Final</version>
         </dependency>
 
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
             <artifactId>aws-serverless-java-container-springboot2</artifactId>
             <version>1.6-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.module</groupId>
+                    <artifactId>jackson-module-afterburner</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>graalvm</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.graalvm.nativeimage</groupId>
+                        <artifactId>native-image-maven-plugin</artifactId>
+                        <version>20.0.0</version>
+                        <configuration>
+                            <!-- -H:+TraceClassInitialization -Dspring.graal.verbose=true  -->
+                            <!-- initialize-at-run-time=org.apache.logging.log4j.core.async.AsyncLoggerContext,org.apache.logging.log4j.core.async.AsyncLoggerConfigDisruptor,org.apache.logging.log4j.core.pattern.JAnsiTextRenderer -->
+                            <buildArgs>-J-Xmx${docker.memory.gb}g -Dspring.graal.remove-unused-autoconfig=true -Dspring.graal.remove-yaml-support=true --no-fallback --allow-incomplete-classpath --report-unsupported-elements-at-runtime -H:+ReportExceptionStackTraces -H:EnableURLProtocols=http --no-server</buildArgs>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>native-image</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.graalvm.nativeimage</groupId>
-                <artifactId>native-image-maven-plugin</artifactId>
-                <version>20.0.0</version>
-                <configuration>
-                    <!-- -H:+TraceClassInitialization -Dspring.graal.verbose=true  -->
-                    <buildArgs>-J-Xmx${docker.memory.gb}g -Dspring.graal.remove-unused-autoconfig=true --no-fallback --allow-incomplete-classpath --report-unsupported-elements-at-runtime -H:+ReportExceptionStackTraces --no-server --initialize-at-run-time=org.apache.logging.log4j.core.async.AsyncLoggerContext --initialize-at-run-time=org.apache.logging.log4j.core.async.AsyncLoggerConfigDisruptor --initialize-at-run-time=org.apache.logging.log4j.core.pattern.JAnsiTextRenderer</buildArgs>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>native-image</goal>
-                        </goals>
-                        <phase>package</phase>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

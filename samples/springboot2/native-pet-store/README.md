@@ -1,4 +1,6 @@
 # Serverless Spring Boot 2 example for GraalVM Native Image
+**Note that this is an experimental sample and the APIs it relies on should not be used in production. There will likely be breaking changes as the features stabilize!**
+
 This experimental Pet Store example uses [Spring Boot's](https://projects.spring.io/spring-boot/) support for native compilation with [GraalVM](https://www.graalvm.org/) and executes as a custom runtime in AWS Lambda.
 
 The application uses Docker to compile a native executable compatible with AWS Lambda's runtime environment and can be deployed in an AWS account using the [Serverless Application Model](https://github.com/awslabs/serverless-application-model). The `template.yml` file in the root folder contains the application definition.

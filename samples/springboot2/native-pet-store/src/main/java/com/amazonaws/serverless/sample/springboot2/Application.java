@@ -1,55 +1,38 @@
 package com.amazonaws.serverless.sample.springboot2;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
+import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
+import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
+import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
+import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
+import com.amazonaws.serverless.proxy.spring.SpringBootProxyHandlerBuilder;
 import com.amazonaws.serverless.runtime.Runtime;
 import com.amazonaws.serverless.sample.springboot2.controller.PetsController;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
-import org.springframework.context.annotation.Bean;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Import;
-import org.springframework.web.servlet.HandlerAdapter;
-import org.springframework.web.servlet.HandlerMapping;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 
-@SpringBootApplication(
-        proxyBeanMethods = false,
-        exclude = {
-                DataSourceAutoConfiguration.class,
-                DataSourceTransactionManagerAutoConfiguration.class,
-                HibernateJpaAutoConfiguration.class,
-        })
+@SpringBootApplication(proxyBeanMethods = false)
 @Import({ PetsController.class })
 public class Application {
-
-    // silence console logging
-    @Value("${logging.level.root:OFF}")
-    String message = "";
-
-    /*
-     * Create required HandlerMapping, to avoid several default HandlerMapping instances being created
-     */
-    @Bean
-    public HandlerMapping handlerMapping() {
-        return new RequestMappingHandlerMapping();
-    }
-
-    /*
-     * Create required HandlerAdapter, to avoid several default HandlerAdapter instances being created
-     */
-    @Bean
-    public HandlerAdapter handlerAdapter() {
-        return new RequestMappingHandlerAdapter();
-    }
+    private static ConfigurableApplicationContext ctx;
 
     public static void main(String[] args) throws ContainerInitializationException {
-        //SpringApplication.run(Application.class, args);
-        Runtime lambdaRuntime = new Runtime(Application.class);
-        lambdaRuntime.start();
+        SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler =
+                new SpringBootProxyHandlerBuilder<AwsProxyRequest>()
+                        .defaultProxy()
+                        .servletApplication()
+                        .springBootApplication(Application.class)
+                        .buildAndInitialize();
+        if (System.getProperty("agentrun") != null) {
+            AwsProxyRequest testReq = new AwsProxyRequestBuilder("/pets", "GET").build();
+            handler.proxy(testReq, new MockLambdaContext());
+        } else {
+            Runtime lambdaRuntime = new Runtime(handler);
+            lambdaRuntime.start();
+        }
     }
 }
