@@ -26,6 +26,7 @@ public class HttpApiV2ProxyRequest {
     private Map<String, String> headers;
     private Map<String, String> queryStringParameters;
     private String body;
+    private Map<String, String> pathParameters;
     private boolean isBase64Encoded;
     private Map<String, String> stageVariables;
     private HttpApiV2ProxyRequestContext requestContext;
@@ -88,6 +89,14 @@ public class HttpApiV2ProxyRequest {
 
     public String getBody() {
         return body;
+    }
+
+    public Map<String, String> getPathParameters() {
+        return pathParameters;
+    }
+
+    public void setPathParameters(Map<String, String> pathParameters) {
+        this.pathParameters = pathParameters;
     }
 
     public void setBody(String body) {
