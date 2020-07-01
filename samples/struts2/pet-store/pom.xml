@@ -29,7 +29,7 @@
         <struts2.version>2.5.22</struts2.version>
         <jackson.version>2.10.3</jackson.version>
         <junit.version>4.12</junit.version>
-        <log4j.version>2.11.1</log4j.version>
+        <log4j.version>2.13.3</log4j.version>
     </properties>
 
     <dependencies>
