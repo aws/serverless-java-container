@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import javax.servlet.ServletContext;
@@ -38,6 +39,7 @@ import static org.springframework.web.servlet.mvc.method.annotation.MvcUriCompon
 public class EchoResource {
     public static final String TEST_GENERATE_URI = "test";
     public static final String STRING_BODY = "Hello";
+    public static final String EX_MESSAGE = "404 exception message";
 
     @Bean
     public MultipartResolver multipartResolver() {
@@ -195,5 +197,10 @@ public class EchoResource {
         byte[] fileContents = file.getBytes();
 
         return ResponseEntity.ok(fileName);
+    }
+
+    @GetMapping(value = "/ex/notfound")
+    public String throw404Ex() {
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, EX_MESSAGE);
     }
 }

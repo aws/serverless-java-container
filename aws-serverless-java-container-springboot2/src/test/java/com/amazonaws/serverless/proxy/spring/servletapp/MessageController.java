@@ -1,9 +1,11 @@
 package com.amazonaws.serverless.proxy.spring.servletapp;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import java.util.HashMap;
@@ -14,6 +16,7 @@ public class MessageController {
     public static final String HELLO_MESSAGE = "Hello";
     public static final String VALID_MESSAGE = "VALID";
     public static final String UTF8_RESPONSE = "öüäß фрыцшщ";
+    public static final String EX_MESSAGE = "404 exception message";
 
     @RequestMapping(path="/hello", method=RequestMethod.GET, produces = {"text/plain"})
     public String hello() {
@@ -51,5 +54,10 @@ public class MessageController {
         Map<String, String> resp = new HashMap<String, String>();
         resp.put("s", UTF8_RESPONSE);
         return ResponseEntity.ok(resp);
+    }
+
+    @GetMapping(value = "/ex/customstatus")
+    public String throw404Exception() {
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, EX_MESSAGE);
     }
 }

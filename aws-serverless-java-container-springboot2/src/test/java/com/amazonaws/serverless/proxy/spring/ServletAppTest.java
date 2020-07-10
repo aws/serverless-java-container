@@ -184,4 +184,12 @@ public class ServletAppTest {
         assertEquals(200, resp.getStatusCode());
         assertEquals("{\"s\":\""+MessageController.UTF8_RESPONSE+"\"}", resp.getBody());
     }
+
+    @Test
+    public void springExceptionMapping_throw404Ex_expectMappedTo404() {
+        AwsProxyRequestBuilder req = new AwsProxyRequestBuilder("/ex/customstatus", "GET");
+        AwsProxyResponse resp = handler.handleRequest(req, lambdaContext);
+        assertNotNull(resp);
+        assertEquals(404, resp.getStatusCode());
+    }
 }
