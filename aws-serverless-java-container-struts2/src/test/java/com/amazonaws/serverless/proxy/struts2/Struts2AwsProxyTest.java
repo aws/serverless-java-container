@@ -52,7 +52,7 @@ public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
     private static final String QUERY_STRING_KEY = "message";
     private static final String QUERY_STRING_ENCODED_VALUE = "Hello Struts2";
     private static final String USER_PRINCIPAL = "user1";
-    private static final String CONTENT_TYPE_APPLICATION_JSON = "application/json;charset=UTF-8";
+    private static final String CONTENT_TYPE_APPLICATION_JSON = "application/json; charset=UTF-8";
 
 
     private static ObjectMapper objectMapper = new ObjectMapper();
