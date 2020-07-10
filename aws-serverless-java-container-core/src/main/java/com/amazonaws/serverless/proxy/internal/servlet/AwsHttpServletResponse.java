@@ -432,11 +432,6 @@ public class AwsHttpServletResponse
 
         byte[] respBody = bodyOutputStream.toByteArray();
 
-        // if at this point we are still null, we set the default
-        if (charset == null) {
-            charset = LambdaContainerHandler.getContainerConfig().getDefaultContentCharset();
-        }
-
         // The content type is json but we have no encoding specified, according to the RFC (https://tools.ietf.org/html/rfc4627#section-3)
         // we should attempt to detect the encoding. However, since we are running in Lambda we shouldn't even consider
         // big endian systems and it's highly unlikely we'll have apps using UTF-16/32 we simply force UTF-8
@@ -444,6 +439,11 @@ public class AwsHttpServletResponse
                 headers.getFirst(HttpHeaders.CONTENT_TYPE).toLowerCase(Locale.getDefault()).trim().equals(MediaType.APPLICATION_JSON) &&
                 charset == null) {
             charset = "UTF-8";
+        }
+
+        // if at this point we are still null, we set the default
+        if (charset == null) {
+            charset = LambdaContainerHandler.getContainerConfig().getDefaultContentCharset();
         }
 
         responseBody = new String(respBody, charset);
