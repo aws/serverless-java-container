@@ -1,6 +1,7 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
 
+import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.serverless.proxy.model.Headers;
 
 import org.junit.Test;
@@ -35,6 +36,8 @@ public class AwsHttpServletResponseTest {
 
     private static final Pattern MAX_AGE_PATTERN = Pattern.compile("Max-Age=(-?[0-9]+)");
     private static final Pattern EXPIRES_PATTERN = Pattern.compile("Expires=(.*)$");
+
+    private static final String CONTENT_TYPE_WITH_CHARSET = "application/json; charset=UTF-8";
 
     @Test
     public void cookie_addCookie_verifyPath() {
@@ -298,6 +301,27 @@ public class AwsHttpServletResponseTest {
 
         assertEquals("application/json; charset=UTF-8", resp.getContentType());
         assertEquals("application/json; charset=UTF-8", resp.getHeader("Content-Type"));
+        assertEquals("UTF-8", resp.getCharacterEncoding());
+    }
+
+    @Test
+    public void characterEncoding_setCharacterEncodingInContentType_characterEncodingPopulatedCorrectly() {
+        AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
+        resp.setContentType(CONTENT_TYPE_WITH_CHARSET);
+
+        assertEquals(CONTENT_TYPE_WITH_CHARSET, resp.getContentType());
+        assertEquals(CONTENT_TYPE_WITH_CHARSET, resp.getHeader("Content-Type"));
+        assertEquals("UTF-8", resp.getCharacterEncoding());
+    }
+
+    @Test
+    public void characterEncoding_setCharacterEncodingInContentType_overridesDefault() {
+        AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
+        resp.setCharacterEncoding(ContainerConfig.DEFAULT_CONTENT_CHARSET);
+        resp.setContentType(CONTENT_TYPE_WITH_CHARSET);
+
+        assertEquals(CONTENT_TYPE_WITH_CHARSET, resp.getContentType());
+        assertEquals(CONTENT_TYPE_WITH_CHARSET, resp.getHeader("Content-Type"));
         assertEquals("UTF-8", resp.getCharacterEncoding());
     }
 

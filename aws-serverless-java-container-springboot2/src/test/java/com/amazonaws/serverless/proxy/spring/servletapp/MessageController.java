@@ -1,15 +1,19 @@
 package com.amazonaws.serverless.proxy.spring.servletapp;
 
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 public class MessageController {
     public static final String HELLO_MESSAGE = "Hello";
     public static final String VALID_MESSAGE = "VALID";
+    public static final String UTF8_RESPONSE = "öüäß фрыцшщ";
 
     @RequestMapping(path="/hello", method=RequestMethod.GET, produces = {"text/plain"})
     public String hello() {
@@ -35,5 +39,17 @@ public class MessageController {
     @RequestMapping(path="/echo/{message}", method=RequestMethod.GET)
     public String returnPathMessage(@PathVariable(value="message") String message) {
         return message;
+    }
+
+    @GetMapping(value = "/content-type/utf8", produces = "text/plain")
+    public ResponseEntity<String> getUtf8String() {
+        return ResponseEntity.ok(UTF8_RESPONSE);
+    }
+
+    @GetMapping(value = "/content-type/jsonutf8", produces=MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, String>> getUtf8Json() {
+        Map<String, String> resp = new HashMap<String, String>();
+        resp.put("s", UTF8_RESPONSE);
+        return ResponseEntity.ok(resp);
     }
 }
