@@ -444,14 +444,6 @@ public class SpringAwsProxyTest {
         assertEquals("testFile", output.getBody());
     }
 
-    @Test
-    public void springExceptionMapping_throw404Ex_expectMappedTo404() {
-        AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/echo/ex/notfound", "GET");
-
-        AwsProxyResponse output = executeRequest(request, lambdaContext);
-        assertEquals(404, output.getStatusCode());
-    }
-
     private void validateMapResponseModel(AwsProxyResponse output) {
         try {
             MapResponseModel response = objectMapper.readValue(output.getBody(), MapResponseModel.class);

@@ -198,9 +198,4 @@ public class EchoResource {
 
         return ResponseEntity.ok(fileName);
     }
-
-    @GetMapping(value = "/ex/notfound")
-    public String throw404Ex() {
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, EX_MESSAGE);
-    }
 }
