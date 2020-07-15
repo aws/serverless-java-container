@@ -3,7 +3,7 @@
     <parent>
         <artifactId>aws-serverless-java-container</artifactId>
         <groupId>com.amazonaws.serverless</groupId>
-        <version>1.5.1</version>
+        <version>1.6-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -12,7 +12,7 @@
     <name>AWS Serverless Java container support - SpringBoot 2 implementation</name>
     <description>Allows Java applications written for SpringBoot 2 to run in AWS Lambda</description>
     <url>https://aws.amazon.com/lambda</url>
-    <version>1.5.1</version>
+    <version>1.6-SNAPSHOT</version>
 
     <properties>
         <spring.version>5.2.5.RELEASE</spring.version>
@@ -27,7 +27,7 @@
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
             <artifactId>aws-serverless-java-container-core</artifactId>
-            <version>1.5.1</version>
+            <version>1.6-SNAPSHOT</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/io.projectreactor/reactor-core -->
         <dependency>
