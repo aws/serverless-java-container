@@ -482,16 +482,19 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
 
         MultiValuedTreeMap<String, String> qsMap = new MultiValuedTreeMap<>();
         for (String value : qs.split(QUERY_STRING_SEPARATOR)) {
-            if (!value.contains(QUERY_STRING_KEY_VALUE_SEPARATOR)) {
-                log.warn("Invalid query string parameter: " + SecurityUtils.crlf(value));
-                continue;
-            }
-
-            String[] kv = value.split(QUERY_STRING_KEY_VALUE_SEPARATOR);
             try {
-                qsMap.add(URLDecoder.decode(kv[0], LambdaContainerHandler.getContainerConfig().getUriEncoding()), kv[1]);
+                if (!value.contains(QUERY_STRING_KEY_VALUE_SEPARATOR)) {
+                    qsMap.add(URLDecoder.decode(value, LambdaContainerHandler.getContainerConfig().getUriEncoding()), null);
+                    log.warn("Query string parameter with empty value and no =: " + SecurityUtils.crlf(value));
+                    continue;
+                }
+
+                String[] kv = value.split(QUERY_STRING_KEY_VALUE_SEPARATOR);
+                String key = URLDecoder.decode(kv[0], LambdaContainerHandler.getContainerConfig().getUriEncoding());
+                String val = kv.length == 2 ? kv[1] : null;
+                qsMap.add(key, val);
             } catch (UnsupportedEncodingException e) {
-                log.error("Unsupported encoding in query string key: " + SecurityUtils.crlf(kv[0]), e);
+                log.error("Unsupported encoding in query string key: " + value, e);
             }
         }
         return qsMap;
