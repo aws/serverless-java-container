@@ -4,17 +4,17 @@
     <parent>
         <groupId>com.amazonaws.serverless</groupId>
         <artifactId>aws-serverless-java-container</artifactId>
-        <version>1.6-SNAPSHOT</version>
+        <version>1.5.1</version>
     </parent>
 
     <groupId>com.amazonaws.serverless.archetypes</groupId>
     <artifactId>aws-serverless-spark-archetype</artifactId>
-    <version>1.6-SNAPSHOT</version>
+    <version>1.5.1</version>
     <packaging>maven-archetype</packaging>
 
     <scm>
         <url>https://github.com/awslabs/aws-serverless-java-container.git</url>
-      <tag>HEAD</tag>
+      <tag>aws-serverless-java-container-1.5.1</tag>
   </scm>
 
     <licenses>

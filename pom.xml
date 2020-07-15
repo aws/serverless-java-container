@@ -4,7 +4,7 @@
     <groupId>com.amazonaws.serverless</groupId>
     <artifactId>aws-serverless-java-container</artifactId>
     <packaging>pom</packaging>
-    <version>1.6-SNAPSHOT</version>
+    <version>1.5.1</version>
     <name>AWS Serverless Java container</name>
     <description>A Java framework to run Spring, Spring Boot, Jersey, Spark, and Struts applications inside AWS Lambda</description>
     <url>https://github.com/awslabs/aws-serverless-java-container</url>
@@ -43,7 +43,7 @@
         <url>https://github.com/awslabs/aws-serverless-java-container.git</url>
         <connection>scm:git:git@github.com:awslabs/aws-serverless-java-container.git</connection>
         <developerConnection>scm:git:git@github.com:awslabs/aws-serverless-java-container.git</developerConnection>
-      <tag>HEAD</tag>
+      <tag>aws-serverless-java-container-1.5.1</tag>
   </scm>
 
     <repositories>
