@@ -494,7 +494,7 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
                 String val = kv.length == 2 ? kv[1] : null;
                 qsMap.add(key, val);
             } catch (UnsupportedEncodingException e) {
-                log.error("Unsupported encoding in query string key: " + value, e);
+                log.error("Unsupported encoding in query string key: " + SecurityUtils.crlf(value), e);
             }
         }
         return qsMap;
