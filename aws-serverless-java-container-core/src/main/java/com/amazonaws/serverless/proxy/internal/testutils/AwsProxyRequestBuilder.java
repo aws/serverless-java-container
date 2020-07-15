@@ -482,7 +482,6 @@ public class AwsProxyRequestBuilder {
                         // we do not encode it
                         rawQueryString.append(URLEncoder.encode(s, "UTF-8").replaceAll("%2C", ","));
                     } catch (UnsupportedEncodingException e) {
-                        System.out.println("Ex!");
                         throw new RuntimeException(e);
                     }
                 }

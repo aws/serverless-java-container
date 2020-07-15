@@ -38,6 +38,7 @@ import static org.springframework.web.servlet.mvc.method.annotation.MvcUriCompon
 public class EchoResource {
     public static final String TEST_GENERATE_URI = "test";
     public static final String STRING_BODY = "Hello";
+    public static final String EX_MESSAGE = "404 exception message";
 
     @Bean
     public MultipartResolver multipartResolver() {

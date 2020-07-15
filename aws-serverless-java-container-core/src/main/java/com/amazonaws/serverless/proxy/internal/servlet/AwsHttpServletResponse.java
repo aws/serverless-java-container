@@ -28,6 +28,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -387,18 +388,26 @@ public class AwsHttpServletResponse
         if (s == null) {
             return;
         }
+        String contentType = s;
+        String charEncoding = characterEncoding;
 
-        // we have no forced character encoding
-        if (characterEncoding == null) {
-            setHeader(HttpHeaders.CONTENT_TYPE, s, true);
+        // TODO: Make the utilities to parse header values from the request object generic and reuse them here
+        if (s.contains("charset=")) { // we have a forced charset
+            int charsetIndex = s.indexOf("charset=") + 8;
+            int endCharsetIndex = s.indexOf(" ", charsetIndex);
+            if (endCharsetIndex == -1) {
+                endCharsetIndex = s.length();
+            }
+            charEncoding = s.substring(charsetIndex, endCharsetIndex).toUpperCase(Locale.getDefault());
+            contentType = s.split(";")[0];
+        }
+
+        if (charEncoding == null) {
+            setHeader(HttpHeaders.CONTENT_TYPE, String.format("%s", contentType), true);
             return;
         }
-
-        if (s.contains(";")) { // we have a forced charset
-            setHeader(HttpHeaders.CONTENT_TYPE, String.format("%s; charset=%s", s.split(";")[0], characterEncoding), true);
-        } else {
-            setHeader(HttpHeaders.CONTENT_TYPE, String.format("%s; charset=%s", s, characterEncoding), true);
-        }
+        characterEncoding = charEncoding;
+        setHeader(HttpHeaders.CONTENT_TYPE, String.format("%s; charset=%s", contentType, charEncoding), true);
     }
 
 
@@ -421,11 +430,23 @@ public class AwsHttpServletResponse
         }
         String charset = characterEncoding;
 
-        if(charset == null) {
+        byte[] respBody = bodyOutputStream.toByteArray();
+
+        // The content type is json but we have no encoding specified, according to the RFC (https://tools.ietf.org/html/rfc4627#section-3)
+        // we should attempt to detect the encoding. However, since we are running in Lambda we shouldn't even consider
+        // big endian systems and it's highly unlikely we'll have apps using UTF-16/32 we simply force UTF-8
+        if (headers != null && headers.getFirst(HttpHeaders.CONTENT_TYPE) != null &&
+                headers.getFirst(HttpHeaders.CONTENT_TYPE).toLowerCase(Locale.getDefault()).trim().equals(MediaType.APPLICATION_JSON) &&
+                charset == null) {
+            charset = "UTF-8";
+        }
+
+        // if at this point we are still null, we set the default
+        if (charset == null) {
             charset = LambdaContainerHandler.getContainerConfig().getDefaultContentCharset();
         }
 
-        responseBody = new String(bodyOutputStream.toByteArray(), charset);
+        responseBody = new String(respBody, charset);
         log.debug("Response buffer flushed with {} bytes, latch={}", responseBody.length(), writersCountDownLatch.getCount());
         isCommitted = true;
         writersCountDownLatch.countDown();
