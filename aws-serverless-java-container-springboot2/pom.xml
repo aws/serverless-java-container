@@ -15,7 +15,7 @@
     <version>1.6-SNAPSHOT</version>
 
     <properties>
-        <spring.version>5.2.5.RELEASE</spring.version>
+        <spring.version>5.2.9.RELEASE</spring.version>
         <springboot.version>2.2.6.RELEASE</springboot.version>
         <springsecurity.version>5.2.2.RELEASE</springsecurity.version>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -32,6 +32,7 @@
         <!-- https://mvnrepository.com/artifact/io.projectreactor/reactor-core -->
         <dependency>
             <groupId>org.springframework</groupId>
+
             <artifactId>spring-webflux</artifactId>
             <version>${spring.version}</version>
             <optional>true</optional>
