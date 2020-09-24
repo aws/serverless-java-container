@@ -32,7 +32,6 @@
         <!-- https://mvnrepository.com/artifact/io.projectreactor/reactor-core -->
         <dependency>
             <groupId>org.springframework</groupId>
-
             <artifactId>spring-webflux</artifactId>
             <version>${spring.version}</version>
             <optional>true</optional>
