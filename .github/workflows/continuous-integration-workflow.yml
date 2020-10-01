@@ -49,11 +49,11 @@ jobs:
         # Spring core 5.2 and above. SpringBoot 1.5 is deprecated
         run: ./gha_build.sh spring true true -Djacoco.minCoverage=0.4
       - name: Build Spring 4.3
-        run: ./gha_build.sh spring false false -Dspring.version=4.3.25.RELEASE -Dspring-security.version=4.2.13.RELEASE
+        run: ./gha_build.sh spring false false -Dspring.version=4.3.29.RELEASE -Dspring-security.version=4.2.18.RELEASE
       - name: Build Spring 5.0
-        run: ./gha_build.sh spring false false -Dspring.version=5.0.16.RELEASE -Dspring-security.version=5.0.14.RELEASE
+        run: ./gha_build.sh spring false false -Dspring.version=5.0.19.RELEASE -Dspring-security.version=5.0.18.RELEASE
       - name: Build Spring 5.1
-        run: ./gha_build.sh spring false false -Dspring.version=5.1.14.RELEASE -Dspring-security.version=5.1.8.RELEASE
+        run: ./gha_build.sh spring false false -Dspring.version=5.1.18.RELEASE -Dspring-security.version=5.1.12.RELEASE
 
   build_springboot2:
     name: Build and test SpringBoot 2
@@ -63,9 +63,9 @@ jobs:
       - name: Build latest
         run: ./gha_build.sh springboot2 true true
       - name: Build Spring Boot 2.0
-        run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.0.9.RELEASE -Dspring.version=5.0.16.RELEASE -Dspringsecurity.version=5.0.14.RELEASE
+        run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.0.9.RELEASE -Dspring.version=5.0.19.RELEASE -Dspringsecurity.version=5.0.18.RELEASE
       - name: Build Spring Boot 2.1
-        run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.1.12.RELEASE -Dspring.version=5.1.13.RELEASE -Dspringsecurity.version=5.1.8.RELEASE
+        run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.1.17.RELEASE -Dspring.version=5.1.18.RELEASE -Dspringsecurity.version=5.1.12.RELEASE
 
   build_struts2:
     name: Build and test Struts 2
