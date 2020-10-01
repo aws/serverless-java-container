@@ -457,7 +457,7 @@ public class AwsProxyRequestBuilder {
         if (request.getMultiValueHeaders() != null && request.getMultiValueHeaders().containsKey(HttpHeaders.COOKIE)) {
             req.setCookies(Arrays.asList(request.getMultiValueHeaders().getFirst(HttpHeaders.COOKIE).split(";")));
         }
-        req.setHeaders(new HashMap<>());
+        req.setHeaders(new TreeMap<>(String.CASE_INSENSITIVE_ORDER));
         if (request.getMultiValueHeaders() != null) {
             request.getMultiValueHeaders().forEach((key, value) -> req.getHeaders().put(key, value.get(0)));
         }
