@@ -132,7 +132,7 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType>
         SparkLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> newHandler = new SparkLambdaContainerHandler<>(HttpApiV2ProxyRequest.class,
                 AwsProxyResponse.class,
                 new AwsHttpApiV2HttpServletRequestReader(),
-                new AwsProxyHttpServletResponseWriter(),
+                new AwsProxyHttpServletResponseWriter(true),
                 new AwsHttpApiV2SecurityContextWriter(),
                 new AwsProxyExceptionHandler(),
                 new LambdaEmbeddedServerFactory());

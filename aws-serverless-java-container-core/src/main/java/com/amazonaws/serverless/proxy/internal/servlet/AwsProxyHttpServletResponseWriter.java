@@ -19,11 +19,14 @@ import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
+import com.amazonaws.serverless.proxy.model.Headers;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import javax.ws.rs.core.Response;
 
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -31,6 +34,16 @@ import java.util.Base64;
  * response is not populated with a status code we infer a default 200 status code.
  */
 public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpServletResponse, AwsProxyResponse> {
+
+    private boolean writeSingleValueHeaders;
+
+    public AwsProxyHttpServletResponseWriter() {
+        this(false);
+    }
+
+    public AwsProxyHttpServletResponseWriter(boolean singleValueHeaders) {
+        writeSingleValueHeaders = singleValueHeaders;
+    }
 
     //-------------------------------------------------------------
     // Methods - Implementation
@@ -47,13 +60,16 @@ public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpSer
             if (!isBinary(containerResponse.getContentType()) && isValidUtf8(containerResponse.getAwsResponseBodyBytes())) {
                 responseString = containerResponse.getAwsResponseBodyString();
             } else {
-                responseString = Base64.getMimeEncoder().encodeToString(containerResponse.getAwsResponseBodyBytes());
+                responseString = Base64.getEncoder().encodeToString(containerResponse.getAwsResponseBodyBytes());
                 awsProxyResponse.setBase64Encoded(true);
             }
 
             awsProxyResponse.setBody(responseString);
         }
         awsProxyResponse.setMultiValueHeaders(containerResponse.getAwsResponseHeaders());
+        if (writeSingleValueHeaders) {
+            awsProxyResponse.setHeaders(toSingleValueHeaders(containerResponse.getAwsResponseHeaders()));
+        }
 
         awsProxyResponse.setStatusCode(containerResponse.getStatus());
 
@@ -63,6 +79,17 @@ public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpSer
 
         Timer.stop("SERVLET_RESPONSE_WRITE");
         return awsProxyResponse;
+    }
+
+    private Map<String, String> toSingleValueHeaders(Headers h) {
+        Map<String, String> out = new HashMap<>();
+        if (h == null || h.isEmpty()) {
+            return out;
+        }
+        for (String k : h.keySet()) {
+            out.put(k, h.getFirst(k));
+        }
+        return out;
     }
 
     private boolean isBinary(String contentType) {
