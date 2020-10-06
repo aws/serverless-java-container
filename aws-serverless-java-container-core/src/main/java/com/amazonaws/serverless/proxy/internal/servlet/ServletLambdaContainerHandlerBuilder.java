@@ -110,7 +110,7 @@ public abstract class ServletLambdaContainerHandlerBuilder<
     public Builder defaultHttpApiV2Proxy() {
         initializationWrapper(new InitializationWrapper())
                 .requestReader((RequestReader<RequestType, ContainerRequestType>) new AwsHttpApiV2HttpServletRequestReader())
-                .responseWriter((ResponseWriter<AwsHttpServletResponse, ResponseType>) new AwsProxyHttpServletResponseWriter())
+                .responseWriter((ResponseWriter<AwsHttpServletResponse, ResponseType>) new AwsProxyHttpServletResponseWriter(true))
                 .securityContextWriter((SecurityContextWriter<RequestType>) new AwsHttpApiV2SecurityContextWriter())
                 .exceptionHandler((ExceptionHandler<ResponseType>) new AwsProxyExceptionHandler())
                 .requestTypeClass((Class<RequestType>) HttpApiV2ProxyRequest.class)

@@ -65,7 +65,7 @@ public class Struts2LambdaContainerHandler<RequestType, ResponseType> extends Aw
                 HttpApiV2ProxyRequest.class,
                 AwsProxyResponse.class,
                 new AwsHttpApiV2HttpServletRequestReader(),
-                new AwsProxyHttpServletResponseWriter(),
+                new AwsProxyHttpServletResponseWriter(true),
                 new AwsHttpApiV2SecurityContextWriter(),
                 new AwsProxyExceptionHandler());
     }

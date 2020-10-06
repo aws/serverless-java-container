@@ -116,7 +116,7 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
                 HttpApiV2ProxyRequest.class,
                 AwsProxyResponse.class,
                 new AwsHttpApiV2HttpServletRequestReader(),
-                new AwsProxyHttpServletResponseWriter(),
+                new AwsProxyHttpServletResponseWriter(true),
                 new AwsHttpApiV2SecurityContextWriter(),
                 new AwsProxyExceptionHandler(),
                 jaxRsApplication);
