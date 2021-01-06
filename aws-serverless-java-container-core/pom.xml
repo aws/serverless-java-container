@@ -104,7 +104,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.1</version>
+                <version>0.8.6</version>
                 <configuration>
                     <destFile>${basedir}/target/coverage-reports/jacoco-unit.exec</destFile>
                     <dataFile>${basedir}/target/coverage-reports/jacoco-unit.exec</dataFile>
@@ -151,7 +151,7 @@
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>3.1.1</version>
+                <version>4.2.0</version>
                 <configuration>
                     <!--
                         Enables analysis which takes more memory but finds more bugs.
@@ -210,4 +210,19 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>java9-plus</id>
+            <activation>
+                <jdk>[9,)</jdk>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.sun.activation</groupId>
+                    <artifactId>jakarta.activation</artifactId>
+                    <version>1.2.2</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>
