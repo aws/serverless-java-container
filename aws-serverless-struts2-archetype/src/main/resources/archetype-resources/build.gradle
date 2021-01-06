@@ -27,7 +27,7 @@ dependencies {
     exclude group: 'org.apache.logging.log4j', module: 'log4j-api'
   }
   compile ('org.hibernate:hibernate-validator:4.3.2.Final')
-  compile ('com.fasterxml.jackson.core:jackson-databind:2.10.3')
+  compile ('com.fasterxml.jackson.core:jackson-databind:2.12.0')
   compile ('org.apache.logging.log4j:log4j-core:2.8.2')
   compile ('org.apache.logging.log4j:log4j-api:2.8.2')
   compile ('org.apache.logging.log4j:log4j-slf4j-impl:2.8.2')
