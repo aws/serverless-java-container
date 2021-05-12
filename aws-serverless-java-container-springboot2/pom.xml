@@ -17,7 +17,7 @@
     <properties>
         <spring.version>5.2.9.RELEASE</spring.version>
         <springboot.version>2.2.6.RELEASE</springboot.version>
-        <springsecurity.version>5.2.2.RELEASE</springsecurity.version>
+        <springsecurity.version>5.2.10.RELEASE</springsecurity.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
