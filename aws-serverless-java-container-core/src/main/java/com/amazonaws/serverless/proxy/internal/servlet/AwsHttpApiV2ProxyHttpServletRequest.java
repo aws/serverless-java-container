@@ -75,6 +75,13 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public Cookie[] getCookies() {
+        if (request.getCookies() != null && !request.getCookies().isEmpty()) {
+            return request.getCookies().stream()
+                    .map(cookie -> cookie.split("=", 2))
+                    .map(parts -> new Cookie(SecurityUtils.crlf(parts[0]), SecurityUtils.crlf(parts[1])))
+                    .toArray(Cookie[]::new);
+        }
+
         if (headers == null || !headers.containsKey(HttpHeaders.COOKIE)) {
             return new Cookie[0];
         }
