@@ -6,7 +6,7 @@ repositories {
 }
 
 dependencies {
-  compile (
+  implementation (
           'org.springframework:spring-webmvc:5.2.9.RELEASE',
           'org.springframework:spring-context:5.2.9.RELEASE',
           'com.amazonaws.serverless:aws-serverless-java-container-spring:[1.0,)',
