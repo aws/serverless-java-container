@@ -7,8 +7,8 @@ repositories {
 
 dependencies {
   compile (
-          'org.springframework:spring-webmvc:5.2.9.RELEASE',
-          'org.springframework:spring-context:5.2.9.RELEASE',
+          'org.springframework:spring-webmvc:5.2.16.RELEASE',
+          'org.springframework:spring-context:5.2.16.RELEASE',
           'com.amazonaws.serverless:aws-serverless-java-container-spring:[1.0,)',
           'org.apache.logging.log4j:log4j-core:2.8.2',
           'org.apache.logging.log4j:log4j-api:2.8.2',
