@@ -52,7 +52,7 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
 
     // spring support
-    compile("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-web")
     runtime("io.micronaut.spring:micronaut-spring-boot:1.0.1")
     runtime("io.micronaut.spring:micronaut-spring-web:1.0.1")
 }

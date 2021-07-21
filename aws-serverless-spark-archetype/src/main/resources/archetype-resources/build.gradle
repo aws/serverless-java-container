@@ -6,14 +6,14 @@ repositories {
 }
 
 dependencies {
-  compile (
+  implementation (
           'com.sparkjava:spark-core:2.9.1',
           'com.amazonaws.serverless:aws-serverless-java-container-spark:[1.0,)',
           'com.fasterxml.jackson.core:jackson-databind:2.12.0',
           'io.symphonia:lambda-logging:1.0.1'
   )
 
-  testCompile("junit:junit:4.12")
+  testImplementation("junit:junit:4.12")
 }
 
 task buildZip(type: Zip) {

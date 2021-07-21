@@ -7,14 +7,14 @@ repositories {
 }
 
 dependencies {
-  compile (
+  implementation (
           implementation('org.springframework.boot:spring-boot-starter-web:2.2.6.RELEASE') {
             exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
           },
           'com.amazonaws.serverless:aws-serverless-java-container-springboot2:[1.4,)',
           'io.symphonia:lambda-logging:1.0.1'
   )
-  testCompile("junit:junit")
+  testImplementation("junit:junit")
 }
 
 task buildZip(type: Zip) {
