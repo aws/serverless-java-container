@@ -15,9 +15,9 @@
     <version>1.6-SNAPSHOT</version>
 
     <properties>
-        <spring.version>5.2.9.RELEASE</spring.version>
-        <springboot.version>2.2.6.RELEASE</springboot.version>
-        <springsecurity.version>5.2.2.RELEASE</springsecurity.version>
+        <spring.version>5.2.16.RELEASE</spring.version>
+        <springboot.version>2.2.13.RELEASE</springboot.version>
+        <springsecurity.version>5.2.11.RELEASE</springsecurity.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
