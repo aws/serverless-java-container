@@ -81,7 +81,7 @@ public class UrlPathValidator implements Filter {
 
         // switching to this mechanism to avoid ReDOS attacks on the path pattern regex
         try {
-            URI uriPath = new URI(path);
+            new URI(path);
         } catch (URISyntaxException e) {
             log.error("Invalid uri path in doFilter", e);
             setErrorResponse(servletResponse);
