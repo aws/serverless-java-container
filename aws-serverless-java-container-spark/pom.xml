@@ -16,8 +16,21 @@
     </parent>
 
     <properties>
-        <spark.version>2.9.1</spark.version>
+        <spark.version>2.9.3</spark.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- outdated transitive dependency in spark-core (CVE-2020-27216, CVE-2020-27218, CVE-2020-27223, CVE-2021-28165, CVE-2021-28169, CVE-2021-34428) -->
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-bom</artifactId>
+                <version>9.4.43.v20210629</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <!-- Core interfaces for the aws-serverless-java-container project -->
