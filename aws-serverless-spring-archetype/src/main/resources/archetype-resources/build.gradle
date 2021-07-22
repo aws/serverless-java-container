@@ -6,7 +6,7 @@ repositories {
 }
 
 dependencies {
-  compile (
+  implementation (
           'org.springframework:spring-webmvc:5.2.16.RELEASE',
           'org.springframework:spring-context:5.2.16.RELEASE',
           'com.amazonaws.serverless:aws-serverless-java-container-spring:[1.0,)',
@@ -17,7 +17,7 @@ dependencies {
           'com.amazonaws:aws-lambda-java-log4j2:1.1.0',
   )
 
-  testCompile("junit:junit:4.12")
+  testImplementation("junit:junit:4.12")
 }
 
 task buildZip(type: Zip) {
