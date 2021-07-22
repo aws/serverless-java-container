@@ -15,9 +15,9 @@ dependencies {
           'com.jgeppert.struts2:struts2-aws-lambda-support-plugin:1.2.0',
           'org.hibernate:hibernate-validator:5.3.6.Final',
           'com.fasterxml.jackson.core:jackson-databind:2.12.0',
-          'org.apache.logging.log4j:log4j-core:2.8.2',
-          'org.apache.logging.log4j:log4j-api:2.8.2',
-          'org.apache.logging.log4j:log4j-slf4j-impl:2.8.2',
+          'org.apache.logging.log4j:log4j-core:2.14.1',
+          'org.apache.logging.log4j:log4j-api:2.14.1',
+          'org.apache.logging.log4j:log4j-slf4j-impl:2.14.1',
           'com.amazonaws:aws-lambda-java-log4j2:1.2.0',
   )
 }
