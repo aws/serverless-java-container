@@ -37,7 +37,7 @@ import java.util.concurrent.CountDownLatch;
  * @param <ResponseType> The expected return type
  */
 public class SpringLambdaContainerHandler<RequestType, ResponseType> extends AwsLambdaServletContainerHandler<RequestType, ResponseType, HttpServletRequest, AwsHttpServletResponse> {
-    private ConfigurableWebApplicationContext appContext;
+    protected final ConfigurableWebApplicationContext appContext;
     private String[] profiles;
 
     // State vars
@@ -172,12 +172,20 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
             appContext.getEnvironment().setActiveProfiles(profiles);
         }
         appContext.setServletContext(getServletContext());
+        registerServlets();
+        // call initialize on AwsLambdaServletContainerHandler to initialize servlets that are set to load on startup
+        super.initialize();
+        Timer.stop("SPRING_COLD_START");
+    }
+
+    /**
+     * Overriding this method allows to customize the standard Spring DispatcherServlet
+     * or to register additional servlets
+     */
+    protected void registerServlets() {
         DispatcherServlet dispatcher = new DispatcherServlet(appContext);
         ServletRegistration.Dynamic reg = getServletContext().addServlet("dispatcherServlet", dispatcher);
         reg.addMapping("/");
         reg.setLoadOnStartup(1);
-        // call initialize on AwsLambdaServletContainerHandler to initialize servlets that are set to load on startup
-        super.initialize();
-        Timer.stop("SPRING_COLD_START");
     }
 }
