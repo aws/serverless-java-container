@@ -85,27 +85,11 @@ function sample {
 # set up the master pom otherwise we won't be able to find new dependencies
 cd ${WORKING_DIR}/ && mvn -q --non-recursive clean install
 
-case $1 in
-    # special case for spring since we include both spring and springboot 1.x in one package
-    spring)
-        install ${FRAMEWORK} ${EXTRA_PARAMS}
-        if [[ "$RUN_ARCHETYPE" = true ]] ; then
-            archetype ${FRAMEWORK}
-            archetype springboot
-        fi
-        if [[ "$RUN_SAMPLES" = true ]] ; then
-            sample ${FRAMEWORK}
-            sample springboot
-        fi
-        break
-        ;;
-    *)
-        install ${FRAMEWORK} ${EXTRA_PARAMS}
-        if [[ "$RUN_ARCHETYPE" = true ]] ; then
-            archetype ${FRAMEWORK}
-        fi
-        if [[ "$RUN_SAMPLES" = true ]] ; then
-            sample ${FRAMEWORK}
-        fi
-        ;;
-esac
+install ${FRAMEWORK} ${EXTRA_PARAMS}
+if [[ "$RUN_ARCHETYPE" = true ]] ; then
+    archetype ${FRAMEWORK}
+fi
+if [[ "$RUN_SAMPLES" = true ]] ; then
+    sample ${FRAMEWORK}
+fi
+;;
