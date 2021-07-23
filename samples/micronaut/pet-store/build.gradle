@@ -3,7 +3,7 @@ plugins {
     id "com.github.johnrengelman.shadow" version "5.0.0"
     id "application"
     id "net.ltgt.apt-eclipse" version "0.21"
-    id "org.springframework.boot" version "2.1.12.RELEASE"
+    id "org.springframework.boot" version "2.5.3"
     id "io.spring.dependency-management" version "1.0.6.RELEASE"
 }
 
@@ -53,8 +53,8 @@ dependencies {
 
     // spring support
     implementation("org.springframework.boot:spring-boot-starter-web")
-    runtime("io.micronaut.spring:micronaut-spring-boot:1.0.1")
-    runtime("io.micronaut.spring:micronaut-spring-web:1.0.1")
+    runtime("io.micronaut.spring:micronaut-spring-boot:4.0.0-RC2")
+    runtime("io.micronaut.spring:micronaut-spring-web:4.0.0-RC2")
 }
 
 test.classpath += configurations.developmentOnly
