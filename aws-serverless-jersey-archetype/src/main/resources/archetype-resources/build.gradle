@@ -23,7 +23,7 @@ dependencies {
     exclude group: 'javax.inject', module: "javax.inject"
   }
 
-  testImplementation("junit:junit:4.12")
+  testImplementation("junit:junit:4.13.2")
 }
 
 task buildZip(type: Zip) {

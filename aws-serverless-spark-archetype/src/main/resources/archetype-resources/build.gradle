@@ -13,7 +13,7 @@ dependencies {
           'io.symphonia:lambda-logging:1.0.1'
   )
 
-  testImplementation("junit:junit:4.12")
+  testImplementation("junit:junit:4.13.2")
 }
 
 task buildZip(type: Zip) {
