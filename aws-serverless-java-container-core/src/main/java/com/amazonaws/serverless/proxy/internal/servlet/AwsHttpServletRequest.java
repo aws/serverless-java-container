@@ -27,7 +27,6 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.NullInputStream;
-import org.apache.http.message.BasicHeaderValueParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,7 +82,6 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     private ServletContext servletContext;
     private AwsHttpSession session;
     private String queryString;
-    private BasicHeaderValueParser headerParser;
     private Map<String, Part> multipartFormParameters;
     private Map<String, List<String>> urlEncodedFormParameters;
 
@@ -107,7 +105,6 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     AwsHttpServletRequest(Context lambdaContext) {
         this.lambdaContext = lambdaContext;
         attributes = new HashMap<>();
-        headerParser = new BasicHeaderValueParser();
         setAttribute(DISPATCHER_TYPE_ATTRIBUTE, DispatcherType.REQUEST);
     }
 
