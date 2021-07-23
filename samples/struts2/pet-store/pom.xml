@@ -28,7 +28,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <struts2.version>2.5.26</struts2.version>
         <jackson.version>2.12.4</jackson.version>
-        <junit.version>4.13.1</junit.version>
+        <junit.version>4.13.2</junit.version>
         <log4j.version>2.14.1</log4j.version>
     </properties>
 
