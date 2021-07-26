@@ -1,4 +1,4 @@
 #!/bin/sh
 
-./docker-build.sh
+gradle buildNativeLambda -Pmicronaut.runtime=lambda
 sam local start-api -t sam-native.yaml

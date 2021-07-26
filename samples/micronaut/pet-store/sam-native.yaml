@@ -10,7 +10,7 @@ Resources:
     Properties:
       Handler: not.used.in.provided.runtime
       Runtime: provided
-      CodeUri: native-image/function.zip
+      CodeUri: build/libs/pet-store-0.1-lambda.zip
       MemorySize: 512
       Policies: AWSLambdaBasicExecutionRole
       Tracing: Active

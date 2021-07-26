@@ -1,5 +1,8 @@
 profile: service
+applicationType: default
 defaultPackage: com.amazonaws.micronaut.demo
 ---
 testFramework: junit
 sourceLanguage: java
+buildTool: gradle
+features: [app-name, aws-lambda, aws-lambda-custom-runtime, graalvm, gradle, http-client, java, junit, logback, readme, shade, spring, spring-boot, spring-web, yaml]

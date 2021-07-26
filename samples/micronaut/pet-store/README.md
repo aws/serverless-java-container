@@ -9,27 +9,12 @@ With all the pre-requisites installed including:
 * JDK 8 or above
 * Gradle 5.6.x
  
-You should be able to build a native image of the application by running the `docker-build.sh` from the repository's root.
+You should be able to build a native image of the application by running the following command from the repository's root.
 
 ```bash
-$ ./docker-build.sh
+$ gradle buildNativeLambda -Pmicronaut.runtime=lambda
 ```
-
-The build process will perform the following tasks:
-1. Use gradle to compile the application
-2. Create a `native-image` folder in the current directory
-3. Check if a Docker image called `graalvm-lambda-build` exists on the local machine. If not, create it using the `Dockerfile` in the root of the repository
-4. Run the docker image to execute the GraalVM build process
-
-The output of the build is an executable file called `server` and a deployable zip called `function.zip` in the `native-image` folder:
-
-```bash
-$ ls -lh native-image/
-total 75M
--rwxr-xr-x 1 user user  36 Oct  1 16:01 bootstrap
--rw-r--r-- 1 user user 18M Oct  1 16:01 function.zip
--rwxr-xr-x 1 user user 57M Oct  1 16:01 server
-```
+This will build the GraalVM native image inside a docker container and generate the `function.zip` in `build/libs/` ready for the deployment.
 
 To run the lambda locally, you can utilize the SAM cli by running `./sam-local.sh`. This should start up the listeners in the `PetsController`, and you can test locally with your preferred http client.
 
