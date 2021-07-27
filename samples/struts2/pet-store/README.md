@@ -26,11 +26,22 @@ Once the deployment is completed, the SAM CLI will print out the stack's outputs
 
 ```
 ...
----------------------------------------------------------------------------------------------------------
-OutputKey-Description                        OutputValue
----------------------------------------------------------------------------------------------------------
-PetStoreApi - URL for application            https://xxxxxxxxxx.execute-api.us-west-2.amazonaws.com/pets
----------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Outputs                                                                                                                                                                                                    
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Key                 Struts2PetStoreApi                                                                                                                                                                      
+Description         URL for application                                                                                                                                                                    
+Value               https://n60c1ycwa2.execute-api.eu-central-1.amazonaws.com/pets                                                                                                                         
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+```
+## Test
 
-$ curl https://xxxxxxxxxx.execute-api.us-west-2.amazonaws.com/pets
+### JSON Request:
+```
+$ curl https://xxxxxxxxxx.execute-api.us-west-2.amazonaws.com/pets.json
+```
+
+### XML Request
+```
+$ curl https://xxxxxxxxxx.execute-api.us-west-2.amazonaws.com/pets.xml
 ```

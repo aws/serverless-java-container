@@ -25,7 +25,7 @@ Resources:
             PayloadFormatVersion: '1.0'
 
 Outputs:
-  SpringPetStoreApi:
+  Struts2PetStoreApi:
     Description: URL for application
     Value: !Sub 'https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/pets'
     Export:

@@ -7,17 +7,17 @@ repositories {
 
 dependencies {
   implementation (
-          'org.springframework:spring-webmvc:5.2.16.RELEASE',
-          'org.springframework:spring-context:5.2.16.RELEASE',
+          'org.springframework:spring-webmvc:5.3.9',
+          'org.springframework:spring-context:5.3.9',
           'com.amazonaws.serverless:aws-serverless-java-container-spring:[1.0,)',
           'org.apache.logging.log4j:log4j-core:2.14.1',
           'org.apache.logging.log4j:log4j-api:2.14.1',
           'org.apache.logging.log4j:log4j-slf4j-impl:2.14.1',
-          'com.fasterxml.jackson.core:jackson-databind:2.12.0',
+          'com.fasterxml.jackson.core:jackson-databind:2.12.4',
           'com.amazonaws:aws-lambda-java-log4j2:1.1.0',
   )
 
-  testImplementation("junit:junit:4.12")
+  testImplementation("junit:junit:4.13.2")
 }
 
 task buildZip(type: Zip) {

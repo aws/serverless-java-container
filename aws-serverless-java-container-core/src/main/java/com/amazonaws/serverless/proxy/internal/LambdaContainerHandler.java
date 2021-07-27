@@ -81,9 +81,12 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
     private static ContainerConfig config = ContainerConfig.defaultConfig();
     private static ObjectMapper objectMapper = new ObjectMapper();
     static {
-        objectMapper.registerModule(new AfterburnerModule());
+        registerAfterBurner();
     }
 
+    private static void registerAfterBurner() {
+        objectMapper.registerModule(new AfterburnerModule());
+    }
 
 
     //-------------------------------------------------------------

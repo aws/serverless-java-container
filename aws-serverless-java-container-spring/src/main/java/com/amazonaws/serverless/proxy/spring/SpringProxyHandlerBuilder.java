@@ -13,17 +13,14 @@
 package com.amazonaws.serverless.proxy.spring;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
 import com.amazonaws.serverless.proxy.internal.servlet.ServletLambdaContainerHandlerBuilder;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
-import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
 import javax.servlet.http.HttpServletRequest;
 
-public final class SpringProxyHandlerBuilder<RequestType> extends ServletLambdaContainerHandlerBuilder<
+public class SpringProxyHandlerBuilder<RequestType> extends ServletLambdaContainerHandlerBuilder<
             RequestType,
             AwsProxyResponse,
             HttpServletRequest,
@@ -69,20 +66,18 @@ public final class SpringProxyHandlerBuilder<RequestType> extends ServletLambdaC
             }
         }
 
-        SpringLambdaContainerHandler<RequestType, AwsProxyResponse> handler =  new SpringLambdaContainerHandler<RequestType, AwsProxyResponse>(
-                requestTypeClass,
-                responseTypeClass,
-                requestReader,
-                responseWriter,
-                securityContextWriter,
-                exceptionHandler,
-                ctx,
-                initializationWrapper
-        );
+        SpringLambdaContainerHandler<RequestType, AwsProxyResponse> handler = createHandler(ctx);
         if (profiles != null) {
             handler.activateSpringProfiles(profiles);
         }
         return handler;
+    }
+
+    protected SpringLambdaContainerHandler<RequestType, AwsProxyResponse> createHandler(ConfigurableWebApplicationContext ctx) {
+        return new SpringLambdaContainerHandler<>(
+                requestTypeClass, responseTypeClass, requestReader, responseWriter,
+                securityContextWriter, exceptionHandler, ctx, initializationWrapper
+        );
     }
 
     @Override

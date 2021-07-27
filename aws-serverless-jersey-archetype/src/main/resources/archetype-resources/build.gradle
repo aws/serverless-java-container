@@ -7,9 +7,9 @@ repositories {
 
 dependencies {
   implementation (
-          'com.amazonaws:aws-lambda-java-core:1.2.0',
+          'com.amazonaws:aws-lambda-java-core:1.2.1',
           'com.amazonaws.serverless:aws-serverless-java-container-jersey:[1.0,)',
-          'com.fasterxml.jackson.core:jackson-databind:2.12.0',
+          'com.fasterxml.jackson.core:jackson-databind:2.12.4',
           'io.symphonia:lambda-logging:1.0.1'
   )
 
@@ -23,7 +23,7 @@ dependencies {
     exclude group: 'javax.inject', module: "javax.inject"
   }
 
-  testImplementation("junit:junit:4.12")
+  testImplementation("junit:junit:4.13.2")
 }
 
 task buildZip(type: Zip) {

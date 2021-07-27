@@ -25,7 +25,7 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-lambda-java-core</artifactId>
-            <version>1.2.0</version>
+            <version>1.2.1</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
@@ -74,7 +74,7 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpmime</artifactId>
-            <version>4.5.6</version>
+            <version>4.5.13</version>
             <scope>compile</scope>
         </dependency>
 
@@ -88,13 +88,15 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpcore</artifactId>
-            <version>4.4.10</version>
+            <version>4.4.14</version>
             <scope>compile</scope>
+            <optional>true</optional><!-- TODO move AwsProxyRequestBuilder to seperate test-jar and change scope to test
+             https://github.com/awslabs/aws-serverless-java-container/issues/394 -->
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-web</artifactId>
-            <version>5.2.11.RELEASE</version>
+            <version>5.5.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

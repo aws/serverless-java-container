@@ -8,12 +8,12 @@ repositories {
 
 dependencies {
   implementation (
-          'org.springframework.boot:spring-boot-starter-web:2.2.6.RELEASE',
+          'org.springframework.boot:spring-boot-starter-web:2.5.3',
           'com.amazonaws.serverless:aws-serverless-java-container-springboot2:[1.0,)',
           'io.symphonia:lambda-logging:1.0.1'
   )
 
-  testImplementation("junit:junit:4.12")
+  testImplementation("junit:junit:4.13.2")
 }
 
 task buildZip(type: Zip) {
