@@ -72,9 +72,11 @@ jobs:
       - name: Build Spring Boot 2.2
         run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.2.13.RELEASE -Dspring.version=5.2.15.RELEASE -Dspringsecurity.version=5.2.8.RELEASE
       - name: Build Spring Boot 2.3
-        run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.3.12.RELEASE -Dspring.version=5.2.15.RELEASE -Dspringsecurity.version=5.3.9.RELEASE
+        run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.3.12.RELEASE -Dspring.version=5.2.15.RELEASE -Dspringsecurity.version=5.3.14.RELEASE
       - name: Build Spring Boot 2.4
-        run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.4.9 -Dspring.version=5.3.9 -Dspringsecurity.version=5.4.7
+        run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.4.13 -Dspring.version=5.3.13 -Dspringsecurity.version=5.4.9
+      - name: Build Spring Boot 2.5
+        run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.5.8 -Dspring.version=5.3.14 -Dspringsecurity.version=5.5.4
 
   build_struts2:
     name: Build and test Struts 2
