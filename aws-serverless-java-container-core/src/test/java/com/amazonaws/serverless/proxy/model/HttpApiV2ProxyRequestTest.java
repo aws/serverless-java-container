@@ -83,6 +83,52 @@ public class HttpApiV2ProxyRequestTest {
             "      \"isBase64Encoded\": true,\n" +
             "      \"stageVariables\": {\"stageVariable1\": \"value1\", \"stageVariable2\": \"value2\"}\n" +
             "    }\n";
+    private static final String LAMBDA_AUTHORIZER = "{\n" +
+            "      \"version\": \"2.0\",\n" +
+            "      \"routeKey\": \"$default\",\n" +
+            "      \"rawPath\": \"/my/path\",\n" +
+            "      \"rawQueryString\": \"parameter1=value1&parameter1=value2&parameter2=value\",\n" +
+            "      \"cookies\": [ \"cookie1\", \"cookie2\" ],\n" +
+            "      \"headers\": {\n" +
+            "        \"Header1\": \"value1\",\n" +
+            "        \"Header2\": \"value2\"\n" +
+            "      },\n" +
+            "      \"queryStringParameters\": { \"parameter1\": \"value1,value2\", \"parameter2\": \"value\" },\n" +
+            "      \"requestContext\": {\n" +
+            "        \"accountId\": \"123456789012\",\n" +
+            "        \"apiId\": \"api-id\",\n" +
+            "        \"authorizer\": {  \"lambda\": {\n" +
+            "           \"arrayKey\": [\n" +
+            "                \"value1\",\n" +
+            "              \"value2\"\n" +
+            "            ],\n" +
+            "            \"booleanKey\": true,\n" +
+            "          \"mapKey\": {\n" +
+            "                \"value1\": \"value2\"\n" +
+            "                 },\n" +
+            "             \"numberKey\": 1,\n" +
+            "             \"stringKey\": \"value\"\n" +
+            "           }" +
+            "        },\n" +
+            "        \"domainName\": \"id.execute-api.us-east-1.amazonaws.com\",\n" +
+            "        \"domainPrefix\": \"id\",\n" +
+            "        \"http\": {\n" +
+            "          \"method\": \"POST\",\n" +
+            "          \"path\": \"/my/path\",\n" +
+            "          \"protocol\": \"HTTP/1.1\",\n" +
+            "          \"sourceIp\": \"IP\",\n" +
+            "          \"userAgent\": \"agent\"\n" +
+            "        },\n" +
+            "        \"requestId\": \"id\",\n" +
+            "        \"routeKey\": \"$default\",\n" +
+            "        \"stage\": \"$default\",\n" +
+            "        \"time\": \"12/Mar/2020:19:03:58 +0000\",\n" +
+            "        \"timeEpoch\": 1583348638390\n" +
+            "      },\n" +
+            "      \"body\": \"Hello from Lambda\",\n" +
+            "      \"isBase64Encoded\": false,\n" +
+            "      \"stageVariables\": {\"stageVariable1\": \"value1\", \"stageVariable2\": \"value2\"}\n" +
+            "    }\n";;
 
     @Test
     public void deserialize_fromJsonString_authorizerPopulatedCorrectly() {
@@ -102,6 +148,22 @@ public class HttpApiV2ProxyRequestTest {
             HttpApiV2ProxyRequest req = LambdaContainerHandler.getObjectMapper().readValue(NO_AUTH_PROXY, HttpApiV2ProxyRequest.class);
             assertNotNull(req.getRequestContext().getAuthorizer());
             assertFalse(req.getRequestContext().getAuthorizer().isJwt());
+            assertFalse(req.getRequestContext().getAuthorizer().isLambda());
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            fail("Exception while parsing request" + e.getMessage());
+        }
+    }
+
+    @Test
+    public void deserialize_fromJsonString_lambdaAuthorizer() {
+        try {
+            HttpApiV2ProxyRequest req = LambdaContainerHandler.getObjectMapper().readValue(LAMBDA_AUTHORIZER, HttpApiV2ProxyRequest.class);
+            assertNotNull(req.getRequestContext().getAuthorizer());
+            assertFalse(req.getRequestContext().getAuthorizer().isJwt());
+            assertTrue(req.getRequestContext().getAuthorizer().isLambda());
+            assertEquals(5, req.getRequestContext().getAuthorizer().getLambdaAuthorizerContext().size());
+            assertEquals(1, req.getRequestContext().getAuthorizer().getLambdaAuthorizerContext().get("numberKey"));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             fail("Exception while parsing request" + e.getMessage());
