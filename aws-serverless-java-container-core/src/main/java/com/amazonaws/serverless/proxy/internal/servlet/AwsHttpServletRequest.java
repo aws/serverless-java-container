@@ -102,7 +102,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
      * AWS Lambda
      * @param lambdaContext The Lambda function context. This object is used for utility methods such as log
      */
-    AwsHttpServletRequest(Context lambdaContext) {
+    protected AwsHttpServletRequest(Context lambdaContext) {
         this.lambdaContext = lambdaContext;
         attributes = new HashMap<>();
         setAttribute(DISPATCHER_TYPE_ATTRIBUTE, DispatcherType.REQUEST);
