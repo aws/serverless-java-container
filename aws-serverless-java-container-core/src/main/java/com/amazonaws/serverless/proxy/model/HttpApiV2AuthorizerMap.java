@@ -23,22 +23,33 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 @JsonSerialize(using = HttpApiV2AuthorizerMap.HttpApiV2AuthorizerSerializer.class)
 @JsonDeserialize(using = HttpApiV2AuthorizerMap.HttpApiV2AuthorizerDeserializer.class)
 public class HttpApiV2AuthorizerMap extends HashMap<String, Object> {
     private static final String JWT_KEY = "jwt";
+    private static final String LAMBDA_KEY = "lambda";
     private static final long serialVersionUID = 42L;
 
     public HttpApiV2JwtAuthorizer getJwtAuthorizer() {
         return (HttpApiV2JwtAuthorizer)get(JWT_KEY);
     }
 
+    public Map<String, Object> getLambdaAuthorizerContext() {
+        return (Map<String, Object>) get(LAMBDA_KEY);
+    }
+
     public boolean isJwt() {
         return containsKey(JWT_KEY);
+    }
+
+    public boolean isLambda() {
+        return containsKey(LAMBDA_KEY);
     }
 
     public void putJwtAuthorizer(HttpApiV2JwtAuthorizer jwt) {
@@ -56,9 +67,14 @@ public class HttpApiV2AuthorizerMap extends HashMap<String, Object> {
         public HttpApiV2AuthorizerMap deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
             HttpApiV2AuthorizerMap map = new HttpApiV2AuthorizerMap();
             JsonNode node = jsonParser.getCodec().readTree(jsonParser);
-            if (node.get(JWT_KEY) != null) {
+            if (node.has(JWT_KEY)) {
                 HttpApiV2JwtAuthorizer authorizer = LambdaContainerHandler.getObjectMapper().treeToValue(node.get(JWT_KEY), HttpApiV2JwtAuthorizer.class);
                 map.putJwtAuthorizer(authorizer);
+            }
+            if (node.has(LAMBDA_KEY)) {
+                Map<String, Object> context = LambdaContainerHandler.getObjectMapper().treeToValue(node.get(LAMBDA_KEY),
+                        TypeFactory.defaultInstance().constructMapType(HashMap.class, String.class, Object.class));
+                map.put(LAMBDA_KEY, context);
             }
             // we ignore other, unknown values
             return map;
@@ -77,6 +93,9 @@ public class HttpApiV2AuthorizerMap extends HashMap<String, Object> {
             jsonGenerator.writeStartObject();
             if (httpApiV2AuthorizerMap.isJwt()) {
                 jsonGenerator.writeObjectField(JWT_KEY, httpApiV2AuthorizerMap.getJwtAuthorizer());
+            }
+            if (httpApiV2AuthorizerMap.isLambda()) {
+                jsonGenerator.writeObjectField(LAMBDA_KEY, httpApiV2AuthorizerMap.getLambdaAuthorizerContext());
             }
             jsonGenerator.writeEndObject();
         }
