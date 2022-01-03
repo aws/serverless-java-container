@@ -18,6 +18,7 @@ import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Random;
 
@@ -123,6 +124,7 @@ public class AwsProxyHttpServletRequestFormTest {
         assertNotNull(params);
         assertEquals(2, params.size());
         assertTrue(params.containsKey(PART_KEY_1));
+        assertEquals(2, Collections.list(request.getParameterNames()).size());
     }
 
     /**
@@ -140,5 +142,6 @@ public class AwsProxyHttpServletRequestFormTest {
         assertNotNull(params);
         assertEquals(2, params.size());
         assertTrue(params.containsKey(PART_KEY_1));
+        assertEquals(2, Collections.list(request.getParameterNames()).size());
     }
 }
