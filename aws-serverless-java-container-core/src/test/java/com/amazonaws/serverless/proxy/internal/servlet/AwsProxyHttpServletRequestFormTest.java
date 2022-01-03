@@ -123,4 +123,21 @@ public class AwsProxyHttpServletRequestFormTest {
         assertEquals(2, params.size());
         assertEquals(true, params.containsKey(PART_KEY_1));
     }
+
+    /**
+     * issue #340
+     */
+    @Test
+    public void postForm_emptyParamPresent() {
+        AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/form", "POST")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED).build();
+        String body = PART_KEY_1 + "=" + "&" + PART_KEY_2 + "=" + PART_VALUE_2;
+        proxyRequest.setBody(body);
+
+        HttpServletRequest request = new AwsProxyHttpServletRequest(proxyRequest, null, null);
+        Map<String, String[]> params = request.getParameterMap();
+        assertNotNull(params);
+        assertEquals(2, params.size());
+        assertEquals(true, params.containsKey(PART_KEY_1));
+    }
 }
