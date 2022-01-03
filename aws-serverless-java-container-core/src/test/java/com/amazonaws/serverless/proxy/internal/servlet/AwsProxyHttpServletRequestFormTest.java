@@ -23,6 +23,7 @@ import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 
@@ -121,7 +122,7 @@ public class AwsProxyHttpServletRequestFormTest {
         Map<String, String[]> params = request.getParameterMap();
         assertNotNull(params);
         assertEquals(2, params.size());
-        assertEquals(true, params.containsKey(PART_KEY_1));
+        assertTrue(params.containsKey(PART_KEY_1));
     }
 
     /**
@@ -138,6 +139,6 @@ public class AwsProxyHttpServletRequestFormTest {
         Map<String, String[]> params = request.getParameterMap();
         assertNotNull(params);
         assertEquals(2, params.size());
-        assertEquals(true, params.containsKey(PART_KEY_1));
+        assertTrue(params.containsKey(PART_KEY_1));
     }
 }
