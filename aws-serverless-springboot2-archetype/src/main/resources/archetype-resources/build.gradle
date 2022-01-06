@@ -10,7 +10,7 @@ dependencies {
   implementation (
           'org.springframework.boot:spring-boot-starter-web:2.6.2',
           'com.amazonaws.serverless:aws-serverless-java-container-springboot2:[1.0,)',
-          'io.symphonia:lambda-logging:1.0.1'
+          'io.symphonia:lambda-logging:1.0.3'
   )
 
   testImplementation("junit:junit:4.13.2")
