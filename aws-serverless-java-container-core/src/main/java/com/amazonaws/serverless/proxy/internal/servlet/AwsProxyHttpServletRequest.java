@@ -45,6 +45,9 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -360,11 +363,12 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public Enumeration<String> getParameterNames() {
+        Set<String> formParameterNames = getFormUrlEncodedParametersMap().keySet();
         if (request.getMultiValueQueryStringParameters() == null) {
-            return Collections.emptyEnumeration();
+            return Collections.enumeration(formParameterNames);
         }
-
-        return Collections.enumeration(request.getMultiValueQueryStringParameters().keySet());
+        return Collections.enumeration(Stream.concat(formParameterNames.stream(),
+                request.getMultiValueQueryStringParameters().keySet().stream()).collect(Collectors.toSet()));
     }
 
 

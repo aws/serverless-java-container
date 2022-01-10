@@ -496,14 +496,16 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         urlEncodedFormParameters = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (String parameter : rawBodyContent.split(FORM_DATA_SEPARATOR)) {
             String[] parameterKeyValue = parameter.split(HEADER_KEY_VALUE_SEPARATOR);
-            if (parameterKeyValue.length < 2) {
+            if (parameterKeyValue.length < 1) {
                 continue;
             }
             List<String> values = new ArrayList<>();
             if (urlEncodedFormParameters.containsKey(parameterKeyValue[0])) {
                 values = urlEncodedFormParameters.get(parameterKeyValue[0]);
             }
-            values.add(decodeValueIfEncoded(parameterKeyValue[1]));
+            if (parameterKeyValue.length > 1) {
+                values.add(decodeValueIfEncoded(parameterKeyValue[1]));
+            }
             urlEncodedFormParameters.put(decodeValueIfEncoded(parameterKeyValue[0]), values);
         }
         Timer.stop("SERVLET_REQUEST_GET_FORM_PARAMS");

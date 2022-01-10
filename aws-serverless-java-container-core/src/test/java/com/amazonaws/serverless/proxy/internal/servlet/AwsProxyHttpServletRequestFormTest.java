@@ -18,11 +18,13 @@ import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 
@@ -121,6 +123,25 @@ public class AwsProxyHttpServletRequestFormTest {
         Map<String, String[]> params = request.getParameterMap();
         assertNotNull(params);
         assertEquals(2, params.size());
-        assertEquals(true, params.containsKey(PART_KEY_1));
+        assertTrue(params.containsKey(PART_KEY_1));
+        assertEquals(2, Collections.list(request.getParameterNames()).size());
+    }
+
+    /**
+     * issue #340
+     */
+    @Test
+    public void postForm_emptyParamPresent() {
+        AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/form", "POST")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED).build();
+        String body = PART_KEY_1 + "=" + "&" + PART_KEY_2 + "=" + PART_VALUE_2;
+        proxyRequest.setBody(body);
+
+        HttpServletRequest request = new AwsProxyHttpServletRequest(proxyRequest, null, null);
+        Map<String, String[]> params = request.getParameterMap();
+        assertNotNull(params);
+        assertEquals(2, params.size());
+        assertTrue(params.containsKey(PART_KEY_1));
+        assertEquals(2, Collections.list(request.getParameterNames()).size());
     }
 }
