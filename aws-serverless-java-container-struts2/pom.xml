@@ -15,7 +15,7 @@
     </parent>
 
     <properties>
-        <struts2.version>2.5.28.3</struts2.version>
+        <struts2.version>2.5.29</struts2.version>
     </properties>
 
     <dependencies>
