@@ -15,8 +15,8 @@
     <version>1.7-SNAPSHOT</version>
 
     <properties>
-        <spring.version>5.3.14</spring.version>
-        <springboot.version>2.6.2</springboot.version>
+        <spring.version>5.3.15</spring.version>
+        <springboot.version>2.6.3</springboot.version>
         <springsecurity.version>5.6.1</springsecurity.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
