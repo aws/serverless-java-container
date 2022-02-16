@@ -171,8 +171,8 @@
                     <artifactId>maven-release-plugin</artifactId>
                     <configuration>
                         <preparationGoals>clean verify install</preparationGoals>
-                        <pushChanges>false</pushChanges>
                         <localCheckout>true</localCheckout>
+                        <scmCommentPrefix>chore: release </scmCommentPrefix>
                     </configuration>
                 </plugin>
             </plugins>
