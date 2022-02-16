@@ -40,7 +40,7 @@
 
     <scm>
         <url>https://github.com/awslabs/aws-serverless-java-container</url>
-        <connection>https://github.com/awslabs/aws-serverless-java-container.git</connection>
+        <connection>scm:git:https://github.com/awslabs/aws-serverless-java-container.git</connection>
     </scm>
 
     <repositories>
