@@ -1,0 +1,33 @@
+name: Publish package to the Maven Central Repository
+on:
+  workflow_dispatch:
+    inputs:
+      releaseVersion:
+        description: "Version to use for the release."
+        required: true
+        default: "X.Y.Z"
+      developmentVersion:
+        description: "Version to use for further development"
+        required: true
+        default: "X.Y.Z-SNAPSHOT"
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Maven
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin' # Corretto isn't supported right now https://github.com/actions/setup-java/issues/68
+          java-version: 8
+          server-id: sonatype-nexus-staging
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+          gpg-private-key: ${{ secrets.GPG_SIGNING_KEY }} # Value of the GPG private key to import
+          gpg-passphrase: GPG_PASSPHRASE # env variable for GPG private key passphrase
+      - name: Release and publish package
+        run: mvn release:prepare release:perform -B -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
+        env:
+          MAVEN_USERNAME: ${{ secrets.OSSRH_JIRA_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.OSSRH_JIRA_PASSWORD }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
