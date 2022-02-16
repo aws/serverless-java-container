@@ -14,8 +14,7 @@
 
     <scm>
         <url>https://github.com/awslabs/aws-serverless-java-container.git</url>
-      <tag>HEAD</tag>
-  </scm>
+    </scm>
 
     <licenses>
         <license>

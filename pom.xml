@@ -39,11 +39,9 @@
     </modules>
 
     <scm>
-        <url>https://github.com/awslabs/aws-serverless-java-container.git</url>
-        <connection>scm:git:git@github.com:awslabs/aws-serverless-java-container.git</connection>
-        <developerConnection>scm:git:git@github.com:awslabs/aws-serverless-java-container.git</developerConnection>
-      <tag>HEAD</tag>
-  </scm>
+        <url>https://github.com/awslabs/aws-serverless-java-container</url>
+        <connection>https://github.com/awslabs/aws-serverless-java-container.git</connection>
+    </scm>
 
     <repositories>
         <repository>
