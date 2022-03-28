@@ -31,13 +31,13 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
-            <version>${spring.version}</version>
+            <version>\${spring.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <version>${spring.version}</version>
+            <version>\${spring.version}</version>
         </dependency>
 
         <!--
@@ -49,26 +49,26 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context-indexer</artifactId>
-            <version>${spring.version}</version>
+            <version>\${spring.version}</version>
             <optional>true</optional>
         </dependency>
 
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>${log4j.version}</version>
+            <version>\${log4j.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <version>${log4j.version}</version>
+            <version>\${log4j.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
-            <version>${log4j.version}</version>
+            <version>\${log4j.version}</version>
         </dependency>
 
         <dependency>
@@ -80,7 +80,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
+            <version>\${junit.version}</version>
             <scope>test</scope>
         </dependency>
 

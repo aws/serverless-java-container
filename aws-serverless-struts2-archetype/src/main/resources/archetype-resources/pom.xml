@@ -37,25 +37,25 @@
         <dependency>
             <groupId>org.apache.struts</groupId>
             <artifactId>struts2-convention-plugin</artifactId>
-            <version>${struts2.version}</version>
+            <version>\${struts2.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.struts</groupId>
             <artifactId>struts2-rest-plugin</artifactId>
-            <version>${struts2.version}</version>
+            <version>\${struts2.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.struts</groupId>
             <artifactId>struts2-bean-validation-plugin</artifactId>
-            <version>${struts2.version}</version>
+            <version>\${struts2.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.struts</groupId>
             <artifactId>struts2-junit-plugin</artifactId>
-            <version>${struts2.version}</version>
+            <version>\${struts2.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -76,35 +76,35 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>${jackson.version}</version>
+            <version>\${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>${jackson.version}</version>
+            <version>\${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}.1</version>
+            <version>\${jackson.version}.1</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>${log4j.version}</version>
+            <version>\${log4j.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <version>${log4j.version}</version>
+            <version>\${log4j.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
-            <version>${log4j.version}</version>
+            <version>\${log4j.version}</version>
         </dependency>
 
         <dependency>
@@ -129,7 +129,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
+            <version>\${junit.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
