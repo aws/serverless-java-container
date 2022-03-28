@@ -9,7 +9,7 @@ dependencies {
   implementation (
           'com.amazonaws:aws-lambda-java-core:1.2.1',
           'com.amazonaws.serverless:aws-serverless-java-container-jersey:[1.0,)',
-          'com.fasterxml.jackson.core:jackson-databind:2.13.1',
+          'com.fasterxml.jackson.core:jackson-databind:2.13.2.1',
           'io.symphonia:lambda-logging:1.0.3'
   )
 
