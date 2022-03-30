@@ -514,7 +514,7 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
 
                 String[] kv = value.split(QUERY_STRING_KEY_VALUE_SEPARATOR);
                 String key = URLDecoder.decode(kv[0], LambdaContainerHandler.getContainerConfig().getUriEncoding());
-                String val = kv.length == 2 ? kv[1] : null;
+                String val = kv.length == 2 ? kv[1] : "";
                 qsMap.add(key, val);
             } catch (UnsupportedEncodingException e) {
                 log.error("Unsupported encoding in query string key: " + SecurityUtils.crlf(value), e);

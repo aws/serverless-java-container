@@ -74,6 +74,8 @@ public class AwsProxyHttpServletRequestTest {
 
     private static final AwsProxyRequestBuilder REQUEST_QUERY = new AwsProxyRequestBuilder("/hello", "POST")
             .queryString(FORM_PARAM_NAME, QUERY_STRING_NAME_VALUE);
+    private static final AwsProxyRequestBuilder REQUEST_QUERY_EMPTY_VALUE = new AwsProxyRequestBuilder("/hello", "POST")
+            .queryString(FORM_PARAM_NAME, "");
 
 
     public AwsProxyHttpServletRequestTest(String type) {
@@ -237,6 +239,14 @@ public class AwsProxyHttpServletRequestTest {
         assertNotNull(request);
         assertEquals(1, request.getParameterMap().size());
         assertEquals(QUERY_STRING_NAME_VALUE, request.getParameterMap().get(FORM_PARAM_NAME)[0]);
+    }
+
+    @Test
+    public void queryParameters_getParameterMap_nonNull_EmptyParamValue() {
+        HttpServletRequest request = getRequest(REQUEST_QUERY_EMPTY_VALUE, null, null);
+        assertNotNull(request);
+        assertEquals(1, request.getParameterMap().size());
+        assertEquals("", request.getParameterMap().get(FORM_PARAM_NAME)[0]);
     }
 
     @Test
