@@ -25,6 +25,7 @@ public class AwsHttpApiV2HttpServletRequestReaderTest {
                 .referer("localhost")
                 .queryString("param1", "value1")
                 .header("custom", "value")
+                .cookie("cookey", "cooval")
                 .apiId("test").toHttpApiV2Request();
         AwsHttpApiV2HttpServletRequestReader reader = new AwsHttpApiV2HttpServletRequestReader();
         try {
@@ -32,6 +33,11 @@ public class AwsHttpApiV2HttpServletRequestReaderTest {
             assertEquals("/hello", servletRequest.getPathInfo());
             assertEquals("value1", servletRequest.getParameter("param1"));
             assertEquals("value", servletRequest.getHeader("CUSTOM"));
+
+            assertNotNull(servletRequest.getCookies());
+            assertEquals(1, servletRequest.getCookies().length);
+            assertEquals("cookey", servletRequest.getCookies()[0].getName());
+            assertEquals("cooval", servletRequest.getCookies()[0].getValue());
 
             assertNotNull(servletRequest.getAttribute(AwsHttpApiV2HttpServletRequestReader.HTTP_API_CONTEXT_PROPERTY));
             assertEquals("test",

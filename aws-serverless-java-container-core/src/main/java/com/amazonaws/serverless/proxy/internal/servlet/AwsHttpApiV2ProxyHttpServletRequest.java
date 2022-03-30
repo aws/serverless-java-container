@@ -37,6 +37,7 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
     private static Logger log = LoggerFactory.getLogger(AwsHttpApiV2ProxyHttpServletRequest.class);
@@ -75,11 +76,33 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public Cookie[] getCookies() {
+        Cookie[] rhc;
         if (headers == null || !headers.containsKey(HttpHeaders.COOKIE)) {
-            return new Cookie[0];
+            rhc = new Cookie[0];
+        } else {
+            rhc = parseCookieHeaderValue(headers.getFirst(HttpHeaders.COOKIE));
         }
 
-        return parseCookieHeaderValue(headers.getFirst(HttpHeaders.COOKIE));
+        Cookie[] rc;
+        if (request.getCookies() == null) {
+            rc = new Cookie[0];
+        } else {
+            rc = request.getCookies().stream()
+                .map(c -> {
+                    int i = c.indexOf('=');
+                    if (i == -1) {
+                        return null;
+                    } else {
+                        String k = SecurityUtils.crlf(c.substring(0, i)).trim();
+                        String v = SecurityUtils.crlf(c.substring(i+1));
+                        return new Cookie(k, v);
+                    }
+                })
+                .filter(c -> c != null)
+                .toArray(Cookie[]::new);
+        }
+
+        return Stream.concat(Arrays.stream(rhc), Arrays.stream(rc)).toArray(Cookie[]::new);
     }
 
     @Override
