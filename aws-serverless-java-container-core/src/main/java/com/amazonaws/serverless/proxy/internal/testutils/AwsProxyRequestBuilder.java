@@ -459,7 +459,11 @@ public class AwsProxyRequestBuilder {
         }
         req.setHeaders(new TreeMap<>(String.CASE_INSENSITIVE_ORDER));
         if (request.getMultiValueHeaders() != null) {
-            request.getMultiValueHeaders().forEach((key, value) -> req.getHeaders().put(key, value.get(0)));
+            request.getMultiValueHeaders().forEach((key, value) -> {
+                if (!HttpHeaders.COOKIE.equals(key)) {
+                    req.getHeaders().put(key, value.get(0));
+                }
+            });
         }
         if (request.getRequestContext() != null && request.getRequestContext().getIdentity() != null) {
             if (request.getRequestContext().getIdentity().getCaller() != null) {
