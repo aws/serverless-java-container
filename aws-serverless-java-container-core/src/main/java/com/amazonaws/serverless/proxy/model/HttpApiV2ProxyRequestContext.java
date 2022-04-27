@@ -12,6 +12,9 @@
  */
 package com.amazonaws.serverless.proxy.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class HttpApiV2ProxyRequestContext {
     private String accountId;
     private String apiId;
