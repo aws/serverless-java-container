@@ -28,7 +28,7 @@ public class ContainerConfig {
     private static final List<String> DEFAULT_FILE_PATHS = new ArrayList<String>() {{ add("/tmp"); add("/var/task"); }};
     private static final int DEFAULT_MAX_INIT_TIMEOUT_MS = 20_000;
     private static final String MAX_INIT_TIMEOUT_ENVIRONMENT_VARIABLE_NAME = "AWS_SERVERLESS_JAVA_CONTAINER_MAX_INIT_TIMEOUT";
-    private static final int MAX_INIT_TIMEOUT_MS = Integer.parseInt(System.getProperty(
+    private static final int MAX_INIT_TIMEOUT_MS = Integer.parseInt(System.getenv().getOrDefault(
             MAX_INIT_TIMEOUT_ENVIRONMENT_VARIABLE_NAME, Integer.toString(DEFAULT_MAX_INIT_TIMEOUT_MS)));
 
     public static ContainerConfig defaultConfig() {
