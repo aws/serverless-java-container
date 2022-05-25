@@ -74,7 +74,7 @@ jobs:
       - name: Build Spring Boot 2.4
         run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.4.13 -Dspring.version=5.3.13 -Dspringsecurity.version=5.4.9 -Ddependency-check.skip=true
       - name: Build Spring Boot 2.5
-        run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.5.13 -Dspring.version=5.3.19 -Dspringsecurity.version=5.5.6 -Ddependency-check.skip=true
+        run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.5.14 -Dspring.version=5.3.20 -Dspringsecurity.version=5.5.8 -Ddependency-check.skip=true
 
   build_struts2:
     name: Build and test Struts 2
