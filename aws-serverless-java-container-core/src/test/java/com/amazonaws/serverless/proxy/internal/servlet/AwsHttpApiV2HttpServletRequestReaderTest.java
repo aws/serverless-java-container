@@ -8,6 +8,7 @@ import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequestContext;
 import org.junit.Test;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.HttpHeaders;
 
 import static org.junit.Assert.*;
 
@@ -23,6 +24,7 @@ public class AwsHttpApiV2HttpServletRequestReaderTest {
     public void baseRequest_read_populatesSuccessfully() {
         HttpApiV2ProxyRequest req = new AwsProxyRequestBuilder("/hello", "GET")
                 .referer("localhost")
+                .userAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.61 Safari/537.36")
                 .queryString("param1", "value1")
                 .header("custom", "value")
                 .cookie("cookey", "cooval")
@@ -33,6 +35,7 @@ public class AwsHttpApiV2HttpServletRequestReaderTest {
             assertEquals("/hello", servletRequest.getPathInfo());
             assertEquals("value1", servletRequest.getParameter("param1"));
             assertEquals("value", servletRequest.getHeader("CUSTOM"));
+            assertEquals("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.61 Safari/537.36", servletRequest.getHeader(HttpHeaders.USER_AGENT));
 
             assertNotNull(servletRequest.getCookies());
             assertEquals(1, servletRequest.getCookies().length);

@@ -533,6 +533,7 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
             // Exceptions for known header values that contain commas
             if (hkv.getKey().equalsIgnoreCase(HttpHeaders.DATE) ||
                             hkv.getKey().equalsIgnoreCase(HttpHeaders.IF_MODIFIED_SINCE) ||
+                            hkv.getKey().equalsIgnoreCase(HttpHeaders.USER_AGENT) ||
                             hkv.getKey().toLowerCase(Locale.getDefault()).startsWith("accept-")) {
                 h.add(hkv.getKey(), hkv.getValue());
                 continue;
