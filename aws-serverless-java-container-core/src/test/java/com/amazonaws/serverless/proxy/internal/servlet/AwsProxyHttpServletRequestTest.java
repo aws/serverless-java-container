@@ -36,7 +36,7 @@ public class AwsProxyHttpServletRequestTest {
     private static final String FORM_PARAM_TEST = "test_cookie_param";
     private static final String QUERY_STRING_NAME_VALUE = "Bob";
     private static final String REQUEST_SCHEME_HTTP = "http";
-    private static final String USER_AGENT = "Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0";
+    private static final String USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.61 Safari/537.36";
     private static final String REFERER = "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent/Firefox";
     private static ZonedDateTime REQUEST_DATE = ZonedDateTime.now();
 
