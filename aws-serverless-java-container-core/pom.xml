@@ -53,14 +53,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-afterburner</artifactId>
-            <version>2.13.2</version>
-            <!--TODO set back to <version>${jackson.version}</version> with next Jackson release -->
-            <exclusions>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
-                </exclusion>
-            </exclusions>
+            <version>${jackson.version}</version>
         </dependency>
 
 
