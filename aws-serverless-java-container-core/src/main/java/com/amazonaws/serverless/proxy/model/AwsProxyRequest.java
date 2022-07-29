@@ -12,12 +12,11 @@
  */
 package com.amazonaws.serverless.proxy.model;
 
+import java.util.HashMap;
+import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Default implementation of the request object from an API Gateway AWS_PROXY integration
@@ -33,7 +32,9 @@ public class AwsProxyRequest {
     private String resource;
     private AwsProxyRequestContext requestContext;
     private MultiValuedTreeMap<String, String> multiValueQueryStringParameters;
+    private Map<String, String> queryStringParameters; 
     private Headers multiValueHeaders;
+    private SingleValueHeaders headers;
     private Map<String, String> pathParameters;
     private String httpMethod;
     private Map<String, String> stageVariables;
@@ -113,19 +114,33 @@ public class AwsProxyRequest {
         return multiValueQueryStringParameters;
     }
 
-
     public void setMultiValueQueryStringParameters(
             MultiValuedTreeMap<String, String> multiValueQueryStringParameters) {
         this.multiValueQueryStringParameters = multiValueQueryStringParameters;
+    }
+
+    public Map<String, String> getQueryStringParameters() {
+        return queryStringParameters;
+    }
+
+    public void setQueryStringParameters(Map<String, String> queryStringParameters) {
+        this.queryStringParameters = queryStringParameters;
     }
 
     public Headers getMultiValueHeaders() {
         return multiValueHeaders;
     }
 
-
     public void setMultiValueHeaders(Headers multiValueHeaders) {
         this.multiValueHeaders = multiValueHeaders;
+    }
+
+    public SingleValueHeaders getHeaders() {
+        return headers;
+    }
+
+    public void setHeaders(SingleValueHeaders headers) {
+        this.headers = headers;
     }
 
 

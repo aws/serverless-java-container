@@ -1,75 +1,19 @@
 package com.amazonaws.serverless.proxy.model;
 
+import static junit.framework.TestCase.assertTrue;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import java.io.IOException;
+import org.junit.Test;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
-
-import java.io.IOException;
-
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.*;
 
 public class AwsProxyRequestTest {
     private static final String CUSTOM_HEADER_KEY_LOWER_CASE = "custom-header";
     private static final String CUSTOM_HEADER_VALUE = "123456";
-    public static final String REQUEST_JSON = "{\n" +
-                                "    \"resource\": \"/api/{proxy+}\",\n" +
-                                "    \"path\": \"/api/endpoint\",\n" +
-                                "    \"httpMethod\": \"OPTIONS\",\n" +
-                                "    \"headers\": {\n" +
-                                "        \"Accept\": \"*/*\",\n" +
-                                "        \"User-Agent\": \"PostmanRuntime/7.1.1\",\n" +
-                                "        \"" + CUSTOM_HEADER_KEY_LOWER_CASE +"\":" + "\"" + CUSTOM_HEADER_VALUE + "\"\n" +
-                                "    },\n" +
-                                "    \"multiValueHeaders\": {\n" +
-                                "        \"Accept\": [\n" +
-                                "            \"*/*\"\n" +
-                                "        ],\n" +
-                                "        \"User-Agent\": [\n" +
-                                "            \"PostmanRuntime/7.1.1\"\n" +
-                                "        ],\n" +
-                                "        \"" + CUSTOM_HEADER_KEY_LOWER_CASE + "\": [\n" +
-                                "            \"" + CUSTOM_HEADER_VALUE + "\"\n" +
-                                "        ]\n" +
-                                "    },\n" +
-                                "    \"queryStringParameters\": null,\n" +
-                                "    \"multiValueQueryStringParameters\": null,\n" +
-                                "    \"pathParameters\": {\n" +
-                                "        \"proxy\": \"endpoint\"\n" +
-                                "    },\n" +
-                                "    \"stageVariables\": null,\n" +
-                                "    \"requestContext\": {\n" +
-                                "        \"resourceId\": null,\n" +
-                                "        \"resourcePath\": \"/api/{proxy+}\",\n" +
-                                "        \"httpMethod\": \"OPTIONS\",\n" +
-                                "        \"extendedRequestId\": null,\n" +
-                                "        \"requestTime\": \"15/Dec/2018:20:37:47 +0000\",\n" +
-                                "        \"path\": \"/api/endpoint\",\n" +
-                                "        \"accountId\": null,\n" +
-                                "        \"protocol\": \"HTTP/1.1\",\n" +
-                                "        \"stage\": \"stage_name\",\n" +
-                                "        \"domainPrefix\": null,\n" +
-                                "        \"requestTimeEpoch\": 1544906267828,\n" +
-                                "        \"requestId\": null,\n" +
-                                "        \"identity\": {\n" +
-                                "            \"cognitoIdentityPoolId\": null,\n" +
-                                "            \"accountId\": null,\n" +
-                                "            \"cognitoIdentityId\": null,\n" +
-                                "            \"caller\": null,\n" +
-                                "            \"sourceIp\": \"54.240.196.171\",\n" +
-                                "            \"accessKey\": null,\n" +
-                                "            \"cognitoAuthenticationType\": null,\n" +
-                                "            \"cognitoAuthenticationProvider\": null,\n" +
-                                "            \"userArn\": null,\n" +
-                                "            \"userAgent\": \"PostmanRuntime/7.1.1\",\n" +
-                                "            \"user\": null\n" +
-                                "        },\n" +
-                                "        \"domainName\": \"https://apiId.execute-api.eu-central-1.amazonaws.com/\",\n" +
-                                "        \"apiId\": \"apiId\"\n" +
-                                "    },\n" +
-                                "    \"body\": null,\n" +
-                                "    \"isBase64Encoded\": true\n" +
-                                "}";
 
     @Test
     public void deserialize_multiValuedHeaders_caseInsensitive() throws IOException {
@@ -159,5 +103,36 @@ public class AwsProxyRequestTest {
                 "    \"body\": null,\n" +
                 "    \"isBase64Encoded\": " + (base64Encoded?"true":"false") + "\n" +
                 "}";
+    }
+
+    @Test
+    public void deserialize_singleValuedHeaders() throws IOException {
+        AwsProxyRequest req =
+            new AwsProxyRequestBuilder().fromJsonString(getSingleValueRequestJson()).build();
+
+        assertThat(req.getHeaders().get("accept"), is("*"));
+    }
+
+    /**
+     * Captured from a live request to an ALB with a Lambda integration with 
+     * lambda.multi_value_headers.enabled=false.
+     */
+    private String getSingleValueRequestJson() {
+        return "{\n" + "        \"requestContext\": {\n" + "            \"elb\": {\n"
+            + "                \"targetGroupArn\": \"arn:aws:elasticloadbalancing:us-east-2:123456789012:targetgroup/prod-example-function/e77803ebb6d2c24\"\n"
+            + "            }\n" + "        },\n" + "        \"httpMethod\": \"PUT\",\n"
+            + "        \"path\": \"/path/to/resource\",\n" + "        \"queryStringParameters\": {},\n"
+            + "        \"headers\": {\n" + "            \"accept\": \"*\",\n"
+            + "            \"content-length\": \"17\",\n"
+            + "            \"content-type\": \"application/json\",\n"
+            + "            \"host\": \"stackoverflow.name\",\n"
+            + "            \"user-agent\": \"curl/7.77.0\",\n"
+            + "            \"x-amzn-trace-id\": \"Root=1-62e22402-3a5f246225e45edd7735c182\",\n"
+            + "            \"x-forwarded-for\": \"24.14.13.186\",\n"
+            + "            \"x-forwarded-port\": \"443\",\n"
+            + "            \"x-forwarded-proto\": \"https\",\n"
+            + "            \"x-jersey-tracing-accept\": \"true\"\n" + "        },\n"
+            + "        \"body\": \"{\\\"alpha\\\":\\\"bravo\\\"}\",\n"
+            + "        \"isBase64Encoded\": false\n" + "}      \n";
     }
 }
