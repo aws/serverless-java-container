@@ -32,7 +32,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: com.amazonaws.serverless.proxy.struts2.Struts2LambdaHandler::handleRequest
-      Runtime: java8
+      Runtime: java11
       CodeUri: .
       MemorySize: 512
       Policies: AWSLambdaBasicExecutionRole
