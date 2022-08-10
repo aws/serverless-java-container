@@ -80,7 +80,7 @@ public class LambdaEmbeddedServer
 
 
     public void configureWebSockets(Map<String, WebSocketHandlerWrapper> webSocketHandlers,
-                                    Optional<Integer> webSocketIdleTimeoutMillis) {
+                                    Optional<Long> webSocketIdleTimeoutMillis) {
         // Swallowing this exception to prevent Spark from getting stuck
         // throw new UnsupportedOperationException();
         log.info("Spark called configureWebSockets. However, web sockets are not supported");

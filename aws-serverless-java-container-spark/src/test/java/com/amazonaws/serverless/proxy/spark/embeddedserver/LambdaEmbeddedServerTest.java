@@ -14,7 +14,7 @@ public class LambdaEmbeddedServerTest {
     @Test
     public void webSocket_configureWebSocket_noException() {
         try {
-            server.configureWebSockets(null, Optional.of(0));
+            server.configureWebSockets(null, Optional.of(0L));
         } catch (Exception e) {
             e.printStackTrace();
             fail();
