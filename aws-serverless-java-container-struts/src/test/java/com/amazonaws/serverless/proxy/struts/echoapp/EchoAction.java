@@ -1,4 +1,4 @@
-package com.amazonaws.serverless.proxy.struts2.echoapp;
+package com.amazonaws.serverless.proxy.struts.echoapp;
 
 import com.opensymphony.xwork2.ActionSupport;
 import org.apache.commons.io.IOUtils;

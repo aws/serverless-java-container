@@ -7,7 +7,7 @@ import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
 
-import com.amazonaws.serverless.proxy.struts2.Struts2LambdaHandler;
+import com.amazonaws.serverless.proxy.struts.StrutsLambdaHandler;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -26,12 +26,12 @@ import static org.junit.Assert.*;
 
 public class StreamLambdaHandlerTest {
 
-    private static Struts2LambdaHandler handler;
+    private static StrutsLambdaHandler handler;
     private static Context lambdaContext;
 
     @BeforeClass
     public static void setUp() {
-        handler = new Struts2LambdaHandler();
+        handler = new StrutsLambdaHandler();
         lambdaContext = new MockLambdaContext();
     }
 

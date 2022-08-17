@@ -75,9 +75,9 @@ jobs:
         run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.5.14 -Dspring.version=5.3.20 -Dspringsecurity.version=5.5.8 -Ddependency-check.skip=true
 
   build_struts2:
-    name: Build and test Struts 2
+    name: Build and test Struts
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Build latest
-        run: ./gha_build.sh struts2 true true
+        run: ./gha_build.sh struts true true

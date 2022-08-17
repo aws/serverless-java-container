@@ -7,7 +7,7 @@
     <constant name="struts.action.extension" value=","/>
 
     <package name="test" extends="json-default" namespace="/">
-        <action name="echo" class="com.amazonaws.serverless.proxy.struts2.echoapp.EchoAction" method="execute">
+        <action name="echo" class="com.amazonaws.serverless.proxy.struts.echoapp.EchoAction" method="execute">
             <result type="json">
                 <param name="root">
                     message
@@ -15,7 +15,7 @@
             </result>
         </action>
 
-        <action name="echo-request-info" class="com.amazonaws.serverless.proxy.struts2.echoapp.EchoRequestInfoAction"
+        <action name="echo-request-info" class="com.amazonaws.serverless.proxy.struts.echoapp.EchoRequestInfoAction"
                 method="execute">
             <result type="json">
                 <param name="root">

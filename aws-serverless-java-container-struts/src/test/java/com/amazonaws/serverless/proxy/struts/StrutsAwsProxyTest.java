@@ -10,7 +10,7 @@
  * OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package com.amazonaws.serverless.proxy.struts2;
+package com.amazonaws.serverless.proxy.struts;
 
 
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
@@ -18,7 +18,7 @@ import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
-import com.amazonaws.serverless.proxy.struts2.echoapp.EchoAction;
+import com.amazonaws.serverless.proxy.struts.echoapp.EchoAction;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -33,7 +33,11 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -45,7 +49,7 @@ import static org.junit.Assume.assumeTrue;
  * Unit test class for the Struts2 AWS_PROXY default implementation
  */
 @RunWith(Parameterized.class)
-public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
+public class StrutsAwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
     private static final String CUSTOM_HEADER_KEY = "x-custom-header";
     private static final String CUSTOM_HEADER_VALUE = "my-custom-value";
     private static final String AUTHORIZER_PRINCIPAL_ID = "test-principal-" + UUID.randomUUID().toString();
@@ -56,15 +60,15 @@ public class Struts2AwsProxyTest extends StrutsJUnit4TestCase<EchoAction> {
 
 
     private static ObjectMapper objectMapper = new ObjectMapper();
-    private final Struts2LambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = Struts2LambdaContainerHandler
+    private final StrutsLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = StrutsLambdaContainerHandler
             .getAwsProxyHandler();
-    private final Struts2LambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> httpApiHandler = Struts2LambdaContainerHandler
+    private final StrutsLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> httpApiHandler = StrutsLambdaContainerHandler
             .getHttpApiV2ProxyHandler();
     private static Context lambdaContext = new MockLambdaContext();
 
     private String type;
 
-    public Struts2AwsProxyTest(String reqType) {
+    public StrutsAwsProxyTest(String reqType) {
         type = reqType;
     }
 

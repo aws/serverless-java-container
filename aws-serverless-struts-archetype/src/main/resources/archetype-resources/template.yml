@@ -22,7 +22,7 @@
 #set($awsRegion = $awsRegion.replaceAll("\n", "").trim())
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: AWS Serverless Apache Struts2 API - ${groupId}::${artifactId}
+Description: AWS Serverless Apache Struts API - ${groupId}::${artifactId}
 Globals:
   Api:
     EndpointConfiguration: REGIONAL
@@ -31,7 +31,7 @@ Resources:
   ${resourceName}Function:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: com.amazonaws.serverless.proxy.struts2.Struts2LambdaHandler::handleRequest
+      Handler: com.amazonaws.serverless.proxy.struts.StrutsLambdaHandler::handleRequest
       Runtime: java11
       CodeUri: .
       MemorySize: 512

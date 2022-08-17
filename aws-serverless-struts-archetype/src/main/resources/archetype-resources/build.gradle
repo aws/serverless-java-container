@@ -13,7 +13,7 @@ configurations {
 
 dependencies {
 
-  implementation ('com.amazonaws.serverless:aws-serverless-java-container-struts2:[1.0,)') {
+  implementation ('com.amazonaws.serverless:aws-serverless-java-container-struts:[1.0,)') {
     exclude group: 'org.apache.struts', module: 'struts2-core'
     exclude group: 'org.apache.logging.log4j', module: 'log4j-api'
     exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
