@@ -15,7 +15,7 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <struts2.version>2.5.30</struts2.version>
+        <struts.version>2.5.30</struts.version>
         <jackson.version>2.13.3</jackson.version>
         <junit.version>4.13.2</junit.version>
         <log4j.version>2.17.2</log4j.version>
@@ -37,25 +37,25 @@
         <dependency>
             <groupId>org.apache.struts</groupId>
             <artifactId>struts2-convention-plugin</artifactId>
-            <version>\${struts2.version}</version>
+            <version>\${struts.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.struts</groupId>
             <artifactId>struts2-rest-plugin</artifactId>
-            <version>\${struts2.version}</version>
+            <version>\${struts.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.struts</groupId>
             <artifactId>struts2-bean-validation-plugin</artifactId>
-            <version>\${struts2.version}</version>
+            <version>\${struts.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.struts</groupId>
             <artifactId>struts2-junit-plugin</artifactId>
-            <version>\${struts2.version}</version>
+            <version>\${struts.version}</version>
             <scope>test</scope>
         </dependency>
 
