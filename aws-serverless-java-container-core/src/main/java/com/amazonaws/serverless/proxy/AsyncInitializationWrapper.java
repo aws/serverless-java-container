@@ -38,11 +38,14 @@ import java.util.concurrent.TimeUnit;
  * seconds has already been used up.
  */
 public class AsyncInitializationWrapper extends InitializationWrapper {
-    private int INIT_GRACE_TIME_MS = 250;
+    private static final int DEFAULT_INIT_GRACE_TIME_MS = 150;
+    private static final String INIT_GRACE_TIME_ENVIRONMENT_VARIABLE_NAME = "AWS_SERVERLESS_JAVA_CONTAINER_INIT_GRACE_TIME";
+    private static final int INIT_GRACE_TIME_MS = Integer.parseInt(System.getenv().getOrDefault(
+            INIT_GRACE_TIME_ENVIRONMENT_VARIABLE_NAME, Integer.toString(DEFAULT_INIT_GRACE_TIME_MS)));
     private static final int LAMBDA_MAX_INIT_TIME_MS = 10_000;
 
     private CountDownLatch initializationLatch;
-    private long actualStartTime;
+    private final long actualStartTime;
     private Logger log = LoggerFactory.getLogger(AsyncInitializationWrapper.class);
 
     /**
@@ -60,7 +63,6 @@ public class AsyncInitializationWrapper extends InitializationWrapper {
      */
     public AsyncInitializationWrapper() {
         actualStartTime = ManagementFactory.getRuntimeMXBean().getStartTime();
-        INIT_GRACE_TIME_MS = 150;
     }
 
     @Override
@@ -71,9 +73,10 @@ public class AsyncInitializationWrapper extends InitializationWrapper {
         initThread.start();
         try {
             long curTime = Instant.now().toEpochMilli();
-            // account for the time it took to call the various constructors with the actual start time + a grace of 500ms
+            // account for the time it took to call the various constructors with the actual start time + a grace time
             long awaitTime = (actualStartTime + LAMBDA_MAX_INIT_TIME_MS) - curTime - INIT_GRACE_TIME_MS;
-            log.info("Async initialization will wait for " + awaitTime + "ms");
+            log.info("Async initialization will wait for {}ms (init grace time is configured to {})",
+                    awaitTime, INIT_GRACE_TIME_MS);
             if (!initializationLatch.await(awaitTime, TimeUnit.MILLISECONDS)) {
                 log.info("Initialization took longer than " + LAMBDA_MAX_INIT_TIME_MS + ", setting new CountDownLatch and " +
                         "continuing in event handler");

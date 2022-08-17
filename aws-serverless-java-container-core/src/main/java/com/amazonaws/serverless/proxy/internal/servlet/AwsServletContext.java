@@ -310,8 +310,7 @@ public class AwsServletContext
 
     @Override
     public String getServletContextName() {
-        // TODO: This can also come from a reader interface
-        throw new UnsupportedOperationException();
+        return null;
     }
 
 

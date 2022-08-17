@@ -41,7 +41,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * SpringBoot 1.x implementation of the `LambdaContainerHandler` abstract class. This class uses the `LambdaSpringApplicationInitializer`
+ * SpringBoot implementation of the `LambdaContainerHandler` abstract class. This class uses the `LambdaSpringApplicationInitializer`
  * object behind the scenes to proxy requests. The default implementation leverages the `AwsProxyHttpServletRequest` and
  * `AwsHttpServletResponse` implemented in the `aws-serverless-java-container-core` package.
  *

@@ -3,7 +3,7 @@
     <parent>
         <artifactId>aws-serverless-java-container</artifactId>
         <groupId>com.amazonaws.serverless</groupId>
-        <version>1.6-SNAPSHOT</version>
+        <version>1.9-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -12,12 +12,12 @@
     <name>AWS Serverless Java container support - SpringBoot 2 implementation</name>
     <description>Allows Java applications written for SpringBoot 2 to run in AWS Lambda</description>
     <url>https://aws.amazon.com/lambda</url>
-    <version>1.6-SNAPSHOT</version>
+    <version>1.9-SNAPSHOT</version>
 
     <properties>
-        <spring.version>5.3.9</spring.version>
-        <springboot.version>2.5.3</springboot.version>
-        <springsecurity.version>5.5.1</springsecurity.version>
+        <spring.version>5.3.22</spring.version>
+        <springboot.version>2.7.2</springboot.version>
+        <springsecurity.version>5.7.2</springsecurity.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
@@ -27,7 +27,7 @@
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
             <artifactId>aws-serverless-java-container-core</artifactId>
-            <version>1.6-SNAPSHOT</version>
+            <version>1.9-SNAPSHOT</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/io.projectreactor/reactor-core -->
         <dependency>
@@ -148,22 +148,16 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-            <version>2.0.1.Final</version>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <version>2.0.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
-            <version>6.1.7.Final</version>
+            <version>6.2.1.Final</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>17.0.0</version>
-            <scope>compile</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/javax.activation/activation -->
         <dependency>
@@ -234,29 +228,6 @@
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>4.2.0</version>
-                <configuration>
-                    <!--
-                        Enables analysis which takes more memory but finds more bugs.
-                        If you run out of memory, changes the value of the effort element
-                        to 'Low'.
-                    -->
-                    <effort>Max</effort>
-                    <!-- Reports all bugs (other values are medium and max) -->
-                    <threshold>Low</threshold>
-                    <!-- Produces XML report -->
-                    <xmlOutput>true</xmlOutput>
-                    <!-- Configures the directory in which the XML report is created -->
-                    <spotbugsXmlOutputDirectory>${project.build.directory}/spotbugs</spotbugsXmlOutputDirectory>
-
-                    <plugins>
-                        <plugin>
-                            <groupId>com.h3xstream.findsecbugs</groupId>
-                            <artifactId>findsecbugs-plugin</artifactId>
-                            <version>1.7.1</version>
-                        </plugin>
-                    </plugins>
-                </configuration>
                 <executions>
                     <!--
                         Ensures that SpotBug inspects source code when project is compiled.

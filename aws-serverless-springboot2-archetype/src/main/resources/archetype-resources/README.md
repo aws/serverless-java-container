@@ -56,7 +56,7 @@ From the project root folder - where the `template.yml` file is located - start 
 $ sam local start-api
 
 ...
-Mounting ${groupId}.StreamLambdaHandler::handleRequest (java8) at http://127.0.0.1:3000/{proxy+} [OPTIONS GET HEAD POST PUT DELETE PATCH]
+Mounting ${groupId}.StreamLambdaHandler::handleRequest (java11) at http://127.0.0.1:3000/{proxy+} [OPTIONS GET HEAD POST PUT DELETE PATCH]
 ...
 ```
 

@@ -37,6 +37,7 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
     private static Logger log = LoggerFactory.getLogger(AwsHttpApiV2ProxyHttpServletRequest.class);
@@ -75,11 +76,33 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public Cookie[] getCookies() {
+        Cookie[] rhc;
         if (headers == null || !headers.containsKey(HttpHeaders.COOKIE)) {
-            return new Cookie[0];
+            rhc = new Cookie[0];
+        } else {
+            rhc = parseCookieHeaderValue(headers.getFirst(HttpHeaders.COOKIE));
         }
 
-        return parseCookieHeaderValue(headers.getFirst(HttpHeaders.COOKIE));
+        Cookie[] rc;
+        if (request.getCookies() == null) {
+            rc = new Cookie[0];
+        } else {
+            rc = request.getCookies().stream()
+                .map(c -> {
+                    int i = c.indexOf('=');
+                    if (i == -1) {
+                        return null;
+                    } else {
+                        String k = SecurityUtils.crlf(c.substring(0, i)).trim();
+                        String v = SecurityUtils.crlf(c.substring(i+1));
+                        return new Cookie(k, v);
+                    }
+                })
+                .filter(c -> c != null)
+                .toArray(Cookie[]::new);
+        }
+
+        return Stream.concat(Arrays.stream(rhc), Arrays.stream(rc)).toArray(Cookie[]::new);
     }
 
     @Override
@@ -491,7 +514,7 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
 
                 String[] kv = value.split(QUERY_STRING_KEY_VALUE_SEPARATOR);
                 String key = URLDecoder.decode(kv[0], LambdaContainerHandler.getContainerConfig().getUriEncoding());
-                String val = kv.length == 2 ? kv[1] : null;
+                String val = kv.length == 2 ? kv[1] : "";
                 qsMap.add(key, val);
             } catch (UnsupportedEncodingException e) {
                 log.error("Unsupported encoding in query string key: " + SecurityUtils.crlf(value), e);
@@ -510,6 +533,7 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
             // Exceptions for known header values that contain commas
             if (hkv.getKey().equalsIgnoreCase(HttpHeaders.DATE) ||
                             hkv.getKey().equalsIgnoreCase(HttpHeaders.IF_MODIFIED_SINCE) ||
+                            hkv.getKey().equalsIgnoreCase(HttpHeaders.USER_AGENT) ||
                             hkv.getKey().toLowerCase(Locale.getDefault()).startsWith("accept-")) {
                 h.add(hkv.getKey(), hkv.getValue());
                 continue;

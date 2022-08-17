@@ -8,11 +8,11 @@ repositories {
 
 dependencies {
   implementation (
-          implementation('org.springframework.boot:spring-boot-starter-web:2.5.3') {
+          implementation('org.springframework.boot:spring-boot-starter-web:2.6.7') {
             exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
           },
           'com.amazonaws.serverless:aws-serverless-java-container-springboot2:[1.4,)',
-          'io.symphonia:lambda-logging:1.0.1'
+          'io.symphonia:lambda-logging:1.0.3'
   )
   testImplementation("junit:junit")
 }

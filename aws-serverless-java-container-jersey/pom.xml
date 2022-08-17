@@ -6,17 +6,17 @@
     <name>AWS Serverless Java container support - Jersey implementation</name>
     <description>Allows Java applications written for Jersey to run in AWS Lambda</description>
     <url>https://aws.amazon.com/lambda</url>
-    <version>1.6-SNAPSHOT</version>
+    <version>1.9-SNAPSHOT</version>
 
     <parent>
         <groupId>com.amazonaws.serverless</groupId>
         <artifactId>aws-serverless-java-container</artifactId>
-        <version>1.6-SNAPSHOT</version>
+        <version>1.9-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
 
     <properties>
-        <jersey.version>2.34</jersey.version>
+        <jersey.version>2.36</jersey.version>
     </properties>
 
     <dependencies>
@@ -24,7 +24,7 @@
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
             <artifactId>aws-serverless-java-container-core</artifactId>
-            <version>1.6-SNAPSHOT</version>
+            <version>1.9-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
@@ -58,7 +58,7 @@
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.10</version>
+            <version>1.15</version>
             <scope>test</scope>
         </dependency>
 
@@ -161,28 +161,6 @@
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
                 <version>4.2.0</version>
-                <configuration>
-                    <!--
-                        Enables analysis which takes more memory but finds more bugs.
-                        If you run out of memory, changes the value of the effort element
-                        to 'Low'.
-                    -->
-                    <effort>Max</effort>
-                    <!-- Reports all bugs (other values are medium and max) -->
-                    <threshold>Low</threshold>
-                    <!-- Produces XML report -->
-                    <xmlOutput>true</xmlOutput>
-                    <!-- Configures the directory in which the XML report is created -->
-                    <spotbugsXmlOutputDirectory>${project.build.directory}/spotbugs</spotbugsXmlOutputDirectory>
-
-                    <plugins>
-                        <plugin>
-                            <groupId>com.h3xstream.findsecbugs</groupId>
-                            <artifactId>findsecbugs-plugin</artifactId>
-                            <version>1.7.1</version>
-                        </plugin>
-                    </plugins>
-                </configuration>
                 <executions>
                     <!--
                         Ensures that SpotBug inspects source code when project is compiled.

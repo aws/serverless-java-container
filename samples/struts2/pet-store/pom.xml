@@ -26,17 +26,17 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <struts2.version>2.5.26</struts2.version>
-        <jackson.version>2.12.4</jackson.version>
+        <struts2.version>2.5.30</struts2.version>
+        <jackson.version>2.13.3</jackson.version>
         <junit.version>4.13.2</junit.version>
-        <log4j.version>2.14.1</log4j.version>
+        <log4j.version>2.17.2</log4j.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
             <artifactId>aws-serverless-java-container-struts2</artifactId>
-            <version>[0.1,)</version>
+            <version>[1.6,)</version>
         </dependency>
 
         <dependency>
@@ -121,7 +121,7 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-lambda-java-log4j2</artifactId>
-            <version>1.2.0</version>
+            <version>1.5.1</version>
         </dependency>
 
         <dependency>
@@ -145,7 +145,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.3.0</version>
                 <configuration>
                     <descriptors>
                         <descriptor>src/main/assembly/dist.xml</descriptor>

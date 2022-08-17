@@ -17,7 +17,7 @@
   ~ specific language governing permissions and limitations
   ~ under the License.
   -->
-<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.1.xsd">
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
 
     <suppress>
         <notes><![CDATA[ Drupal issues for AWS is not relevant here ]]></notes>
@@ -26,5 +26,10 @@
     <suppress>
         <notes><![CDATA[ Drupal issues for AWS is not relevant here ]]></notes>
         <cpe>cpe:/a:restful_web_services_project:restful_web_services:7.x-2.1::~~~drupal~~</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[Ignored since we are not vulnerable, see spring-projects/spring-framework/issues/24434]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework/spring.*$</packageUrl>
+        <cve>CVE-2016-1000027</cve>
     </suppress>
 </suppressions>

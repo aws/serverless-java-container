@@ -6,12 +6,12 @@
     <name>AWS Serverless Java container support - Core</name>
     <description>Allows Java applications written for a servlet container to run in AWS Lambda</description>
     <url>https://aws.amazon.com/lambda</url>
-    <version>1.6-SNAPSHOT</version>
+    <version>1.9-SNAPSHOT</version>
 
     <parent>
         <groupId>com.amazonaws.serverless</groupId>
         <artifactId>aws-serverless-java-container</artifactId>
-        <version>1.6-SNAPSHOT</version>
+        <version>1.9-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
 
@@ -54,12 +54,6 @@
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-afterburner</artifactId>
             <version>${jackson.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
 
@@ -88,7 +82,7 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpcore</artifactId>
-            <version>4.4.14</version>
+            <version>4.4.15</version>
             <scope>compile</scope>
             <optional>true</optional><!-- TODO move AwsProxyRequestBuilder to seperate test-jar and change scope to test
              https://github.com/awslabs/aws-serverless-java-container/issues/394 -->
@@ -96,10 +90,20 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-web</artifactId>
-            <version>5.5.1</version>
+            <version>5.7.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency><!-- [CVE-2021-29425] commons-fileupload ships with 2.2 -->
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>2.11.0</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <plugins>
@@ -153,29 +157,6 @@
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>4.2.0</version>
-                <configuration>
-                    <!--
-                        Enables analysis which takes more memory but finds more bugs.
-                        If you run out of memory, changes the value of the effort element
-                        to 'Low'.
-                    -->
-                    <effort>Max</effort>
-                    <!-- Reports all bugs (other values are medium and max) -->
-                    <threshold>Low</threshold>
-                    <!-- Produces XML report -->
-                    <xmlOutput>true</xmlOutput>
-                    <!-- Configures the directory in which the XML report is created -->
-                    <spotbugsXmlOutputDirectory>${project.build.directory}/spotbugs</spotbugsXmlOutputDirectory>
-
-                    <plugins>
-                        <plugin>
-                            <groupId>com.h3xstream.findsecbugs</groupId>
-                            <artifactId>findsecbugs-plugin</artifactId>
-                            <version>1.7.1</version>
-                        </plugin>
-                    </plugins>
-                </configuration>
                 <executions>
                     <!--
                         Ensures that SpotBug inspects source code when project is compiled.

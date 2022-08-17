@@ -6,38 +6,25 @@
     <name>AWS Serverless Java container support - Spark implementation</name>
     <description>Allows Java applications written for Spark to run in AWS Lambda</description>
     <url>https://aws.amazon.com/lambda</url>
-    <version>1.6-SNAPSHOT</version>
+    <version>1.9-SNAPSHOT</version>
 
     <parent>
         <groupId>com.amazonaws.serverless</groupId>
         <artifactId>aws-serverless-java-container</artifactId>
-        <version>1.6-SNAPSHOT</version>
+        <version>1.9-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
 
     <properties>
-        <spark.version>2.9.3</spark.version>
+        <spark.version>2.9.4</spark.version>
     </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <!-- outdated transitive dependency in spark-core (CVE-2020-27216, CVE-2020-27218, CVE-2020-27223, CVE-2021-28165, CVE-2021-28169, CVE-2021-34428) -->
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-bom</artifactId>
-                <version>9.4.43.v20210629</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <dependencies>
         <!-- Core interfaces for the aws-serverless-java-container project -->
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
             <artifactId>aws-serverless-java-container-core</artifactId>
-            <version>1.6-SNAPSHOT</version>
+            <version>1.9-SNAPSHOT</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.sparkjava/spark-core -->
@@ -45,13 +32,6 @@
             <groupId>com.sparkjava</groupId>
             <artifactId>spark-core</artifactId>
             <version>${spark.version}</version>
-            <!-- excluding slf4j from spark because it includes 1.7.13, the framework already pulls in 1.7.25 -->
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
     </dependencies>
 
@@ -113,29 +93,6 @@
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>4.2.0</version>
-                <configuration>
-                    <!--
-                        Enables analysis which takes more memory but finds more bugs.
-                        If you run out of memory, changes the value of the effort element
-                        to 'Low'.
-                    -->
-                    <effort>Max</effort>
-                    <!-- Reports all bugs (other values are medium and max) -->
-                    <threshold>Low</threshold>
-                    <!-- Produces XML report -->
-                    <xmlOutput>true</xmlOutput>
-                    <!-- Configures the directory in which the XML report is created -->
-                    <spotbugsXmlOutputDirectory>${project.build.directory}/spotbugs</spotbugsXmlOutputDirectory>
-
-                    <plugins>
-                        <plugin>
-                            <groupId>com.h3xstream.findsecbugs</groupId>
-                            <artifactId>findsecbugs-plugin</artifactId>
-                            <version>1.7.1</version>
-                        </plugin>
-                    </plugins>
-                </configuration>
                 <executions>
                     <!--
                         Ensures that SpotBug inspects source code when project is compiled.

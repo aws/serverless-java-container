@@ -4,7 +4,7 @@
     <groupId>com.amazonaws.serverless</groupId>
     <artifactId>aws-serverless-java-container</artifactId>
     <packaging>pom</packaging>
-    <version>1.6-SNAPSHOT</version>
+    <version>1.9-SNAPSHOT</version>
     <name>AWS Serverless Java container</name>
     <description>A Java framework to run Spring, Spring Boot, Jersey, Spark, and Struts applications inside AWS Lambda</description>
     <url>https://github.com/awslabs/aws-serverless-java-container</url>
@@ -39,9 +39,8 @@
     </modules>
 
     <scm>
-        <url>https://github.com/awslabs/aws-serverless-java-container.git</url>
-        <connection>scm:git:git@github.com:awslabs/aws-serverless-java-container.git</connection>
-        <developerConnection>scm:git:git@github.com:awslabs/aws-serverless-java-container.git</developerConnection>
+        <url>https://github.com/awslabs/aws-serverless-java-container</url>
+        <connection>scm:git:https://github.com/awslabs/aws-serverless-java-container.git</connection>
       <tag>HEAD</tag>
   </scm>
 
@@ -82,9 +81,9 @@
 
     <properties>
         <jacoco.minCoverage>0.7</jacoco.minCoverage>
-        <dependencyCheck.version>6.2.2</dependencyCheck.version>
-        <jackson.version>2.12.4</jackson.version>
-        <slf4j.version>1.7.32</slf4j.version>
+        <dependencyCheck.version>7.1.0</dependencyCheck.version>
+        <jackson.version>2.13.3</jackson.version>
+        <slf4j.version>1.7.36</slf4j.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -163,7 +162,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>2.10.4</version>
+                    <version>3.3.0</version>
                 </plugin>
 
                 <plugin>
@@ -171,8 +170,36 @@
                     <artifactId>maven-release-plugin</artifactId>
                     <configuration>
                         <preparationGoals>clean verify install</preparationGoals>
-                        <pushChanges>false</pushChanges>
                         <localCheckout>true</localCheckout>
+                        <scmCommentPrefix>chore: release - </scmCommentPrefix>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs-maven-plugin</artifactId>
+                    <version>4.2.0</version>
+                    <configuration>
+                        <!--
+                            Enables analysis which takes more memory but finds more bugs.
+                            If you run out of memory, changes the value of the effort element
+                            to 'Low'.
+                        -->
+                        <effort>Max</effort>
+                        <!-- Reports all bugs (other values are medium and max) -->
+                        <threshold>Low</threshold>
+                        <!-- Produces XML report -->
+                        <xmlOutput>true</xmlOutput>
+                        <!-- Configures the directory in which the XML report is created -->
+                        <spotbugsXmlOutputDirectory>${project.build.directory}/spotbugs</spotbugsXmlOutputDirectory>
+
+                        <plugins>
+                            <plugin>
+                                <groupId>com.h3xstream.findsecbugs</groupId>
+                                <artifactId>findsecbugs-plugin</artifactId>
+                                <version>1.7.1</version>
+                            </plugin>
+                        </plugins>
                     </configuration>
                 </plugin>
             </plugins>
@@ -193,7 +220,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.6</version>
+                        <version>3.0.1</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>

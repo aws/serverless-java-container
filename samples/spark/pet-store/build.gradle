@@ -7,10 +7,10 @@ repositories {
 
 dependencies {
   implementation (
-          'com.sparkjava:spark-core:2.9.3',
+          'com.sparkjava:spark-core:2.9.4',
           'com.amazonaws.serverless:aws-serverless-java-container-spark:[1.0,)',
-          'com.fasterxml.jackson.core:jackson-databind:2.12.4',
-          'io.symphonia:lambda-logging:1.0.1'
+          'com.fasterxml.jackson.core:jackson-databind:2.13.3',
+          'io.symphonia:lambda-logging:1.0.3'
   )
 }
 
