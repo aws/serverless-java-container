@@ -7,7 +7,7 @@
     <groupId>com.amazonaws.serverless.sample</groupId>
     <artifactId>serverless-struts-example</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>Struts2 example for the aws-serverless-java-container library</name>
+    <name>Struts example for the aws-serverless-java-container library</name>
     <description>Simple pet store written with the Apache Struts framework</description>
     <url>https://aws.amazon.com/lambda/</url>
 

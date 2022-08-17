@@ -11,7 +11,7 @@ Resources:
   PetStoreFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: com.amazonaws.serverless.proxy.struts2.Struts2LambdaHandler::handleRequest
+      Handler: com.amazonaws.serverless.proxy.struts.StrutsLambdaHandler::handleRequest
       Runtime: java11
       CodeUri: .
       MemorySize: 256
@@ -25,8 +25,8 @@ Resources:
             PayloadFormatVersion: '1.0'
 
 Outputs:
-  Struts2PetStoreApi:
+  StrutsPetStoreApi:
     Description: URL for application
     Value: !Sub 'https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/pets'
     Export:
-      Name: Struts2PetStoreApi
+      Name: StrutsPetStoreApi

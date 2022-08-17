@@ -1,5 +1,5 @@
-# Serverless Struts2 example
-A basic pet store written with the [Apache Struts framework](https://struts.apache.org). The `Struts2LambdaHandler` object provided by the `aws-serverless-java-container-struts2` is the main entry point for Lambda.
+# Serverless Struts example
+A basic pet store written with the [Apache Struts framework](https://struts.apache.org). The `StrutsLambdaHandler` object provided by the `aws-serverless-java-container-struts` is the main entry point for Lambda.
 
 The application can be deployed in an AWS account using the [Serverless Application Model](https://github.com/awslabs/serverless-application-model). The `template.yml` file in the root folder contains the application definition
 
@@ -29,7 +29,7 @@ Once the deployment is completed, the SAM CLI will print out the stack's outputs
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Outputs                                                                                                                                                                                                    
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Key                 Struts2PetStoreApi                                                                                                                                                                      
+Key                 StrutsPetStoreApi                                                                                                                                                                      
 Description         URL for application                                                                                                                                                                    
 Value               https://n60c1ycwa2.execute-api.eu-central-1.amazonaws.com/pets                                                                                                                         
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

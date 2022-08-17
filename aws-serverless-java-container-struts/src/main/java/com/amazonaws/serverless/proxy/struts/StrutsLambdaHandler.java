@@ -10,7 +10,7 @@
  * OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package com.amazonaws.serverless.proxy.struts2;
+package com.amazonaws.serverless.proxy.struts;
 
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
@@ -25,12 +25,12 @@ import java.io.OutputStream;
  * The lambda handler to handle the requests.
  * <p>
  * <code>
- * com.amazonaws.serverless.proxy.struts2.Struts2LambdaHandler::handleRequest
+ * com.amazonaws.serverless.proxy.struts.StrutsLambdaHandler::handleRequest
  * </code>
  */
-public class Struts2LambdaHandler implements RequestStreamHandler {
+public class StrutsLambdaHandler implements RequestStreamHandler {
 
-    private final Struts2LambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = Struts2LambdaContainerHandler
+    private final StrutsLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = StrutsLambdaContainerHandler
             .getAwsProxyHandler();
 
     @Override
