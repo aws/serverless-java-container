@@ -12,6 +12,7 @@
  */
 package com.amazonaws.serverless.proxy.internal;
 
+import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -174,6 +175,14 @@ public final class SecurityUtils {
     /**
      * Returns an absolute file path given an input path and validates that it is not trying
      * to write/read from a directory other than /tmp.
+     *
+     * We suppress the path traversal warnings because this method is used to validate paths passed
+     * to the servlet implementation methods such as {@link com.amazonaws.serverless.proxy.internal.servlet.AwsProxyRequestPart#write(String)}.
+     * Using relative paths is a valid use-case for developers implementing a servlet-based API. We
+     * mitigate the potential partial path traversal by checking the resulting absolute path against
+     * the list of allowed paths specified in {@link ContainerConfig#getValidFilePaths()}. We also
+     * block the /var/task directory regardless.
+     *
      * @param inputPath The input path
      * @return The absolute path to the file
      * @throws IllegalArgumentException If the given path is not valid or outside of /tmp
