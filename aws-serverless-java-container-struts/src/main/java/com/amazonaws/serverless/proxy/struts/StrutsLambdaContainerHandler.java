@@ -121,7 +121,7 @@ public class StrutsLambdaContainerHandler<RequestType, ResponseType> extends Aws
 
     @Override
     public void initialize() throws ContainerInitializationException {
-        log.info("Initialize Struts2 Lambda Application ...");
+        log.info("Initialize Struts Lambda Application ...");
         Timer.start(TIMER_STRUTS_COLD_START_INIT);
         try {
             if (this.startupHandler != null) {
