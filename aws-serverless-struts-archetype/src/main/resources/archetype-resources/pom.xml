@@ -15,11 +15,18 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <struts.version>2.5.30</struts.version>
+        <struts.version>6.0.3</struts.version>
         <jackson.version>2.13.3</jackson.version>
         <junit.version>4.13.2</junit.version>
-        <log4j.version>2.17.2</log4j.version>
+        <log4j.version>2.18.0</log4j.version>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>struts-staging</id>
+            <url>https://repository.apache.org/content/repositories/staging/</url>
+        </repository>
+    </repositories>
 
     <dependencies>
         <dependency>
@@ -63,14 +70,14 @@
         <dependency>
             <groupId>com.jgeppert.struts2</groupId>
             <artifactId>struts2-aws-lambda-support-plugin</artifactId>
-            <version>1.3.0</version>
+            <version>1.4.0</version>
         </dependency>
 
         <!-- bean validation based on hibernate validators-->
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-validator</artifactId>
-            <version>5.4.3.Final</version>
+            <version>6.1.7.Final</version>
         </dependency>
 
         <dependency>
@@ -86,6 +93,11 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+            <version>\${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
             <version>\${jackson.version}</version>
         </dependency>
 
