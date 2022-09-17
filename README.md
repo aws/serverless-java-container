@@ -9,14 +9,16 @@ Follow the quick start guides in [our wiki](https://github.com/awslabs/aws-serve
 * [Apache Struts quick start](https://github.com/awslabs/aws-serverless-java-container/wiki/Quick-start---Struts)
 * [Jersey quick start](https://github.com/awslabs/aws-serverless-java-container/wiki/Quick-start---Jersey)
 * [Spark quick start](https://github.com/awslabs/aws-serverless-java-container/wiki/Quick-start---Spark)
+* [Struts quick start](https://github.com/awslabs/aws-serverless-java-container/wiki/Quick-start---Struts)
 
 * Micronaut [documentation](https://guides.micronaut.io/micronaut-function-aws-lambda/guide/index.html) and [demo](https://github.com/awslabs/aws-serverless-java-container/tree/master/samples/micronaut/pet-store) (outdated! - needs to be updated to latest Micronaut version)   
 
-Below is the most basic AWS Lambda handler example that launches a Spring application. You can also take a look at the [samples](https://github.com/awslabs/aws-serverless-java-container/tree/master/samples) in this repository, our main wiki page includes a [step-by-step guide](https://github.com/awslabs/aws-serverless-java-container/wiki#deploying-the-sample-applications) on how to deploy the various sample applications using Maven and [SAM](https://github.com/awslabs/serverless-application-model). 
+Below is the most basic AWS Lambda handler example that launches a Spring application. You can also take a look at the [samples](https://github.com/awslabs/aws-serverless-java-container/tree/master/samples) in this repository, our main wiki page includes a [step-by-step guide](https://github.com/awslabs/aws-serverless-java-container/wiki#deploying-the-sample-applications) on how to deploy the various sample applications using Maven and [SAM](https://github.com/awslabs/serverless-application-model).
 
 ```java
 public class StreamLambdaHandler implements RequestStreamHandler {
-    private static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+    private static final SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+
     static {
         try {
             handler = SpringLambdaContainerHandler.getAwsProxyHandler(PetStoreSpringAppConfig.class);

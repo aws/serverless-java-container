@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
+        "http://struts.apache.org/dtds/struts-2.5.dtd">
+<struts>
+
+    <constant name="struts.enable.DynamicMethodInvocation" value="false"/>
+
+    <!-- Disable dev mode in productions -->
+    <constant name="struts.devMode" value="false"/>
+    <constant name="struts.handle.exception" value="false"/>
+
+    <!--  Overwrite Convention -->
+    <!-- Classes with name *Controller like PingController will be automatically mapped to action /ping-->
+    <constant name="struts.convention.action.suffix" value="Controller"/>
+    <!-- Define the package name where *Controller classes will be resolved in this case e.g. actions.PingController could also be com.your.company.actions.PingController -->
+    <constant name="struts.convention.package.locators" value="actions"/>
+    <constant name="struts.convention.action.mapAllMatches" value="true"/>
+    <constant name="struts.convention.default.parent.package" value="ping"/>
+    <constant name="struts.action.extension" value=",,xml,json,action"/>
+    <constant name="struts.rest.defaultExtension" value="json"/>
+
+    <constant name="struts.mapper.class" value="rest"/>
+
+    <!-- Use Jackson lib as content handler for all JSON requests -->
+    <bean type="org.apache.struts2.rest.handler.ContentTypeHandler" name="jackson"
+          class="org.apache.struts2.rest.handler.JacksonJsonHandler"/>
+    <constant name="struts.rest.handlerOverride.json" value="jackson"/>
+
+    <!-- Set to false if the json content can be returned for any kind of http method -->
+    <constant name="struts.rest.content.restrictToGET" value="false"/>
+
+    <!-- Set custom validation failure status code -->
+    <constant name="struts.rest.validationFailureStatusCode" value="406"/>
+
+    <!-- Allow public access for demo purposes. Should be specified in production! -->
+    <constant name="struts.corsHeader.allowOrigin" value="*"/>
+
+    <!-- Set encoding to UTF-8, default is ISO-8859-1 -->
+    <constant name="struts.i18n.encoding" value="UTF-8"/>
+
+    <package name="ping" extends="struts-lambda-support" namespace="/">
+    </package>
+
+</struts>
