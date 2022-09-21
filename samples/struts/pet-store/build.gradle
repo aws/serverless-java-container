@@ -20,7 +20,7 @@ dependencies {
           'org.apache.struts:struts2-junit-plugin:6.0.3',
           'com.jgeppert.struts2:struts2-aws-lambda-support-plugin:1.4.0',
           'org.hibernate:hibernate-validator:6.1.7.Final',
-          'com.fasterxml.jackson.core:jackson-databind:2.13.3',
+          'com.fasterxml.jackson.core:jackson-databind:2.13.4',
           'org.apache.logging.log4j:log4j-core:2.17.2',
           'org.apache.logging.log4j:log4j-api:2.17.2',
           'org.apache.logging.log4j:log4j-slf4j-impl:2.17.2',
