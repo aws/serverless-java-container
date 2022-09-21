@@ -9,7 +9,6 @@ Follow the quick start guides in [our wiki](https://github.com/awslabs/aws-serve
 * [Apache Struts quick start](https://github.com/awslabs/aws-serverless-java-container/wiki/Quick-start---Struts)
 * [Jersey quick start](https://github.com/awslabs/aws-serverless-java-container/wiki/Quick-start---Jersey)
 * [Spark quick start](https://github.com/awslabs/aws-serverless-java-container/wiki/Quick-start---Spark)
-* [Struts quick start](https://github.com/awslabs/aws-serverless-java-container/wiki/Quick-start---Struts)
 
 * Micronaut [documentation](https://guides.micronaut.io/micronaut-function-aws-lambda/guide/index.html) and [demo](https://github.com/awslabs/aws-serverless-java-container/tree/master/samples/micronaut/pet-store) (outdated! - needs to be updated to latest Micronaut version)   
 
