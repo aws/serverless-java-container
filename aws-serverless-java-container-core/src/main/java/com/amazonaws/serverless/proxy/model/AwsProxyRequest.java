@@ -33,6 +33,8 @@ public class AwsProxyRequest {
     private String resource;
     private AwsProxyRequestContext requestContext;
     private MultiValuedTreeMap<String, String> multiValueQueryStringParameters;
+    private Map<String, String> queryStringParameters;
+    private SingleValueHeaders headers;
     private Headers multiValueHeaders;
     private Map<String, String> pathParameters;
     private String httpMethod;
@@ -115,8 +117,16 @@ public class AwsProxyRequest {
 
 
     public void setMultiValueQueryStringParameters(
-            MultiValuedTreeMap<String, String> multiValueQueryStringParameters) {
+        MultiValuedTreeMap<String, String> multiValueQueryStringParameters) {
         this.multiValueQueryStringParameters = multiValueQueryStringParameters;
+    }
+
+    public Map<String, String> getQueryStringParameters() {
+        return queryStringParameters;
+    }
+
+    public void setQueryStringParameters(Map<String, String> queryStringParameters) {
+        this.queryStringParameters = queryStringParameters;
     }
 
     public Headers getMultiValueHeaders() {
@@ -128,6 +138,13 @@ public class AwsProxyRequest {
         this.multiValueHeaders = multiValueHeaders;
     }
 
+    public SingleValueHeaders getHeaders() {
+        return headers;
+    }
+
+    public void setHeaders(SingleValueHeaders headers) {
+        this.headers = headers;
+    }
 
     public Map<String, String> getPathParameters() {
         return pathParameters;
