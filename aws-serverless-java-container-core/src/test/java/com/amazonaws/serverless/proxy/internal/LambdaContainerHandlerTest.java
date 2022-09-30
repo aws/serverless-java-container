@@ -1,7 +1,18 @@
 package com.amazonaws.serverless.proxy.internal;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
-import com.amazonaws.serverless.proxy.*;
+import com.amazonaws.serverless.proxy.AwsProxyExceptionHandler;
+import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
+import com.amazonaws.serverless.proxy.ExceptionHandler;
+import com.amazonaws.serverless.proxy.InitializationWrapper;
+import com.amazonaws.serverless.proxy.RequestReader;
+import com.amazonaws.serverless.proxy.ResponseWriter;
+import com.amazonaws.serverless.proxy.SecurityContextWriter;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequestReader;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
@@ -10,13 +21,10 @@ import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.concurrent.CountDownLatch;
 import org.apache.http.impl.execchain.RequestAbortedException;
 import org.junit.Test;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.concurrent.CountDownLatch;
-
-import static org.junit.Assert.*;
 
 public class LambdaContainerHandlerTest {
     private boolean isRuntimeException = false;

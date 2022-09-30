@@ -1,211 +1,209 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>aws-serverless-java-container-core</artifactId>
-    <name>AWS Serverless Java container support - Core</name>
-    <description>Allows Java applications written for a servlet container to run in AWS Lambda</description>
-    <url>https://aws.amazon.com/lambda</url>
-    <version>1.10-SNAPSHOT</version>
+  <artifactId>aws-serverless-java-container-core</artifactId>
+  <name>AWS Serverless Java container support - Core</name>
+  <description>Allows Java applications written for a servlet container to run in AWS Lambda</description>
+  <url>https://aws.amazon.com/lambda</url>
+  <version>UPSTREAM-CONTRIB</version>
 
-    <parent>
-        <groupId>com.amazonaws.serverless</groupId>
-        <artifactId>aws-serverless-java-container</artifactId>
-        <version>1.10-SNAPSHOT</version>
-        <relativePath>..</relativePath>
-    </parent>
+  <parent>
+    <groupId>com.amazonaws.serverless</groupId>
+    <artifactId>aws-serverless-java-container</artifactId>
+    <version>UPSTREAM-CONTRIB</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
 
-    <properties>
-        <jaxrs.version>2.1</jaxrs.version>
-        <servlet.version>3.1.0</servlet.version>
-    </properties>
+  <properties>
+    <jaxrs.version>3.1.0</jaxrs.version>
+    <servlet.version>5.0.0</servlet.version>
+  </properties>
 
-    <dependencies>
-        <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-lambda-java-core -->
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-lambda-java-core</artifactId>
-            <version>1.2.1</version>
-        </dependency>
+  <dependencies>
+    <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-lambda-java-core -->
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-lambda-java-core</artifactId>
+      <version>1.2.1</version>
+    </dependency>
 
-        <!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>${servlet.version}</version>
-        </dependency>
+    <!-- https://mvnrepository.com/artifact/jakarta.servlet/jakarta.servlet-api -->
+    <dependency>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <version>${servlet.version}</version>
+    </dependency>
 
-        <!-- https://mvnrepository.com/artifact/javax.ws.rs/javax.ws.rs-api -->
-        <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
-            <version>${jaxrs.version}</version>
-        </dependency>
+    <!-- https://mvnrepository.com/artifact/jakarta.ws.rs/jakarta.ws.rs-api -->
+    <dependency>
+      <groupId>jakarta.ws.rs</groupId>
+      <artifactId>jakarta.ws.rs-api</artifactId>
+      <version>${jaxrs.version}</version>
+    </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
+    <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.module/jackson-module-afterburner -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>jackson-module-afterburner</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
+    <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.module/jackson-module-afterburner -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.module</groupId>
+      <artifactId>jackson-module-afterburner</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
 
+    <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpmime -->
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpmime</artifactId>
+      <version>4.5.13</version>
+      <scope>compile</scope>
+    </dependency>
 
-        <!-- https://mvnrepository.com/artifact/commons-fileupload/commons-fileupload -->
-        <dependency>
-            <groupId>commons-fileupload</groupId>
-            <artifactId>commons-fileupload</artifactId>
-            <version>1.4</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpmime -->
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpmime</artifactId>
-            <version>4.5.13</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.5.13</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpcore</artifactId>
-            <version>4.4.15</version>
-            <scope>compile</scope>
-            <optional>true</optional><!-- TODO move AwsProxyRequestBuilder to seperate test-jar and change scope to test
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>31.1-jre</version>
+      <scope>compile</scope>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.5.13</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpcore</artifactId>
+      <version>4.4.13</version>
+      <scope>compile</scope>
+      <optional>true</optional><!-- TODO move AwsProxyRequestBuilder to seperate test-jar and change scope to test
              https://github.com/awslabs/aws-serverless-java-container/issues/394 -->
-        </dependency>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.mockito/mockito-core -->
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>4.6.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.10.1</version>
+        <configuration>
+          <source>11</source>
+          <target>11</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.8.6</version>
+        <configuration>
+          <destFile>${basedir}/target/coverage-reports/jacoco-unit.exec</destFile>
+          <dataFile>${basedir}/target/coverage-reports/jacoco-unit.exec</dataFile>
+          <excludes>
+            <exclude>com/amazonaws/serverless/proxy/internal/testutils/**</exclude>
+          </excludes>
+        </configuration>
+        <executions>
+          <execution>
+            <id>default-prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>jacoco-site</id>
+            <phase>package</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>jacoco-check</id>
+            <phase>test</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <configuration>
+              <haltOnFailure>true</haltOnFailure>
+              <rules><rule>
+                <element>BUNDLE</element>
+                <limits>
+                  <limit>
+                    <counter>INSTRUCTION</counter>
+                    <value>COVEREDRATIO</value>
+                    <minimum>${jacoco.minCoverage}</minimum>
+                  </limit>
+                </limits>
+              </rule></rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!--plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+        <executions>
+          <!-
+              Ensures that SpotBug inspects source code when project is compiled.
+          ->
+          <execution>
+            <id>analyze-compile</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin-->
+      <plugin>
+        <groupId>org.owasp</groupId>
+        <artifactId>dependency-check-maven</artifactId>
+        <version>${dependencyCheck.version}</version>
+        <configuration>
+          <skipProvidedScope>true</skipProvidedScope>
+          <suppressionFiles>
+            <suppressionFile>${project.basedir}/../owasp-suppression.xml</suppressionFile>
+          </suppressionFiles>
+          <failBuildOnCVSS>7</failBuildOnCVSS>
+          <failOnError>false</failOnError>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>java9-plus</id>
+      <activation>
+        <jdk>[9,)</jdk>
+      </activation>
+      <dependencies>
+        <!-- https://mvnrepository.com/artifact/com.sun.activation/jakarta.activation -->
         <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-web</artifactId>
-            <version>5.7.3</version>
-            <scope>test</scope>
+          <groupId>com.sun.activation</groupId>
+          <artifactId>jakarta.activation</artifactId>
+          <version>2.0.1</version>
         </dependency>
-    </dependencies>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency><!-- [CVE-2021-29425] commons-fileupload ships with 2.2 -->
-                <groupId>commons-io</groupId>
-                <artifactId>commons-io</artifactId>
-                <version>2.11.0</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.6</version>
-                <configuration>
-                    <destFile>${basedir}/target/coverage-reports/jacoco-unit.exec</destFile>
-                    <dataFile>${basedir}/target/coverage-reports/jacoco-unit.exec</dataFile>
-                    <excludes>
-                        <exclude>com/amazonaws/serverless/proxy/internal/testutils/**</exclude>
-                    </excludes>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>default-prepare-agent</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>jacoco-site</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>jacoco-check</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                        <configuration>
-                            <haltOnFailure>true</haltOnFailure>
-                            <rules><rule>
-                                <element>BUNDLE</element>
-                                <limits>
-                                    <limit>
-                                        <counter>INSTRUCTION</counter>
-                                        <value>COVEREDRATIO</value>
-                                        <minimum>${jacoco.minCoverage}</minimum>
-                                    </limit>
-                                </limits>
-                            </rule></rules>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>com.github.spotbugs</groupId>
-                <artifactId>spotbugs-maven-plugin</artifactId>
-                <executions>
-                    <!--
-                        Ensures that SpotBug inspects source code when project is compiled.
-                    -->
-                    <execution>
-                        <id>analyze-compile</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.owasp</groupId>
-                <artifactId>dependency-check-maven</artifactId>
-                <version>${dependencyCheck.version}</version>
-                <configuration>
-                    <skipProvidedScope>true</skipProvidedScope>
-                    <suppressionFiles>
-                        <suppressionFile>${project.basedir}/../owasp-suppression.xml</suppressionFile>
-                    </suppressionFiles>
-                    <failBuildOnCVSS>7</failBuildOnCVSS>
-                    <failOnError>false</failOnError>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
-    <profiles>
-        <profile>
-            <id>java9-plus</id>
-            <activation>
-                <jdk>[9,)</jdk>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>com.sun.activation</groupId>
-                    <artifactId>jakarta.activation</artifactId>
-                    <version>1.2.2</version>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
+      </dependencies>
+    </profile>
+  </profiles>
 </project>

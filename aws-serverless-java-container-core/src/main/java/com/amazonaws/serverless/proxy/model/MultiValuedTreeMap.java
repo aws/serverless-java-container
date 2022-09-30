@@ -14,7 +14,7 @@ package com.amazonaws.serverless.proxy.model;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-import javax.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 
 import java.io.Serializable;
 import java.util.ArrayList;

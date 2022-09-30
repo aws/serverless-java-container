@@ -12,11 +12,24 @@
  */
 package com.amazonaws.serverless.proxy.internal.servlet;
 
+import static com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest.cleanUri;
+
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.AsyncContext;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpUpgradeHandler;
+import jakarta.servlet.http.Part;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -25,8 +38,6 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
-
-import static com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest.cleanUri;
 
 public class AwsHttpServletRequestWrapper implements HttpServletRequest {
     private HttpServletRequest originalRequest;

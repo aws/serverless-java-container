@@ -1,14 +1,16 @@
 package com.amazonaws.serverless.proxy.internal.jaxrs;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import com.amazonaws.serverless.proxy.AwsHttpApiV2SecurityContextWriter;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.SecurityContext;
 import org.junit.Test;
-
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.SecurityContext;
-
-import static org.junit.Assert.*;
 
 public class HttpApiV2SecurityContextTest {
     private static final String JWT_SUB_VALUE = "1234567890";

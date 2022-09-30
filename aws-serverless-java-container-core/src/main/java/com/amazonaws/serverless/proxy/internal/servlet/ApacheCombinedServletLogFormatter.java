@@ -19,9 +19,9 @@ import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequestContext;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.SecurityContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.core.SecurityContext;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;

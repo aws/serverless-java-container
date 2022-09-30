@@ -28,7 +28,7 @@ import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.core.SecurityContext;
 
 import java.io.IOException;
 import java.io.InputStream;

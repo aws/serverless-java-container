@@ -1,17 +1,20 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.AwsProxyExceptionHandler;
 import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
-import org.junit.Test;
-
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.concurrent.CountDownLatch;
-
-import static org.junit.Assert.*;
+import org.junit.Test;
 
 public class ServletLambdaContainerHandlerBuilderTest {
 

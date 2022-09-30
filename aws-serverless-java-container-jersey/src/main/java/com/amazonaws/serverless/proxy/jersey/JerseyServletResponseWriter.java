@@ -22,9 +22,9 @@ import org.glassfish.jersey.server.spi.ContainerResponseWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.InternalServerErrorException;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.InternalServerErrorException;
 
 import java.io.IOException;
 import java.io.OutputStream;

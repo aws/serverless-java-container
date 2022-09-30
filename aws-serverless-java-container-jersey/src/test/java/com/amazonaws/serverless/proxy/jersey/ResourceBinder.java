@@ -2,7 +2,7 @@ package com.amazonaws.serverless.proxy.jersey;
 
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 public class ResourceBinder extends AbstractBinder {
     @Override

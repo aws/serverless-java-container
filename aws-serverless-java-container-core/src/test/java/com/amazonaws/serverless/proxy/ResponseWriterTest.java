@@ -1,16 +1,13 @@
 package com.amazonaws.serverless.proxy;
 
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertFalse;
+
 import com.amazonaws.serverless.exceptions.InvalidResponseObjectException;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
 import com.amazonaws.services.lambda.runtime.Context;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.Test;
-
-import javax.servlet.http.HttpServletRequest;
-
-import java.nio.ByteBuffer;
-
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertFalse;
 
 public class ResponseWriterTest {
     private static int[][] NAUGHTY_STRINGS = {

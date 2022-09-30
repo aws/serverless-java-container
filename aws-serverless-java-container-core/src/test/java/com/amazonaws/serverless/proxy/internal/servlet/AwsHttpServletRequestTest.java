@@ -1,22 +1,20 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.ws.rs.core.HttpHeaders;
-
-import static org.junit.Assert.*;
-
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
+import jakarta.ws.rs.core.HttpHeaders;
 import java.util.Base64;
 import java.util.List;
+import org.junit.Test;
 
 
 public class AwsHttpServletRequestTest {

@@ -13,16 +13,14 @@
 package com.amazonaws.serverless.proxy.jersey.suppliers;
 
 
-import org.glassfish.jersey.server.ContainerRequest;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.core.Context;
-
-import java.util.function.Supplier;
-
 import static com.amazonaws.serverless.proxy.jersey.JerseyHandlerFilter.JERSEY_SERVLET_REQUEST_PROPERTY;
+
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.InternalServerErrorException;
+import java.util.function.Supplier;
+import jakarta.ws.rs.core.Context;
+import org.glassfish.jersey.server.ContainerRequest;
 
 
 /**

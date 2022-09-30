@@ -17,7 +17,7 @@ import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.services.lambda.runtime.Context;
 
-import javax.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.core.SecurityContext;
 
 
 /**

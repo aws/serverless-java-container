@@ -1,17 +1,17 @@
 package com.amazonaws.serverless.proxy;
 
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
-import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.services.lambda.runtime.Context;
+import jakarta.ws.rs.core.SecurityContext;
+import java.lang.reflect.Method;
 import org.junit.Before;
 import org.junit.Test;
-
-import javax.ws.rs.core.SecurityContext;
-
-import java.lang.reflect.Method;
-
-import static org.junit.Assert.*;
 
 public class AwsProxySecurityContextWriterTest {
     private AwsProxySecurityContextWriter writer;

@@ -12,11 +12,33 @@
  */
 package com.amazonaws.serverless.proxy.jersey;
 
+import static com.amazonaws.serverless.proxy.RequestReader.API_GATEWAY_CONTEXT_PROPERTY;
+import static com.amazonaws.serverless.proxy.RequestReader.API_GATEWAY_STAGE_VARS_PROPERTY;
+import static com.amazonaws.serverless.proxy.RequestReader.JAX_SECURITY_CONTEXT_PROPERTY;
+import static com.amazonaws.serverless.proxy.RequestReader.LAMBDA_CONTEXT_PROPERTY;
+
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.jersey.suppliers.AwsProxyServletRequestSupplier;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jakarta.ws.rs.core.Application;
+import jakarta.ws.rs.core.SecurityContext;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Locale;
+import java.util.concurrent.CountDownLatch;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.core.UriBuilder;
 import org.glassfish.jersey.internal.MapPropertiesDelegate;
 import org.glassfish.jersey.internal.PropertiesDelegate;
 import org.glassfish.jersey.server.ApplicationHandler;
@@ -25,31 +47,6 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.spi.Container;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriBuilder;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Locale;
-import java.util.concurrent.CountDownLatch;
-
-import static com.amazonaws.serverless.proxy.RequestReader.API_GATEWAY_CONTEXT_PROPERTY;
-import static com.amazonaws.serverless.proxy.RequestReader.API_GATEWAY_STAGE_VARS_PROPERTY;
-import static com.amazonaws.serverless.proxy.RequestReader.JAX_SECURITY_CONTEXT_PROPERTY;
-import static com.amazonaws.serverless.proxy.RequestReader.LAMBDA_CONTEXT_PROPERTY;
 
 /**
  * Servlet filter class that calls Jersey's ApplicationHandler. Given a Jax RS Application object, this class

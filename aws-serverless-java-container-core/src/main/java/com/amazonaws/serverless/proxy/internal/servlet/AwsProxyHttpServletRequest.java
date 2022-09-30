@@ -19,16 +19,21 @@ import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.serverless.proxy.model.Headers;
 import com.amazonaws.services.lambda.runtime.Context;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.servlet.*;
-import javax.servlet.http.*;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.SecurityContext;
-
+import jakarta.servlet.AsyncContext;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.Cookie;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.SecurityContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpUpgradeHandler;
+import jakarta.servlet.http.Part;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
@@ -48,6 +53,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -70,7 +77,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     //-------------------------------------------------------------
     // Constructors
     //-------------------------------------------------------------
-
 
     public AwsProxyHttpServletRequest(AwsProxyRequest awsProxyRequest, Context lambdaContext, SecurityContext awsSecurityContext) {
         this(awsProxyRequest, lambdaContext, awsSecurityContext, LambdaContainerHandler.getContainerConfig());
@@ -264,18 +270,16 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         throw new UnsupportedOperationException();
     }
 
-
     @Override
-    public Collection<Part> getParts()
-            throws IOException, ServletException {
-        return getMultipartFormParametersMap().values();
+    public Collection<Part> getParts() throws IOException, ServletException {
+        throw new UnsupportedOperationException();
+        //return getMultipartFormParametersMap().values();
     }
 
-
     @Override
-    public Part getPart(String s)
-            throws IOException, ServletException {
-        return getMultipartFormParametersMap().get(s);
+    public Part getPart(String name) throws IOException, ServletException {
+        throw new UnsupportedOperationException();
+//        return getMultipartFormParametersMap().get(s);
     }
 
 

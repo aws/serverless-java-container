@@ -15,12 +15,8 @@ package com.amazonaws.serverless.proxy.internal.jaxrs;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.CognitoAuthorizerClaims;
 import com.amazonaws.services.lambda.runtime.Context;
-
-import javax.ws.rs.core.SecurityContext;
-
+import jakarta.ws.rs.core.SecurityContext;
 import java.security.Principal;
-
-import static com.amazonaws.serverless.proxy.model.AwsProxyRequest.RequestSource.API_GATEWAY;
 
 
 /**

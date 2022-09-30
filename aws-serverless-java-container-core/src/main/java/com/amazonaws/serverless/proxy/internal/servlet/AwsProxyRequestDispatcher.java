@@ -12,22 +12,25 @@
  */
 package com.amazonaws.serverless.proxy.internal.servlet;
 
+import static com.amazonaws.serverless.proxy.RequestReader.API_GATEWAY_EVENT_PROPERTY;
+import static com.amazonaws.serverless.proxy.RequestReader.HTTP_API_EVENT_PROPERTY;
+import static com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequest.DISPATCHER_TYPE_ATTRIBUTE;
+
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import java.io.IOException;
-
-import static com.amazonaws.serverless.proxy.RequestReader.API_GATEWAY_EVENT_PROPERTY;
-import static com.amazonaws.serverless.proxy.RequestReader.HTTP_API_EVENT_PROPERTY;
-import static com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequest.DISPATCHER_TYPE_ATTRIBUTE;
 
 /**
  * Default <code>RequestDispatcher</code> implementation for the <code>AwsProxyHttpServletRequest</code> type. A new

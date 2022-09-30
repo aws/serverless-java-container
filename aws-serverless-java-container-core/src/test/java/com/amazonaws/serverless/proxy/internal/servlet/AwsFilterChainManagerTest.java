@@ -1,20 +1,30 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.services.lambda.runtime.Context;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.FilterRegistration;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import java.io.IOException;
+import java.util.EnumSet;
+import java.util.concurrent.CountDownLatch;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.servlet.*;
-
-import java.io.IOException;
-import java.util.EnumSet;
-import java.util.concurrent.CountDownLatch;
-
-import static org.junit.Assert.*;
 
 public class AwsFilterChainManagerTest {
     private static final String REQUEST_CUSTOM_ATTRIBUTE_NAME = "X-Custom-Attribute";

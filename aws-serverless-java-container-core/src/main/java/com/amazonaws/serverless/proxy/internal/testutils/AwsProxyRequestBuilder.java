@@ -13,19 +13,23 @@
 package com.amazonaws.serverless.proxy.internal.testutils;
 
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
-import com.amazonaws.serverless.proxy.model.*;
-
+import com.amazonaws.serverless.proxy.model.AlbContext;
+import com.amazonaws.serverless.proxy.model.ApiGatewayAuthorizerContext;
+import com.amazonaws.serverless.proxy.model.ApiGatewayRequestIdentity;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
+import com.amazonaws.serverless.proxy.model.CognitoAuthorizerClaims;
+import com.amazonaws.serverless.proxy.model.ContainerConfig;
+import com.amazonaws.serverless.proxy.model.Headers;
+import com.amazonaws.serverless.proxy.model.HttpApiV2AuthorizerMap;
+import com.amazonaws.serverless.proxy.model.HttpApiV2HttpContext;
+import com.amazonaws.serverless.proxy.model.HttpApiV2JwtAuthorizer;
+import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
+import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequestContext;
+import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.io.ByteStreams;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.ByteArrayBody;
-import org.apache.http.entity.mime.content.StringBody;
-
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -34,13 +38,20 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.UUID;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import org.apache.http.HttpEntity;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.ByteArrayBody;
+import org.apache.http.entity.mime.content.StringBody;
 
 
 /**
@@ -181,12 +192,34 @@ public class AwsProxyRequestBuilder {
         return this;
     }
 
+    //from: https://github.com/apache/commons-io/blob/2.5/src/main/java/org/apache/commons/io/IOUtils.java#L2854
+    public int read(final InputStream input, final byte[] buffer, final int offset, final int length)
+        throws IOException {
+        final int EOF = -1;
+        if (length < 0) {
+            throw new IllegalArgumentException("Length must not be negative: " + length);
+        }
+        int remaining = length;
+        while (remaining > 0) {
+            final int location = length - remaining;
+            final int count = input.read(buffer, offset + location, remaining);
+            if (EOF == count) { // EOF
+                break;
+            }
+            remaining -= count;
+        }
+        return length - remaining;
+    }
     private void buildMultipartBody()
             throws IOException {
         HttpEntity bodyEntity = multipartBuilder.build();
         InputStream bodyStream = bodyEntity.getContent();
         byte[] buffer = new byte[bodyStream.available()];
-        IOUtils.readFully(bodyStream, buffer);
+//        IOUtils.readFully(bodyStream, buffer);
+        final int actual = read(bodyStream, buffer, 0, buffer.length);
+        if (actual != buffer.length) {
+            throw new java.io.EOFException("Length to read: " + buffer.length + " actual: " + actual);
+        }
         byte[] finalBuffer = new byte[buffer.length + 1];
         byte[] newLineBytes = "\n\n".getBytes(LambdaContainerHandler.getContainerConfig().getDefaultContentCharset());
         System.arraycopy(newLineBytes, 0, finalBuffer, 0, newLineBytes.length);
@@ -277,10 +310,13 @@ public class AwsProxyRequestBuilder {
         return this;
     }
 
+
     public AwsProxyRequestBuilder binaryBody(InputStream is)
             throws IOException {
         this.request.setIsBase64Encoded(true);
-        return body(Base64.getMimeEncoder().encodeToString(IOUtils.toByteArray(is)));
+        // https://www.baeldung.com/convert-input-stream-to-array-of-bytes
+        // Convert Using Guava instead:
+        return body(Base64.getMimeEncoder().encodeToString(ByteStreams.toByteArray(is)));
     }
 
 

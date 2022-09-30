@@ -1,16 +1,18 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
+
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequestContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.core.HttpHeaders;
 import org.junit.Test;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.HttpHeaders;
-
-import static org.junit.Assert.*;
 
 public class AwsHttpApiV2HttpServletRequestReaderTest {
     private AwsHttpApiV2HttpServletRequestReader reader = new AwsHttpApiV2HttpServletRequestReader();

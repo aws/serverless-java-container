@@ -15,7 +15,7 @@ package com.amazonaws.serverless.proxy;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.services.lambda.runtime.Context;
 
-import javax.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.core.SecurityContext;
 
 /**
  * This object is used by the container implementation to generated a Jax-Rs <code>SecurityContext</code> object from the

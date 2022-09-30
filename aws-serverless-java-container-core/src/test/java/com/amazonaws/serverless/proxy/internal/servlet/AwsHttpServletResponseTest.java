@@ -1,15 +1,16 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.serverless.proxy.model.Headers;
-
-import org.junit.Test;
-
-import javax.servlet.http.Cookie;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-
+import jakarta.servlet.http.Cookie;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.ParseException;
@@ -20,8 +21,9 @@ import java.util.TimeZone;
 import java.util.concurrent.CountDownLatch;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static org.junit.Assert.*;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import org.junit.Test;
 
 
 public class AwsHttpServletResponseTest {

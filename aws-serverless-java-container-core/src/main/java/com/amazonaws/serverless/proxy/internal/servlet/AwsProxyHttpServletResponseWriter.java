@@ -22,7 +22,7 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.Headers;
 import com.amazonaws.services.lambda.runtime.Context;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import java.util.Base64;
 import java.util.HashMap;

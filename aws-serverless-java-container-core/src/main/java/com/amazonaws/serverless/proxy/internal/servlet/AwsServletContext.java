@@ -17,12 +17,13 @@ import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jakarta.servlet.ServletRegistration.Dynamic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.activation.MimetypesFileTypeMap;
-import javax.servlet.*;
-import javax.servlet.descriptor.JspConfigDescriptor;
+import jakarta.activation.MimetypesFileTypeMap;
+import jakarta.servlet.*;
+import jakarta.servlet.descriptor.JspConfigDescriptor;
 
 import java.io.File;
 import java.io.InputStream;
@@ -345,6 +346,11 @@ public class AwsServletContext
         }
     }
 
+    @Override
+    public Dynamic addJspFile(String servletName, String jspFile) {
+        return null;
+    }
+
 
     @Override
     public <T extends Servlet> T createServlet(Class<T> aClass) throws ServletException {
@@ -534,5 +540,35 @@ public class AwsServletContext
     @Override
     public String getVirtualServerName() {
         return null;
+    }
+
+    @Override
+    public int getSessionTimeout() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setSessionTimeout(int sessionTimeout) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getRequestCharacterEncoding() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setRequestCharacterEncoding(String encoding) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getResponseCharacterEncoding() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setResponseCharacterEncoding(String encoding) {
+        throw new UnsupportedOperationException();
     }
 }

@@ -16,32 +16,41 @@ import com.amazonaws.serverless.proxy.RequestReader;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
-import com.amazonaws.serverless.proxy.model.*;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
+import com.amazonaws.serverless.proxy.model.ContainerConfig;
+import com.amazonaws.serverless.proxy.model.Headers;
+import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 import com.amazonaws.services.lambda.runtime.Context;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.input.NullInputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.servlet.*;
-import javax.servlet.http.*;
-import javax.ws.rs.core.MediaType;
-
+import com.google.common.io.CharStreams;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.Part;
+import jakarta.ws.rs.core.MediaType;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TreeMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -488,7 +497,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         Timer.start("SERVLET_REQUEST_GET_FORM_PARAMS");
         String rawBodyContent = null;
         try {
-            rawBodyContent = IOUtils.toString(getInputStream());
+            rawBodyContent = CharStreams.toString(new InputStreamReader(getInputStream(), "UTF-8" ));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -512,42 +521,42 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         return urlEncodedFormParameters;
     }
 
-    @SuppressFBWarnings({"FILE_UPLOAD_FILENAME", "WEAK_FILENAMEUTILS"})
-    protected Map<String, Part> getMultipartFormParametersMap() {
-        if (multipartFormParameters != null) {
-            return multipartFormParameters;
-        }
-        if (!ServletFileUpload.isMultipartContent(this)) { // isMultipartContent also checks the content type
-            multipartFormParameters = new HashMap<>();
-            return multipartFormParameters;
-        }
-        Timer.start("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
-        multipartFormParameters = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-
-        ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
-
-        try {
-            List<FileItem> items = upload.parseRequest(this);
-            for (FileItem item : items) {
-                String fileName = FilenameUtils.getName(item.getName());
-                AwsProxyRequestPart newPart = new AwsProxyRequestPart(item.get());
-                newPart.setName(item.getFieldName());
-                newPart.setSubmittedFileName(fileName);
-                newPart.setContentType(item.getContentType());
-                newPart.setSize(item.getSize());
-                item.getHeaders().getHeaderNames().forEachRemaining(h -> {
-                    newPart.addHeader(h, item.getHeaders().getHeader(h));
-                });
-
-                multipartFormParameters.put(item.getFieldName(), newPart);
-            }
-        } catch (FileUploadException e) {
-            Timer.stop("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
-            log.error("Could not read multipart upload file", e);
-        }
-        Timer.stop("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
-        return multipartFormParameters;
-    }
+//    @SuppressFBWarnings({"FILE_UPLOAD_FILENAME", "WEAK_FILENAMEUTILS"})
+//    protected Map<String, Part> getMultipartFormParametersMap() {
+//        if (multipartFormParameters != null) {
+//            return multipartFormParameters;
+//        }
+//        if (!ServletFileUpload.isMultipartContent(this)) { // isMultipartContent also checks the content type
+//            multipartFormParameters = new HashMap<>();
+//            return multipartFormParameters;
+//        }
+//        Timer.start("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
+//        multipartFormParameters = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+//
+//        ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
+//
+//        try {
+//            List<FileItem> items = upload.parseRequest(this);
+//            for (FileItem item : items) {
+//                String fileName = FilenameUtils.getName(item.getName());
+//                AwsProxyRequestPart newPart = new AwsProxyRequestPart(item.get());
+//                newPart.setName(item.getFieldName());
+//                newPart.setSubmittedFileName(fileName);
+//                newPart.setContentType(item.getContentType());
+//                newPart.setSize(item.getSize());
+//                item.getHeaders().getHeaderNames().forEachRemaining(h -> {
+//                    newPart.addHeader(h, item.getHeaders().getHeader(h));
+//                });
+//
+//                multipartFormParameters.put(item.getFieldName(), newPart);
+//            }
+//        } catch (FileUploadException e) {
+//            Timer.stop("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
+//            log.error("Could not read multipart upload file", e);
+//        }
+//        Timer.stop("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
+//        return multipartFormParameters;
+//    }
 
     protected String[] getQueryParamValues(MultiValuedTreeMap<String, String> qs, String key, boolean isCaseSensitive) {
         if (qs != null) {

@@ -13,14 +13,12 @@
 package com.amazonaws.serverless.proxy.jersey.suppliers;
 
 
-import org.glassfish.jersey.server.ContainerRequest;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Context;
-
-import java.util.function.Supplier;
-
 import static com.amazonaws.serverless.proxy.jersey.JerseyHandlerFilter.JERSEY_SERVLET_REQUEST_PROPERTY;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.core.Context;
+import java.util.function.Supplier;
+import org.glassfish.jersey.server.ContainerRequest;
 
 
 /**

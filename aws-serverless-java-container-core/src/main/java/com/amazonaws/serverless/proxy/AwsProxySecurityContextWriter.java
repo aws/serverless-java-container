@@ -16,7 +16,7 @@ import com.amazonaws.serverless.proxy.internal.jaxrs.AwsProxySecurityContext;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.services.lambda.runtime.Context;
 
-import javax.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.core.SecurityContext;
 
 /**
  * Default implementation of <code>SecurityContextWriter</code>. Creates a SecurityContext object based on an API Gateway
