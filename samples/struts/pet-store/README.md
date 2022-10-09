@@ -8,11 +8,20 @@ The application can be deployed in an AWS account using the [Serverless Applicat
 * [SAM CLI](https://github.com/awslabs/aws-sam-cli)
 * [Gradle](https://gradle.org/) or [Maven](https://maven.apache.org/)
 
+
 ## Deployment
 In a shell, navigate to the sample's folder and use the SAM CLI to build a deployable package
 ```
-$ sam build
+$ mvn package && sam build
 ```
+
+### Test Local
+
+```
+$ sam local invoke -e test-event.json
+```
+
+### Deploy Sample Application
 
 This command compiles the application and prepares a deployment package in the `.aws-sam` sub-directory.
 
@@ -31,17 +40,17 @@ Outputs
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Key                 StrutsPetStoreApi                                                                                                                                                                      
 Description         URL for application                                                                                                                                                                    
-Value               https://n60c1ycwa2.execute-api.eu-central-1.amazonaws.com/pets                                                                                                                         
+Value               https://xxxxxxxxxx.execute-api.<region>.amazonaws.com/pets                                                                                                                         
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ```
 ## Test
 
 ### JSON Request:
 ```
-$ curl https://xxxxxxxxxx.execute-api.us-west-2.amazonaws.com/pets.json
+$ curl https://xxxxxxxxxx.execute-api.<region>.amazonaws.com/pets.json
 ```
 
 ### XML Request
 ```
-$ curl https://xxxxxxxxxx.execute-api.us-west-2.amazonaws.com/pets.xml
+$ curl https://xxxxxxxxxx.execute-api.<region>.amazonaws.com/pets.xml
 ```

@@ -14,7 +14,7 @@ Resources:
       Handler: com.amazonaws.serverless.proxy.struts.StrutsLambdaHandler::handleRequest
       Runtime: java11
       CodeUri: .
-      MemorySize: 256
+      MemorySize: 512
       Policies: AWSLambdaBasicExecutionRole
       Timeout: 30
       Events:
