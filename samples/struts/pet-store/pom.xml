@@ -107,7 +107,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
+            <version>${jackson.version}.2</version><!-- CVE-2022-42003 remove with next release -->
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
