@@ -17,18 +17,16 @@ Resources:
       MemorySize: 1512
       Policies: AWSLambdaBasicExecutionRole
       Timeout: 60
-      FunctionUrlConfig:
-        AuthType: NONE
-#      Events:
-#        HttpApiEvent:
-#          Type: HttpApi
-#          Properties:
-#            TimeoutInMillis: 20000
-#            PayloadFormatVersion: '1.0'
+      Events:
+        HttpApiEvent:
+          Type: HttpApi
+          Properties:
+            TimeoutInMillis: 20000
+            PayloadFormatVersion: '1.0'
 
-#Outputs:
-#  SpringBootPetStoreApi:
-#    Description: URL for application
-#    Value: !Sub 'https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/pets'
-#    Export:
-#      Name: SpringBootPetStoreApi
+Outputs:
+  SpringBootPetStoreApi:
+    Description: URL for application
+    Value: !Sub 'https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/pets'
+    Export:
+      Name: SpringBootPetStoreApi
