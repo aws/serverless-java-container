@@ -81,7 +81,7 @@
 
     <properties>
         <jacoco.minCoverage>0.7</jacoco.minCoverage>
-        <dependencyCheck.version>7.1.0</dependencyCheck.version>
+        <dependencyCheck.version>7.3.0</dependencyCheck.version>
         <jackson.version>2.13.4</jackson.version>
         <slf4j.version>2.0.2</slf4j.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -178,7 +178,7 @@
                 <plugin>
                     <groupId>com.github.spotbugs</groupId>
                     <artifactId>spotbugs-maven-plugin</artifactId>
-                    <version>4.2.0</version>
+                    <version>4.7.3.0</version>
                     <configuration>
                         <!--
                             Enables analysis which takes more memory but finds more bugs.
@@ -188,19 +188,26 @@
                         <effort>Max</effort>
                         <!-- Reports all bugs (other values are medium and max) -->
                         <threshold>Low</threshold>
+                        <!-- Only fail the build if high confidence bugs are found -->
+                        <failThreshold>High</failThreshold>
                         <!-- Produces XML report -->
                         <xmlOutput>true</xmlOutput>
                         <!-- Configures the directory in which the XML report is created -->
                         <spotbugsXmlOutputDirectory>${project.build.directory}/spotbugs</spotbugsXmlOutputDirectory>
-
+                        <excludeFilterFile>${session.executionRootDirectory}/spotbugs-excludeFilter.xml</excludeFilterFile>
                         <plugins>
                             <plugin>
                                 <groupId>com.h3xstream.findsecbugs</groupId>
                                 <artifactId>findsecbugs-plugin</artifactId>
-                                <version>1.7.1</version>
+                                <version>1.12.0</version>
                             </plugin>
                         </plugins>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>0.8.8</version>
                 </plugin>
             </plugins>
         </pluginManagement>
