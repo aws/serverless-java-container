@@ -194,7 +194,7 @@
                         <xmlOutput>true</xmlOutput>
                         <!-- Configures the directory in which the XML report is created -->
                         <spotbugsXmlOutputDirectory>${project.build.directory}/spotbugs</spotbugsXmlOutputDirectory>
-                        <excludeFilterFile>${session.executionRootDirectory}/spotbugs-excludeFilter.xml</excludeFilterFile>
+                        <excludeFilterFile>${project.parent.basedir}/spotbugs-excludeFilter.xml</excludeFilterFile>
                         <plugins>
                             <plugin>
                                 <groupId>com.h3xstream.findsecbugs</groupId>
