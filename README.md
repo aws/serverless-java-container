@@ -35,3 +35,9 @@ public class StreamLambdaHandler implements RequestStreamHandler {
     }
 }
 ``` 
+
+## Public Examples
+
+### Videos
+
+- [Spring on AWS Lambda](https://www.youtube.com/watch?v=A1rYiHTy9Lg&list=PLCOG9xkUD90IDm9tcY-5nMK6X6g8SD-Sz) YouTube Playlist from [@plantpowerjames](https://twitter.com/plantpowerjames)
