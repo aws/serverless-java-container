@@ -20,9 +20,9 @@ jobs:
           git config user.email "${{ github.actor }}@users.noreply.github.com"
           git config user.name "${{ github.actor }}"
       - name: Set up Maven
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
-          distribution: 'temurin' # Corretto isn't supported right now https://github.com/actions/setup-java/issues/68
+          distribution: 'corretto'
           java-version: 8
           server-id: sonatype-nexus-staging
           server-username: MAVEN_USERNAME
