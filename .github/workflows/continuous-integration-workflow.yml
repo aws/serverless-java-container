@@ -10,7 +10,7 @@ jobs:
     name: Build and test core
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build latest
         run: mvn -q clean install
         working-directory: ./aws-serverless-java-container-core
@@ -19,12 +19,13 @@ jobs:
     name: Build and test Jersey
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build latest
         run: ./gha_build.sh jersey true true
       - name: Set up JDK 8
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v2
         with:
+          distribution: corretto
           java-version: 8
       - name: Build Jersey 2.27
         run: ./gha_build.sh jersey false false -Djersey.version=2.27
@@ -37,7 +38,7 @@ jobs:
     name: Build and test Spark
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build latest
         run: ./gha_build.sh spark true true
 
@@ -45,7 +46,7 @@ jobs:
     name: Build and test Spring & SpringBoot
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build latest
         # we reduce the minCoverage for this run because it will skip the SpringBoot 1.5 tests since they are no longer compatible with
         # Spring core 5.2 and above. SpringBoot 1.5 is deprecated
@@ -61,7 +62,7 @@ jobs:
     name: Build and test SpringBoot 2
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build latest
         run: ./gha_build.sh springboot2 true true
       # https://github.com/spring-projects/spring-boot/wiki/Supported-Versions
@@ -78,6 +79,6 @@ jobs:
     name: Build and test Struts
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build latest
         run: ./gha_build.sh struts true true
