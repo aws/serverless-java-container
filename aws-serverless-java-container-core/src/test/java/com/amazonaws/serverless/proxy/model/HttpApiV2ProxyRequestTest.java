@@ -136,6 +136,7 @@ public class HttpApiV2ProxyRequestTest {
             HttpApiV2ProxyRequest req = LambdaContainerHandler.getObjectMapper().readValue(BASE_PROXY_REQUEST, HttpApiV2ProxyRequest.class);
             assertTrue(req.getRequestContext().getAuthorizer().getJwtAuthorizer().getClaims().containsKey("claim1"));
             assertEquals(2, req.getRequestContext().getAuthorizer().getJwtAuthorizer().getScopes().size());
+            assertEquals(RequestSource.API_GATEWAY, req.getRequestSource());
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             fail("Exception while parsing request" + e.getMessage());
@@ -177,6 +178,7 @@ public class HttpApiV2ProxyRequestTest {
             assertFalse(req.isBase64Encoded());
             req = LambdaContainerHandler.getObjectMapper().readValue(NO_AUTH_PROXY, HttpApiV2ProxyRequest.class);
             assertTrue(req.isBase64Encoded());
+            assertEquals(RequestSource.API_GATEWAY, req.getRequestSource());
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             fail("Exception while parsing request" + e.getMessage());

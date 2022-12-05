@@ -224,11 +224,11 @@ public class AwsProxyRequestBuilder {
             this.request.setMultiValueQueryStringParameters(new MultiValuedTreeMap<>());
         }
 
-        if (request.getRequestSource() == AwsProxyRequest.RequestSource.API_GATEWAY) {
+        if (request.getRequestSource() == RequestSource.API_GATEWAY) {
             this.request.getMultiValueQueryStringParameters().add(key, value);
         }
         // ALB does not decode parameters automatically like API Gateway.
-        if (request.getRequestSource() == AwsProxyRequest.RequestSource.ALB) {
+        if (request.getRequestSource() == RequestSource.ALB) {
             try {
                 //if (URLDecoder.decode(value, ContainerConfig.DEFAULT_CONTENT_CHARSET).equals(value)) {
                 // TODO: Assume we are always given an unencoded value, smarter check here to encode
@@ -285,7 +285,7 @@ public class AwsProxyRequestBuilder {
 
 
     public AwsProxyRequestBuilder authorizerPrincipal(String principal) {
-        if (this.request.getRequestSource() == AwsProxyRequest.RequestSource.API_GATEWAY) {
+        if (this.request.getRequestSource() == RequestSource.API_GATEWAY) {
             if (this.request.getRequestContext().getAuthorizer() == null) {
                 this.request.getRequestContext().setAuthorizer(new ApiGatewayAuthorizerContext());
             }
@@ -295,7 +295,7 @@ public class AwsProxyRequestBuilder {
             }
             this.request.getRequestContext().getAuthorizer().getClaims().setSubject(principal);
         }
-        if (this.request.getRequestSource() == AwsProxyRequest.RequestSource.ALB) {
+        if (this.request.getRequestSource() == RequestSource.ALB) {
             header("x-amzn-oidc-identity", principal);
             try {
                 header(
