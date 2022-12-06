@@ -9,14 +9,14 @@ import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRespon
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ServerlessServletEmbeddedServerFactoryTest {
     private SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = new SpringBootLambdaContainerHandler<>(
@@ -35,7 +35,7 @@ public class ServerlessServletEmbeddedServerFactoryTest {
     }
 
     @Test
-    public void getWebServer_callsInitializers() {
+    void getWebServer_callsInitializers() {
         ServerlessServletEmbeddedServerFactory factory = new ServerlessServletEmbeddedServerFactory();
         factory.getWebServer(new ServletContextInitializer() {
             @Override

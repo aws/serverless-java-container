@@ -8,13 +8,13 @@ import com.amazonaws.serverless.proxy.model.ErrorModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import javax.ws.rs.InternalServerErrorException;
@@ -31,14 +31,14 @@ public class AwsProxyExceptionHandlerTest {
     private ObjectMapper objectMapper;
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         exceptionHandler = new AwsProxyExceptionHandler();
         objectMapper = new ObjectMapper();
     }
 
     @Test
-    public void typedHandle_InvalidRequestEventException_500State() {
+    void typedHandle_InvalidRequestEventException_500State() {
         AwsProxyResponse resp = exceptionHandler.handle(new InvalidRequestEventException(INVALID_REQUEST_MESSAGE, null));
 
         assertNotNull(resp);
@@ -46,7 +46,7 @@ public class AwsProxyExceptionHandlerTest {
     }
 
     @Test
-    public void typedHandle_InvalidRequestEventException_responseString()
+    void typedHandle_InvalidRequestEventException_responseString()
             throws JsonProcessingException {
         AwsProxyResponse resp = exceptionHandler.handle(new InvalidRequestEventException(INVALID_REQUEST_MESSAGE, null));
 
@@ -56,7 +56,7 @@ public class AwsProxyExceptionHandlerTest {
     }
 
     @Test
-    public void typedHandle_InvalidRequestEventException_jsonContentTypeHeader() {
+    void typedHandle_InvalidRequestEventException_jsonContentTypeHeader() {
         AwsProxyResponse resp = exceptionHandler.handle(new InvalidRequestEventException(INVALID_REQUEST_MESSAGE, null));
 
         assertNotNull(resp);
@@ -65,7 +65,7 @@ public class AwsProxyExceptionHandlerTest {
     }
 
     @Test
-    public void typedHandle_InvalidResponseObjectException_502State() {
+    void typedHandle_InvalidResponseObjectException_502State() {
         AwsProxyResponse resp = exceptionHandler.handle(new InvalidResponseObjectException(INVALID_RESPONSE_MESSAGE, null));
 
         assertNotNull(resp);
@@ -73,7 +73,7 @@ public class AwsProxyExceptionHandlerTest {
     }
 
     @Test
-    public void typedHandle_InvalidResponseObjectException_responseString()
+    void typedHandle_InvalidResponseObjectException_responseString()
             throws JsonProcessingException {
         AwsProxyResponse resp = exceptionHandler.handle(new InvalidResponseObjectException(INVALID_RESPONSE_MESSAGE, null));
 
@@ -83,7 +83,7 @@ public class AwsProxyExceptionHandlerTest {
     }
 
     @Test
-    public void typedHandle_InvalidResponseObjectException_jsonContentTypeHeader() {
+    void typedHandle_InvalidResponseObjectException_jsonContentTypeHeader() {
         AwsProxyResponse resp = exceptionHandler.handle(new InvalidResponseObjectException(INVALID_RESPONSE_MESSAGE, null));
 
         assertNotNull(resp);
@@ -92,7 +92,7 @@ public class AwsProxyExceptionHandlerTest {
     }
 
     @Test
-    public void typedHandle_InternalServerErrorException_500State() {
+    void typedHandle_InternalServerErrorException_500State() {
         // Needed to mock InternalServerErrorException because it leverages RuntimeDelegate to set an internal
         // response object.
         InternalServerErrorException mockInternalServerErrorException = Mockito.mock(InternalServerErrorException.class);
@@ -105,7 +105,7 @@ public class AwsProxyExceptionHandlerTest {
     }
 
     @Test
-    public void typedHandle_InternalServerErrorException_responseString()
+    void typedHandle_InternalServerErrorException_responseString()
             throws JsonProcessingException {
         InternalServerErrorException mockInternalServerErrorException = Mockito.mock(InternalServerErrorException.class);
         Mockito.when(mockInternalServerErrorException.getMessage()).thenReturn(INTERNAL_SERVER_ERROR_MESSAGE);
@@ -118,7 +118,7 @@ public class AwsProxyExceptionHandlerTest {
     }
 
     @Test
-    public void typedHandle_InternalServerErrorException_jsonContentTypeHeader() {
+    void typedHandle_InternalServerErrorException_jsonContentTypeHeader() {
         InternalServerErrorException mockInternalServerErrorException = Mockito.mock(InternalServerErrorException.class);
         Mockito.when(mockInternalServerErrorException.getMessage()).thenReturn(INTERNAL_SERVER_ERROR_MESSAGE);
 
@@ -130,7 +130,7 @@ public class AwsProxyExceptionHandlerTest {
     }
 
     @Test
-    public void typedHandle_NullPointerException_responseObject()
+    void typedHandle_NullPointerException_responseObject()
             throws JsonProcessingException {
         AwsProxyResponse resp = exceptionHandler.handle(new NullPointerException());
 
@@ -143,7 +143,7 @@ public class AwsProxyExceptionHandlerTest {
     }
 
     @Test
-    public void streamHandle_InvalidRequestEventException_500State()
+    void streamHandle_InvalidRequestEventException_500State()
             throws IOException {
         ByteArrayOutputStream respStream = new ByteArrayOutputStream();
         exceptionHandler.handle(new InvalidRequestEventException(INVALID_REQUEST_MESSAGE, null), respStream);
@@ -156,7 +156,7 @@ public class AwsProxyExceptionHandlerTest {
     }
 
     @Test
-    public void streamHandle_InvalidRequestEventException_responseString()
+    void streamHandle_InvalidRequestEventException_responseString()
             throws IOException {
         ByteArrayOutputStream respStream = new ByteArrayOutputStream();
         exceptionHandler.handle(new InvalidRequestEventException(INVALID_REQUEST_MESSAGE, null), respStream);
@@ -170,7 +170,7 @@ public class AwsProxyExceptionHandlerTest {
     }
 
     @Test
-    public void streamHandle_InvalidRequestEventException_jsonContentTypeHeader()
+    void streamHandle_InvalidRequestEventException_jsonContentTypeHeader()
             throws IOException {
         ByteArrayOutputStream respStream = new ByteArrayOutputStream();
         exceptionHandler.handle(new InvalidRequestEventException(INVALID_REQUEST_MESSAGE, null), respStream);
@@ -184,7 +184,7 @@ public class AwsProxyExceptionHandlerTest {
     }
 
     @Test
-    public void streamHandle_InvalidResponseObjectException_502State()
+    void streamHandle_InvalidResponseObjectException_502State()
             throws IOException {
         ByteArrayOutputStream respStream = new ByteArrayOutputStream();
         exceptionHandler.handle(new InvalidResponseObjectException(INVALID_RESPONSE_MESSAGE, null), respStream);
@@ -197,7 +197,7 @@ public class AwsProxyExceptionHandlerTest {
     }
 
     @Test
-    public void streamHandle_InvalidResponseObjectException_responseString()
+    void streamHandle_InvalidResponseObjectException_responseString()
             throws IOException {
         ByteArrayOutputStream respStream = new ByteArrayOutputStream();
         exceptionHandler.handle(new InvalidResponseObjectException(INVALID_RESPONSE_MESSAGE, null), respStream);
@@ -211,7 +211,7 @@ public class AwsProxyExceptionHandlerTest {
     }
 
     @Test
-    public void streamHandle_InvalidResponseObjectException_jsonContentTypeHeader()
+    void streamHandle_InvalidResponseObjectException_jsonContentTypeHeader()
             throws IOException {
         ByteArrayOutputStream respStream = new ByteArrayOutputStream();
         exceptionHandler.handle(new InvalidResponseObjectException(INVALID_RESPONSE_MESSAGE, null), respStream);
@@ -225,17 +225,17 @@ public class AwsProxyExceptionHandlerTest {
     }
 
     @Test
-    public void errorMessage_InternalServerError_staticString() {
+    void errorMessage_InternalServerError_staticString() {
         assertEquals("Internal Server Error", AwsProxyExceptionHandler.INTERNAL_SERVER_ERROR);
     }
 
     @Test
-    public void errorMessage_GatewayTimeout_staticString() {
+    void errorMessage_GatewayTimeout_staticString() {
         assertEquals("Gateway timeout", AwsProxyExceptionHandler.GATEWAY_TIMEOUT_ERROR);
     }
 
     @Test
-    public void getErrorJson_ErrorModel_validJson()
+    void getErrorJson_ErrorModel_validJson()
             throws IOException {
         String output = exceptionHandler.getErrorJson(INVALID_RESPONSE_MESSAGE);
         assertNotNull(output);
@@ -245,7 +245,7 @@ public class AwsProxyExceptionHandlerTest {
     }
 
     @Test
-    public void getErrorJson_JsonParsinException_validJson()
+    void getErrorJson_JsonParsinException_validJson()
             throws IOException {
         ObjectMapper mockMapper = mock(ObjectMapper.class);
         JsonProcessingException exception = mock(JsonProcessingException.class);

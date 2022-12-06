@@ -1,13 +1,11 @@
 package com.amazonaws.serverless.proxy.model;
 
-import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.io.IOException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -16,7 +14,7 @@ public class AwsProxyRequestTest {
     private static final String CUSTOM_HEADER_VALUE = "123456";
 
     @Test
-    public void deserialize_multiValuedHeaders_caseInsensitive() throws IOException {
+    void deserialize_multiValuedHeaders_caseInsensitive() throws IOException {
         AwsProxyRequest req = new AwsProxyRequestBuilder()
                 .fromJsonString(getRequestJson(true, CUSTOM_HEADER_KEY_LOWER_CASE, CUSTOM_HEADER_VALUE)).build();
         assertNotNull(req.getMultiValueHeaders().get(CUSTOM_HEADER_KEY_LOWER_CASE.toUpperCase()));
@@ -25,7 +23,7 @@ public class AwsProxyRequestTest {
     }
 
     @Test
-    public void deserialize_base64Encoded_readsBoolCorrectly() throws IOException {
+    void deserialize_base64Encoded_readsBoolCorrectly() throws IOException {
         AwsProxyRequest req = new AwsProxyRequestBuilder()
                 .fromJsonString(getRequestJson(true, CUSTOM_HEADER_KEY_LOWER_CASE, CUSTOM_HEADER_VALUE)).build();
         assertTrue(req.isBase64Encoded());
@@ -35,7 +33,7 @@ public class AwsProxyRequestTest {
     }
 
     @Test
-    public void serialize_base64Encoded_fieldContainsIsPrefix() throws IOException {
+    void serialize_base64Encoded_fieldContainsIsPrefix() throws IOException {
         AwsProxyRequest req = new AwsProxyRequestBuilder()
                 .fromJsonString(getRequestJson(true, CUSTOM_HEADER_KEY_LOWER_CASE, CUSTOM_HEADER_VALUE)).build();
         ObjectMapper mapper = new ObjectMapper();
@@ -106,9 +104,9 @@ public class AwsProxyRequestTest {
     }
 
     @Test
-    public void deserialize_singleValuedHeaders() throws IOException {
+    void deserialize_singleValuedHeaders() throws IOException {
         AwsProxyRequest req =
-            new AwsProxyRequestBuilder().fromJsonString(getSingleValueRequestJson()).build();
+                new AwsProxyRequestBuilder().fromJsonString(getSingleValueRequestJson()).build();
 
         assertThat(req.getHeaders().get("accept"), is("*"));
     }

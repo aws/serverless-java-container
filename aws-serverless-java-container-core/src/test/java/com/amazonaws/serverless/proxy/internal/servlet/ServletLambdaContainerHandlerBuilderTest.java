@@ -6,17 +6,17 @@ import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.concurrent.CountDownLatch;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ServletLambdaContainerHandlerBuilderTest {
 
     @Test
-    public void validation_throwsException() {
+    void validation_throwsException() {
         TestBuilder testBuilder = new TestBuilder();
         try {
             testBuilder.validate();
@@ -27,21 +27,21 @@ public class ServletLambdaContainerHandlerBuilderTest {
     }
 
     @Test
-    public void additionalMethod_testSetter() {
+    void additionalMethod_testSetter() {
         TestBuilder test = new TestBuilder().exceptionHandler(new AwsProxyExceptionHandler()).name("test");
         assertEquals("test", test.getName());
     }
 
     @Test
-    public void defaultProxy_setsValuesCorrectly() {
+    void defaultProxy_setsValuesCorrectly() {
         TestBuilder test = new TestBuilder().defaultProxy().name("test");
         assertNotNull(test.initializationWrapper);
         assertTrue(test.exceptionHandler instanceof AwsProxyExceptionHandler);
         assertTrue(test.requestReader instanceof AwsProxyHttpServletRequestReader);
         assertTrue(test.responseWriter instanceof AwsProxyHttpServletResponseWriter);
         assertTrue(test.securityContextWriter instanceof AwsProxySecurityContextWriter);
-        assertSame(test.requestTypeClass, AwsProxyRequest.class);
-        assertSame(test.responseTypeClass, AwsProxyResponse.class);
+        assertSame(AwsProxyRequest.class, test.requestTypeClass);
+        assertSame(AwsProxyResponse.class, test.responseTypeClass);
         assertEquals("test", test.name);
     }
 

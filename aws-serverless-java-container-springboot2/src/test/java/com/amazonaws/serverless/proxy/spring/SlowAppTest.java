@@ -7,18 +7,17 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.slowapp.LambdaHandler;
 import com.amazonaws.serverless.proxy.spring.slowapp.MessageController;
 import com.amazonaws.serverless.proxy.spring.slowapp.SlowTestApplication;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SlowAppTest {
 
     @Test
-    public void slowAppInit_continuesInBackgroundThread_returnsCorrect() {
+    void slowAppInit_continuesInBackgroundThread_returnsCorrect() {
         LambdaHandler slowApp = new LambdaHandler();
         System.out.println("Start time: " + slowApp.getConstructorTime());
         assertTrue(slowApp.getConstructorTime() < 10_000);
@@ -28,6 +27,6 @@ public class SlowAppTest {
         long endRequestTime = Instant.now().toEpochMilli();
         assertTrue(endRequestTime - startRequestTime > SlowTestApplication.SlowDownInit.INIT_SLEEP_TIME_MS - 10_000);
         assertEquals(200, resp.getStatusCode());
-        Assert.assertEquals(MessageController.HELLO_MESSAGE, resp.getBody());
+        assertEquals(MessageController.HELLO_MESSAGE, resp.getBody());
     }
 }

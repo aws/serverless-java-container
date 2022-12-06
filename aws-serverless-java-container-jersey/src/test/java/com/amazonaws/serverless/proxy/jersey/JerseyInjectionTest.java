@@ -12,16 +12,15 @@
  */
 package com.amazonaws.serverless.proxy.jersey;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import javax.inject.Singleton;
 
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 
@@ -47,7 +46,7 @@ public class JerseyInjectionTest {
             app);
 
     @Test
-    public void can_get_injected_resources() throws Exception {
+    void can_get_injected_resources() throws Exception {
 
         JerseyInjectionTest instance1 = handler.getInjectionManager().getInstance(JerseyInjectionTest.class);
         assertNotNull(instance1);

@@ -1,13 +1,11 @@
 package com.amazonaws.serverless.proxy.internal;
 
-import org.junit.Test;
-
 import java.util.HashMap;
 import java.util.Map;
 
-import static junit.framework.TestCase.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SecurityUtilsTest {
 

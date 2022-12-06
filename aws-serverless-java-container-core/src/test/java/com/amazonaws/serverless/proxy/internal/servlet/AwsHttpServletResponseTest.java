@@ -4,7 +4,7 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.serverless.proxy.model.Headers;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.servlet.http.Cookie;
 import javax.ws.rs.core.HttpHeaders;
@@ -21,7 +21,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class AwsHttpServletResponseTest {
@@ -40,7 +40,7 @@ public class AwsHttpServletResponseTest {
     private static final String CONTENT_TYPE_WITH_CHARSET = "application/json; charset=UTF-8";
 
     @Test
-    public void cookie_addCookie_verifyPath() {
+    void cookie_addCookie_verifyPath() {
         AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
         Cookie pathCookie = new Cookie(COOKIE_NAME, COOKIE_VALUE);
         pathCookie.setPath(COOKIE_PATH);
@@ -53,7 +53,7 @@ public class AwsHttpServletResponseTest {
     }
 
     @Test
-    public void cookie_addCookie_verifySecure() {
+    void cookie_addCookie_verifySecure() {
         AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
         Cookie secureCookie = new Cookie(COOKIE_NAME, COOKIE_VALUE);
         secureCookie.setSecure(true);
@@ -66,7 +66,7 @@ public class AwsHttpServletResponseTest {
     }
 
     @Test
-    public void cookie_addCookie_verifyDomain() {
+    void cookie_addCookie_verifyDomain() {
         AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
         Cookie domainCookie = new Cookie(COOKIE_NAME, COOKIE_VALUE);
         domainCookie.setDomain(COOKIE_DOMAIN);
@@ -79,7 +79,7 @@ public class AwsHttpServletResponseTest {
     }
 
     @Test
-    public void cookie_addCookie_defaultMaxAgeIsNegative() {
+    void cookie_addCookie_defaultMaxAgeIsNegative() {
         AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
         Cookie maxAgeCookie = new Cookie(COOKIE_NAME, COOKIE_VALUE);
         maxAgeCookie.setDomain(COOKIE_DOMAIN);
@@ -92,7 +92,7 @@ public class AwsHttpServletResponseTest {
     }
 
     @Test
-    public void cookie_addCookie_positiveMaxAgeIsPresent() {
+    void cookie_addCookie_positiveMaxAgeIsPresent() {
         AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
         Cookie maxAgeCookie = new Cookie(COOKIE_NAME, COOKIE_VALUE);
         maxAgeCookie.setMaxAge(MAX_AGE_VALUE);
@@ -108,7 +108,7 @@ public class AwsHttpServletResponseTest {
     }
 
     @Test
-    public void cookie_addCookie_positiveMaxAgeExpiresDate() {
+    void cookie_addCookie_positiveMaxAgeExpiresDate() {
         AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
         Cookie maxAgeCookie = new Cookie(COOKIE_NAME, COOKIE_VALUE);
         maxAgeCookie.setMaxAge(MAX_AGE_VALUE);
@@ -132,7 +132,7 @@ public class AwsHttpServletResponseTest {
     }
 
     @Test
-    public void cookie_addCookieWithoutMaxAge_expectNoExpires() {
+    void cookie_addCookieWithoutMaxAge_expectNoExpires() {
         AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
         Cookie simpleCookie = new Cookie(COOKIE_NAME, COOKIE_VALUE);
         resp.addCookie(simpleCookie);
@@ -143,7 +143,7 @@ public class AwsHttpServletResponseTest {
     }
 
     @Test
-    public void responseHeaders_getAwsResponseHeaders_expectLatestHeader() {
+    void responseHeaders_getAwsResponseHeaders_expectLatestHeader() {
         AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
         resp.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         resp.addHeader("content-type", "application/xml");
@@ -154,7 +154,7 @@ public class AwsHttpServletResponseTest {
     }
 
     @Test
-    public void responseHeaders_getAwsResponseHeaders_expectedMultpleCookieHeaders() {
+    void responseHeaders_getAwsResponseHeaders_expectedMultpleCookieHeaders() {
         AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
         resp.addCookie(new Cookie(COOKIE_NAME, COOKIE_VALUE));
         resp.addCookie(new Cookie("Second", "test"));
@@ -165,7 +165,7 @@ public class AwsHttpServletResponseTest {
     }
 
     @Test
-    public void releaseLatch_flushBuffer_expectFlushToWriteAndRelease() {
+    void releaseLatch_flushBuffer_expectFlushToWriteAndRelease() {
         CountDownLatch respLatch = new CountDownLatch(1);
         AwsHttpServletResponse resp = new AwsHttpServletResponse(null, respLatch);
         String respBody = "Test resp";
@@ -200,7 +200,7 @@ public class AwsHttpServletResponseTest {
     }
 
     @Test
-    public void dateHeader_addDateHeader_expectMultipleHeaders() {
+    void dateHeader_addDateHeader_expectMultipleHeaders() {
         AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
         resp.addDateHeader("Date", Instant.now().toEpochMilli());
         resp.addDateHeader("Date", Instant.now().toEpochMilli() - 1000);
@@ -209,7 +209,7 @@ public class AwsHttpServletResponseTest {
     }
 
     @Test
-    public void dateHeader_setDateHeader_expectSingleHeader() {
+    void dateHeader_setDateHeader_expectSingleHeader() {
         AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
         resp.setDateHeader("Date", Instant.now().toEpochMilli());
         resp.setDateHeader("Date", Instant.now().toEpochMilli() - 1000);
@@ -218,7 +218,7 @@ public class AwsHttpServletResponseTest {
     }
 
     @Test
-    public void response_reset_expectEmptyHeadersAndBody() {
+    void response_reset_expectEmptyHeadersAndBody() {
         CountDownLatch respLatch = new CountDownLatch(1);
         AwsHttpServletResponse resp = new AwsHttpServletResponse(null, respLatch);
         String body = "My Body";
@@ -240,7 +240,7 @@ public class AwsHttpServletResponseTest {
     }
 
     @Test
-    public void headers_setIntHeader_expectSingleHeaderValue() {
+    void headers_setIntHeader_expectSingleHeaderValue() {
         AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
         resp.setIntHeader("Test", 15);
         resp.setIntHeader("Test", 34);
@@ -251,7 +251,7 @@ public class AwsHttpServletResponseTest {
     }
 
     @Test
-    public void headers_addIntHeader_expectMultipleHeaderValues() {
+    void headers_addIntHeader_expectMultipleHeaderValues() {
         AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
         resp.addIntHeader("Test", 15);
         resp.addIntHeader("Test", 34);
@@ -262,7 +262,7 @@ public class AwsHttpServletResponseTest {
     }
 
     @Test
-    public void characterEncoding_setCharacterEncoding() {
+    void characterEncoding_setCharacterEncoding() {
         AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
@@ -272,7 +272,7 @@ public class AwsHttpServletResponseTest {
     }
 
     @Test
-    public void characterEncoding_setContentType() {
+    void characterEncoding_setContentType() {
         AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
         resp.setContentType("application/json; charset=utf-8");
         resp.setCharacterEncoding("UTF-8");
@@ -283,7 +283,7 @@ public class AwsHttpServletResponseTest {
     }
 
     @Test
-    public void characterEncoding_setContentTypeAndsetCharacterEncoding() {
+    void characterEncoding_setContentTypeAndsetCharacterEncoding() {
         AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
@@ -294,7 +294,7 @@ public class AwsHttpServletResponseTest {
     }
 
     @Test
-    public void characterEncoding_setCharacterEncodingAndsetContentType() {
+    void characterEncoding_setCharacterEncodingAndsetContentType() {
         AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
         resp.setCharacterEncoding("UTF-8");
         resp.setContentType("application/json");
@@ -305,7 +305,7 @@ public class AwsHttpServletResponseTest {
     }
 
     @Test
-    public void characterEncoding_setCharacterEncodingInContentType_characterEncodingPopulatedCorrectly() {
+    void characterEncoding_setCharacterEncodingInContentType_characterEncodingPopulatedCorrectly() {
         AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
         resp.setContentType(CONTENT_TYPE_WITH_CHARSET);
 
@@ -315,7 +315,7 @@ public class AwsHttpServletResponseTest {
     }
 
     @Test
-    public void characterEncoding_setCharacterEncodingInContentType_overridesDefault() {
+    void characterEncoding_setCharacterEncodingInContentType_overridesDefault() {
         AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
         resp.setCharacterEncoding(ContainerConfig.DEFAULT_CONTENT_CHARSET);
         resp.setContentType(CONTENT_TYPE_WITH_CHARSET);

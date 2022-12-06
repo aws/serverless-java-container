@@ -3,12 +3,12 @@ package com.amazonaws.serverless.proxy.internal.jaxrs;
 import com.amazonaws.serverless.proxy.AwsHttpApiV2SecurityContextWriter;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.SecurityContext;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class HttpApiV2SecurityContextTest {
     private static final String JWT_SUB_VALUE = "1234567890";
@@ -24,7 +24,7 @@ public class HttpApiV2SecurityContextTest {
     AwsHttpApiV2SecurityContextWriter contextWriter = new AwsHttpApiV2SecurityContextWriter();
 
     @Test
-    public void getAuthenticationScheme_nullAuth_nullSchema() {
+    void getAuthenticationScheme_nullAuth_nullSchema() {
         SecurityContext ctx = contextWriter.writeSecurityContext(EMPTY_AUTH, null);
         assertNull(ctx.getAuthenticationScheme());
         assertNull(ctx.getUserPrincipal());
@@ -32,7 +32,7 @@ public class HttpApiV2SecurityContextTest {
     }
 
     @Test
-    public void getAuthenticationScheme_jwtAuth_correctSchema() {
+    void getAuthenticationScheme_jwtAuth_correctSchema() {
         SecurityContext ctx = contextWriter.writeSecurityContext(BASIC_AUTH, null);
         assertEquals(AwsHttpApiV2SecurityContext.AUTH_SCHEME_JWT, ctx.getAuthenticationScheme());
         assertTrue(ctx.isSecure());
@@ -40,7 +40,7 @@ public class HttpApiV2SecurityContextTest {
     }
 
     @Test
-    public void getPrincipal_parseJwt_returnsSub() {
+    void getPrincipal_parseJwt_returnsSub() {
         SecurityContext ctx = contextWriter.writeSecurityContext(JWT_AUTH, null);
         assertEquals(AwsHttpApiV2SecurityContext.AUTH_SCHEME_JWT, ctx.getAuthenticationScheme());
         assertTrue(ctx.isSecure());

@@ -10,7 +10,7 @@ import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.services.lambda.runtime.Context;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper;
 
 import javax.servlet.Servlet;
@@ -21,9 +21,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.concurrent.CountDownLatch;
 
-import static junit.framework.TestCase.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AwsProxyRequestDispatcherTest {
     public static final String FORWARD_PATH = "/newpath";
@@ -31,9 +29,9 @@ public class AwsProxyRequestDispatcherTest {
 
 
     @Test
-    public void setPath_forwardByPath_proxyRequestObjectInPropertyReferencesSameProxyRequest() throws InvalidRequestEventException {
+    void setPath_forwardByPath_proxyRequestObjectInPropertyReferencesSameProxyRequest() throws InvalidRequestEventException {
         AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/hello", "GET").build();
-        HttpServletRequest servletRequest = requestReader.readRequest(proxyRequest,null, new MockLambdaContext(), ContainerConfig.defaultConfig());
+        HttpServletRequest servletRequest = requestReader.readRequest(proxyRequest, null, new MockLambdaContext(), ContainerConfig.defaultConfig());
 
         AwsProxyRequestDispatcher dispatcher = new AwsProxyRequestDispatcher(FORWARD_PATH, false, null);
         dispatcher.setRequestPath(servletRequest, FORWARD_PATH);
@@ -41,9 +39,9 @@ public class AwsProxyRequestDispatcherTest {
     }
 
     @Test
-    public void setPathForWrappedRequest_forwardByPath_proxyRequestObjectInPropertyReferencesSameProxyRequest() throws InvalidRequestEventException {
+    void setPathForWrappedRequest_forwardByPath_proxyRequestObjectInPropertyReferencesSameProxyRequest() throws InvalidRequestEventException {
         AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/hello", "GET").build();
-        HttpServletRequest servletRequest = requestReader.readRequest(proxyRequest,null, new MockLambdaContext(), ContainerConfig.defaultConfig());
+        HttpServletRequest servletRequest = requestReader.readRequest(proxyRequest, null, new MockLambdaContext(), ContainerConfig.defaultConfig());
         SecurityContextHolderAwareRequestWrapper springSecurityRequest = new SecurityContextHolderAwareRequestWrapper(servletRequest, "ADMIN");
 
         AwsProxyRequestDispatcher dispatcher = new AwsProxyRequestDispatcher(FORWARD_PATH, false, null);
@@ -52,7 +50,7 @@ public class AwsProxyRequestDispatcherTest {
     }
 
     @Test
-    public void setPathForWrappedRequestWithoutGatewayEvent_forwardByPath_throwsException() {
+    void setPathForWrappedRequestWithoutGatewayEvent_forwardByPath_throwsException() {
         AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/hello", "GET").build();
         AwsProxyHttpServletRequest servletRequest = new AwsProxyHttpServletRequest(proxyRequest, new MockLambdaContext(), null);
         SecurityContextHolderAwareRequestWrapper springSecurityRequest = new SecurityContextHolderAwareRequestWrapper(servletRequest, "ADMIN");
@@ -68,9 +66,9 @@ public class AwsProxyRequestDispatcherTest {
     }
 
     @Test
-    public void forwardRequest_nullHandler_throwsIllegalStateException() throws InvalidRequestEventException {
+    void forwardRequest_nullHandler_throwsIllegalStateException() throws InvalidRequestEventException {
         AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/hello", "GET").build();
-        HttpServletRequest servletRequest = requestReader.readRequest(proxyRequest,null, new MockLambdaContext(), ContainerConfig.defaultConfig());
+        HttpServletRequest servletRequest = requestReader.readRequest(proxyRequest, null, new MockLambdaContext(), ContainerConfig.defaultConfig());
         AwsProxyRequestDispatcher dispatcher = new AwsProxyRequestDispatcher(FORWARD_PATH, false, null);
         try {
             dispatcher.forward(servletRequest, new AwsHttpServletResponse(servletRequest, new CountDownLatch(1)));
@@ -86,9 +84,9 @@ public class AwsProxyRequestDispatcherTest {
     }
 
     @Test
-    public void forwardRequest_committedResponse_throwsIllegalStateException() throws InvalidRequestEventException {
+    void forwardRequest_committedResponse_throwsIllegalStateException() throws InvalidRequestEventException {
         AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/hello", "GET").build();
-        HttpServletRequest servletRequest = requestReader.readRequest(proxyRequest,null, new MockLambdaContext(), ContainerConfig.defaultConfig());
+        HttpServletRequest servletRequest = requestReader.readRequest(proxyRequest, null, new MockLambdaContext(), ContainerConfig.defaultConfig());
         AwsProxyRequestDispatcher dispatcher = new AwsProxyRequestDispatcher(FORWARD_PATH, false, mockLambdaHandler(null));
         AwsHttpServletResponse resp = new AwsHttpServletResponse(servletRequest, new CountDownLatch(1));
 
@@ -107,9 +105,9 @@ public class AwsProxyRequestDispatcherTest {
     }
 
     @Test
-    public void forwardRequest_partiallyWrittenResponse_resetsBuffer() throws InvalidRequestEventException {
+    void forwardRequest_partiallyWrittenResponse_resetsBuffer() throws InvalidRequestEventException {
         AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/hello", "GET").build();
-        HttpServletRequest servletRequest = requestReader.readRequest(proxyRequest,null, new MockLambdaContext(), ContainerConfig.defaultConfig());
+        HttpServletRequest servletRequest = requestReader.readRequest(proxyRequest, null, new MockLambdaContext(), ContainerConfig.defaultConfig());
         AwsProxyRequestDispatcher dispatcher = new AwsProxyRequestDispatcher(FORWARD_PATH, false, mockLambdaHandler(null));
         AwsHttpServletResponse resp = new AwsHttpServletResponse(servletRequest, new CountDownLatch(1));
 
@@ -127,12 +125,12 @@ public class AwsProxyRequestDispatcherTest {
     }
 
     @Test
-    public void include_addsToResponse_appendsCorrectly() throws InvalidRequestEventException, IOException {
+    void include_addsToResponse_appendsCorrectly() throws InvalidRequestEventException, IOException {
         final String firstPart = "first";
         final String secondPart = "second";
         AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/hello", "GET").build();
 
-        AwsProxyResponse resp = mockLambdaHandler((AwsProxyHttpServletRequest req, AwsHttpServletResponse res)-> {
+        AwsProxyResponse resp = mockLambdaHandler((AwsProxyHttpServletRequest req, AwsHttpServletResponse res) -> {
             if (req.getAttribute("cnt") == null) {
                 res.getOutputStream().write(firstPart.getBytes());
                 req.setAttribute("cnt", 1);
@@ -147,13 +145,13 @@ public class AwsProxyRequestDispatcherTest {
     }
 
     @Test
-    public void include_appendsNewHeader_cannotAppendNewHeaders() throws InvalidRequestEventException, IOException {
+    void include_appendsNewHeader_cannotAppendNewHeaders() throws InvalidRequestEventException, IOException {
         final String firstPart = "first";
         final String secondPart = "second";
         final String headerKey = "X-Custom-Header";
         AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/hello", "GET").build();
 
-        AwsProxyResponse resp = mockLambdaHandler((AwsProxyHttpServletRequest req, AwsHttpServletResponse res)-> {
+        AwsProxyResponse resp = mockLambdaHandler((AwsProxyHttpServletRequest req, AwsHttpServletResponse res) -> {
             if (req.getAttribute("cnt") == null) {
                 res.getOutputStream().write(firstPart.getBytes());
                 req.setAttribute("cnt", 1);

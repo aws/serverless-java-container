@@ -3,8 +3,8 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.services.lambda.runtime.Context;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.util.EnumSet;
 import java.util.concurrent.CountDownLatch;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AwsFilterChainManagerTest {
     private static final String REQUEST_CUSTOM_ATTRIBUTE_NAME = "X-Custom-Attribute";
@@ -26,7 +26,7 @@ public class AwsFilterChainManagerTest {
 
     private Logger log = LoggerFactory.getLogger(AwsFilterChainManagerTest.class);
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         servletContext = new AwsServletContext( null);//AwsServletContext.getInstance(lambdaContext, null);
 
@@ -41,7 +41,7 @@ public class AwsFilterChainManagerTest {
     }
 
     @Test
-    public void paths_pathMatches_validPaths() {
+    void paths_pathMatches_validPaths() {
         assertTrue(chainManager.pathMatches("/users/123123123", "/users/*"));
         assertTrue(chainManager.pathMatches("/apis/123/methods", "/apis/*"));
         assertTrue(chainManager.pathMatches("/very/long/path/with/sub/resources", "/*"));
@@ -52,7 +52,7 @@ public class AwsFilterChainManagerTest {
     }
 
     @Test
-    public void paths_pathMatches_invalidPaths() {
+    void paths_pathMatches_invalidPaths() {
         // I expect we'd want to run filters on these requests, especially the ones that look invalid
         assertTrue(chainManager.pathMatches("_%Garbled%20Path_%", "/*"));
         assertTrue(chainManager.pathMatches("<script>alert('message');</script>", "/*"));
@@ -61,7 +61,7 @@ public class AwsFilterChainManagerTest {
     }
 
     @Test
-    public void cacheKey_compare_samePath() {
+    void cacheKey_compare_samePath() {
         FilterChainManager.TargetCacheKey cacheKey = new FilterChainManager.TargetCacheKey();
         cacheKey.setDispatcherType(DispatcherType.REQUEST);
         cacheKey.setTargetPath("/first/path");
@@ -71,11 +71,11 @@ public class AwsFilterChainManagerTest {
         secondCacheKey.setTargetPath("/first/path");
 
         assertEquals(cacheKey.hashCode(), secondCacheKey.hashCode());
-        assertTrue(cacheKey.equals(secondCacheKey));
+        assertEquals(cacheKey, secondCacheKey);
     }
 
     @Test
-    public void cacheKey_compare_differentDispatcher() {
+    void cacheKey_compare_differentDispatcher() {
         FilterChainManager.TargetCacheKey cacheKey = new FilterChainManager.TargetCacheKey();
         cacheKey.setDispatcherType(DispatcherType.REQUEST);
         cacheKey.setTargetPath("/first/path");
@@ -85,11 +85,11 @@ public class AwsFilterChainManagerTest {
         secondCacheKey.setTargetPath("/first/path");
 
         assertNotEquals(cacheKey.hashCode(), secondCacheKey.hashCode());
-        assertFalse(cacheKey.equals(secondCacheKey));
+        assertNotEquals(cacheKey, secondCacheKey);
     }
 
     @Test
-    public void cacheKey_compare_additionalChars() {
+    void cacheKey_compare_additionalChars() {
         FilterChainManager.TargetCacheKey cacheKey = new FilterChainManager.TargetCacheKey();
         cacheKey.setDispatcherType(DispatcherType.REQUEST);
         cacheKey.setTargetPath("/first/path");
@@ -98,21 +98,21 @@ public class AwsFilterChainManagerTest {
         secondCacheKey.setDispatcherType(DispatcherType.REQUEST);
         secondCacheKey.setTargetPath("/first/path/");
         assertEquals(cacheKey.hashCode(), secondCacheKey.hashCode());
-        assertTrue(cacheKey.equals(secondCacheKey));
+        assertEquals(cacheKey, secondCacheKey);
 
         secondCacheKey.setTargetPath(" /first/path");
         assertEquals(cacheKey.hashCode(), secondCacheKey.hashCode());
-        assertTrue(cacheKey.equals(secondCacheKey));
+        assertEquals(cacheKey, secondCacheKey);
 
         secondCacheKey.setTargetPath("first/path/");
         assertEquals(cacheKey.hashCode(), secondCacheKey.hashCode());
-        assertTrue(cacheKey.equals(secondCacheKey));
+        assertEquals(cacheKey, secondCacheKey);
     }
 
     @Test
-    public void filterChain_getFilterChain_subsetOfFilters() {
+    void filterChain_getFilterChain_subsetOfFilters() {
         AwsProxyHttpServletRequest req = new AwsProxyHttpServletRequest(
-            new AwsProxyRequestBuilder("/first/second", "GET").build(), lambdaContext, null
+                new AwsProxyRequestBuilder("/first/second", "GET").build(), lambdaContext, null
         );
         req.setServletContext(servletContext);
         FilterChainHolder fcHolder = chainManager.getFilterChain(req, null);
@@ -135,9 +135,9 @@ public class AwsFilterChainManagerTest {
     }
 
     @Test
-    public void filterChain_matchMultipleTimes_expectSameMatch() {
+    void filterChain_matchMultipleTimes_expectSameMatch() {
         AwsProxyHttpServletRequest req = new AwsProxyHttpServletRequest(
-             new AwsProxyRequestBuilder("/first/second", "GET").build(), lambdaContext, null
+                new AwsProxyRequestBuilder("/first/second", "GET").build(), lambdaContext, null
         );
         req.setServletContext(servletContext);
         FilterChainHolder fcHolder = chainManager.getFilterChain(req, null);
@@ -145,7 +145,7 @@ public class AwsFilterChainManagerTest {
         assertEquals("Filter1", fcHolder.getFilter(0).getFilterName());
 
         AwsProxyHttpServletRequest req2 = new AwsProxyHttpServletRequest(
-             new AwsProxyRequestBuilder("/first/second", "GET").build(), lambdaContext, null
+                new AwsProxyRequestBuilder("/first/second", "GET").build(), lambdaContext, null
         );
         req.setServletContext(servletContext);
         FilterChainHolder fcHolder2 = chainManager.getFilterChain(req2, null);
@@ -154,9 +154,9 @@ public class AwsFilterChainManagerTest {
     }
 
     @Test
-    public void filerChain_executeMultipleFilters_expectRunEachTime() {
+    void filerChain_executeMultipleFilters_expectRunEachTime() {
         AwsProxyHttpServletRequest req = new AwsProxyHttpServletRequest(
-            new AwsProxyRequestBuilder("/first/second", "GET").build(), lambdaContext, null
+                new AwsProxyRequestBuilder("/first/second", "GET").build(), lambdaContext, null
         );
         req.setServletContext(servletContext);
         FilterChainHolder fcHolder = chainManager.getFilterChain(req, null);
@@ -180,7 +180,7 @@ public class AwsFilterChainManagerTest {
         log.debug("Starting second request");
 
         AwsProxyHttpServletRequest req2 = new AwsProxyHttpServletRequest(
-            new AwsProxyRequestBuilder("/first/second", "GET").build(), lambdaContext, null
+                new AwsProxyRequestBuilder("/first/second", "GET").build(), lambdaContext, null
         );
         req2.setServletContext(servletContext);
         FilterChainHolder fcHolder2 = chainManager.getFilterChain(req2, null);
@@ -205,7 +205,7 @@ public class AwsFilterChainManagerTest {
     }
 
     @Test
-    public void filterChain_getFilterChain_multipleFilters() {
+    void filterChain_getFilterChain_multipleFilters() {
         AwsProxyHttpServletRequest req = new AwsProxyHttpServletRequest(
                 new AwsProxyRequestBuilder("/second/important", "GET").build(), lambdaContext, null
         );

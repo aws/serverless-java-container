@@ -6,13 +6,13 @@ import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.securityapp.LambdaHandler;
 import com.amazonaws.serverless.proxy.spring.securityapp.SecurityConfig;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SecurityAppTest {
 
@@ -24,7 +24,7 @@ public class SecurityAppTest {
     }
 
     @Test
-    public void helloRequest_withAuth_respondsWithSingleMessage() {
+    void helloRequest_withAuth_respondsWithSingleMessage() {
         AwsProxyRequest req = new AwsProxyRequestBuilder("/hello", "GET").build();
         AwsProxyResponse resp = handler.handleRequest(req, lambdaContext);
         assertEquals(401, resp.getStatusCode());

@@ -2,11 +2,11 @@ package com.amazonaws.serverless.proxy.model;
 
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class HttpApiV2ProxyRequestTest {
 
@@ -128,10 +128,10 @@ public class HttpApiV2ProxyRequestTest {
             "      \"body\": \"Hello from Lambda\",\n" +
             "      \"isBase64Encoded\": false,\n" +
             "      \"stageVariables\": {\"stageVariable1\": \"value1\", \"stageVariable2\": \"value2\"}\n" +
-            "    }\n";;
+            "    }\n";
 
     @Test
-    public void deserialize_fromJsonString_authorizerPopulatedCorrectly() {
+    void deserialize_fromJsonString_authorizerPopulatedCorrectly() {
         try {
             HttpApiV2ProxyRequest req = LambdaContainerHandler.getObjectMapper().readValue(BASE_PROXY_REQUEST, HttpApiV2ProxyRequest.class);
             assertTrue(req.getRequestContext().getAuthorizer().getJwtAuthorizer().getClaims().containsKey("claim1"));
@@ -143,7 +143,7 @@ public class HttpApiV2ProxyRequestTest {
     }
 
     @Test
-    public void deserialize_fromJsonString_authorizerEmptyMap() {
+    void deserialize_fromJsonString_authorizerEmptyMap() {
         try {
             HttpApiV2ProxyRequest req = LambdaContainerHandler.getObjectMapper().readValue(NO_AUTH_PROXY, HttpApiV2ProxyRequest.class);
             assertNotNull(req.getRequestContext().getAuthorizer());
@@ -156,7 +156,7 @@ public class HttpApiV2ProxyRequestTest {
     }
 
     @Test
-    public void deserialize_fromJsonString_lambdaAuthorizer() {
+    void deserialize_fromJsonString_lambdaAuthorizer() {
         try {
             HttpApiV2ProxyRequest req = LambdaContainerHandler.getObjectMapper().readValue(LAMBDA_AUTHORIZER, HttpApiV2ProxyRequest.class);
             assertNotNull(req.getRequestContext().getAuthorizer());
@@ -171,7 +171,7 @@ public class HttpApiV2ProxyRequestTest {
     }
 
     @Test
-    public void deserialize_fromJsonString_isBase64EncodedPopulates() {
+    void deserialize_fromJsonString_isBase64EncodedPopulates() {
         try {
             HttpApiV2ProxyRequest req = LambdaContainerHandler.getObjectMapper().readValue(BASE_PROXY_REQUEST, HttpApiV2ProxyRequest.class);
             assertFalse(req.isBase64Encoded());
@@ -184,7 +184,7 @@ public class HttpApiV2ProxyRequestTest {
     }
 
     @Test
-    public void serialize_toJsonString_authorizerPopulatesCorrectly() {
+    void serialize_toJsonString_authorizerPopulatesCorrectly() {
         HttpApiV2ProxyRequest req = new HttpApiV2ProxyRequest();
         req.setBase64Encoded(false);
         req.setRequestContext(new HttpApiV2ProxyRequestContext());

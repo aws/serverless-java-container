@@ -5,23 +5,23 @@ import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequestContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.HttpHeaders;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AwsHttpApiV2HttpServletRequestReaderTest {
     private AwsHttpApiV2HttpServletRequestReader reader = new AwsHttpApiV2HttpServletRequestReader();
 
     @Test
-    public void reflection_getRequestClass_returnsCorrectType() {
+    void reflection_getRequestClass_returnsCorrectType() {
         assertSame(HttpApiV2ProxyRequest.class, reader.getRequestClass());
     }
 
     @Test
-    public void baseRequest_read_populatesSuccessfully() {
+    void baseRequest_read_populatesSuccessfully() {
         HttpApiV2ProxyRequest req = new AwsProxyRequestBuilder("/hello", "GET")
                 .referer("localhost")
                 .userAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.61 Safari/537.36")

@@ -7,14 +7,14 @@ import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.services.lambda.runtime.Context;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.SecurityContext;
 import java.lang.reflect.Method;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class AwsProxyHttpServletRequestReaderTest {
@@ -26,7 +26,7 @@ public class AwsProxyHttpServletRequestReaderTest {
     private static final String DECODED_REQUEST_PATH = "/foo/bar/Some Thing";
 
     @Test
-    public void readRequest_validAwsProxy_populatedRequest() {
+    void readRequest_validAwsProxy_populatedRequest() {
         AwsProxyRequest request = new AwsProxyRequestBuilder("/path", "GET").header(TEST_HEADER_KEY, TEST_HEADER_VALUE).build();
         try {
             HttpServletRequest servletRequest = reader.readRequest(request, null, null, ContainerConfig.defaultConfig());
@@ -39,7 +39,7 @@ public class AwsProxyHttpServletRequestReaderTest {
     }
 
     @Test
-    public void readRequest_urlDecode_expectDecodedPath() {
+    void readRequest_urlDecode_expectDecodedPath() {
         AwsProxyRequest request = new AwsProxyRequestBuilder(ENCODED_REQUEST_PATH, "GET").build();
         try {
             HttpServletRequest servletRequest = reader.readRequest(request, null, null, ContainerConfig.defaultConfig());
@@ -54,7 +54,7 @@ public class AwsProxyHttpServletRequestReaderTest {
     }
 
     @Test
-    public void readRequest_contentCharset_doesNotOverrideRequestCharset() {
+    void readRequest_contentCharset_doesNotOverrideRequestCharset() {
         String requestCharset = "application/json; charset=UTF-8";
         AwsProxyRequest request = new AwsProxyRequestBuilder(ENCODED_REQUEST_PATH, "GET").header(HttpHeaders.CONTENT_TYPE, requestCharset).build();
         try {
@@ -70,7 +70,7 @@ public class AwsProxyHttpServletRequestReaderTest {
     }
 
     @Test
-    public void readRequest_contentCharset_setsDefaultCharsetWhenNotSpecified() {
+    void readRequest_contentCharset_setsDefaultCharsetWhenNotSpecified() {
         String requestCharset = "application/json";
         AwsProxyRequest request = new AwsProxyRequestBuilder(ENCODED_REQUEST_PATH, "GET").header(HttpHeaders.CONTENT_TYPE, requestCharset).build();
         try {
@@ -87,7 +87,7 @@ public class AwsProxyHttpServletRequestReaderTest {
     }
 
     @Test
-    public void readRequest_contentCharset_appendsCharsetToComplextContentType() {
+    void readRequest_contentCharset_appendsCharsetToComplextContentType() {
         String contentType = "multipart/form-data; boundary=something";
         AwsProxyRequest request = new AwsProxyRequestBuilder(ENCODED_REQUEST_PATH, "GET").header(HttpHeaders.CONTENT_TYPE, contentType).build();
         try {
@@ -104,7 +104,7 @@ public class AwsProxyHttpServletRequestReaderTest {
     }
 
     @Test
-    public void readRequest_validEventEmptyPath_expectException() {
+    void readRequest_validEventEmptyPath_expectException() {
         try {
             AwsProxyRequest req = new AwsProxyRequestBuilder(null, "GET").build();
             HttpServletRequest servletReq = reader.readRequest(req, null, null, ContainerConfig.defaultConfig());
@@ -116,7 +116,7 @@ public class AwsProxyHttpServletRequestReaderTest {
     }
 
     @Test
-    public void readRequest_invalidEventEmptyMethod_expectException() {
+    void readRequest_invalidEventEmptyMethod_expectException() {
         try {
             AwsProxyRequest req = new AwsProxyRequestBuilder("/path", null).build();
             reader.readRequest(req, null, null, ContainerConfig.defaultConfig());
@@ -127,7 +127,7 @@ public class AwsProxyHttpServletRequestReaderTest {
     }
 
     @Test
-    public void readRequest_invalidEventEmptyContext_expectException() {
+    void readRequest_invalidEventEmptyContext_expectException() {
         try {
             AwsProxyRequest req = new AwsProxyRequestBuilder("/path", "GET").build();
             req.setRequestContext(null);
@@ -139,7 +139,7 @@ public class AwsProxyHttpServletRequestReaderTest {
     }
 
     @Test
-    public void readRequest_nullHeaders_expectSuccess() {
+    void readRequest_nullHeaders_expectSuccess() {
         AwsProxyRequest req = new AwsProxyRequestBuilder("/path", "GET").build();
         req.setMultiValueHeaders(null);
         try {
@@ -153,7 +153,7 @@ public class AwsProxyHttpServletRequestReaderTest {
     }
 
     @Test
-    public void readRequest_emptyHeaders_expectSuccess() {
+    void readRequest_emptyHeaders_expectSuccess() {
         AwsProxyRequest req = new AwsProxyRequestBuilder("/path", "GET").build();
         try {
             HttpServletRequest servletReq = reader.readRequest(req, null, null, ContainerConfig.defaultConfig());

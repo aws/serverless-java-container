@@ -7,11 +7,10 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import spark.Spark;
 
 import javax.servlet.http.Cookie;
@@ -20,11 +19,10 @@ import javax.ws.rs.core.HttpHeaders;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static spark.Spark.get;
 
 
-@RunWith(Parameterized.class)
 public class HelloWorldSparkTest {
     private static final String CUSTOM_HEADER_KEY = "X-Custom-Header";
     private static final String CUSTOM_HEADER_VALUE = "My Header Value";
@@ -41,13 +39,12 @@ public class HelloWorldSparkTest {
 
     private boolean isAlb;
 
-    public HelloWorldSparkTest(boolean alb) {
+    public void initHelloWorldSparkTest(boolean alb) {
         isAlb = alb;
     }
 
-    @Parameterized.Parameters
     public static Collection<Object> data() {
-        return Arrays.asList(new Object[] { false, true });
+        return Arrays.asList(new Object[]{false, true});
     }
 
     private AwsProxyRequestBuilder getRequestBuilder() {
@@ -57,7 +54,7 @@ public class HelloWorldSparkTest {
         return builder;
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void initializeServer() {
         try {
             handler = SparkLambdaContainerHandler.getAwsProxyHandler();
@@ -70,13 +67,15 @@ public class HelloWorldSparkTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void stopSpark() {
         Spark.stop();
     }
 
-    @Test
-    public void basicServer_handleRequest_emptyFilters() {
+    @MethodSource("data")
+    @ParameterizedTest
+    void basicServer_handleRequest_emptyFilters(boolean alb) {
+        initHelloWorldSparkTest(alb);
         AwsProxyRequest req = getRequestBuilder().method("GET").path("/hello").build();
         AwsProxyResponse response = handler.proxy(req, new MockLambdaContext());
 
@@ -86,8 +85,10 @@ public class HelloWorldSparkTest {
         assertEquals(BODY_TEXT_RESPONSE, response.getBody());
     }
 
-    @Test
-    public void addCookie_setCookieOnResponse_validCustomCookie() {
+    @MethodSource("data")
+    @ParameterizedTest
+    void addCookie_setCookieOnResponse_validCustomCookie(boolean alb) {
+        initHelloWorldSparkTest(alb);
         AwsProxyRequest req = getRequestBuilder().method("GET").path("/cookie").build();
         AwsProxyResponse response = handler.proxy(req, new MockLambdaContext());
 
@@ -98,8 +99,10 @@ public class HelloWorldSparkTest {
         assertTrue(response.getMultiValueHeaders().getFirst(HttpHeaders.SET_COOKIE).contains(COOKIE_PATH));
     }
 
-    @Test
-    public void multiCookie_setCookieOnResponse_singleHeaderWithMultipleValues() {
+    @MethodSource("data")
+    @ParameterizedTest
+    void multiCookie_setCookieOnResponse_singleHeaderWithMultipleValues(boolean alb) {
+        initHelloWorldSparkTest(alb);
         AwsProxyRequest req = getRequestBuilder().method("GET").path("/multi-cookie").build();
         AwsProxyResponse response = handler.proxy(req, new MockLambdaContext());
 
@@ -113,8 +116,10 @@ public class HelloWorldSparkTest {
         assertTrue(response.getMultiValueHeaders().getFirst(HttpHeaders.SET_COOKIE).contains(COOKIE_PATH));
     }
 
-    @Test
-    public void rootResource_basicRequest_expectSuccess() {
+    @MethodSource("data")
+    @ParameterizedTest
+    void rootResource_basicRequest_expectSuccess(boolean alb) {
+        initHelloWorldSparkTest(alb);
         AwsProxyRequest req = getRequestBuilder().method("GET").path("/").build();
         AwsProxyResponse response = handler.proxy(req, new MockLambdaContext());
 
@@ -124,8 +129,10 @@ public class HelloWorldSparkTest {
         assertEquals(BODY_TEXT_RESPONSE, response.getBody());
     }
 
-    @Test
-    public void readCookie_customDomainName_expectValidCookie() {
+    @MethodSource("data")
+    @ParameterizedTest
+    void readCookie_customDomainName_expectValidCookie(boolean alb) {
+        initHelloWorldSparkTest(alb);
         AwsProxyRequest req = getRequestBuilder().method("GET").path("/cookie-read").cookie(READ_COOKIE_NAME, "test").build();
         AwsProxyResponse response = handler.proxy(req, new MockLambdaContext());
         assertEquals("test", response.getBody());
