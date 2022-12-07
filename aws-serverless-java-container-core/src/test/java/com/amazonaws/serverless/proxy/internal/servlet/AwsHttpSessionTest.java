@@ -1,18 +1,16 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.util.Enumeration;
 
-import static junit.framework.TestCase.assertTrue;
-import static junit.framework.TestCase.fail;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AwsHttpSessionTest {
 
     @Test
-    public void new_withNullId_throwsException() {
+    void new_withNullId_throwsException() {
         try {
             AwsHttpSession session = new AwsHttpSession(null);
         } catch (RuntimeException e) {
@@ -23,13 +21,13 @@ public class AwsHttpSessionTest {
     }
 
     @Test
-    public void new_withValidId_setsIdCorrectly() {
+    void new_withValidId_setsIdCorrectly() {
         AwsHttpSession session = new AwsHttpSession("id");
         assertEquals("id", session.getId());
     }
 
     @Test
-    public void new_creationTimePopulatedCorrectly() {
+    void new_creationTimePopulatedCorrectly() {
         AwsHttpSession session = new AwsHttpSession("id");
         assertTrue(session.getCreationTime() > Instant.now().getEpochSecond() - 1);
         assertEquals(AwsHttpSession.SESSION_DURATION_SEC, session.getMaxInactiveInterval());
@@ -37,7 +35,7 @@ public class AwsHttpSessionTest {
     }
 
     @Test
-    public void values_throwsUnsupportedOperationException() {
+    void values_throwsUnsupportedOperationException() {
         int exCount = 0;
         AwsHttpSession sess = new AwsHttpSession("id");
 
@@ -65,7 +63,7 @@ public class AwsHttpSessionTest {
     }
 
     @Test
-    public void attributes_dataStoredCorrectly() throws InterruptedException {
+    void attributes_dataStoredCorrectly() throws InterruptedException {
         AwsHttpSession sess = new AwsHttpSession("id");
         sess.setAttribute("test", "test");
         sess.setAttribute("test2", "test2");
@@ -76,7 +74,7 @@ public class AwsHttpSessionTest {
             attrsCnt++;
         }
         assertEquals(2, attrsCnt);
-        assertEquals(sess.getAttribute("test"), "test");
+        assertEquals("test", sess.getAttribute("test"));
         sess.removeAttribute("test2");
         attrs = sess.getAttributeNames();
         attrsCnt = 0;
@@ -94,7 +92,7 @@ public class AwsHttpSessionTest {
     }
 
     @Test
-    public void validSession_expectCorrectValidationOrInvalidation() throws InterruptedException {
+    void validSession_expectCorrectValidationOrInvalidation() throws InterruptedException {
         AwsHttpSession sess = new AwsHttpSession("id");
         assertTrue(sess.isValid());
         assertTrue(sess.isNew());

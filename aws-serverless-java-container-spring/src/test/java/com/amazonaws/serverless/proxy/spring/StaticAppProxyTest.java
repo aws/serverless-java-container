@@ -8,12 +8,13 @@ import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.spring.staticapp.LambdaHandler;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 
 import javax.ws.rs.core.MediaType;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 public class StaticAppProxyTest {
@@ -21,7 +22,7 @@ public class StaticAppProxyTest {
     private LambdaHandler lambdaHandler = new LambdaHandler();
 
     @Test
-    public void staticPage() {
+    void staticPage() {
         AwsProxyRequest req = new AwsProxyRequestBuilder("/sample/page", "GET").build();
         // we temporarily allow the container to read from any path
         LambdaContainerHandler.getContainerConfig().addValidFilePath("/");

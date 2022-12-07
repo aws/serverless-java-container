@@ -5,7 +5,7 @@ import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
 import com.amazonaws.serverless.proxy.internal.servlet.FilterHolder;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletContext;
@@ -17,12 +17,12 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class UrlPathValidatorTest {
     @Test
-    public void init_noConfig_setsDefaultStatusCode() {
+    void init_noConfig_setsDefaultStatusCode() {
         UrlPathValidator pathValidator = new UrlPathValidator();
         try {
             pathValidator.init(null);
@@ -34,7 +34,7 @@ public class UrlPathValidatorTest {
     }
 
     @Test
-    public void init_withConfig_setsCorrectStatusCode() {
+    void init_withConfig_setsCorrectStatusCode() {
         UrlPathValidator pathValidator = new UrlPathValidator();
         Map<String, String> params = new HashMap<>();
         params.put(UrlPathValidator.PARAM_INVALID_STATUS_CODE, "401");
@@ -49,7 +49,7 @@ public class UrlPathValidatorTest {
     }
 
     @Test
-    public void init_withWrongConfig_setsDefaultStatusCode() {
+    void init_withWrongConfig_setsDefaultStatusCode() {
         UrlPathValidator pathValidator = new UrlPathValidator();
         Map<String, String> params = new HashMap<>();
         params.put(UrlPathValidator.PARAM_INVALID_STATUS_CODE, "hello");
@@ -64,7 +64,7 @@ public class UrlPathValidatorTest {
     }
 
     @Test
-    public void doFilter_invalidRelativePathUri_setsDefaultStatusCode() {
+    void doFilter_invalidRelativePathUri_setsDefaultStatusCode() {
         AwsProxyHttpServletRequest req = new AwsProxyHttpServletRequest(new AwsProxyRequestBuilder("../..", "GET").build(), null, null);
         AwsHttpServletResponse resp = new AwsHttpServletResponse(req, null);
         UrlPathValidator pathValidator = new UrlPathValidator();
@@ -79,7 +79,7 @@ public class UrlPathValidatorTest {
     }
 
     @Test
-    public void doFilter_invalidUri_setsDefaultStatusCode() {
+    void doFilter_invalidUri_setsDefaultStatusCode() {
         AwsProxyHttpServletRequest req = new AwsProxyHttpServletRequest(new AwsProxyRequestBuilder("wonkyprotocol://˝Ó#\u0009", "GET").build(), null, null);
         AwsHttpServletResponse resp = new AwsHttpServletResponse(req, null);
         UrlPathValidator pathValidator = new UrlPathValidator();

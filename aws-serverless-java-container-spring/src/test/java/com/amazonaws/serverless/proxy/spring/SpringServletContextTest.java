@@ -11,8 +11,8 @@ import com.amazonaws.serverless.proxy.spring.echoapp.ContextResource;
 import com.amazonaws.serverless.proxy.spring.echoapp.CustomHeaderFilter;
 import com.amazonaws.serverless.proxy.spring.echoapp.EchoSpringAppConfig;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.ValidatedUserModel;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,7 +22,7 @@ import javax.servlet.FilterRegistration;
 
 import java.util.EnumSet;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 // we don't use the spring annotations to pretend we are running in the actual container
 public class SpringServletContextTest {
@@ -31,7 +31,7 @@ public class SpringServletContextTest {
 
     private static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         try {
             handler = SpringLambdaContainerHandler.getAwsProxyHandler(EchoSpringAppConfig.class);
@@ -49,7 +49,7 @@ public class SpringServletContextTest {
     }
 
     @Test
-    public void context_autowireValidContext_echoContext() {
+    void context_autowireValidContext_echoContext() {
         AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/servlet-context", "GET")
                 .json()
                 .stage(STAGE)
@@ -62,7 +62,7 @@ public class SpringServletContextTest {
     }
 
     @Test
-    public void context_contextAware_contextEcho() {
+    void context_contextAware_contextEcho() {
         AwsProxyRequest request = new AwsProxyRequestBuilder("/context/echo", "GET")
                 .json()
                 .stage(STAGE)
@@ -75,7 +75,7 @@ public class SpringServletContextTest {
     }
 
     @Test
-    public void filter_customHeaderFilter_echoHeaders() {
+    void filter_customHeaderFilter_echoHeaders() {
         AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/headers", "GET")
                 .json()
                 .stage(STAGE)
@@ -89,7 +89,7 @@ public class SpringServletContextTest {
     }
 
     @Test
-    public void filter_validationFilter_emptyName() {
+    void filter_validationFilter_emptyName() {
         ValidatedUserModel userModel = new ValidatedUserModel();
         userModel.setFirstName("Test");
         AwsProxyRequest request = new AwsProxyRequestBuilder("/context/user", "POST")
@@ -102,11 +102,11 @@ public class SpringServletContextTest {
     }
 
     @Test
-    public void exception_populatedException_annotationValuesMappedCorrectly() {
+    void exception_populatedException_annotationValuesMappedCorrectly() {
         AwsProxyRequest request = new AwsProxyRequestBuilder("/context/exception", "GET")
-                                          .stage(STAGE)
-                                          .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-                                          .build();
+                .stage(STAGE)
+                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .build();
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
 
@@ -115,11 +115,11 @@ public class SpringServletContextTest {
     }
 
     @Test
-    public void cookie_injectInResponse_expectCustomSetCookie() {
+    void cookie_injectInResponse_expectCustomSetCookie() {
         AwsProxyRequest request = new AwsProxyRequestBuilder("/context/cookie", "GET")
-                                          .stage(STAGE)
-                                          .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-                                          .build();
+                .stage(STAGE)
+                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .build();
 
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
 

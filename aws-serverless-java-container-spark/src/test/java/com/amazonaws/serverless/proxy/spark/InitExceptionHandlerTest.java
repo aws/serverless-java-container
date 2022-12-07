@@ -11,15 +11,13 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spark.embeddedserver.LambdaEmbeddedServer;
 import com.amazonaws.serverless.proxy.spark.embeddedserver.LambdaEmbeddedServerFactory;
 
-import org.junit.AfterClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
 import spark.Spark;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
@@ -33,11 +31,11 @@ public class InitExceptionHandlerTest {
     private static LambdaEmbeddedServer embeddedServer = mock(LambdaEmbeddedServer.class);
 
     @Test
-    public void initException_mockException_expectHandlerToRun() {
+    void initException_mockException_expectHandlerToRun() {
         try {
 
-            when(embeddedServer.ignite(anyString(), anyInt(), anyObject(), anyInt(), anyInt(), anyInt()))
-                    .thenThrow(new ContainerInitializationException(TEST_EXCEPTION_MESSAGE, null));
+            when(embeddedServer.ignite(anyString(), anyInt(), any(), anyInt(), anyInt(), anyInt()))
+                                              .thenThrow(new ContainerInitializationException(TEST_EXCEPTION_MESSAGE, null));
             LambdaEmbeddedServerFactory serverFactory = new LambdaEmbeddedServerFactory(embeddedServer);
             new SparkLambdaContainerHandler<>(AwsProxyRequest.class,
                                               AwsProxyResponse.class,
@@ -56,7 +54,7 @@ public class InitExceptionHandlerTest {
 
     }
 
-    @AfterClass
+    @AfterAll
     public static void stopSpark() {
         // un-mock the embedded server to avoid blocking other tests
         reset(embeddedServer);

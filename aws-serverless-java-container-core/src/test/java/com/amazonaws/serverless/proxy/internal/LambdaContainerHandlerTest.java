@@ -11,12 +11,12 @@ import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
 import org.apache.http.impl.execchain.RequestAbortedException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.concurrent.CountDownLatch;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class LambdaContainerHandlerTest {
     private boolean isRuntimeException = false;
@@ -29,7 +29,7 @@ public class LambdaContainerHandlerTest {
     );
 
     @Test
-    public void throwRuntime_returnsUnwrappedException() {
+    void throwRuntime_returnsUnwrappedException() {
         try {
             isRuntimeException = true;
             throwException = true;
@@ -44,7 +44,7 @@ public class LambdaContainerHandlerTest {
     }
 
     @Test
-    public void throwNonRuntime_returnsWrappedException() {
+    void throwNonRuntime_returnsWrappedException() {
         try {
             isRuntimeException = false;
             throwException = true;
@@ -61,7 +61,7 @@ public class LambdaContainerHandlerTest {
     }
 
     @Test
-    public void noException_returnsResponse() {
+    void noException_returnsResponse() {
         throwException = false;
         LambdaContainerHandler.getContainerConfig().setDisableExceptionMapper(false);
         AwsProxyResponse resp = handler.proxy(new AwsProxyRequestBuilder("/test", "GET").build(), new MockLambdaContext());

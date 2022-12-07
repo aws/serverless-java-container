@@ -1,17 +1,15 @@
 package com.amazonaws.serverless.proxy.model;
 
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class MultiValuedTreeMapTest {
 
     @Test
-    public void add_sameNameCaseSensitive_expectBothValues() {
+    void add_sameNameCaseSensitive_expectBothValues() {
         MultiValuedTreeMap<String, String> map = new MultiValuedTreeMap<>();
         map.add("Test", "test");
         map.add("Test", "test2");
@@ -28,7 +26,7 @@ public class MultiValuedTreeMapTest {
     }
 
     @Test
-    public void add_sameNameCaseInsensitive_expectOneValue() {
+    void add_sameNameCaseInsensitive_expectOneValue() {
         Headers map = new Headers();
         map.add("Test", "test");
         assertNotNull(map.get("Test"));
@@ -41,7 +39,7 @@ public class MultiValuedTreeMapTest {
     }
 
     @Test
-    public void addFirst_sameNameKey_ExpectFirstReplaced() {
+    void addFirst_sameNameKey_ExpectFirstReplaced() {
         MultiValuedTreeMap<String, String> map = new MultiValuedTreeMap<>();
         map.add("Test", "test1");
         map.add("Test", "test2");

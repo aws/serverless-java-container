@@ -10,7 +10,7 @@ import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.Servlet;
@@ -21,8 +21,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
-import static junit.framework.TestCase.assertNotNull;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class AwsAsyncContextTest {
     private MockLambdaContext lambdaCtx = new MockLambdaContext();
@@ -33,7 +33,7 @@ public class AwsAsyncContextTest {
     private AwsServletContext ctx = getCtx();
 
     @Test
-    public void dispatch_sendsToCorrectServlet() {
+    void dispatch_sendsToCorrectServlet() {
         AwsProxyHttpServletRequest req = new AwsProxyHttpServletRequest(new AwsProxyRequestBuilder("/srv1/hello", "GET").build(), lambdaCtx, null);
         req.setResponse(handler.getContainerResponse(req, new CountDownLatch(1)));
         req.setServletContext(ctx);
@@ -59,8 +59,8 @@ public class AwsAsyncContextTest {
     }
 
     @Test
-    public void dispatchNewPath_sendsToCorrectServlet() throws InvalidRequestEventException {
-        AwsProxyHttpServletRequest req = (AwsProxyHttpServletRequest) reader.readRequest(new AwsProxyRequestBuilder("/srv1/hello", "GET").build(), null, lambdaCtx, LambdaContainerHandler.getContainerConfig());
+    void dispatchNewPath_sendsToCorrectServlet() throws InvalidRequestEventException {
+        AwsProxyHttpServletRequest req = (AwsProxyHttpServletRequest)reader.readRequest(new AwsProxyRequestBuilder("/srv1/hello", "GET").build(), null, lambdaCtx, LambdaContainerHandler.getContainerConfig());
         req.setResponse(handler.getContainerResponse(req, new CountDownLatch(1)));
         req.setServletContext(ctx);
         req.setContainerHandler(handler);

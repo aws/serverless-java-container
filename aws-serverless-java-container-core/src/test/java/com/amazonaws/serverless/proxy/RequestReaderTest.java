@@ -4,9 +4,9 @@ package com.amazonaws.serverless.proxy;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequestReader;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class RequestReaderTest {
@@ -17,14 +17,14 @@ public class RequestReaderTest {
     private static final AwsProxyHttpServletRequestReader requestReader = new AwsProxyHttpServletRequestReader();
 
     @Test
-    public void defaultConfig_doNotStripBasePath() {
+    void defaultConfig_doNotStripBasePath() {
         ContainerConfig config = ContainerConfig.defaultConfig();
         assertFalse(config.isStripBasePath());
         assertNull(config.getServiceBasePath());
     }
 
     @Test
-    public void setServiceBasePath_addSlashes() {
+    void setServiceBasePath_addSlashes() {
         ContainerConfig config = new ContainerConfig();
 
         config.setServiceBasePath(BASE_PATH_MAPPING);
@@ -35,7 +35,7 @@ public class RequestReaderTest {
     }
 
     @Test
-    public void requestReader_stripBasePath() {
+    void requestReader_stripBasePath() {
         ContainerConfig config = ContainerConfig.defaultConfig();
         String requestPath = "/" + BASE_PATH_MAPPING + ORDERS_URL;
 
@@ -55,7 +55,7 @@ public class RequestReaderTest {
     }
 
     @Test
-    public void requestReader_doubleBasePath() {
+    void requestReader_doubleBasePath() {
         ContainerConfig config = ContainerConfig.defaultConfig();
         config.setStripBasePath(true);
         config.setServiceBasePath(BASE_PATH_MAPPING);

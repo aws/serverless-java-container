@@ -7,13 +7,13 @@ import com.amazonaws.serverless.proxy.model.ContainerConfig;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Base64;
 import java.util.List;
@@ -41,7 +41,7 @@ public class AwsHttpServletRequestTest {
     private static ContainerConfig config = ContainerConfig.defaultConfig();
 
     @Test
-    public void headers_parseHeaderValue_multiValue() {
+    void headers_parseHeaderValue_multiValue() {
         AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(contentTypeRequest, mockContext, null, config);
         // I'm also using this to double-check that I can get a header ignoring case
         List<AwsHttpServletRequest.HeaderValue> values = request.parseHeaderValue(request.getHeader("content-type"));
@@ -55,7 +55,7 @@ public class AwsHttpServletRequestTest {
     }
 
     @Test
-    public void headers_parseHeaderValue_validMultipleCookie() {
+    void headers_parseHeaderValue_validMultipleCookie() {
         AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(validCookieRequest, mockContext, null, config);
         List<AwsHttpServletRequest.HeaderValue> values = request.parseHeaderValue(request.getHeader(HttpHeaders.COOKIE), ";", ",");
 
@@ -67,7 +67,7 @@ public class AwsHttpServletRequestTest {
     }
 
     @Test
-    public void headers_parseHeaderValue_complexAccept() {
+    void headers_parseHeaderValue_complexAccept() {
         AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(complexAcceptHeader, mockContext, null, config);
         List<AwsHttpServletRequest.HeaderValue> values = request.parseHeaderValue(request.getHeader(HttpHeaders.ACCEPT), ",", ";");
 
@@ -75,8 +75,8 @@ public class AwsHttpServletRequestTest {
     }
 
     @Test
-    public void headers_parseHeaderValue_encodedContentWithEquals() {
-        AwsHttpServletRequest context = new AwsProxyHttpServletRequest(null,null,null);
+    void headers_parseHeaderValue_encodedContentWithEquals() {
+        AwsHttpServletRequest context = new AwsProxyHttpServletRequest(null, null, null);
 
         String value = Base64.getUrlEncoder().encodeToString("a".getBytes());
 
@@ -86,11 +86,11 @@ public class AwsHttpServletRequestTest {
     }
 
     @Test
-    public void headers_parseHeaderValue_base64EncodedCookieValue() {
+    void headers_parseHeaderValue_base64EncodedCookieValue() {
         String value = Base64.getUrlEncoder().encodeToString("a".getBytes());
         String cookieValue = "jwt=" + value + "; secondValue=second";
         AwsProxyRequest req = new AwsProxyRequestBuilder("/test", "GET").header(HttpHeaders.COOKIE, cookieValue).build();
-        AwsHttpServletRequest context = new AwsProxyHttpServletRequest(req,null,null);
+        AwsHttpServletRequest context = new AwsProxyHttpServletRequest(req, null, null);
 
         Cookie[] cookies = context.getCookies();
 
@@ -100,10 +100,10 @@ public class AwsHttpServletRequestTest {
     }
 
     @Test
-    public void headers_parseHeaderValue_cookieWithSeparatorInValue() {
+    void headers_parseHeaderValue_cookieWithSeparatorInValue() {
         String cookieValue = "jwt==test; secondValue=second";
         AwsProxyRequest req = new AwsProxyRequestBuilder("/test", "GET").header(HttpHeaders.COOKIE, cookieValue).build();
-        AwsHttpServletRequest context = new AwsProxyHttpServletRequest(req,null,null);
+        AwsHttpServletRequest context = new AwsProxyHttpServletRequest(req, null, null);
 
         Cookie[] cookies = context.getCookies();
 
@@ -113,8 +113,8 @@ public class AwsHttpServletRequestTest {
     }
 
     @Test
-    public void headers_parseHeaderValue_headerWithPaddingButNotBase64Encoded() {
-        AwsHttpServletRequest context = new AwsProxyHttpServletRequest(null,null,null);
+    void headers_parseHeaderValue_headerWithPaddingButNotBase64Encoded() {
+        AwsHttpServletRequest context = new AwsProxyHttpServletRequest(null, null, null);
 
         List<AwsHttpServletRequest.HeaderValue> result = context.parseHeaderValue("hello=");
         assertTrue(result.size() > 0);
@@ -123,7 +123,7 @@ public class AwsHttpServletRequestTest {
     }
 
     @Test
-    public void queryString_generateQueryString_validQuery() {
+    void queryString_generateQueryString_validQuery() {
         AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(queryString, mockContext, null, config);
 
         String parsedString = null;
@@ -139,8 +139,9 @@ public class AwsHttpServletRequestTest {
     }
 
     @Test
-    public void queryString_generateQueryString_nullParameterIsEmpty() {
-        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(queryStringNullValue, mockContext, null, config);String parsedString = null;
+    void queryString_generateQueryString_nullParameterIsEmpty() {
+        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(queryStringNullValue, mockContext, null, config);
+        String parsedString = null;
         try {
             parsedString = request.generateQueryString(request.getAwsProxyRequest().getMultiValueQueryStringParameters(), true, config.getUriEncoding());
         } catch (ServletException e) {
@@ -152,7 +153,7 @@ public class AwsHttpServletRequestTest {
     }
 
     @Test
-    public void queryStringWithEncodedParams_generateQueryString_validQuery() {
+    void queryStringWithEncodedParams_generateQueryString_validQuery() {
         AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(encodedQueryString, mockContext, null, config);
 
         String parsedString = null;
@@ -168,7 +169,7 @@ public class AwsHttpServletRequestTest {
     }
 
     @Test
-    public void queryStringWithMultipleValues_generateQueryString_validQuery() {
+    void queryStringWithMultipleValues_generateQueryString_validQuery() {
         AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(multipleParams, mockContext, null, config);
 
         String parsedString = null;

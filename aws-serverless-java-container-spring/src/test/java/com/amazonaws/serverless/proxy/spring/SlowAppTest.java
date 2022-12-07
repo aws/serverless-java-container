@@ -8,19 +8,17 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.springslowapp.LambdaHandler;
 import com.amazonaws.serverless.proxy.spring.springslowapp.MessageController;
 import com.amazonaws.serverless.proxy.spring.springslowapp.SlowAppConfig;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.util.Objects;
 
-import static org.junit.Assert.*;
-import static org.junit.Assume.assumeFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SlowAppTest {
 
     @Test
-    public void springSlowApp_continuesInBackgroundThread_returnsCorrect() {
+    void springSlowApp_continuesInBackgroundThread_returnsCorrect() {
         LambdaHandler slowApp = null;
         try {
             slowApp = new LambdaHandler();
@@ -36,7 +34,7 @@ public class SlowAppTest {
         long endRequestTime = Instant.now().toEpochMilli();
         assertTrue(endRequestTime - startRequestTime > SlowAppConfig.SlowDownInit.INIT_SLEEP_TIME_MS - 10_000);
         assertEquals(200, resp.getStatusCode());
-        Assert.assertEquals(MessageController.HELLO_MESSAGE, resp.getBody());
+        assertEquals(MessageController.HELLO_MESSAGE, resp.getBody());
     }
 
 }

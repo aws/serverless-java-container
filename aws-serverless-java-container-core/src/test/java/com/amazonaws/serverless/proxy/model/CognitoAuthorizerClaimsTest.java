@@ -2,14 +2,14 @@ package com.amazonaws.serverless.proxy.model;
 
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CognitoAuthorizerClaimsTest {
 
@@ -77,7 +77,7 @@ public class CognitoAuthorizerClaimsTest {
 
 
     @Test
-    public void claims_serialize_validJsonString() {
+    void claims_serialize_validJsonString() {
         try {
             AwsProxyRequest req = new AwsProxyRequestBuilder().fromJsonString(USER_POOLS_REQUEST).build();
 
@@ -90,7 +90,7 @@ public class CognitoAuthorizerClaimsTest {
     }
 
     @Test
-    public void claims_dateParse_issueTime() {
+    void claims_dateParse_issueTime() {
         try {
             AwsProxyRequest req = new AwsProxyRequestBuilder().fromJsonString(USER_POOLS_REQUEST).build();
 

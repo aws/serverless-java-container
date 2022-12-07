@@ -1,6 +1,6 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.servlet.*;
 
@@ -10,12 +10,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AwsServletRegistrationTest {
 
     @Test
-    public void getMappings_singleMapping_savedCorrectly() {
+    void getMappings_singleMapping_savedCorrectly() {
         ServletRegistration.Dynamic reg = new AwsServletRegistration("test", null, new AwsServletContext(null));
         reg.addMapping("/");
         assertEquals(1, reg.getMappings().size());
@@ -27,7 +27,7 @@ public class AwsServletRegistrationTest {
     }
 
     @Test
-    public void metadata_savedAndReturnedCorrectly() {
+    void metadata_savedAndReturnedCorrectly() {
         ServletRegistration.Dynamic reg = new AwsServletRegistration("test", null, new AwsServletContext(null));
         assertEquals("test", reg.getName());
         reg.setLoadOnStartup(2);
@@ -40,7 +40,7 @@ public class AwsServletRegistrationTest {
     }
 
     @Test
-    public void setInitParameter_savedCorrectly() {
+    void setInitParameter_savedCorrectly() {
         ServletRegistration.Dynamic reg = new AwsServletRegistration("test", null, new AwsServletContext(null));
         assertTrue(reg.setInitParameter("param", "value"));
         assertFalse(reg.setInitParameter("param", "value"));
@@ -55,7 +55,7 @@ public class AwsServletRegistrationTest {
     }
 
     @Test
-    public void servletConfig_populatesConfig() throws ServletException {
+    void servletConfig_populatesConfig() throws ServletException {
         AwsServletContext servletCtx = new AwsServletContext(null);
         TestServlet servlet = new TestServlet();
         ServletRegistration.Dynamic reg = new AwsServletRegistration("test", servlet, servletCtx);

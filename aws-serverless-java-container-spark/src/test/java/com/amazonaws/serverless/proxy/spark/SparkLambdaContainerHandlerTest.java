@@ -9,8 +9,8 @@ import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.spark.filter.CustomHeaderFilter;
 import com.amazonaws.serverless.proxy.spark.filter.UnauthenticatedFilter;
 
-import org.junit.AfterClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
 import spark.Spark;
 
 import javax.servlet.DispatcherType;
@@ -18,7 +18,7 @@ import javax.servlet.FilterRegistration;
 
 import java.util.EnumSet;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static spark.Spark.get;
 
 
@@ -26,11 +26,11 @@ public class SparkLambdaContainerHandlerTest {
     private static final String RESPONSE_BODY_TEXT = "hello";
 
     @Test
-    public void filters_onStartupMethod_executeFilters() {
+    void filters_onStartupMethod_executeFilters() {
 
         SparkLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = null;
         try {
-             handler = SparkLambdaContainerHandler.getAwsProxyHandler();
+            handler = SparkLambdaContainerHandler.getAwsProxyHandler();
         } catch (ContainerInitializationException e) {
             e.printStackTrace();
             fail();
@@ -62,7 +62,7 @@ public class SparkLambdaContainerHandlerTest {
     }
 
     @Test
-    public void filters_unauthenticatedFilter_stopRequestProcessing() {
+    void filters_unauthenticatedFilter_stopRequestProcessing() {
 
         SparkLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = null;
         try {
@@ -97,7 +97,7 @@ public class SparkLambdaContainerHandlerTest {
         // now we test with the custom header, this should stop request processing in the
         // filter and return an unauthenticated response
         AwsProxyRequest unauthReq = new AwsProxyRequestBuilder().method("GET").path("/unauth")
-                                                          .header(UnauthenticatedFilter.HEADER_NAME, "1").build();
+                                          .header(UnauthenticatedFilter.HEADER_NAME, "1").build();
         AwsProxyResponse unauthResp = handler.proxy(unauthReq, new MockLambdaContext());
 
         assertNotNull(unauthResp);
@@ -105,7 +105,7 @@ public class SparkLambdaContainerHandlerTest {
         assertEquals("", unauthResp.getBody());
     }
 
-    @AfterClass
+    @AfterAll
     public static void stopSpark() {
         Spark.stop();
     }

@@ -2,11 +2,11 @@ package com.amazonaws.serverless.proxy.model;
 
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ApiGatewayAuthorizerContextTest {
     private static final String FIELD_NAME_1 = "CUSTOM_FIELD_1";
@@ -60,7 +60,7 @@ public class ApiGatewayAuthorizerContextTest {
                                                      + "}";
 
     @Test
-    public void authorizerContext_serialize_customValues() {
+    void authorizerContext_serialize_customValues() {
         try {
             AwsProxyRequest req = new AwsProxyRequestBuilder().fromJsonString(AUTHORIZER_REQUEST).build();
 

@@ -3,15 +3,15 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 import com.amazonaws.serverless.proxy.internal.servlet.filters.UrlPathValidator;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.services.lambda.runtime.Context;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class FilterHolderTest {
     private static Context lambdaContext = new MockLambdaContext();
 
     @Test
-    public void annotation_filterRegistration_pathValidator() {
+    void annotation_filterRegistration_pathValidator() {
         FilterHolder holder = new FilterHolder(new UrlPathValidator(), new AwsServletContext(null));
 
         assertTrue(holder.isAnnotated());

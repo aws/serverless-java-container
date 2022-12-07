@@ -8,7 +8,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -22,10 +22,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Random;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class AwsProxyHttpServletRequestFormTest {
@@ -55,12 +52,12 @@ public class AwsProxyHttpServletRequestFormTest {
     private static final String ENCODED_FORM_ENTITY = PART_KEY_1 + "=" + ENCODED_VALUE + "&" + PART_KEY_2 + "=" + PART_VALUE_2;
 
     @Test
-    public void postForm_getParam_getEncodedFullValue() {
+    void postForm_getParam_getEncodedFullValue() {
         try {
             AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/form", "POST")
-                                                   .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED)
-                                                   .body(ENCODED_FORM_ENTITY)
-                                                   .build();
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED)
+                    .body(ENCODED_FORM_ENTITY)
+                    .build();
 
             HttpServletRequest request = new AwsProxyHttpServletRequest(proxyRequest, null, null);
             assertNotNull(request.getParts());
@@ -71,32 +68,32 @@ public class AwsProxyHttpServletRequestFormTest {
     }
 
     @Test
-    public void postForm_getParts_parsing() {
+    void postForm_getParts_parsing() {
         try {
             AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/form", "POST")
-                                                   .header(MULTIPART_FORM_DATA.getContentType().getName(), MULTIPART_FORM_DATA.getContentType().getValue())
-                                                   //.header(formData.getContentEncoding().getName(), formData.getContentEncoding().getValue())
-                                                   .body(IOUtils.toString(MULTIPART_FORM_DATA.getContent()))
-                                                   .build();
+                    .header(MULTIPART_FORM_DATA.getContentType().getName(), MULTIPART_FORM_DATA.getContentType().getValue())
+                    //.header(formData.getContentEncoding().getName(), formData.getContentEncoding().getValue())
+                    .body(IOUtils.toString(MULTIPART_FORM_DATA.getContent(), Charset.defaultCharset()))
+                    .build();
 
             HttpServletRequest request = new AwsProxyHttpServletRequest(proxyRequest, null, null);
             assertNotNull(request.getParts());
             assertEquals(2, request.getParts().size());
-            assertEquals(PART_VALUE_1, IOUtils.toString(request.getPart(PART_KEY_1).getInputStream()));
-            assertEquals(PART_VALUE_2, IOUtils.toString(request.getPart(PART_KEY_2).getInputStream()));
+            assertEquals(PART_VALUE_1, IOUtils.toString(request.getPart(PART_KEY_1).getInputStream(), Charset.defaultCharset()));
+            assertEquals(PART_VALUE_2, IOUtils.toString(request.getPart(PART_KEY_2).getInputStream(), Charset.defaultCharset()));
         } catch (IOException | ServletException e) {
             fail(e.getMessage());
         }
     }
 
     @Test
-    public void multipart_getParts_binary() {
+    void multipart_getParts_binary() {
         try {
             AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/form", "POST")
-                                                   .header(MULTIPART_BINARY_DATA.getContentType().getName(), MULTIPART_BINARY_DATA.getContentType().getValue())
-                                                   .header(HttpHeaders.CONTENT_LENGTH, MULTIPART_BINARY_DATA.getContentLength() + "")
-                                                   .binaryBody(MULTIPART_BINARY_DATA.getContent())
-                                                   .build();
+                    .header(MULTIPART_BINARY_DATA.getContentType().getName(), MULTIPART_BINARY_DATA.getContentType().getValue())
+                    .header(HttpHeaders.CONTENT_LENGTH, MULTIPART_BINARY_DATA.getContentLength() + "")
+                    .binaryBody(MULTIPART_BINARY_DATA.getContent())
+                    .build();
 
             HttpServletRequest request = new AwsProxyHttpServletRequest(proxyRequest, null, null);
             assertNotNull(request.getParts());
@@ -105,17 +102,17 @@ public class AwsProxyHttpServletRequestFormTest {
             assertEquals(FILE_SIZE, request.getPart(FILE_KEY).getSize());
             assertEquals(FILE_KEY, request.getPart(FILE_KEY).getName());
             assertEquals(FILE_NAME, request.getPart(FILE_KEY).getSubmittedFileName());
-            assertEquals(PART_VALUE_1, IOUtils.toString(request.getPart(PART_KEY_1).getInputStream()));
-            assertEquals(PART_VALUE_2, IOUtils.toString(request.getPart(PART_KEY_2).getInputStream()));
+            assertEquals(PART_VALUE_1, IOUtils.toString(request.getPart(PART_KEY_1).getInputStream(), Charset.defaultCharset()));
+            assertEquals(PART_VALUE_2, IOUtils.toString(request.getPart(PART_KEY_2).getInputStream(), Charset.defaultCharset()));
         } catch (IOException | ServletException e) {
             fail(e.getMessage());
         }
     }
 
     @Test
-    public void postForm_getParamsBase64Encoded_expectAllParams() {
+    void postForm_getParamsBase64Encoded_expectAllParams() {
         AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/form", "POST")
-                                               .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED).build();
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED).build();
         proxyRequest.setBody(Base64.getEncoder().encodeToString(ENCODED_FORM_ENTITY.getBytes(Charset.defaultCharset())));
         proxyRequest.setIsBase64Encoded(true);
 
@@ -131,7 +128,7 @@ public class AwsProxyHttpServletRequestFormTest {
      * issue #340
      */
     @Test
-    public void postForm_emptyParamPresent() {
+    void postForm_emptyParamPresent() {
         AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/form", "POST")
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED).build();
         String body = PART_KEY_1 + "=" + "&" + PART_KEY_2 + "=" + PART_VALUE_2;
