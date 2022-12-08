@@ -15,18 +15,11 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <struts.version>6.0.3</struts.version>
+        <struts.version>6.1.1</struts.version>
         <jackson.version>2.14.0</jackson.version>
         <junit.version>4.13.2</junit.version>
         <log4j.version>2.19.0</log4j.version>
     </properties>
-
-    <repositories>
-        <repository>
-            <id>struts-staging</id>
-            <url>https://repository.apache.org/content/repositories/staging/</url>
-        </repository>
-    </repositories>
 
     <dependencies>
         <dependency>
@@ -122,13 +115,13 @@
         <dependency>
             <groupId>javax.el</groupId>
             <artifactId>javax.el-api</artifactId>
-            <version>2.2.5</version>
+            <version>3.0.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.web</groupId>
+            <groupId>org.glassfish</groupId>
             <artifactId>javax.el</artifactId>
-            <version>2.2.6</version>
+            <version>3.0.0</version>
             <scope>test</scope>
         </dependency>
 
