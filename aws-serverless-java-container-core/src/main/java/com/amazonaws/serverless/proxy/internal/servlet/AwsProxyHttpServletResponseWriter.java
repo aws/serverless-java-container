@@ -77,7 +77,7 @@ public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpSer
             if (Response.Status.fromStatusCode(containerResponse.getStatus()) != null) {
                 awsProxyResponse.setStatusDescription(containerResponse.getStatus() + " " + Response.Status.fromStatusCode(containerResponse.getStatus()).getReasonPhrase());
             } else {
-                awsProxyResponse.setStatusDescription(containerResponse.getStatus());
+                awsProxyResponse.setStatusDescription(String.valueOf(containerResponse.getStatus()));
             }
         }
 
