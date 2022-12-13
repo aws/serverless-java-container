@@ -192,9 +192,4 @@ public class AwsProxyRequest {
     public void setIsBase64Encoded(boolean base64Encoded) {
         isBase64Encoded = base64Encoded;
     }
-
-    public static enum RequestSource {
-        ALB,
-        API_GATEWAY
-    }
 }

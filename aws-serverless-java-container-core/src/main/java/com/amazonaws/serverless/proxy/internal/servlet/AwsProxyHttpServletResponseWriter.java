@@ -20,6 +20,7 @@ import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.Headers;
+import com.amazonaws.serverless.proxy.model.RequestSource;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import javax.ws.rs.core.Response;
@@ -73,7 +74,7 @@ public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpSer
 
         awsProxyResponse.setStatusCode(containerResponse.getStatus());
 
-        if (containerResponse.getAwsProxyRequest() != null && containerResponse.getAwsProxyRequest().getRequestSource() == AwsProxyRequest.RequestSource.ALB) {
+        if (containerResponse.getAwsProxyRequest() != null && containerResponse.getAwsProxyRequest().getRequestSource() == RequestSource.ALB) {
             awsProxyResponse.setStatusDescription(containerResponse.getStatus() + " " + Response.Status.fromStatusCode(containerResponse.getStatus()).getReasonPhrase());
         }
 

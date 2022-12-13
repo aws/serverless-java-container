@@ -18,6 +18,7 @@ import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.serverless.proxy.model.Headers;
+import com.amazonaws.serverless.proxy.model.RequestSource;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -48,7 +49,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 
 /**
  * Implementation of the <code>HttpServletRequest</code> interface that supports <code>AwsProxyRequest</code> object.
@@ -204,7 +204,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             return this.generateQueryString(
                     request.getMultiValueQueryStringParameters(),
                     // ALB does not automatically decode parameters, so we don't want to re-encode them
-                    request.getRequestSource() != AwsProxyRequest.RequestSource.ALB,
+                    request.getRequestSource() != RequestSource.ALB,
                     config.getUriEncoding());
         } catch (ServletException e) {
             log.error("Could not generate query string", e);
@@ -580,7 +580,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         // special cases for referer and user agent headers
         List<String> values = new ArrayList<>();
 
-        if (request.getRequestSource() == AwsProxyRequest.RequestSource.API_GATEWAY) {
+        if (request.getRequestSource() == RequestSource.API_GATEWAY) {
             if ("referer".equals(key.toLowerCase(Locale.ENGLISH))) {
                 values.add(request.getRequestContext().getIdentity().getCaller());
                 return values;

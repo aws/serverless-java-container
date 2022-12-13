@@ -13,9 +13,12 @@
 package com.amazonaws.serverless.proxy.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 public class HttpApiV2ProxyRequest {
     private String version;
@@ -126,5 +129,13 @@ public class HttpApiV2ProxyRequest {
 
     public void setRequestContext(HttpApiV2ProxyRequestContext requestContext) {
         this.requestContext = requestContext;
+    }
+
+    @JsonIgnore
+    public RequestSource getRequestSource() {
+        return Optional.ofNullable(getRequestContext())
+            .map(HttpApiV2ProxyRequestContext::getElb)
+            .map(albContext -> RequestSource.ALB)
+            .orElse(RequestSource.API_GATEWAY);
     }
 }

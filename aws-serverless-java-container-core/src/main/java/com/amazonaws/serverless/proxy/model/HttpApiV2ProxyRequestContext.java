@@ -25,6 +25,7 @@ public class HttpApiV2ProxyRequestContext {
     private String stage;
     private String time;
     private long timeEpoch;
+    private AlbContext elb;
 
     private HttpApiV2HttpContext http;
     private HttpApiV2AuthorizerMap authorizer;
@@ -117,4 +118,13 @@ public class HttpApiV2ProxyRequestContext {
         this.authorizer = authorizer;
     }
 
+    public AlbContext getElb() {
+        return this.elb;
+    }
+
+    public void setElb(AlbContext context) {
+        this.elb = context;
+    }
+
+    
 }
