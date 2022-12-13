@@ -15,9 +15,9 @@
     <version>1.10-SNAPSHOT</version>
 
     <properties>
-        <spring.version>5.3.23</spring.version>
-        <springboot.version>2.7.5</springboot.version>
-        <springsecurity.version>5.7.4</springsecurity.version>
+        <spring.version>5.3.24</spring.version>
+        <springboot.version>2.7.6</springboot.version>
+        <springsecurity.version>5.7.5</springsecurity.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
