@@ -82,7 +82,7 @@
     <properties>
         <jacoco.minCoverage>0.7</jacoco.minCoverage>
         <dependencyCheck.version>7.3.0</dependencyCheck.version>
-        <jackson.version>2.14.0</jackson.version>
+        <jackson.version>2.14.1</jackson.version>
         <slf4j.version>2.0.3</slf4j.version>
         <junit.version>5.9.1</junit.version>
         <mockito.version>4.4.0</mockito.version>
