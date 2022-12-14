@@ -23,11 +23,11 @@ import com.amazonaws.serverless.proxy.model.RequestSource;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-import javax.ws.rs.core.Response.Status;
 
 
 /**
@@ -76,7 +76,8 @@ public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpSer
 
         Status responseStatus = Response.Status.fromStatusCode(containerResponse.getStatus());
 
-        if (containerResponse.getAwsProxyRequest() != null && containerResponse.getAwsProxyRequest().getRequestSource() == RequestSource.ALB && responseStatus != null) {
+        if (containerResponse.getAwsProxyRequest() != null && containerResponse.getAwsProxyRequest().getRequestSource() == RequestSource.ALB
+                && responseStatus != null) {
             awsProxyResponse.setStatusDescription(containerResponse.getStatus() + " " + responseStatus.getReasonPhrase());
         }
 
