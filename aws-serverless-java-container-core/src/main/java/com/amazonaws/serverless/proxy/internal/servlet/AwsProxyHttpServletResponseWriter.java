@@ -17,13 +17,13 @@ import com.amazonaws.serverless.exceptions.InvalidResponseObjectException;
 import com.amazonaws.serverless.proxy.ResponseWriter;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.Headers;
 import com.amazonaws.serverless.proxy.model.RequestSource;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import java.util.Base64;
 import java.util.HashMap;
@@ -74,8 +74,11 @@ public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpSer
 
         awsProxyResponse.setStatusCode(containerResponse.getStatus());
 
-        if (containerResponse.getAwsProxyRequest() != null && containerResponse.getAwsProxyRequest().getRequestSource() == RequestSource.ALB) {
-            awsProxyResponse.setStatusDescription(containerResponse.getStatus() + " " + Response.Status.fromStatusCode(containerResponse.getStatus()).getReasonPhrase());
+        Status responseStatus = Response.Status.fromStatusCode(containerResponse.getStatus());
+
+        if (containerResponse.getAwsProxyRequest() != null && containerResponse.getAwsProxyRequest().getRequestSource() == RequestSource.ALB
+                && responseStatus != null) {
+            awsProxyResponse.setStatusDescription(containerResponse.getStatus() + " " + responseStatus.getReasonPhrase());
         }
 
         Timer.stop("SERVLET_RESPONSE_WRITE");
