@@ -13,12 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.concurrent.CountDownLatch;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -190,12 +185,7 @@ public class AwsServletContextTest {
         } catch (UnsupportedOperationException e) {
             exCount++;
         }
-        try {
-            STATIC_CTX.getNamedDispatcher("1");
-        } catch (UnsupportedOperationException e) {
-            exCount++;
-        }
-        assertEquals(2, exCount);
+        assertEquals(1, exCount);
 
         assertNull(STATIC_CTX.getServletRegistration("1"));
     }
@@ -230,6 +220,12 @@ public class AwsServletContextTest {
         assertNotNull(ctx.getServlet("srv1"));
         assertNotNull(ctx.getServletRegistration("srv1"));
         assertEquals("", ((TestServlet)ctx.getServlet("srv1")).getId());
+    }
+
+    @Test
+    void getNamedDispatcher_returnsDispatcher() {
+        AwsServletContext ctx = new AwsServletContext(null);
+        assertNotNull(ctx.getNamedDispatcher("/hello"));
     }
 
     public static class TestServlet implements Servlet {
