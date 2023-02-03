@@ -213,7 +213,11 @@ public class AwsHttpServletResponse
     @Override
     public void setHeader(String s, String s1) {
         if (!canSetHeader()) return;
-        setHeader(s, s1, true);
+        if ("Content-Type".equalsIgnoreCase(s)) {
+            setContentType(s1);
+        } else {
+            setHeader(s, s1, true);
+        }
     }
 
 

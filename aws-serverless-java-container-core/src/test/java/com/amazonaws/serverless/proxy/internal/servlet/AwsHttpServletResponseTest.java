@@ -12,6 +12,7 @@ import javax.ws.rs.core.MediaType;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -38,6 +39,7 @@ public class AwsHttpServletResponseTest {
     private static final Pattern EXPIRES_PATTERN = Pattern.compile("Expires=(.*)$");
 
     private static final String CONTENT_TYPE_WITH_CHARSET = "application/json; charset=UTF-8";
+    private static final String JAVASCRIPT_CONTENT_TYPE_WITH_CHARSET = "application/javascript; charset=UTF-8";
 
     @Test
     void cookie_addCookie_verifyPath() {
@@ -323,6 +325,18 @@ public class AwsHttpServletResponseTest {
         assertEquals(CONTENT_TYPE_WITH_CHARSET, resp.getContentType());
         assertEquals(CONTENT_TYPE_WITH_CHARSET, resp.getHeader("Content-Type"));
         assertEquals("UTF-8", resp.getCharacterEncoding());
+    }
+
+    @Test
+    void characterEncoding_encodingInContentTypeHeader_writesCorrectData() throws IOException {
+        AwsHttpServletResponse resp = new AwsHttpServletResponse(null, new CountDownLatch(1));
+        resp.setHeader("Content-Type", JAVASCRIPT_CONTENT_TYPE_WITH_CHARSET);
+        resp.getOutputStream().write("ü".getBytes(StandardCharsets.UTF_8));
+        resp.flushBuffer();
+
+        assertEquals(JAVASCRIPT_CONTENT_TYPE_WITH_CHARSET, resp.getContentType());
+        assertEquals(JAVASCRIPT_CONTENT_TYPE_WITH_CHARSET, resp.getHeader("Content-Type"));
+        assertEquals("ü",resp.getAwsResponseBodyString());
     }
 
     private int getMaxAge(String header) {
