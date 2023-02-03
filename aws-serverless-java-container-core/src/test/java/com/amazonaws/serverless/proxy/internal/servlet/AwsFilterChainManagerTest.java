@@ -2,6 +2,7 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
+import com.amazonaws.serverless.proxy.internal.testutils.MockServlet;
 import com.amazonaws.services.lambda.runtime.Context;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,8 @@ import java.util.concurrent.CountDownLatch;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class AwsFilterChainManagerTest {
+    private static final String SERVLET1_NAME = "Servlet 1";
+    private static final String SERVLET2_NAME = "Servlet 2";
     private static final String REQUEST_CUSTOM_ATTRIBUTE_NAME = "X-Custom-Attribute";
     private static final String REQUEST_CUSTOM_ATTRIBUTE_VALUE = "CustomAttrValue";
 
@@ -36,6 +39,10 @@ public class AwsFilterChainManagerTest {
         reg2.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/second/*");
         FilterRegistration.Dynamic reg3 = servletContext.addFilter("Filter3", new MockFilter());
         reg3.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/third/fourth/*");
+        ServletRegistration.Dynamic firstServlet = servletContext.addServlet(SERVLET1_NAME, new MockServlet());
+        firstServlet.addMapping("/first/*");
+        ServletRegistration.Dynamic secondServlet = servletContext.addServlet(SERVLET2_NAME, new MockServlet());
+        secondServlet.addMapping("/second/*");
 
         chainManager = new AwsFilterChainManager((AwsServletContext) servletContext);
     }
@@ -83,6 +90,22 @@ public class AwsFilterChainManagerTest {
         FilterChainManager.TargetCacheKey secondCacheKey = new FilterChainManager.TargetCacheKey();
         secondCacheKey.setDispatcherType(DispatcherType.ASYNC);
         secondCacheKey.setTargetPath("/first/path");
+
+        assertNotEquals(cacheKey.hashCode(), secondCacheKey.hashCode());
+        assertNotEquals(cacheKey, secondCacheKey);
+    }
+
+    @Test
+    void cacheKey_compare_differentServlet() {
+        FilterChainManager.TargetCacheKey cacheKey = new FilterChainManager.TargetCacheKey();
+        cacheKey.setDispatcherType(DispatcherType.REQUEST);
+        cacheKey.setTargetPath("/first/path");
+        cacheKey.setServletName("Dispatcher servlet");
+
+        FilterChainManager.TargetCacheKey secondCacheKey = new FilterChainManager.TargetCacheKey();
+        secondCacheKey.setDispatcherType(DispatcherType.REQUEST);
+        secondCacheKey.setTargetPath("/first/path");
+        cacheKey.setServletName("Real servlet");
 
         assertNotEquals(cacheKey.hashCode(), secondCacheKey.hashCode());
         assertNotEquals(cacheKey, secondCacheKey);
@@ -154,7 +177,7 @@ public class AwsFilterChainManagerTest {
     }
 
     @Test
-    void filerChain_executeMultipleFilters_expectRunEachTime() {
+    void filterChain_executeMultipleFilters_expectRunEachTime() {
         AwsProxyHttpServletRequest req = new AwsProxyHttpServletRequest(
                 new AwsProxyRequestBuilder("/first/second", "GET").build(), lambdaContext, null
         );
@@ -202,6 +225,34 @@ public class AwsFilterChainManagerTest {
 
         assertTrue(req2.getAttribute(REQUEST_CUSTOM_ATTRIBUTE_NAME) != null);
         assertEquals(REQUEST_CUSTOM_ATTRIBUTE_VALUE, req2.getAttribute(REQUEST_CUSTOM_ATTRIBUTE_NAME));
+    }
+
+    @Test
+    void filterChain_multipleServlets_callsCorrectServlet() throws IOException, ServletException {
+        MockServlet servlet1 = (MockServlet) servletContext.getServlet(SERVLET1_NAME);
+        ServletConfig servlet1Config = ((AwsServletRegistration) servletContext.getServletRegistration(SERVLET1_NAME)).getServletConfig();
+        servlet1.init(servlet1Config);
+
+        MockServlet servlet2 = (MockServlet) servletContext.getServlet(SERVLET2_NAME);
+        ServletConfig servlet2Config = ((AwsServletRegistration) servletContext.getServletRegistration(SERVLET2_NAME)).getServletConfig();
+        servlet2.init(servlet2Config);
+
+        AwsProxyHttpServletRequest req = new AwsProxyHttpServletRequest(
+                new AwsProxyRequestBuilder("/", "GET").build(), lambdaContext, null
+        );
+        AwsHttpServletResponse resp = new AwsHttpServletResponse(req, new CountDownLatch(1));
+
+        FilterChainHolder servlet1filterChain = chainManager.getFilterChain(req, servlet1);
+        servlet1filterChain.doFilter(req, resp);
+        
+        assertEquals(1, servlet1.getServiceCalls());
+        assertEquals(0, servlet2.getServiceCalls());
+
+        FilterChainHolder servlet2filterChain = chainManager.getFilterChain(req, servlet2);
+        servlet2filterChain.doFilter(req, resp);
+
+        assertEquals(1, servlet1.getServiceCalls());
+        assertEquals(1, servlet2.getServiceCalls());
     }
 
     @Test

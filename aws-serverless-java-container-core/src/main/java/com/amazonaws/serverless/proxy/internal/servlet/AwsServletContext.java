@@ -171,7 +171,7 @@ public class AwsServletContext
 
     @Override
     public RequestDispatcher getNamedDispatcher(String s) {
-        throw new UnsupportedOperationException();
+        return new AwsProxyRequestDispatcher(s, true, containerHandler);
     }
 
 

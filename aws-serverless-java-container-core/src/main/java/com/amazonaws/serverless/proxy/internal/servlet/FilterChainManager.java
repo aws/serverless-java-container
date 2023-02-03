@@ -132,7 +132,7 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
             chainHolder.addFilter(new FilterHolder(new ServletExecutionFilter(servletRegistration), servletContext));
         }
 
-        putFilterChainCache(type, targetPath, chainHolder);
+        putFilterChainCache(type, targetPath, servlet, chainHolder);
         // update total filter size
         if (filtersSize != registrations.size()) {
             filtersSize = registrations.size();
@@ -151,13 +151,16 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
      * initialized with the cached list of {@link FilterHolder} objects
      * @param type The dispatcher type for the incoming request
      * @param targetPath The request path - this is extracted with the <code>getPath</code> method of the request object
-     * @param servlet Servlet to put at the end of the chain (optional).
+     * @param servlet The final servlet in the filter chain (if any)
      * @return A populated FilterChainHolder
      */
     private FilterChainHolder getFilterChainCache(final DispatcherType type, final String targetPath, Servlet servlet) {
         TargetCacheKey key = new TargetCacheKey();
         key.setDispatcherType(type);
         key.setTargetPath(targetPath);
+        if (servlet != null) {
+            key.setServletName(servlet.getServletConfig().getServletName());
+        }
 
         if (!filterCache.containsKey(key)) {
             return null;
@@ -174,12 +177,16 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
      * method to retry this.
      * @param type DispatcherType from the incoming request
      * @param targetPath The target path in the API
-     * @param holder The FilterChainHolder object to save in the cache
+     * @param servlet The final servlet in the filter chain (if any)
+    * @param holder The FilterChainHolder object to save in the cache
      */
-    private void putFilterChainCache(final DispatcherType type, final String targetPath, final FilterChainHolder holder) {
+    private void putFilterChainCache(final DispatcherType type, final String targetPath, Servlet servlet, final FilterChainHolder holder) {
         TargetCacheKey key = new TargetCacheKey();
         key.setDispatcherType(type);
         key.setTargetPath(targetPath);
+        if (servlet != null) {
+            key.setServletName(servlet.getServletConfig().getServletName());
+        }
 
         // we couldn't compute the hash code because either the target path or dispatcher type were null
         if (key.hashCode() == -1) {
@@ -256,6 +263,7 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
 
         private String targetPath;
         private DispatcherType dispatcherType;
+        private String servletName;
 
 
     //-------------------------------------------------------------
@@ -295,8 +303,13 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
             }
             hashString += ":" + hashDispatcher;
 
+            if (servletName != null) {
+                hashString += ":" + servletName;
+            }
+
             return hashString.hashCode();
         }
+
 
 
         @Override
@@ -324,6 +337,11 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
         void setDispatcherType(DispatcherType dispatcherType) {
             this.dispatcherType = dispatcherType;
         }
+        public void setServletName(String servletName) {
+            this.servletName = servletName;
+        }
+
+
     }
 
     @SuppressFBWarnings("URF_UNREAD_FIELD")
