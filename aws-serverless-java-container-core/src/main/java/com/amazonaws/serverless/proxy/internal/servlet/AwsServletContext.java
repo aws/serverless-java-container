@@ -133,6 +133,12 @@ public class AwsServletContext
         if (s == null || !s.contains(".")) {
             return null;
         }
+        if (s.endsWith(".css")) {
+            return "text/css";
+        }
+        if (s.endsWith(".js")) {
+            return "application/javascript";
+        }
         if (mimeTypes == null) {
             mimeTypes = new MimetypesFileTypeMap();
         }
