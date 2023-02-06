@@ -213,7 +213,16 @@ public class AwsHttpServletResponse
     @Override
     public void setHeader(String s, String s1) {
         if (!canSetHeader()) return;
-        setHeader(s, s1, true);
+        if (isContentTypeHeader(s)) {
+            setContentType(s1);
+        } else {
+            setHeader(s, s1, true);
+        }
+    }
+
+
+    private boolean isContentTypeHeader(String s) {
+        return s.toLowerCase(Locale.getDefault()).equals(HttpHeaders.CONTENT_TYPE.toLowerCase(Locale.getDefault()));
     }
 
 
@@ -221,7 +230,7 @@ public class AwsHttpServletResponse
     public void addHeader(String s, String s1) {
         if (!canSetHeader()) return;
         // TODO: We should probably have a list of headers that we are not allowed to have multiple values for
-        if (s.toLowerCase(Locale.getDefault()).equals(HttpHeaders.CONTENT_TYPE.toLowerCase(Locale.getDefault()))) {
+        if (isContentTypeHeader(s)) {
             setContentType(s1);
         } else {
             setHeader(s, s1, false);
