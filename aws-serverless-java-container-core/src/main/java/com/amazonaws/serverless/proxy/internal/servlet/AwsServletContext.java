@@ -27,10 +27,14 @@ import jakarta.servlet.descriptor.JspConfigDescriptor;
 import jakarta.activation.MimetypesFileTypeMap;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -160,23 +164,33 @@ public class AwsServletContext
 
     @Override
     @SuppressFBWarnings("PATH_TRAVERSAL_IN") // suppressing because we are using the getValidFilePath
-    public String getMimeType(String s) {
-        if (s == null || !s.contains(".")) {
+    public String getMimeType(String file) {
+        if (file == null || !file.contains(".")) {
             return null;
         }
+        String mimeType = null;
+        try {
+            mimeType = Files.probeContentType(Paths.get(file));
+        } catch (IOException | InvalidPathException e) {
+            log("unable to probe for content type, will use fallback", e);
+        }
+
+        // MimetypesFileTypeMap is kept for backwards compatibility, remove in 2.0
         if (mimeTypes == null) {
             mimeTypes = new MimetypesFileTypeMap();
         }
-        if (s.endsWith(".css")) {
-                return "text/css";
+        String backwardsCompatibleMimeType = mimeTypes.getContentType(file);
+        // The getContentType method of the MimetypesFileTypeMap
+        // returns MimetypesFileTypeMap.defaultType = application/octet-stream
+        // instead of null when the type cannot be found.
+        if (mimeType == null || (backwardsCompatibleMimeType != null && !backwardsCompatibleMimeType.equals(mimeType)
+          && !MediaType.APPLICATION_OCTET_STREAM.equals(backwardsCompatibleMimeType))) {
+            log("using type " + backwardsCompatibleMimeType + " from MimetypesFileTypeMap for " + file
+              + " instead of " + mimeType + " for backwards compatibility");
+            mimeType = backwardsCompatibleMimeType;
         }
-        if (s.endsWith(".js")) {
-                return "application/javascript";
-        }
-        // TODO: The getContentType method of the MimetypesFileTypeMap returns application/octet-stream
-        // instead of null when the type cannot be found. We should replace with an implementation that
-        // loads the System mime types ($JAVA_HOME/lib/mime.types
-        return mimeTypes.getContentType(s);
+
+        return mimeType;
     }
 
 

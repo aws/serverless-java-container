@@ -70,7 +70,7 @@ public class AwsServletContextTest {
         String tmpFilePath = TMP_DIR + "some.js";
         AwsServletContext ctx = new AwsServletContext(null);
         String mimeType = ctx.getMimeType(tmpFilePath);
-        assertEquals("application/javascript", mimeType);
+        assertEquals("text/javascript", mimeType);
     }
 
     @Test
