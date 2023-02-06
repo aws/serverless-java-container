@@ -519,9 +519,7 @@ public class AwsServletContext
 
     @Override
     public ClassLoader getClassLoader() {
-        // for the time being we return the default class loader. We may want to let developers override this int the
-        // future.
-        return ClassLoader.getSystemClassLoader();
+        return getClass().getClassLoader();
     }
 
 
