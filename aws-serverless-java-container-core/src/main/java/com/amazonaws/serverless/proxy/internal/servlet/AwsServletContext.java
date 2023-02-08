@@ -27,14 +27,11 @@ import jakarta.servlet.descriptor.JspConfigDescriptor;
 import jakarta.activation.MimetypesFileTypeMap;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Paths;
+import java.net.URLConnection;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -168,26 +165,31 @@ public class AwsServletContext
         if (file == null || !file.contains(".")) {
             return null;
         }
-        String mimeType = null;
-        try {
-            mimeType = Files.probeContentType(Paths.get(file));
-        } catch (IOException | InvalidPathException e) {
-            log("unable to probe for content type, will use fallback", e);
-        }
 
-        // MimetypesFileTypeMap is kept for backwards compatibility, remove in 2.0
+        // this implementation would be nice but returns null on Lambda
+//        try {
+//            mimeType = Files.probeContentType(Paths.get(file));
+//        } catch (IOException | InvalidPathException e) {
+//            log("unable to probe for content type, will use fallback", e);
+//        }
+
         if (mimeTypes == null) {
             mimeTypes = new MimetypesFileTypeMap();
         }
-        String backwardsCompatibleMimeType = mimeTypes.getContentType(file);
+        String mimeType = mimeTypes.getContentType(file);
+
         // The getContentType method of the MimetypesFileTypeMap
         // returns MimetypesFileTypeMap.defaultType = application/octet-stream
-        // instead of null when the type cannot be found.
-        if (mimeType == null || (backwardsCompatibleMimeType != null && !backwardsCompatibleMimeType.equals(mimeType)
-          && !MediaType.APPLICATION_OCTET_STREAM.equals(backwardsCompatibleMimeType))) {
-            log("using type " + backwardsCompatibleMimeType + " from MimetypesFileTypeMap for " + file
-              + " instead of " + mimeType + " for backwards compatibility");
-            mimeType = backwardsCompatibleMimeType;
+        // instead of null when the type cannot be found. trying to improve the result...
+        if (mimeType == null || MediaType.APPLICATION_OCTET_STREAM.equals(mimeType)) {
+            try {
+                String mimeTypeGuess = URLConnection.guessContentTypeFromName(new File(file).getName());
+                if (mimeTypeGuess !=null) {
+                    mimeType = mimeTypeGuess;
+                }
+            } catch (Exception e) {
+                log("couldn't find a better contentType than " + mimeType + " for file " + file, e);
+            }
         }
 
         return mimeType;
