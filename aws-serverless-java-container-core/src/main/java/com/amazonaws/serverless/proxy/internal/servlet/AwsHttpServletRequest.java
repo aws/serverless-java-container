@@ -145,6 +145,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     @Override
     public HttpSession getSession() {
         log.debug("Trying to access session. Lambda functions are stateless and should not rely on the session");
+        // as per Servlet spec this method should create a session if none exists, so we should change it to getSession(true) in the future
         return this.session;
     }
 
