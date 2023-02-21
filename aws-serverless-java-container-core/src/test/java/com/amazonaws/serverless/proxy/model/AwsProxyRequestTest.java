@@ -103,16 +103,22 @@ public class AwsProxyRequestTest {
                 "}";
     }
 
+    /**
+     * Receiving a request with single-valued headers only should get mapped to multi-valued
+     * headers by the custom converter from the AwsProxyRequest class @JsonDeserialize annotation.
+     * @throws IOException
+     */
     @Test
     void deserialize_singleValuedHeaders() throws IOException {
         AwsProxyRequest req =
                 new AwsProxyRequestBuilder().fromJsonString(getSingleValueRequestJson()).build();
 
         assertThat(req.getHeaders().get("accept"), is("*"));
+        assertThat(req.getMultiValueHeaders().getFirst("accept"), is("*"));
     }
 
     /**
-     * Captured from a live request to an ALB with a Lambda integration with 
+     * Captured from a live request to an ALB with a Lambda integration with
      * lambda.multi_value_headers.enabled=false.
      */
     private String getSingleValueRequestJson() {

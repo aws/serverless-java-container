@@ -14,14 +14,17 @@ package com.amazonaws.serverless.proxy.model;
 
 import java.util.HashMap;
 import java.util.Map;
+import com.amazonaws.serverless.proxy.internal.serialization.AwsProxyRequestConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
  * Default implementation of the request object from an API Gateway AWS_PROXY integration
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonDeserialize(converter=AwsProxyRequestConverter.class)
 public class AwsProxyRequest {
 
     //-------------------------------------------------------------
@@ -32,7 +35,7 @@ public class AwsProxyRequest {
     private String resource;
     private AwsProxyRequestContext requestContext;
     private MultiValuedTreeMap<String, String> multiValueQueryStringParameters;
-    private Map<String, String> queryStringParameters; 
+    private Map<String, String> queryStringParameters;
     private Headers multiValueHeaders;
     private SingleValueHeaders headers;
     private Map<String, String> pathParameters;
