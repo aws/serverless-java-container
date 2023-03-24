@@ -12,13 +12,13 @@ dependencies {
           'io.symphonia:lambda-logging:1.0.3'
   )
 
-  implementation("org.glassfish.jersey.media:jersey-media-json-jackson:2.37") {
+  implementation("org.glassfish.jersey.media:jersey-media-json-jackson:2.39.1") {
     exclude group: 'com.fasterxml.jackson.core', module: "jackson-annotations"
     exclude group: 'com.fasterxml.jackson.core', module: "jackson-databind"
     exclude group: 'com.fasterxml.jackson.core', module: "jackson-core"
   }
 
-  implementation("org.glassfish.jersey.inject:jersey-hk2:2.37") {
+  implementation("org.glassfish.jersey.inject:jersey-hk2:2.39.1") {
     exclude group: 'javax.inject', module: "javax.inject"
   }
 
