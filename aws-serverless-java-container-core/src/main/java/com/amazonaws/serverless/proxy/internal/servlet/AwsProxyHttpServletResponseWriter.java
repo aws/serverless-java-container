@@ -22,8 +22,8 @@ import com.amazonaws.serverless.proxy.model.Headers;
 import com.amazonaws.serverless.proxy.model.RequestSource;
 import com.amazonaws.services.lambda.runtime.Context;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 
 import java.util.Base64;
 import java.util.HashMap;

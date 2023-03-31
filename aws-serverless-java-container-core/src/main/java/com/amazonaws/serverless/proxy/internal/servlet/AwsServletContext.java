@@ -20,9 +20,10 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.activation.MimetypesFileTypeMap;
-import javax.servlet.*;
-import javax.servlet.descriptor.JspConfigDescriptor;
+import jakarta.activation.MimetypesFileTypeMap;
+import jakarta.servlet.*;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.descriptor.JspConfigDescriptor;
 
 import java.io.File;
 import java.io.InputStream;
@@ -79,7 +80,6 @@ public class AwsServletContext
         this.servletRegistrations = new HashMap<>();
     }
 
-
     //-------------------------------------------------------------
     // Implementation - ServletContext
     //-------------------------------------------------------------
@@ -93,6 +93,36 @@ public class AwsServletContext
     public String getContextPath() {
         // servlets are always at the root.
         return "";
+    }
+
+    @Override
+    public void setResponseCharacterEncoding(String encoding) {
+        // do nothing;
+    }
+
+    @Override
+    public String getResponseCharacterEncoding() {
+        return "";
+    }
+
+    @Override
+    public void setRequestCharacterEncoding(String encoding) {
+        // do nothing;
+    }
+
+    @Override
+    public String getRequestCharacterEncoding() {
+        return "";
+    }
+
+    @Override
+    public void setSessionTimeout(int sessionTimeout) {
+        // do nothing;
+    }
+
+    @Override
+    public int getSessionTimeout() {
+        return 1;
     }
 
 
@@ -343,6 +373,11 @@ public class AwsServletContext
         } catch (ServletException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public ServletRegistration.Dynamic addJspFile(String s, String s1) {
+        return null;
     }
 
 

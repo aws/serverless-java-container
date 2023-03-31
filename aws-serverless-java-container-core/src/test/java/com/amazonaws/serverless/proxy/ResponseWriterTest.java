@@ -8,7 +8,7 @@ import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletReques
 import com.amazonaws.services.lambda.runtime.Context;
 import org.junit.jupiter.api.Test;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 
 public class ResponseWriterTest {

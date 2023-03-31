@@ -16,7 +16,7 @@ import com.amazonaws.serverless.proxy.internal.jaxrs.AwsHttpApiV2SecurityContext
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.services.lambda.runtime.Context;
 
-import javax.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.core.SecurityContext;
 
 public class AwsHttpApiV2SecurityContextWriter implements SecurityContextWriter<HttpApiV2ProxyRequest> {
     @Override

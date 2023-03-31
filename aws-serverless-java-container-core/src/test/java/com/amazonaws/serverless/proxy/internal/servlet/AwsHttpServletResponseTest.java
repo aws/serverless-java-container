@@ -6,9 +6,9 @@ import com.amazonaws.serverless.proxy.model.Headers;
 
 import org.junit.jupiter.api.Test;
 
-import javax.servlet.http.Cookie;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
+import jakarta.servlet.http.Cookie;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
 
 import java.io.IOException;
 import java.io.PrintWriter;

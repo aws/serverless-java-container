@@ -15,8 +15,8 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;

@@ -5,8 +5,8 @@ import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import org.junit.jupiter.api.Test;
 
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.SecurityContext;
 
 import static org.junit.jupiter.api.Assertions.*;
 

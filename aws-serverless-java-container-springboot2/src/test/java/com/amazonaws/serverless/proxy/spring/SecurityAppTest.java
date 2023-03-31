@@ -8,8 +8,8 @@ import com.amazonaws.serverless.proxy.spring.securityapp.LambdaHandler;
 import com.amazonaws.serverless.proxy.spring.securityapp.SecurityConfig;
 import org.junit.jupiter.api.Test;
 
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

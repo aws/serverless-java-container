@@ -1,17 +1,14 @@
 package com.amazonaws.serverless.proxy.internal.servlet.filters;
 
-import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequest;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
-import com.amazonaws.serverless.proxy.internal.servlet.FilterHolder;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import org.junit.jupiter.api.Test;
 
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;

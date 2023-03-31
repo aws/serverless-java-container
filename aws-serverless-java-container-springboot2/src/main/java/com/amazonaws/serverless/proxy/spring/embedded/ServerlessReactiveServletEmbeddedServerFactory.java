@@ -22,7 +22,7 @@ import org.springframework.core.Ordered;
 import org.springframework.http.server.reactive.HttpHandler;
 import org.springframework.http.server.reactive.ServletHttpHandlerAdapter;
 
-import javax.servlet.*;
+import jakarta.servlet.*;
 import java.io.IOException;
 import java.util.Enumeration;
 

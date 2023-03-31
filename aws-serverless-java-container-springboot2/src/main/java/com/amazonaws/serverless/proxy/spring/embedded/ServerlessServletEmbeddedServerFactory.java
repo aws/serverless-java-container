@@ -21,7 +21,7 @@ import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.core.Ordered;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 public class ServerlessServletEmbeddedServerFactory implements ServletWebServerFactory, WebServer {

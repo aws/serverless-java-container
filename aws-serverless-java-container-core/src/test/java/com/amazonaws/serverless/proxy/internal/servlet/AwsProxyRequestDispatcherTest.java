@@ -13,10 +13,10 @@ import com.amazonaws.services.lambda.runtime.Context;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.concurrent.CountDownLatch;

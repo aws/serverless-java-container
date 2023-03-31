@@ -12,7 +12,7 @@
  */
 package com.amazonaws.serverless.proxy;
 
-import javax.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.core.SecurityContext;
 
 /**
  * Implementations of the log formatter interface are used by {@link com.amazonaws.serverless.proxy.internal.LambdaContainerHandler} class to log each request

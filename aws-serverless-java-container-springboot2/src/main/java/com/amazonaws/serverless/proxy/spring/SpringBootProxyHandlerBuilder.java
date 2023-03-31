@@ -13,13 +13,11 @@
 package com.amazonaws.serverless.proxy.spring;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
 import com.amazonaws.serverless.proxy.internal.servlet.ServletLambdaContainerHandlerBuilder;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import org.springframework.boot.WebApplicationType;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 public final class SpringBootProxyHandlerBuilder<RequestType> extends ServletLambdaContainerHandlerBuilder<
         RequestType,

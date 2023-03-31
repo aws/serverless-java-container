@@ -13,7 +13,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import org.apache.http.impl.execchain.RequestAbortedException;
 import org.junit.jupiter.api.Test;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.concurrent.CountDownLatch;
 
 import static org.junit.jupiter.api.Assertions.*;
