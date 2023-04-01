@@ -17,8 +17,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.FilterRegistration;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.FilterRegistration;
 
 import java.util.EnumSet;
 

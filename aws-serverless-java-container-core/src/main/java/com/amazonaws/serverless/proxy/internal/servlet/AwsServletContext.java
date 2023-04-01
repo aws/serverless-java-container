@@ -17,13 +17,14 @@ import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jakarta.activation.spi.MimeTypeRegistryProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.activation.MimetypesFileTypeMap;
 import jakarta.servlet.*;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.descriptor.JspConfigDescriptor;
+import jakarta.activation.MimetypesFileTypeMap;
 
 import java.io.File;
 import java.io.InputStream;
@@ -166,6 +167,7 @@ public class AwsServletContext
         if (mimeTypes == null) {
             mimeTypes = new MimetypesFileTypeMap();
         }
+
         // TODO: The getContentType method of the MimetypesFileTypeMap returns application/octet-stream
         // instead of null when the type cannot be found. We should replace with an implementation that
         // loads the System mime types ($JAVA_HOME/lib/mime.types

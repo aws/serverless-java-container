@@ -11,7 +11,7 @@ import com.amazonaws.serverless.proxy.spring.staticapp.LambdaHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;

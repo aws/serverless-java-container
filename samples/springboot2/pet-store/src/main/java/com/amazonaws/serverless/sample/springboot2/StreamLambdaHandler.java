@@ -10,8 +10,8 @@ import com.amazonaws.serverless.sample.springboot2.filter.CognitoIdentityFilter;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.FilterRegistration;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.FilterRegistration;
 
 import java.io.IOException;
 import java.io.InputStream;

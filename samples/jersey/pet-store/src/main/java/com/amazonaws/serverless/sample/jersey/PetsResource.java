@@ -15,9 +15,9 @@ package com.amazonaws.serverless.sample.jersey;
 import com.amazonaws.serverless.sample.jersey.model.Pet;
 import com.amazonaws.serverless.sample.jersey.model.PetData;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import java.util.UUID;
 
 @Path("/pets")

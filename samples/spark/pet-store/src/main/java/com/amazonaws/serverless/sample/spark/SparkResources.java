@@ -5,7 +5,7 @@ import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.sample.spark.model.Pet;
 import com.amazonaws.serverless.sample.spark.model.PetData;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import java.util.UUID;
 

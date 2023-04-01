@@ -24,7 +24,7 @@ public class EchoSpringAppConfig {
     }
 
     @Bean
-    public javax.validation.Validator localValidatorFactoryBean() {
+    public jakarta.validation.Validator localValidatorFactoryBean() {
         return new LocalValidatorFactoryBean();
     }
 }

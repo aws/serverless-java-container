@@ -10,10 +10,10 @@ import com.amazonaws.services.lambda.runtime.Context;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.HttpMethod;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

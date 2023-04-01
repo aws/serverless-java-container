@@ -9,8 +9,8 @@ import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.serverless.proxy.spring.SpringLambdaContainerHandler;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 
-import javax.servlet.ServletRegistration;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.http.HttpServletRequest;
 
 public class CustomSpringLambdaContainerHandler<RequestType, ResponseType> extends SpringLambdaContainerHandler<RequestType, ResponseType> {
 
