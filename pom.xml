@@ -31,7 +31,7 @@
         <module>aws-serverless-java-container-springboot3</module>
         <module>aws-serverless-jersey-archetype</module>
         <module>aws-serverless-spring-archetype</module>
-        <module>aws-serverless-springboot2-archetype</module>
+        <module>aws-serverless-springboot3-archetype</module>
     </modules>
 
     <scm>

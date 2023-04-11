@@ -9,8 +9,8 @@
 
     <groupId>com.amazonaws.serverless</groupId>
     <artifactId>aws-serverless-java-container-springboot3</artifactId>
-    <name>AWS Serverless Java container support - SpringBoot 2 implementation</name>
-    <description>Allows Java applications written for SpringBoot 2 to run in AWS Lambda</description>
+    <name>AWS Serverless Java container support - SpringBoot 3 implementation</name>
+    <description>Allows Java applications written for SpringBoot 3 to run in AWS Lambda</description>
     <url>https://aws.amazon.com/lambda</url>
     <version>1.10-SNAPSHOT</version>
 
