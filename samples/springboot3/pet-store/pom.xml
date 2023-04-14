@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.amazonaws.serverless.sample</groupId>
-    <artifactId>serverless-springboot2-example</artifactId>
+    <artifactId>serverless-springboot3-example</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>Spring Boot example for the aws-serverless-java-container library</name>
     <description>Simple pet store written with the Spring framework and Spring Boot</description>
@@ -13,7 +13,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.11</version>
+        <version>3.0.5</version>
     </parent>
 
     <licenses>
@@ -25,8 +25,7 @@
     </licenses>
 
     <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <java.version>17</java.version>
     </properties>
 
     <dependencies>
@@ -43,8 +42,8 @@
 
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
-            <artifactId>aws-serverless-java-container-springboot2</artifactId>
-            <version>[1.6,)</version>
+            <artifactId>aws-serverless-java-container-springboot3</artifactId>
+            <version>[2.0,)</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.symphonia/lambda-logging -->

@@ -16,7 +16,7 @@
     </parent>
 
     <properties>
-        <jaxrs.version>2.1.1</jaxrs.version>
+        <jaxrs.version>3.1.0</jaxrs.version>
         <servlet.version>5.0.0</servlet.version>
     </properties>
 
@@ -47,14 +47,14 @@
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
-            <version>5.0.0</version>
+            <version>${servlet.version}</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/javax.ws.rs/javax.ws.rs-api -->
         <dependency>
             <groupId>jakarta.ws.rs</groupId>
             <artifactId>jakarta.ws.rs-api</artifactId>
-            <version>3.0.0-M1</version>
+            <version>${jaxrs.version}</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
@@ -79,7 +79,7 @@
         <dependency>
             <groupId>org.eclipse.angus</groupId>
             <artifactId>angus-mail</artifactId>
-            <version>2.0.0</version>
+            <version>2.0.1</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpmime -->
@@ -91,15 +91,9 @@
         </dependency>
 
         <dependency>
-<<<<<<< HEAD
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.5.14</version>
-=======
             <groupId>org.apache.httpcomponents.client5</groupId>
             <artifactId>httpclient5</artifactId>
             <version>5.2.1</version>
->>>>>>> 9d2d4d4 (Added jakarta.websocket-api 2.0.0 to fix java.lang.ExceptionInInitializerError in SecurityAppTest)
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -118,9 +112,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpcore</artifactId>
-            <version>4.4.16</version>
+            <groupId>org.apache.httpcomponents.core5</groupId>
+            <artifactId>httpcore5</artifactId>
+            <version>5.2.1</version>
             <scope>compile</scope>
             <optional>true</optional><!-- TODO move AwsProxyRequestBuilder to seperate test-jar and change scope to test
              https://github.com/awslabs/aws-serverless-java-container/issues/394 -->
@@ -134,7 +128,7 @@
         <dependency>
             <groupId>jakarta.activation</groupId>
             <artifactId>jakarta.activation-api</artifactId>
-            <version>2.1.0</version>
+            <version>2.1.1</version>
         </dependency>
     </dependencies>
 

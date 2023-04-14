@@ -46,8 +46,8 @@ public class AwsServletContext
     //-------------------------------------------------------------
     // Constants - Public
     // -------------------------------------------------------------
-    public static final int SERVLET_API_MAJOR_VERSION = 3;
-    public static final int SERVLET_API_MINOR_VERSION = 1;
+    public static final int SERVLET_API_MAJOR_VERSION = 5;
+    public static final int SERVLET_API_MINOR_VERSION = 0;
     public static final String SERVER_INFO = LambdaContainerHandler.SERVER_INFO + "/" + SERVLET_API_MAJOR_VERSION + "." + SERVLET_API_MINOR_VERSION;
 
 
@@ -98,32 +98,32 @@ public class AwsServletContext
 
     @Override
     public void setResponseCharacterEncoding(String encoding) {
-        // do nothing;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public String getResponseCharacterEncoding() {
-        return "";
+        return null;
     }
 
     @Override
     public void setRequestCharacterEncoding(String encoding) {
-        // do nothing;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public String getRequestCharacterEncoding() {
-        return "";
+        return null;
     }
 
     @Override
     public void setSessionTimeout(int sessionTimeout) {
-        // do nothing;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public int getSessionTimeout() {
-        return 1;
+        return 15;
     }
 
 
@@ -379,7 +379,7 @@ public class AwsServletContext
 
     @Override
     public ServletRegistration.Dynamic addJspFile(String s, String s1) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
 
