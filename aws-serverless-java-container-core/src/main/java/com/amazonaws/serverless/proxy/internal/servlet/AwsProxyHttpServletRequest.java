@@ -20,7 +20,6 @@ import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.serverless.proxy.model.Headers;
 import com.amazonaws.serverless.proxy.model.RequestSource;
 import com.amazonaws.services.lambda.runtime.Context;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +28,6 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.SecurityContext;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
@@ -38,15 +36,7 @@ import java.security.Principal;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -471,35 +461,15 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public Locale getLocale() {
-        // Accept-Language: fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5
-        List<HeaderValue> values = this.parseHeaderValue(
-                request.getMultiValueHeaders().getFirst(HttpHeaders.ACCEPT_LANGUAGE), ",", ";"
-        );
-        if (values.size() == 0) {
-            return Locale.getDefault();
-        }
-        return new Locale(values.get(0).getValue());
+        List<Locale> locales = parseAcceptLanguageHeader(request.getMultiValueHeaders().getFirst(HttpHeaders.ACCEPT_LANGUAGE));
+        return locales.size() == 0 ? Locale.getDefault() : locales.get(0);
     }
-
 
     @Override
     public Enumeration<Locale> getLocales() {
-        List<HeaderValue> values = this.parseHeaderValue(
-                request.getMultiValueHeaders().getFirst(HttpHeaders.ACCEPT_LANGUAGE), ",", ";"
-        );
-
-        List<Locale> locales = new ArrayList<>();
-        if (values.size() == 0) {
-            locales.add(Locale.getDefault());
-        } else {
-            for (HeaderValue locale : values) {
-                locales.add(new Locale(locale.getValue()));
-            }
-        }
-
+        List<Locale> locales = parseAcceptLanguageHeader(request.getMultiValueHeaders().getFirst(HttpHeaders.ACCEPT_LANGUAGE));
         return Collections.enumeration(locales);
     }
-
 
     @Override
     public boolean isSecure() {

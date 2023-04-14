@@ -501,7 +501,7 @@ public class AwsProxyHttpServletRequestTest {
         int localesNo = 0;
         while (locales.hasMoreElements()) {
             Locale defaultLocale = locales.nextElement();
-            assertEquals(new Locale("fr-CH"), defaultLocale);
+            assertEquals(new Locale("fr", "CH"), defaultLocale);
             localesNo++;
         }
         assertEquals(1, localesNo);
@@ -512,7 +512,7 @@ public class AwsProxyHttpServletRequestTest {
     void getLocales_validAcceptHeaderMultipleLocales_expectFullLocaleList(String type) {
         initAwsProxyHttpServletRequestTest(type);
         AwsProxyRequestBuilder req = getRequestWithHeaders();
-        req.header(HttpHeaders.ACCEPT_LANGUAGE, "fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5");
+        req.header(HttpHeaders.ACCEPT_LANGUAGE, "fr-CA, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5");
         HttpServletRequest servletRequest = getRequest(req, null, null);
         Enumeration<Locale> locales = servletRequest.getLocales();
         List<Locale> localesList = new ArrayList<>();
@@ -520,14 +520,14 @@ public class AwsProxyHttpServletRequestTest {
             localesList.add(locales.nextElement());
         }
         assertEquals(5, localesList.size());
-        assertEquals(new Locale("fr-CH"), localesList.get(0));
-        assertEquals(new Locale("fr"), localesList.get(1));
-        assertEquals(new Locale("en"), localesList.get(2));
+        assertEquals(Locale.CANADA_FRENCH, localesList.get(0));
+        assertEquals(Locale.FRENCH, localesList.get(1));
+        assertEquals(Locale.ENGLISH, localesList.get(2));
         assertEquals(new Locale("de"), localesList.get(3));
         assertEquals(new Locale("*"), localesList.get(4));
 
         assertNotNull(servletRequest.getLocale());
-        assertEquals(new Locale("fr-CH"), servletRequest.getLocale());
+        assertEquals(Locale.CANADA_FRENCH, servletRequest.getLocale());
     }
 
     @MethodSource("data")
@@ -535,7 +535,7 @@ public class AwsProxyHttpServletRequestTest {
     void getLocales_validAcceptHeaderMultipleLocales_expectFullLocaleListOrdered(String type) {
         initAwsProxyHttpServletRequestTest(type);
         AwsProxyRequestBuilder req = getRequestWithHeaders();
-        req.header(HttpHeaders.ACCEPT_LANGUAGE, "fr-CH, en;q=0.8, de;q=0.7, *;q=0.5, fr;q=0.9");
+        req.header(HttpHeaders.ACCEPT_LANGUAGE, "fr-CA, en;q=0.8, de;q=0.7, *;q=0.5, fr;q=0.9");
         HttpServletRequest servletRequest = getRequest(req, null, null);
         Enumeration<Locale> locales = servletRequest.getLocales();
         List<Locale> localesList = new ArrayList<>();
@@ -543,9 +543,9 @@ public class AwsProxyHttpServletRequestTest {
             localesList.add(locales.nextElement());
         }
         assertEquals(5, localesList.size());
-        assertEquals(new Locale("fr-CH"), localesList.get(0));
-        assertEquals(new Locale("fr"), localesList.get(1));
-        assertEquals(new Locale("en"), localesList.get(2));
+        assertEquals(Locale.CANADA_FRENCH, localesList.get(0));
+        assertEquals(Locale.FRENCH, localesList.get(1));
+        assertEquals(Locale.ENGLISH, localesList.get(2));
         assertEquals(new Locale("de"), localesList.get(3));
         assertEquals(new Locale("*"), localesList.get(4));
     }

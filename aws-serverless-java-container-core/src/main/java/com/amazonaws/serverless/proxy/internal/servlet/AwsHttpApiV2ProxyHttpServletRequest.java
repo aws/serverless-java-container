@@ -408,31 +408,13 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public Locale getLocale() {
-        // Accept-Language: fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5
-        List<HeaderValue> values = this.parseHeaderValue(
-                headers.getFirst(HttpHeaders.ACCEPT_LANGUAGE), ",", ";"
-        );
-        if (values.size() == 0) {
-            return Locale.getDefault();
-        }
-        return new Locale(values.get(0).getValue());
+        List<Locale> locales = parseAcceptLanguageHeader(headers.getFirst(HttpHeaders.ACCEPT_LANGUAGE));
+        return locales.size() == 0 ? Locale.getDefault() : locales.get(0);
     }
 
     @Override
     public Enumeration<Locale> getLocales() {
-        List<HeaderValue> values = this.parseHeaderValue(
-                headers.getFirst(HttpHeaders.ACCEPT_LANGUAGE), ",", ";"
-        );
-
-        List<Locale> locales = new ArrayList<>();
-        if (values.size() == 0) {
-            locales.add(Locale.getDefault());
-        } else {
-            for (HeaderValue locale : values) {
-                locales.add(new Locale(locale.getValue()));
-            }
-        }
-
+        List<Locale> locales = parseAcceptLanguageHeader(headers.getFirst(HttpHeaders.ACCEPT_LANGUAGE));
         return Collections.enumeration(locales);
     }
 

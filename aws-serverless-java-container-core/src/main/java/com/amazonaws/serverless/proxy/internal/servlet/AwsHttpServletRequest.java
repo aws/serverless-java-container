@@ -16,9 +16,11 @@ import com.amazonaws.serverless.proxy.RequestReader;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
-import com.amazonaws.serverless.proxy.model.*;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
+import com.amazonaws.serverless.proxy.model.ContainerConfig;
+import com.amazonaws.serverless.proxy.model.Headers;
+import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 import com.amazonaws.services.lambda.runtime.Context;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
@@ -30,10 +32,15 @@ import org.apache.commons.io.input.NullInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
+import javax.servlet.DispatcherType;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
 import javax.ws.rs.core.MediaType;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -695,6 +702,40 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
             return -1;
         });
         return values;
+    }
+
+    protected List<Locale> parseAcceptLanguageHeader(String headerValue) {
+        // Accept-Language: fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5
+        List<HeaderValue> values = this.parseHeaderValue(
+                headerValue, ",", ";"
+        );
+
+        List<Locale> locales = new ArrayList<>();
+        if (values.size() == 0) {
+            locales.add(Locale.getDefault());
+        } else {
+            for (HeaderValue locale : values) {
+                locales.add(parseLanguageTag(locale.getValue()));
+            }
+        }
+
+        return locales;
+    }
+
+    protected Locale parseLanguageTag(String languageTag) {
+        languageTag = languageTag.trim();
+        String language;
+        String country = "";
+
+        int indexDash = languageTag.indexOf('-');
+        if (indexDash > -1) {
+            country = languageTag.substring(indexDash + 1).trim();
+            language = languageTag.substring(0, indexDash).trim();
+        } else {
+            language = languageTag;
+        }
+
+        return new Locale(language, country);
     }
 
     static String decodeRequestPath(String requestPath, ContainerConfig config) {
