@@ -123,7 +123,7 @@ public class AwsServletContext
 
     @Override
     public int getSessionTimeout() {
-        return 15;
+        return 0;
     }
 
 
@@ -206,13 +206,6 @@ public class AwsServletContext
         return new AwsProxyRequestDispatcher(s, true, containerHandler);
     }
 
-
-    @Override
-    @Deprecated
-    public Servlet getServlet(String s) throws ServletException {
-        return servletRegistrations.get(s).getServlet();
-    }
-
     public Servlet getServletForPath(String path) {
         String[] pathParts = path.split("/");
         for (AwsServletRegistration reg : servletRegistrations.values()) {
@@ -238,35 +231,9 @@ public class AwsServletContext
         return null;
     }
 
-
-    @Override
-    @Deprecated
-    public Enumeration<Servlet> getServlets() {
-        return Collections.enumeration(servletRegistrations.entrySet().stream()
-                .map((e) -> {
-                    return e.getValue().getServlet();
-                } )
-                .collect(Collectors.toList()));
-    }
-
-
-    @Override
-    @Deprecated
-    public Enumeration<String> getServletNames() {
-        return Collections.enumeration(servletRegistrations.keySet());
-    }
-
-
     @Override
     public void log(String s) {
         log.info(SecurityUtils.encode(s));
-    }
-
-
-    @Override
-    @Deprecated
-    public void log(Exception e, String s) {
-        log.error(SecurityUtils.encode(s), e);
     }
 
 

@@ -179,7 +179,6 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         return false;
     }
 
-
     //-------------------------------------------------------------
     // Implementation - ServletRequest
     //-------------------------------------------------------------

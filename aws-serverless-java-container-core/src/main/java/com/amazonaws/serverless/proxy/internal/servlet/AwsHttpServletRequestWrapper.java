@@ -178,11 +178,6 @@ public class AwsHttpServletRequestWrapper implements HttpServletRequest {
     }
 
     @Override
-    public boolean isRequestedSessionIdFromUrl() {
-        return originalRequest.isRequestedSessionIdFromUrl();
-    }
-
-    @Override
     public boolean authenticate(HttpServletResponse httpServletResponse) throws IOException, ServletException {
         return originalRequest.authenticate(httpServletResponse);
     }
@@ -344,11 +339,6 @@ public class AwsHttpServletRequestWrapper implements HttpServletRequest {
     }
 
     @Override
-    public String getRealPath(String s) {
-        return originalRequest.getRealPath(s);
-    }
-
-    @Override
     public int getRemotePort() {
         return originalRequest.getRemotePort();
     }
@@ -401,5 +391,20 @@ public class AwsHttpServletRequestWrapper implements HttpServletRequest {
     @Override
     public DispatcherType getDispatcherType() {
         return originalRequest.getDispatcherType();
+    }
+
+    @Override
+    public String getRequestId() {
+        return null;
+    }
+
+    @Override
+    public String getProtocolRequestId() {
+        return null;
+    }
+
+    @Override
+    public ServletConnection getServletConnection() {
+        return null;
     }
 }

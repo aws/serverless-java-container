@@ -6,7 +6,7 @@
 
     <groupId>com.amazonaws.serverless.sample</groupId>
     <artifactId>serverless-spring-example</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>2.0-SNAPSHOT</version>
     <name>Spring example for the aws-serverless-java-container library</name>
     <description>Simple pet store written with the Spring framework</description>
     <url>https://aws.amazon.com/lambda/</url>
@@ -24,10 +24,11 @@
     </licenses>
 
     <properties>
-        <java.version>17</java.version>
         <spring.version>6.0.7</spring.version>
         <junit.version>4.13.2</junit.version>
         <log4j.version>2.19.0</log4j.version>
+        <maven.compiler.source>17.0.6</maven.compiler.source>
+        <maven.compiler.target>17.0.6</maven.compiler.target>
     </properties>
 
     <dependencies>

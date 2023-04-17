@@ -217,9 +217,8 @@ public class AwsServletContextTest {
     void addServlet_callsDefaultConstructor() throws ServletException {
         AwsServletContext ctx = new AwsServletContext(null);
         ctx.addServlet("srv1", TestServlet.class);
-        assertNotNull(ctx.getServlet("srv1"));
-        assertNotNull(ctx.getServletRegistration("srv1"));
-        assertEquals("", ((TestServlet)ctx.getServlet("srv1")).getId());
+        assertNotNull(((AwsServletRegistration) ctx.getServletRegistration("srv1")).getServlet());
+        assertEquals("", ((TestServlet)((AwsServletRegistration) ctx.getServletRegistration("srv1")).getServlet()).getId());
     }
 
     @Test

@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.HttpSessionContext;
 
 import java.time.Instant;
 import java.util.Collections;
@@ -88,21 +87,9 @@ public class AwsHttpSession implements HttpSession {
     }
 
     @Override
-    @Deprecated
-    public HttpSessionContext getSessionContext() {
-        throw new UnsupportedOperationException("Session context is deprecated and no longer supported");
-    }
-
-    @Override
     public Object getAttribute(String name) {
         touch();
         return attributes.get(name);
-    }
-
-    @Override
-    @Deprecated
-    public Object getValue(String name) {
-        throw new UnsupportedOperationException("Session values are deprecated and not supported");
     }
 
     @Override
@@ -112,33 +99,15 @@ public class AwsHttpSession implements HttpSession {
     }
 
     @Override
-    @Deprecated
-    public String[] getValueNames() {
-        throw new UnsupportedOperationException("Session values are deprecated and not supported");
-    }
-
-    @Override
     public void setAttribute(String name, Object value) {
         touch();
         attributes.put(name, value);
     }
 
     @Override
-    @Deprecated
-    public void putValue(String name, Object value) {
-        throw new UnsupportedOperationException("Session values are deprecated and not supported");
-    }
-
-    @Override
     public void removeAttribute(String name) {
         touch();
         attributes.remove(name);
-    }
-
-    @Override
-    @Deprecated
-    public void removeValue(String name) {
-        throw new UnsupportedOperationException("Session values are deprecated and not supported");
     }
 
     @Override

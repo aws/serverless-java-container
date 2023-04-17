@@ -6,17 +6,17 @@
     <name>AWS Serverless Java container support - Spring implementation</name>
     <description>Allows Java applications written for the Spring framework to run in AWS Lambda</description>
     <url>https://aws.amazon.com/lambda</url>
-    <version>1.10-SNAPSHOT</version>
+    <version>2.0-SNAPSHOT</version>
 
     <parent>
         <groupId>com.amazonaws.serverless</groupId>
         <artifactId>aws-serverless-java-container</artifactId>
-        <version>1.10-SNAPSHOT</version>
+        <version>2.0-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
 
     <properties>
-        <spring.version>6.0.7</spring.version>
+        <spring.version>6.0.8</spring.version>
         <spring-security.version>6.0.2</spring-security.version>
     </properties>
 
@@ -25,7 +25,7 @@
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
             <artifactId>aws-serverless-java-container-core</artifactId>
-            <version>1.10-SNAPSHOT</version>
+            <version>2.0-SNAPSHOT</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.springframework/spring-webmvc -->

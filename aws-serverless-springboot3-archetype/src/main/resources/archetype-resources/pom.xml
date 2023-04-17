@@ -10,7 +10,7 @@
     <version>\${version}</version>
     <packaging>jar</packaging>
 
-    <name>Serverless Spring Boot 2 API</name>
+    <name>Serverless Spring Boot 3 API</name>
     <url>https://github.com/awslabs/aws-serverless-java-container</url>
 
     <parent>
@@ -20,14 +20,13 @@
     </parent>
 
     <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <java.version>17</java.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
-            <artifactId>aws-serverless-java-container-springboot2</artifactId>
+            <artifactId>aws-serverless-java-container-springboot3</artifactId>
             <version>${project.version}</version>
         </dependency>
 

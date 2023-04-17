@@ -229,11 +229,11 @@ public class AwsFilterChainManagerTest {
 
     @Test
     void filterChain_multipleServlets_callsCorrectServlet() throws IOException, ServletException {
-        MockServlet servlet1 = (MockServlet) servletContext.getServlet(SERVLET1_NAME);
+        MockServlet servlet1 = (MockServlet) ((AwsServletRegistration) servletContext.getServletRegistration(SERVLET1_NAME)).getServlet();
         ServletConfig servlet1Config = ((AwsServletRegistration) servletContext.getServletRegistration(SERVLET1_NAME)).getServletConfig();
         servlet1.init(servlet1Config);
 
-        MockServlet servlet2 = (MockServlet) servletContext.getServlet(SERVLET2_NAME);
+        MockServlet servlet2 = (MockServlet) ((AwsServletRegistration) servletContext.getServletRegistration(SERVLET2_NAME)).getServlet();
         ServletConfig servlet2Config = ((AwsServletRegistration) servletContext.getServletRegistration(SERVLET2_NAME)).getServletConfig();
         servlet2.init(servlet2Config);
 
