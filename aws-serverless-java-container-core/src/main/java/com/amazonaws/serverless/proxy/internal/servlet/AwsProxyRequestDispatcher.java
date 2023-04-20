@@ -80,7 +80,7 @@ public class AwsProxyRequestDispatcher implements RequestDispatcher {
         }
 
         if (isNamedDispatcher) {
-            lambdaContainerHandler.doFilter((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse, getServlet((HttpServletRequest)servletRequest));
+            lambdaContainerHandler.doFilter((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse, ((AwsServletRegistration)servletRequest.getServletContext().getServletRegistration(dispatchTo)).getServlet());
             return;
         }
 

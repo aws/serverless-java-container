@@ -46,7 +46,7 @@ public class AwsServletContext
     //-------------------------------------------------------------
     // Constants - Public
     // -------------------------------------------------------------
-    public static final int SERVLET_API_MAJOR_VERSION = 5;
+    public static final int SERVLET_API_MAJOR_VERSION = 6;
     public static final int SERVLET_API_MINOR_VERSION = 0;
     public static final String SERVER_INFO = LambdaContainerHandler.SERVER_INFO + "/" + SERVLET_API_MAJOR_VERSION + "." + SERVLET_API_MINOR_VERSION;
 

@@ -395,12 +395,12 @@ public class AwsHttpServletRequestWrapper implements HttpServletRequest {
 
     @Override
     public String getRequestId() {
-        return null;
+        return originalRequest.getRequestId();
     }
 
     @Override
     public String getProtocolRequestId() {
-        return null;
+        return "";
     }
 
     @Override

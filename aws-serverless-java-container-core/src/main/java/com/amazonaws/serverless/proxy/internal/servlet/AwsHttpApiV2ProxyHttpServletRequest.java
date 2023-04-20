@@ -476,12 +476,12 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getRequestId() {
-        return null;
+        return request.getRequestContext().getRequestId();
     }
 
     @Override
     public String getProtocolRequestId() {
-        return null;
+        return "";
     }
 
     @Override
