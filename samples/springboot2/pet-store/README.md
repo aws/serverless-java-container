@@ -9,6 +9,13 @@ The application can be deployed in an AWS account using the [Serverless Applicat
 * [Gradle](https://gradle.org/) or [Maven](https://maven.apache.org/)
 
 ## Deployment
+
+In a shell, navigate to the sample's folder and run the following command
+
+```
+$ gradle wrapper
+````
+
 In a shell, navigate to the sample's folder and use the SAM CLI to build a deployable package
 ```
 $ sam build
