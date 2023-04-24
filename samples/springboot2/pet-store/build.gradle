@@ -12,7 +12,7 @@ dependencies {
             exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
           },
           'com.amazonaws.serverless:aws-serverless-java-container-springboot2:[1.4,)',
-          'io.symphonia:lambda-logging:1.0.3'
+          'software.amazon.lambda:powertools-logging:1.15.0'
   )
   testImplementation("junit:junit")
 }
