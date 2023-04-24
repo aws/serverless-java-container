@@ -8,7 +8,7 @@ repositories {
 dependencies {
   implementation (
           'com.amazonaws.serverless:aws-serverless-java-container-jersey:[2.0,)',
-          'com.fasterxml.jackson.core:jackson-databind:2.14.2',
+          'com.fasterxml.jackson.core:jackson-databind:2.15.0',
           'io.symphonia:lambda-logging:1.0.3'
   )
 
