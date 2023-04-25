@@ -35,10 +35,10 @@ import org.apache.struts2.dispatcher.filter.StrutsPrepareAndExecuteFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.FilterRegistration;
-import javax.servlet.Servlet;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.FilterRegistration;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.EnumSet;
 import java.util.concurrent.CountDownLatch;
 

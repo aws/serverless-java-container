@@ -17,12 +17,14 @@ import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jakarta.activation.spi.MimeTypeRegistryProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.activation.MimetypesFileTypeMap;
-import javax.servlet.*;
-import javax.servlet.descriptor.JspConfigDescriptor;
+import jakarta.servlet.*;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.descriptor.JspConfigDescriptor;
+import jakarta.activation.MimetypesFileTypeMap;
 
 import java.io.File;
 import java.io.InputStream;
@@ -44,8 +46,8 @@ public class AwsServletContext
     //-------------------------------------------------------------
     // Constants - Public
     // -------------------------------------------------------------
-    public static final int SERVLET_API_MAJOR_VERSION = 3;
-    public static final int SERVLET_API_MINOR_VERSION = 1;
+    public static final int SERVLET_API_MAJOR_VERSION = 6;
+    public static final int SERVLET_API_MINOR_VERSION = 0;
     public static final String SERVER_INFO = LambdaContainerHandler.SERVER_INFO + "/" + SERVLET_API_MAJOR_VERSION + "." + SERVLET_API_MINOR_VERSION;
 
 
@@ -79,7 +81,6 @@ public class AwsServletContext
         this.servletRegistrations = new HashMap<>();
     }
 
-
     //-------------------------------------------------------------
     // Implementation - ServletContext
     //-------------------------------------------------------------
@@ -93,6 +94,36 @@ public class AwsServletContext
     public String getContextPath() {
         // servlets are always at the root.
         return "";
+    }
+
+    @Override
+    public void setResponseCharacterEncoding(String encoding) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getResponseCharacterEncoding() {
+        return null;
+    }
+
+    @Override
+    public void setRequestCharacterEncoding(String encoding) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getRequestCharacterEncoding() {
+        return null;
+    }
+
+    @Override
+    public void setSessionTimeout(int sessionTimeout) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int getSessionTimeout() {
+        return 0;
     }
 
 
@@ -136,6 +167,7 @@ public class AwsServletContext
         if (mimeTypes == null) {
             mimeTypes = new MimetypesFileTypeMap();
         }
+
         // TODO: The getContentType method of the MimetypesFileTypeMap returns application/octet-stream
         // instead of null when the type cannot be found. We should replace with an implementation that
         // loads the System mime types ($JAVA_HOME/lib/mime.types
@@ -174,13 +206,6 @@ public class AwsServletContext
         return new AwsProxyRequestDispatcher(s, true, containerHandler);
     }
 
-
-    @Override
-    @Deprecated
-    public Servlet getServlet(String s) throws ServletException {
-        return servletRegistrations.get(s).getServlet();
-    }
-
     public Servlet getServletForPath(String path) {
         String[] pathParts = path.split("/");
         for (AwsServletRegistration reg : servletRegistrations.values()) {
@@ -206,35 +231,9 @@ public class AwsServletContext
         return null;
     }
 
-
-    @Override
-    @Deprecated
-    public Enumeration<Servlet> getServlets() {
-        return Collections.enumeration(servletRegistrations.entrySet().stream()
-                .map((e) -> {
-                    return e.getValue().getServlet();
-                } )
-                .collect(Collectors.toList()));
-    }
-
-
-    @Override
-    @Deprecated
-    public Enumeration<String> getServletNames() {
-        return Collections.enumeration(servletRegistrations.keySet());
-    }
-
-
     @Override
     public void log(String s) {
         log.info(SecurityUtils.encode(s));
-    }
-
-
-    @Override
-    @Deprecated
-    public void log(Exception e, String s) {
-        log.error(SecurityUtils.encode(s), e);
     }
 
 
@@ -343,6 +342,11 @@ public class AwsServletContext
         } catch (ServletException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public ServletRegistration.Dynamic addJspFile(String s, String s1) {
+        throw new UnsupportedOperationException();
     }
 
 

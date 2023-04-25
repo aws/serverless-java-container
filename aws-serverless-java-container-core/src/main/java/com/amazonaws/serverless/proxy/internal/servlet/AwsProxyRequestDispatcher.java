@@ -19,9 +19,9 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
@@ -80,7 +80,7 @@ public class AwsProxyRequestDispatcher implements RequestDispatcher {
         }
 
         if (isNamedDispatcher) {
-            lambdaContainerHandler.doFilter((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse, getServlet(dispatchTo));
+            lambdaContainerHandler.doFilter((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse, ((AwsServletRegistration)servletRequest.getServletContext().getServletRegistration(dispatchTo)).getServlet());
             return;
         }
 
@@ -147,10 +147,6 @@ public class AwsProxyRequestDispatcher implements RequestDispatcher {
 
     private Servlet getServlet(HttpServletRequest req) {
         return ((AwsServletContext)lambdaContainerHandler.getServletContext()).getServletForPath(req.getPathInfo());
-    }
-
-    private Servlet getServlet(String servletName) throws ServletException {
-        return ((AwsServletContext)lambdaContainerHandler.getServletContext()).getServlet(servletName);
     }
 
 }

@@ -12,7 +12,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: com.amazonaws.serverless.sample.spring.StreamLambdaHandler::handleRequest
-      Runtime: java11
+      Runtime: java17
       CodeUri: .
       MemorySize: 512
       Policies: AWSLambdaBasicExecutionRole

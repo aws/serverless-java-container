@@ -14,8 +14,8 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
 import java.util.Collections;

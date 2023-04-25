@@ -24,10 +24,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.SecurityContext;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.SecurityContext;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
@@ -484,14 +485,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
 
     @Override
-    @Deprecated
-    public String getRealPath(String s) {
-        // we are in an archive on a remote server
-        return null;
-    }
-
-
-    @Override
     public int getRemotePort() {
         return 0;
     }
@@ -540,6 +533,21 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
                     + " is not in asynchronous mode. Call startAsync before attempting to get the async context.");
         }
         return asyncContext;
+    }
+
+    @Override
+    public String getRequestId() {
+        return request.getRequestContext().getRequestId();
+    }
+
+    @Override
+    public String getProtocolRequestId() {
+        return "";
+    }
+
+    @Override
+    public ServletConnection getServletConnection() {
+        return null;
     }
 
     //-------------------------------------------------------------

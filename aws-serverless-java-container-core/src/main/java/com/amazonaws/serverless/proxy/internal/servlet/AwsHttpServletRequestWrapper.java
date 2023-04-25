@@ -15,8 +15,8 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -175,11 +175,6 @@ public class AwsHttpServletRequestWrapper implements HttpServletRequest {
     @Override
     public boolean isRequestedSessionIdFromURL() {
         return originalRequest.isRequestedSessionIdFromURL();
-    }
-
-    @Override
-    public boolean isRequestedSessionIdFromUrl() {
-        return originalRequest.isRequestedSessionIdFromUrl();
     }
 
     @Override
@@ -344,11 +339,6 @@ public class AwsHttpServletRequestWrapper implements HttpServletRequest {
     }
 
     @Override
-    public String getRealPath(String s) {
-        return originalRequest.getRealPath(s);
-    }
-
-    @Override
     public int getRemotePort() {
         return originalRequest.getRemotePort();
     }
@@ -401,5 +391,20 @@ public class AwsHttpServletRequestWrapper implements HttpServletRequest {
     @Override
     public DispatcherType getDispatcherType() {
         return originalRequest.getDispatcherType();
+    }
+
+    @Override
+    public String getRequestId() {
+        return originalRequest.getRequestId();
+    }
+
+    @Override
+    public String getProtocolRequestId() {
+        return "";
+    }
+
+    @Override
+    public ServletConnection getServletConnection() {
+        return null;
     }
 }

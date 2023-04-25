@@ -17,7 +17,7 @@ import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-import javax.servlet.http.Part;
+import jakarta.servlet.http.Part;
 import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;

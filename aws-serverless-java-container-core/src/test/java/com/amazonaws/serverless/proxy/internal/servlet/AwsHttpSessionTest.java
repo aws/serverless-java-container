@@ -35,34 +35,6 @@ public class AwsHttpSessionTest {
     }
 
     @Test
-    void values_throwsUnsupportedOperationException() {
-        int exCount = 0;
-        AwsHttpSession sess = new AwsHttpSession("id");
-
-        try {
-            sess.putValue("test", "test");
-        } catch (UnsupportedOperationException e) {
-            exCount++;
-        }
-        try {
-            sess.removeValue("test");
-        } catch (UnsupportedOperationException e) {
-            exCount++;
-        }
-        try {
-            sess.getValue("test");
-        } catch (UnsupportedOperationException e) {
-            exCount++;
-        }
-        try {
-            sess.getValueNames();
-        } catch (UnsupportedOperationException e) {
-            exCount++;
-        }
-        assertEquals(4, exCount);
-    }
-
-    @Test
     void attributes_dataStoredCorrectly() throws InterruptedException {
         AwsHttpSession sess = new AwsHttpSession("id");
         sess.setAttribute("test", "test");

@@ -31,10 +31,10 @@ import spark.Service;
 import spark.Spark;
 import spark.embeddedserver.EmbeddedServers;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.FilterRegistration;
-import javax.servlet.Servlet;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.FilterRegistration;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;

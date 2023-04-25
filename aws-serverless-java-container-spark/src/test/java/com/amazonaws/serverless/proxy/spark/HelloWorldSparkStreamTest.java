@@ -15,7 +15,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import spark.Spark;
 
-import javax.servlet.http.Cookie;
+import jakarta.servlet.http.Cookie;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

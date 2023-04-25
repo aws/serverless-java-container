@@ -21,14 +21,14 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.WriteListener;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.WriteListener;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -153,23 +153,9 @@ public class AwsHttpServletResponse
 
 
     @Override
-    @Deprecated
-    public String encodeUrl(String s) {
-        return this.encodeURL(s);
-    }
-
-
-    @Override
-    @Deprecated
-    public String encodeRedirectUrl(String s) {
-        return this.encodeRedirectURL(s);
-    }
-
-
-    @Override
     public void sendError(int i, String s) throws IOException {
         request.setAttribute(AwsHttpServletRequest.DISPATCHER_TYPE_ATTRIBUTE, DispatcherType.ERROR);
-        setStatus(i, s);
+        setStatus(i);
         flushBuffer();
     }
 
@@ -257,16 +243,6 @@ public class AwsHttpServletResponse
         if (!canSetHeader()) return;
         statusCode = i;
     }
-
-
-    @Override
-    @Deprecated
-    public void setStatus(int i, String s) {
-        if (!canSetHeader()) return;
-        statusCode = i;
-        statusMessage = s;
-    }
-
 
     @Override
     public int getStatus() {

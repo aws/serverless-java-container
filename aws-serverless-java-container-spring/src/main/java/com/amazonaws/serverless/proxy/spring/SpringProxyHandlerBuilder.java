@@ -18,7 +18,7 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 public class SpringProxyHandlerBuilder<RequestType> extends ServletLambdaContainerHandlerBuilder<
             RequestType,

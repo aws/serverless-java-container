@@ -8,9 +8,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.File;
 import java.io.IOException;
@@ -217,9 +217,8 @@ public class AwsServletContextTest {
     void addServlet_callsDefaultConstructor() throws ServletException {
         AwsServletContext ctx = new AwsServletContext(null);
         ctx.addServlet("srv1", TestServlet.class);
-        assertNotNull(ctx.getServlet("srv1"));
-        assertNotNull(ctx.getServletRegistration("srv1"));
-        assertEquals("", ((TestServlet)ctx.getServlet("srv1")).getId());
+        assertNotNull(((AwsServletRegistration) ctx.getServletRegistration("srv1")).getServlet());
+        assertEquals("", ((TestServlet)((AwsServletRegistration) ctx.getServletRegistration("srv1")).getServlet()).getId());
     }
 
     @Test

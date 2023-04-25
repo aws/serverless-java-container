@@ -25,7 +25,7 @@ import spark.route.Routes;
 import spark.ssl.SslStores;
 import spark.staticfiles.StaticFilesConfiguration;
 
-import javax.servlet.Filter;
+import jakarta.servlet.Filter;
 import java.util.Map;
 import java.util.Optional;
 

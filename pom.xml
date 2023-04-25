@@ -4,7 +4,7 @@
     <groupId>com.amazonaws.serverless</groupId>
     <artifactId>aws-serverless-java-container</artifactId>
     <packaging>pom</packaging>
-    <version>1.10-SNAPSHOT</version>
+    <version>2.0-SNAPSHOT</version>
     <name>AWS Serverless Java container</name>
     <description>A Java framework to run Spring, Spring Boot, Jersey, Spark, and Struts applications inside AWS Lambda</description>
     <url>https://github.com/awslabs/aws-serverless-java-container</url>
@@ -27,22 +27,18 @@
     <modules>
         <module>aws-serverless-java-container-core</module>
         <module>aws-serverless-java-container-jersey</module>
-        <module>aws-serverless-java-container-spark</module>
         <module>aws-serverless-java-container-spring</module>
-        <module>aws-serverless-java-container-struts</module>
-        <module>aws-serverless-java-container-springboot2</module>
-        <module>aws-serverless-struts-archetype</module>
+        <module>aws-serverless-java-container-springboot3</module>
         <module>aws-serverless-jersey-archetype</module>
-        <module>aws-serverless-spark-archetype</module>
         <module>aws-serverless-spring-archetype</module>
-        <module>aws-serverless-springboot2-archetype</module>
+        <module>aws-serverless-springboot3-archetype</module>
     </modules>
 
     <scm>
         <url>https://github.com/awslabs/aws-serverless-java-container</url>
         <connection>scm:git:https://github.com/awslabs/aws-serverless-java-container.git</connection>
       <tag>HEAD</tag>
-  </scm>
+    </scm>
 
     <repositories>
         <repository>

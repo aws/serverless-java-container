@@ -12,8 +12,8 @@ import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 
 import spark.Spark;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.FilterRegistration;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.FilterRegistration;
 
 import java.io.IOException;
 import java.io.InputStream;

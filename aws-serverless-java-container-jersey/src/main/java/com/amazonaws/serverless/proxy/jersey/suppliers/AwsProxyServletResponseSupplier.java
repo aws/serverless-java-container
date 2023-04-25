@@ -15,8 +15,8 @@ package com.amazonaws.serverless.proxy.jersey.suppliers;
 
 import org.glassfish.jersey.server.ContainerRequest;
 
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.Context;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.core.Context;
 
 import java.util.function.Supplier;
 
