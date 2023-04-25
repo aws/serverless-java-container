@@ -16,8 +16,8 @@
 
     <properties>
         <spring.version>6.0.8</spring.version>
-        <springboot.version>3.0.5</springboot.version>
-        <springsecurity.version>6.0.2</springsecurity.version>
+        <springboot.version>3.0.6</springboot.version>
+        <springsecurity.version>6.0.3</springsecurity.version>
     </properties>
 
     <dependencies>
