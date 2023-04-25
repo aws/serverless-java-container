@@ -24,8 +24,8 @@ dependencies {
           'javax.el:javax.el-api:3.0.0',
           'com.fasterxml.jackson.core:jackson-databind:2.15.0',
           'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.0',
-          'org.apache.logging.log4j:log4j-core:2.19.0',
-          'org.apache.logging.log4j:log4j-api:2.19.0',
+          'org.apache.logging.log4j:log4j-core:2.20.0',
+          'org.apache.logging.log4j:log4j-api:2.20.0',
           'com.amazonaws:aws-lambda-java-log4j2:1.5.1',
   )
 }
