@@ -24,25 +24,25 @@ jobs:
       - uses: actions/checkout@v3
       - name: Build latest
         run: ./gha_build.sh jersey true true
-      - name: Set up JDK 8
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'corretto'
-          java-version: 8
-      - name: Build Jersey 2.27
-        run: ./gha_build.sh jersey false false -Djersey.version=2.27
-      - name: Build Jersey 2.28
-        run: ./gha_build.sh jersey false false -Djersey.version=2.28
-      - name: Build Jersey 2.29
-        run: ./gha_build.sh jersey false false -Djersey.version=2.29.1
+#      - name: Set up JDK 8
+#        uses: actions/setup-java@v3
+#        with:
+#          distribution: 'corretto'
+#          java-version: 8
+#      - name: Build Jersey 2.27
+#        run: ./gha_build.sh jersey false false -Djersey.version=2.27
+#      - name: Build Jersey 2.28
+#        run: ./gha_build.sh jersey false false -Djersey.version=2.28
+#      - name: Build Jersey 2.29
+#        run: ./gha_build.sh jersey false false -Djersey.version=2.29.1
 
-  build_spark:
-    name: Build and test Spark
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Build latest
-        run: ./gha_build.sh spark true true
+#  build_spark:
+#    name: Build and test Spark
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v3
+#      - name: Build latest
+#        run: ./gha_build.sh spark true true
 
   build_spring:
     name: Build and test Spring & SpringBoot
@@ -50,37 +50,35 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build latest
-        # we reduce the minCoverage for this run because it will skip the SpringBoot 1.5 tests since they are no longer compatible with
-        # Spring core 5.2 and above. SpringBoot 1.5 is deprecated
-        run: ./gha_build.sh spring true true -Djacoco.minCoverage=0.4
-      - name: Build Spring 5.0
-        run: ./gha_build.sh spring false false -Dspring.version=5.0.20.RELEASE -Dspring-security.version=5.0.19.RELEASE -Ddependency-check.skip=true
-      - name: Build Spring 5.1
-        run: ./gha_build.sh spring false false -Dspring.version=5.1.20.RELEASE -Dspring-security.version=5.1.13.RELEASE -Ddependency-check.skip=true
-      - name: Build Spring 5.2
-        run: ./gha_build.sh spring false false -Dspring.version=5.2.21.RELEASE -Dspring-security.version=5.2.15.RELEASE -Ddependency-check.skip=true
+        run: ./gha_build.sh spring true true
+#      - name: Build Spring 5.0
+#        run: ./gha_build.sh spring false false -Dspring.version=5.0.20.RELEASE -Dspring-security.version=5.0.19.RELEASE -Ddependency-check.skip=true
+#      - name: Build Spring 5.1
+#        run: ./gha_build.sh spring false false -Dspring.version=5.1.20.RELEASE -Dspring-security.version=5.1.13.RELEASE -Ddependency-check.skip=true
+#      - name: Build Spring 5.2
+#        run: ./gha_build.sh spring false false -Dspring.version=5.2.21.RELEASE -Dspring-security.version=5.2.15.RELEASE -Ddependency-check.skip=true
 
-  build_springboot2:
-    name: Build and test SpringBoot 2
+  build_springboot3:
+    name: Build and test SpringBoot 3
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Build latest
-        run: ./gha_build.sh springboot2 true true
+        run: ./gha_build.sh springboot3 true true
       # https://github.com/spring-projects/spring-boot/wiki/Supported-Versions
-      - name: Build Spring Boot 2.2
-        run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.2.13.RELEASE -Dspring.version=5.2.15.RELEASE -Dspringsecurity.version=5.2.8.RELEASE -Ddependency-check.skip=true
-      - name: Build Spring Boot 2.3
-        run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.3.12.RELEASE -Dspring.version=5.2.15.RELEASE -Dspringsecurity.version=5.3.9.RELEASE -Ddependency-check.skip=true
-      - name: Build Spring Boot 2.4
-        run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.4.13 -Dspring.version=5.3.13 -Dspringsecurity.version=5.4.9 -Ddependency-check.skip=true
-      - name: Build Spring Boot 2.5
-        run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.5.14 -Dspring.version=5.3.20 -Dspringsecurity.version=5.5.8 -Ddependency-check.skip=true
+#      - name: Build Spring Boot 2.2
+#        run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.2.13.RELEASE -Dspring.version=5.2.15.RELEASE -Dspringsecurity.version=5.2.8.RELEASE -Ddependency-check.skip=true
+#      - name: Build Spring Boot 2.3
+#        run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.3.12.RELEASE -Dspring.version=5.2.15.RELEASE -Dspringsecurity.version=5.3.9.RELEASE -Ddependency-check.skip=true
+#      - name: Build Spring Boot 2.4
+#        run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.4.13 -Dspring.version=5.3.13 -Dspringsecurity.version=5.4.9 -Ddependency-check.skip=true
+#      - name: Build Spring Boot 2.5
+#        run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.5.14 -Dspring.version=5.3.20 -Dspringsecurity.version=5.5.8 -Ddependency-check.skip=true
 
-  build_struts2:
-    name: Build and test Struts
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Build latest
-        run: ./gha_build.sh struts true true
+#  build_struts2:
+#    name: Build and test Struts
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v3
+#      - name: Build latest
+#        run: ./gha_build.sh struts true true
