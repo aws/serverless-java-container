@@ -400,11 +400,11 @@ public class AwsHttpServletRequestWrapper implements HttpServletRequest {
 
     @Override
     public String getProtocolRequestId() {
-        return "";
+        return originalRequest.getProtocolRequestId();
     }
 
     @Override
     public ServletConnection getServletConnection() {
-        return null;
+        return originalRequest.getServletConnection();
     }
 }
