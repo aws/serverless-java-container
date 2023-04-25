@@ -31,7 +31,7 @@ function archetype {
     cd ${WORKING_DIR}/${ARCHETYPE_NAME} && mvn -q clean install
     ARCHETYPE_TEST_DIR=${WORKING_DIR}/$1_archetype_test
     mkdir -p ${ARCHETYPE_TEST_DIR}
-    cd ${ARCHETYPE_TEST_DIR} && mvn archetype:generate -DgroupId=my.service -DartifactId=${PROJ_NAME} -Dversion=1.0-SNAPSHOT \
+    cd ${ARCHETYPE_TEST_DIR} && mvn archetype:generate -DgroupId=my.service -DartifactId=${PROJ_NAME} -Dversion=2.0-SNAPSHOT \
        -DarchetypeGroupId=com.amazonaws.serverless.archetypes \
        -DarchetypeArtifactId=${ARCHETYPE_NAME} \
        -DarchetypeCatalog=local \
@@ -51,10 +51,10 @@ function archetype {
     if [[ "$?" -ne 0 ]]; then
         exit 1
     fi
-    cd ${ARCHETYPE_TEST_DIR}/${PROJ_NAME} && ./gradlew wrapper --gradle-version 5.0
-    if [[ "$?" -ne 0 ]]; then
-        exit 1
-    fi
+#    cd ${ARCHETYPE_TEST_DIR}/${PROJ_NAME} && ./gradlew wrapper --gradle-version 5.0
+#    if [[ "$?" -ne 0 ]]; then
+#        exit 1
+#    fi
     cd ${ARCHETYPE_TEST_DIR}/${PROJ_NAME} && ./gradlew -q clean build
     if [[ "$?" -ne 0 ]]; then
         exit 1
@@ -72,10 +72,10 @@ function sample {
     if [[ "$?" -ne 0 ]]; then
         exit 1
     fi
-    cd ${SAMPLE_FOLDER} && ./gradlew wrapper --gradle-version 5.0
-    if [[ "$?" -ne 0 ]]; then
-        exit 1
-    fi
+#    cd ${SAMPLE_FOLDER} && ./gradlew wrapper --gradle-version 5.0
+#    if [[ "$?" -ne 0 ]]; then
+#        exit 1
+#    fi
     cd ${SAMPLE_FOLDER} && ./gradlew -q clean build
     if [[ "$?" -ne 0 ]]; then
         exit 1
