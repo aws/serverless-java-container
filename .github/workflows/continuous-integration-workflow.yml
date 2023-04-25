@@ -55,7 +55,7 @@ jobs:
 #        run: ./gha_build.sh spark true true
 
   build_spring:
-    name: Build and test Spring & SpringBoot
+    name: Build and test Spring
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
