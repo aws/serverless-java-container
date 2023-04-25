@@ -10,7 +10,7 @@
  * OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package com.amazonaws.serverless.sample.springboot2.model;
+package com.amazonaws.serverless.sample.springboot3.model;
 
 public class Error {
     private String message;

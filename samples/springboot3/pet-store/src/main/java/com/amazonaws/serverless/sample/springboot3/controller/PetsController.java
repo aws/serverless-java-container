@@ -10,12 +10,12 @@
  * OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package com.amazonaws.serverless.sample.springboot2.controller;
+package com.amazonaws.serverless.sample.springboot3.controller;
 
 
 
-import com.amazonaws.serverless.sample.springboot2.model.Pet;
-import com.amazonaws.serverless.sample.springboot2.model.PetData;
+import com.amazonaws.serverless.sample.springboot3.model.Pet;
+import com.amazonaws.serverless.sample.springboot3.model.PetData;
 
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;

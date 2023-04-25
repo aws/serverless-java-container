@@ -1,6 +1,6 @@
-package com.amazonaws.serverless.sample.springboot2;
+package com.amazonaws.serverless.sample.springboot3;
 
-import com.amazonaws.serverless.sample.springboot2.controller.PetsController;
+import com.amazonaws.serverless.sample.springboot3.controller.PetsController;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
