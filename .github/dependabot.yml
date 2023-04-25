@@ -13,11 +13,23 @@ updates:
     directory: "/samples/spring/pet-store"
     schedule:
       interval: "weekly"
+  - package-ecosystem: gradle
+    directory: "/samples/spring/pet-store"
+    schedule:
+      interval: "weekly"
   - package-ecosystem: maven
     directory: "/samples/springboot3/pet-store"
     schedule:
       interval: "weekly"
+  - package-ecosystem: gradle
+    directory: "/samples/springboot3/pet-store"
+    schedule:
+      interval: "weekly"
   - package-ecosystem: maven
+    directory: "/samples/jersey/pet-store"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: gradle
     directory: "/samples/jersey/pet-store"
     schedule:
       interval: "weekly"
