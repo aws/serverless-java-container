@@ -13,6 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: 17
       - name: Build latest
         run: mvn -q clean install
         working-directory: ./aws-serverless-java-container-core
@@ -22,6 +27,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: 17
       - name: Build latest
         run: ./gha_build.sh jersey true true
 #      - name: Set up JDK 8
@@ -49,6 +59,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: 17
       - name: Build latest
         run: ./gha_build.sh spring true true
 #      - name: Build Spring 5.0
@@ -63,6 +78,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: 17
       - name: Build latest
         run: ./gha_build.sh springboot3 true true
       # https://github.com/spring-projects/spring-boot/wiki/Supported-Versions
