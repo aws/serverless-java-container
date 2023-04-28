@@ -22,11 +22,6 @@ import com.amazonaws.serverless.proxy.model.Headers;
 import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 import com.amazonaws.services.lambda.runtime.Context;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.apache.commons.fileupload2.FileItem;
-import org.apache.commons.fileupload2.FileUploadException;
-import org.apache.commons.fileupload2.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload2.jaksrvlt.JakSrvltFileUpload;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.NullInputStream;
 import org.slf4j.Logger;
@@ -508,39 +503,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
 
     @SuppressFBWarnings({"FILE_UPLOAD_FILENAME", "WEAK_FILENAMEUTILS"})
     protected Map<String, Part> getMultipartFormParametersMap() {
-        if (multipartFormParameters != null) {
-            return multipartFormParameters;
-        }
-        if (!JakSrvltFileUpload.isMultipartContent(this)) { // isMultipartContent also checks the content type
-            multipartFormParameters = new HashMap<>();
-            return multipartFormParameters;
-        }
-        Timer.start("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
-        multipartFormParameters = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-
-        JakSrvltFileUpload upload = new JakSrvltFileUpload(new DiskFileItemFactory());
-
-        try {
-            List<FileItem> items = upload.parseRequest(this);
-            for (FileItem item : items) {
-                String fileName = FilenameUtils.getName(item.getName());
-                AwsProxyRequestPart newPart = new AwsProxyRequestPart(item.get());
-                newPart.setName(item.getFieldName());
-                newPart.setSubmittedFileName(fileName);
-                newPart.setContentType(item.getContentType());
-                newPart.setSize(item.getSize());
-                item.getHeaders().getHeaderNames().forEachRemaining(h -> {
-                    newPart.addHeader(h, item.getHeaders().getHeader(h));
-                });
-
-                multipartFormParameters.put(item.getFieldName(), newPart);
-            }
-        } catch (FileUploadException e) {
-            Timer.stop("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
-            log.error("Could not read multipart upload file", e);
-        }
-        Timer.stop("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
-        return multipartFormParameters;
+        throw new UnsupportedOperationException();
     }
 
     protected String[] getQueryParamValues(MultiValuedTreeMap<String, String> qs, String key, boolean isCaseSensitive) {
