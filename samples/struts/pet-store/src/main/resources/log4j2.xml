@@ -7,11 +7,17 @@
             </PatternLayout>
         </Lambda>
     </Appenders>
+    <Appenders>
+        <Console name="JsonAppender" target="SYSTEM_OUT">
+            <JsonTemplateLayout eventTemplateUri="classpath:LambdaJsonLayout.json" />
+        </Console>
+    </Appenders>
     <Loggers>
-        <Logger name="com.opensymphony.xwork2" level="warn"/>
-        <Logger name="org.apache.struts2" level="warn"/>
+        <Logger name="JsonLogger" level="INFO" additivity="false">
+            <AppenderRef ref="JsonAppender"/>
+        </Logger>
         <Root level="info">
-            <AppenderRef ref="Lambda"/>
+            <AppenderRef ref="JsonAppender"/>
         </Root>
     </Loggers>
 </Configuration>
