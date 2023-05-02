@@ -171,6 +171,13 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>jakarta.websocket</groupId>
+            <artifactId>jakarta.websocket-client-api</artifactId>
+            <version>2.1.0</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
