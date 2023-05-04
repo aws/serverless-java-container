@@ -22,11 +22,11 @@ Resources:
           Type: HttpApi
           Properties:
             TimeoutInMillis: 20000
-            PayloadFormatVersion: '1.0'
+        # PayloadFormatVersion: '1.0'
 
 Outputs:
   SpringBootPetStoreApi:
     Description: URL for application
     Value: !Sub 'https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/pets'
-    Export:
-      Name: SpringBootPetStoreApi
+#      Export:
+#      Name: SpringBootPetStoreApi

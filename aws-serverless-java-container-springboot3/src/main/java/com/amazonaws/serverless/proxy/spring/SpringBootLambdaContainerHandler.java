@@ -18,7 +18,7 @@ import com.amazonaws.serverless.proxy.internal.servlet.*;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
-import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.serverless.proxy.spring.embedded.ServerlessReactiveServletEmbeddedServerFactory;
 import com.amazonaws.serverless.proxy.spring.embedded.ServerlessServletEmbeddedServerFactory;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -79,7 +79,7 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
      */
     public static SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(Class<?> springBootInitializer, String... profiles)
             throws ContainerInitializationException {
-        return new SpringBootProxyHandlerBuilder<AwsProxyRequest>()
+        return new SpringBootProxyHandlerBuilder<AwsProxyRequest, AwsProxyResponse>()
                 .defaultProxy()
                 .initializationWrapper(new InitializationWrapper())
                 .springBootApplication(springBootInitializer)
@@ -88,15 +88,15 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
     }
 
     /**
-     * Creates a default SpringLambdaContainerHandler initialized with the `AwsProxyRequest` and `HttpApiV2ProxyRequest` objects and the given Spring profiles
+     * Creates a default SpringLambdaContainerHandler initialized with the `AwsProxyRequest` and `APIGatewayV2HTTPEvent` objects and the given Spring profiles
      * @param springBootInitializer {@code SpringBootServletInitializer} class
      * @param profiles A list of Spring profiles to activate
      * @return An initialized instance of the `SpringLambdaContainerHandler`
      * @throws ContainerInitializationException If an error occurs while initializing the Spring framework
      */
-    public static SpringBootLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> getHttpApiV2ProxyHandler(Class<?> springBootInitializer, String... profiles)
+    public static SpringBootLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponse> getHttpApiV2ProxyHandler(Class<?> springBootInitializer, String... profiles)
             throws ContainerInitializationException {
-        return new SpringBootProxyHandlerBuilder<HttpApiV2ProxyRequest>()
+        return new SpringBootProxyHandlerBuilder<APIGatewayV2HTTPEvent, AwsProxyResponse>()
                 .defaultHttpApiV2Proxy()
                 .initializationWrapper(new InitializationWrapper())
                 .springBootApplication(springBootInitializer)

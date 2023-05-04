@@ -16,7 +16,7 @@ import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.serverless.proxy.model.Headers;
-import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 import com.amazonaws.services.lambda.runtime.Context;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -42,7 +42,7 @@ import java.util.stream.Stream;
 public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
     private static Logger log = LoggerFactory.getLogger(AwsHttpApiV2ProxyHttpServletRequest.class);
 
-    private HttpApiV2ProxyRequest request;
+    private APIGatewayV2HTTPEvent request;
     private MultiValuedTreeMap<String, String> queryString;
     private Headers headers;
     private ContainerConfig config;
@@ -55,7 +55,7 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
      *
      * @param lambdaContext The Lambda function context. This object is used for utility methods such as log
      */
-    public AwsHttpApiV2ProxyHttpServletRequest(HttpApiV2ProxyRequest req, Context lambdaContext, SecurityContext sc, ContainerConfig cfg) {
+    public AwsHttpApiV2ProxyHttpServletRequest(APIGatewayV2HTTPEvent req, Context lambdaContext, SecurityContext sc, ContainerConfig cfg) {
         super(lambdaContext);
         request = req;
         config = cfg;
@@ -64,7 +64,7 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
         headers = headersMapToMultiValue(request.getHeaders());
     }
 
-    public HttpApiV2ProxyRequest getRequest() {
+    public APIGatewayV2HTTPEvent getRequest() {
         return request;
     }
 
@@ -380,7 +380,7 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     public ServletInputStream getInputStream() throws IOException {
         if (requestInputStream == null) {
-            requestInputStream = new AwsServletInputStream(bodyStringToInputStream(request.getBody(), request.isBase64Encoded()));
+            requestInputStream = new AwsServletInputStream(bodyStringToInputStream(request.getBody(), request.getIsBase64Encoded()));
         }
         return requestInputStream;
     }

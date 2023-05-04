@@ -3,7 +3,7 @@ package com.amazonaws.serverless.sample.springboot3;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
 import com.amazonaws.serverless.sample.springboot3.filter.CognitoIdentityFilter;
@@ -20,14 +20,14 @@ import java.util.EnumSet;
 
 
 public class StreamLambdaHandler implements RequestStreamHandler {
-    private static SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+    private static SpringBootLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponse> handler;
     static {
         try {
-            handler = SpringBootLambdaContainerHandler.getAwsProxyHandler(Application.class);
+            handler = SpringBootLambdaContainerHandler.getHttpApiV2ProxyHandler(Application.class);
 
             // For applications that take longer than 10 seconds to start, use the async builder:
-            // handler = new SpringBootProxyHandlerBuilder<AwsProxyRequest>()
-            //                    .defaultProxy()
+            // handler = new SpringBootProxyHandlerBuilder<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse>()
+            //                    .defaultHttpApiV2Proxy()
             //                    .asyncInit()
             //                    .springBootApplication(Application.class)
             //                    .buildAndInitialize();

@@ -14,7 +14,7 @@ package com.amazonaws.serverless.proxy.internal.jaxrs;
 
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
-import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -33,9 +33,9 @@ public class AwsHttpApiV2SecurityContext implements SecurityContext {
     private static Logger log = LoggerFactory.getLogger(AwsHttpApiV2SecurityContext.class);
 
     private Context lambdaContext;
-    private HttpApiV2ProxyRequest event;
+    private APIGatewayV2HTTPEvent event;
 
-    public AwsHttpApiV2SecurityContext(final Context lambdaCtx, final HttpApiV2ProxyRequest request) {
+    public AwsHttpApiV2SecurityContext(final Context lambdaCtx, final APIGatewayV2HTTPEvent request) {
         lambdaContext = lambdaCtx;
         event = request;
     }
@@ -79,8 +79,8 @@ public class AwsHttpApiV2SecurityContext implements SecurityContext {
             return false;
         }
 
-        return event.getRequestContext().getAuthorizer().getJwtAuthorizer().getScopes().contains(s) ||
-                event.getRequestContext().getAuthorizer().getJwtAuthorizer().getClaims().containsKey(s);
+        return event.getRequestContext().getAuthorizer().getJwt().getScopes().contains(s) ||
+                event.getRequestContext().getAuthorizer().getJwt().getClaims().containsKey(s);
 
     }
 
@@ -94,7 +94,7 @@ public class AwsHttpApiV2SecurityContext implements SecurityContext {
         if (event.getRequestContext().getAuthorizer() == null) {
             return null;
         }
-        if (event.getRequestContext().getAuthorizer().isJwt()) {
+        if (event.getRequestContext().getAuthorizer().getJwt() != null) { //TODO: Confirm
             return AUTH_SCHEME_JWT;
         }
         return null;

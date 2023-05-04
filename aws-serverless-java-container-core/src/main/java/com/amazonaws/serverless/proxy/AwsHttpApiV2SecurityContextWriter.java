@@ -13,14 +13,14 @@
 package com.amazonaws.serverless.proxy;
 
 import com.amazonaws.serverless.proxy.internal.jaxrs.AwsHttpApiV2SecurityContext;
-import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import jakarta.ws.rs.core.SecurityContext;
 
-public class AwsHttpApiV2SecurityContextWriter implements SecurityContextWriter<HttpApiV2ProxyRequest> {
+public class AwsHttpApiV2SecurityContextWriter implements SecurityContextWriter<APIGatewayV2HTTPEvent> {
     @Override
-    public SecurityContext writeSecurityContext(HttpApiV2ProxyRequest event, Context lambdaContext) {
+    public SecurityContext writeSecurityContext(APIGatewayV2HTTPEvent event, Context lambdaContext) {
         return new AwsHttpApiV2SecurityContext(lambdaContext, event);
     }
 }

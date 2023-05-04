@@ -27,7 +27,7 @@ public class LambdaStreamHandler implements RequestStreamHandler {
             switch (type) {
                 case "API_GW":
                 case "ALB":
-                    handler = new SpringBootProxyHandlerBuilder<AwsProxyRequest>()
+                    handler = new SpringBootProxyHandlerBuilder<AwsProxyRequest, AwsProxyResponse>()
                                 .defaultProxy()
                                 .initializationWrapper(new InitializationWrapper())
                                 .servletApplication()
@@ -35,7 +35,7 @@ public class LambdaStreamHandler implements RequestStreamHandler {
                                 .buildAndInitialize();
                     break;
                 case "HTTP_API":
-                    httpApiHandler = new SpringBootProxyHandlerBuilder<HttpApiV2ProxyRequest>()
+                    httpApiHandler = new SpringBootProxyHandlerBuilder<HttpApiV2ProxyRequest, AwsProxyResponse>()
                             .defaultHttpApiV2Proxy()
                             .initializationWrapper(new InitializationWrapper())
                             .servletApplication()

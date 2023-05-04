@@ -15,17 +15,17 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.proxy.RequestReader;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
-import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.SecurityContext;
 
-public class AwsHttpApiV2HttpServletRequestReader extends RequestReader<HttpApiV2ProxyRequest, HttpServletRequest> {
+public class AwsHttpApiV2HttpServletRequestReader extends RequestReader<APIGatewayV2HTTPEvent, HttpServletRequest> {
     static final String INVALID_REQUEST_ERROR = "The incoming event is not a valid HTTP API v2 proxy request";
 
     @Override
-    public HttpServletRequest readRequest(HttpApiV2ProxyRequest request, SecurityContext securityContext, Context lambdaContext, ContainerConfig config) throws InvalidRequestEventException {
+    public HttpServletRequest readRequest(APIGatewayV2HTTPEvent request, SecurityContext securityContext, Context lambdaContext, ContainerConfig config) throws InvalidRequestEventException {
         if (request.getRequestContext() == null || request.getRequestContext().getHttp().getMethod() == null || request.getRequestContext().getHttp().getMethod().equals("")) {
             throw new InvalidRequestEventException(INVALID_REQUEST_ERROR);
         }
@@ -44,7 +44,7 @@ public class AwsHttpApiV2HttpServletRequestReader extends RequestReader<HttpApiV
     }
 
     @Override
-    protected Class<? extends HttpApiV2ProxyRequest> getRequestClass() {
-        return HttpApiV2ProxyRequest.class;
+    protected Class<? extends APIGatewayV2HTTPEvent> getRequestClass() {
+        return APIGatewayV2HTTPEvent.class;
     }
 }

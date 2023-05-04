@@ -15,7 +15,7 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 import com.amazonaws.serverless.proxy.LogFormatter;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
 
-import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequestContext;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -79,7 +79,7 @@ public class ApacheCombinedServletLogFormatter<ContainerRequestType extends Http
         //LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\"" combined
         StringBuilder logLineBuilder = new StringBuilder();
         AwsProxyRequestContext gatewayContext = (AwsProxyRequestContext)servletRequest.getAttribute(API_GATEWAY_CONTEXT_PROPERTY);
-        HttpApiV2ProxyRequestContext httpApiContext = (HttpApiV2ProxyRequestContext)servletRequest.getAttribute(HTTP_API_CONTEXT_PROPERTY);
+        APIGatewayV2HTTPEvent.RequestContext httpApiContext = (APIGatewayV2HTTPEvent.RequestContext)servletRequest.getAttribute(HTTP_API_CONTEXT_PROPERTY);
 
         // %h
         logLineBuilder.append(servletRequest.getRemoteAddr());

@@ -23,14 +23,14 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequestBuilder, Aws
             switch (type) {
                 case "API_GW":
                 case "ALB":
-                    handler = new SpringBootProxyHandlerBuilder<AwsProxyRequest>()
+                    handler = new SpringBootProxyHandlerBuilder<AwsProxyRequest, AwsProxyResponse>()
                             .defaultProxy()
                             .initializationWrapper(new InitializationWrapper())
                             .springBootApplication(WebFluxTestApplication.class)
                             .buildAndInitialize();
                     break;
                 case "HTTP_API":
-                    httpApiHandler = new SpringBootProxyHandlerBuilder<HttpApiV2ProxyRequest>()
+                    httpApiHandler = new SpringBootProxyHandlerBuilder<HttpApiV2ProxyRequest, AwsProxyResponse>()
                             .defaultHttpApiV2Proxy()
                             .initializationWrapper(new InitializationWrapper())
                             .springBootApplication(WebFluxTestApplication.class)
