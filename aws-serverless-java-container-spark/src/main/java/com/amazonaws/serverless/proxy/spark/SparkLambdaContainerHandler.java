@@ -19,7 +19,7 @@ import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.*;
-import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.serverless.proxy.spark.embeddedserver.LambdaEmbeddedServer;
 import com.amazonaws.serverless.proxy.spark.embeddedserver.LambdaEmbeddedServerFactory;
 
@@ -119,7 +119,7 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType>
     }
 
     /**
-     * Returns a new instance of an SparkLambdaContainerHandler initialized to work with <code>HttpApiV2ProxyRequest</code>
+     * Returns a new instance of an SparkLambdaContainerHandler initialized to work with <code>APIGatewayV2HTTPEvent</code>
      * and <code>AwsProxyResponse</code> objects.
      *
      * @return a new instance of <code>SparkLambdaContainerHandler</code>
@@ -127,9 +127,10 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType>
      * @throws ContainerInitializationException Throws this exception if we fail to initialize the Spark container.
      * This could be caused by the introspection used to insert the library as the default embedded container
      */
-    public static SparkLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> getHttpApiV2ProxyHandler()
+    public static SparkLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponse> getHttpApiV2ProxyHandler()
             throws ContainerInitializationException {
-        SparkLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> newHandler = new SparkLambdaContainerHandler<>(HttpApiV2ProxyRequest.class,
+        SparkLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponse> newHandler = new SparkLambdaContainerHandler<>(
+                APIGatewayV2HTTPEvent.class,
                 AwsProxyResponse.class,
                 new AwsHttpApiV2HttpServletRequestReader(),
                 new AwsProxyHttpServletResponseWriter(true),

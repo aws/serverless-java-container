@@ -29,7 +29,7 @@ import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRespon
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
-import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.Context;
 import org.apache.struts2.dispatcher.filter.StrutsPrepareAndExecuteFilter;
 import org.slf4j.Logger;
@@ -71,9 +71,9 @@ public class StrutsLambdaContainerHandler<RequestType, ResponseType> extends Aws
                 new AwsProxyExceptionHandler());
     }
 
-    public static StrutsLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> getHttpApiV2ProxyHandler() {
+    public static StrutsLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponse> getHttpApiV2ProxyHandler() {
         return new StrutsLambdaContainerHandler(
-                HttpApiV2ProxyRequest.class,
+                APIGatewayV2HTTPEvent.class,
                 AwsProxyResponse.class,
                 new AwsHttpApiV2HttpServletRequestReader(),
                 new AwsProxyHttpServletResponseWriter(true),

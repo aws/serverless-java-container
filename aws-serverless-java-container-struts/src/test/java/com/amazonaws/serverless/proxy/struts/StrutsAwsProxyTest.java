@@ -17,9 +17,9 @@ import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
-import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.serverless.proxy.struts.echoapp.EchoAction;
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -62,7 +62,7 @@ public class StrutsAwsProxyTest extends StrutsRestTestCase<EchoAction> {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final StrutsLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = StrutsLambdaContainerHandler
             .getAwsProxyHandler();
-    private final StrutsLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> httpApiHandler = StrutsLambdaContainerHandler
+    private final StrutsLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponse> httpApiHandler = StrutsLambdaContainerHandler
             .getHttpApiV2ProxyHandler();
     private final Context lambdaContext = new MockLambdaContext();
     private String type;
