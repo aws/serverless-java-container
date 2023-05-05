@@ -3,8 +3,7 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
-import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
-import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequestContext;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import org.junit.jupiter.api.Test;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,12 +16,12 @@ public class AwsHttpApiV2HttpServletRequestReaderTest {
 
     @Test
     void reflection_getRequestClass_returnsCorrectType() {
-        assertSame(HttpApiV2ProxyRequest.class, reader.getRequestClass());
+        assertSame(APIGatewayV2HTTPEvent.class, reader.getRequestClass());
     }
 
     @Test
     void baseRequest_read_populatesSuccessfully() {
-        HttpApiV2ProxyRequest req = new AwsProxyRequestBuilder("/hello", "GET")
+        APIGatewayV2HTTPEvent req = new AwsProxyRequestBuilder("/hello", "GET")
                 .referer("localhost")
                 .userAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.61 Safari/537.36")
                 .queryString("param1", "value1")
@@ -44,7 +43,7 @@ public class AwsHttpApiV2HttpServletRequestReaderTest {
 
             assertNotNull(servletRequest.getAttribute(AwsHttpApiV2HttpServletRequestReader.HTTP_API_CONTEXT_PROPERTY));
             assertEquals("test",
-                    ((HttpApiV2ProxyRequestContext)servletRequest.getAttribute(AwsHttpApiV2HttpServletRequestReader.HTTP_API_CONTEXT_PROPERTY)).getApiId());
+                    ((APIGatewayV2HTTPEvent.RequestContext)servletRequest.getAttribute(AwsHttpApiV2HttpServletRequestReader.HTTP_API_CONTEXT_PROPERTY)).getApiId());
         } catch (InvalidRequestEventException e) {
             e.printStackTrace();
             fail("Could not read request");

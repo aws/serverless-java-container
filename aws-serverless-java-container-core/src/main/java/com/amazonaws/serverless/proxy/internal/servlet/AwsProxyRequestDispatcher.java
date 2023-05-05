@@ -14,7 +14,7 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
-import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -137,8 +137,8 @@ public class AwsProxyRequestDispatcher implements RequestDispatcher {
             ((AwsProxyRequest)req.getAttribute(API_GATEWAY_EVENT_PROPERTY)).setPath(dispatchTo);
             return;
         }
-        if (req.getAttribute(HTTP_API_EVENT_PROPERTY) != null && req.getAttribute(HTTP_API_EVENT_PROPERTY) instanceof HttpApiV2ProxyRequest) {
-            ((HttpApiV2ProxyRequest)req.getAttribute(HTTP_API_EVENT_PROPERTY)).setRawPath(destinationPath);
+        if (req.getAttribute(HTTP_API_EVENT_PROPERTY) != null && req.getAttribute(HTTP_API_EVENT_PROPERTY) instanceof APIGatewayV2HTTPEvent) {
+            ((APIGatewayV2HTTPEvent)req.getAttribute(HTTP_API_EVENT_PROPERTY)).setRawPath(destinationPath);
             return;
         }
 

@@ -22,7 +22,7 @@ import com.amazonaws.serverless.proxy.jersey.suppliers.AwsProxyServletResponseSu
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 
-import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import org.glassfish.jersey.internal.inject.AbstractBinder;
@@ -103,16 +103,16 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
 
     /**
      * Returns an initialized <code>JerseyLambdaContainerHandler</code> that includes <code>RequestReader</code> and
-     * <code>ResponseWriter</code> objects for the <code>HttpApiV2ProxyRequest</code> and <code>AwsProxyResponse</code>
+     * <code>ResponseWriter</code> objects for the <code>APIGatewayV2HTTPEvent</code> and <code>AwsProxyResponse</code>
      * objects.
      *
      * @param jaxRsApplication A configured Jax-Rs application object. For Jersey apps this can be the default
      *                         <code>ResourceConfig</code> object
      * @return A <code>JerseyLambdaContainerHandler</code> object
      */
-    public static JerseyLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> getHttpApiV2ProxyHandler(Application jaxRsApplication) {
-        JerseyLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> newHandler = new JerseyLambdaContainerHandler<>(
-                HttpApiV2ProxyRequest.class,
+    public static JerseyLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponse> getHttpApiV2ProxyHandler(Application jaxRsApplication) {
+        JerseyLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponse> newHandler = new JerseyLambdaContainerHandler<>(
+                APIGatewayV2HTTPEvent.class,
                 AwsProxyResponse.class,
                 new AwsHttpApiV2HttpServletRequestReader(),
                 new AwsProxyHttpServletResponseWriter(true),

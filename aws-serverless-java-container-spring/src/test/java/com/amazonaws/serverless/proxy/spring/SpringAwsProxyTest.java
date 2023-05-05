@@ -15,6 +15,7 @@ import com.amazonaws.serverless.proxy.spring.echoapp.UnauthenticatedFilter;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.MapResponseModel;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.SingleValueModel;
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
@@ -49,7 +50,7 @@ public class SpringAwsProxyTest {
     private ObjectMapper objectMapper = new ObjectMapper();
     private MockLambdaContext lambdaContext = new MockLambdaContext();
     private static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
-    private static SpringLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> httpApiHandler;
+    private static SpringLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponse> httpApiHandler;
 
     private AwsLambdaServletContainerHandler.StartupHandler h = (c -> {
         FilterRegistration.Dynamic registration = c.addFilter("UnauthenticatedFilter", UnauthenticatedFilter.class);

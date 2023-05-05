@@ -22,7 +22,7 @@ import com.amazonaws.serverless.proxy.jersey.model.SingleValueModel;
 import com.amazonaws.serverless.proxy.jersey.providers.ServletRequestFilter;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
-import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -81,7 +81,7 @@ public class JerseyAwsProxyTest {
     .property(LoggingFeature.LOGGING_FEATURE_VERBOSITY_SERVER, LoggingFeature.Verbosity.PAYLOAD_ANY);
 
     private static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
-    private static JerseyLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> httpApiHandler;
+    private static JerseyLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponse> httpApiHandler;
 
     private static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handlerWithoutRegisteredDependencies
     = JerseyLambdaContainerHandler.getAwsProxyHandler(appWithoutRegisteredDependencies);

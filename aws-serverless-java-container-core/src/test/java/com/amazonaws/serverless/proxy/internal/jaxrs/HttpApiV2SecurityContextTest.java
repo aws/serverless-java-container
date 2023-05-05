@@ -2,7 +2,7 @@ package com.amazonaws.serverless.proxy.internal.jaxrs;
 
 import com.amazonaws.serverless.proxy.AwsHttpApiV2SecurityContextWriter;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
-import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import org.junit.jupiter.api.Test;
 
 import jakarta.ws.rs.core.HttpHeaders;
@@ -13,10 +13,10 @@ import static org.junit.jupiter.api.Assertions.*;
 public class HttpApiV2SecurityContextTest {
     private static final String JWT_SUB_VALUE = "1234567890";
 
-    HttpApiV2ProxyRequest EMPTY_AUTH = new AwsProxyRequestBuilder("/", "GET").toHttpApiV2Request();
-    HttpApiV2ProxyRequest BASIC_AUTH = new AwsProxyRequestBuilder("/", "GET")
+    APIGatewayV2HTTPEvent EMPTY_AUTH = new AwsProxyRequestBuilder("/", "GET").toHttpApiV2Request();
+    APIGatewayV2HTTPEvent BASIC_AUTH = new AwsProxyRequestBuilder("/", "GET")
             .authorizerPrincipal("test").toHttpApiV2Request();
-    HttpApiV2ProxyRequest JWT_AUTH = new AwsProxyRequestBuilder("/", "GET")
+    APIGatewayV2HTTPEvent JWT_AUTH = new AwsProxyRequestBuilder("/", "GET")
             .authorizerPrincipal("test")
             .header(HttpHeaders.AUTHORIZATION, "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c")
             .toHttpApiV2Request();
