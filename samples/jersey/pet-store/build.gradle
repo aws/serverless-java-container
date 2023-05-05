@@ -9,7 +9,7 @@ dependencies {
   implementation (
           'com.amazonaws.serverless:aws-serverless-java-container-jersey:[2.0-SNAPSHOT,)',
           'com.fasterxml.jackson.core:jackson-databind:2.15.0',
-          'io.symphonia:lambda-logging:1.0.3'
+          'software.amazon.lambda:powertools-logging:1.15.0'
   )
 
   implementation("org.glassfish.jersey.media:jersey-media-json-jackson:3.1.1") {
