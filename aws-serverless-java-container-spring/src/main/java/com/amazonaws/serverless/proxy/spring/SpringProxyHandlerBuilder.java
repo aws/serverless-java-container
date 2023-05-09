@@ -13,12 +13,19 @@
 package com.amazonaws.serverless.proxy.spring;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.ServletLambdaContainerHandlerBuilder;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
+import com.amazonaws.services.lambda.runtime.Context;
+
+import org.springframework.cloud.function.serverless.web.ProxyMvc;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.util.function.BiFunction;
+
 
 public class SpringProxyHandlerBuilder<RequestType> extends ServletLambdaContainerHandlerBuilder<
             RequestType,
@@ -73,12 +80,53 @@ public class SpringProxyHandlerBuilder<RequestType> extends ServletLambdaContain
         return handler;
     }
 
+    /**
+     * Builds an instance of SpringLambdaContainerHandler with "delegate" to Spring provided ProxyMvc. The delegate
+     * is provided via BiFunction which takes HttpServletRequest and HttpSerbletResponse as input parameters.
+     * The AWS context is set as attribute of HttpServletRequest under `AWS_CONTEXT` key.
+     *
+     * @return instance of SpringLambdaContainerHandler
+     */
+	SpringLambdaContainerHandler<RequestType, AwsProxyResponse> buildSpringProxy() {
+		ProxyMvc mvc = ProxyMvc.INSTANCE(this.configurationClasses);
+		BiFunction<HttpServletRequest, HttpServletResponse, Void> handlerDelegate = new BiFunction<HttpServletRequest, HttpServletResponse, Void>() {
+			@Override
+			public Void apply(HttpServletRequest request, HttpServletResponse response) {
+				try {
+					mvc.service(request, response);
+					response.flushBuffer();
+				}
+				catch (Exception e) {
+					throw new IllegalStateException(e);
+				}
+				return null;
+			}
+		};
+		SpringLambdaContainerHandler<RequestType, AwsProxyResponse> handler = createHandler(mvc.getApplicationContext(), handlerDelegate);
+		handler.setServletContext(mvc.getServletContext());
+		return handler;
+	}
+
     protected SpringLambdaContainerHandler<RequestType, AwsProxyResponse> createHandler(ConfigurableWebApplicationContext ctx) {
         return new SpringLambdaContainerHandler<>(
                 requestTypeClass, responseTypeClass, requestReader, responseWriter,
                 securityContextWriter, exceptionHandler, ctx, initializationWrapper
         );
     }
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	protected SpringLambdaContainerHandler<RequestType, AwsProxyResponse> createHandler(ConfigurableWebApplicationContext ctx,
+			BiFunction<HttpServletRequest, HttpServletResponse, Void> handler) {
+		return new SpringLambdaContainerHandler(requestTypeClass, responseTypeClass, requestReader, responseWriter,
+				securityContextWriter, exceptionHandler, ctx, initializationWrapper) {
+			@Override
+			protected void handleRequest(HttpServletRequest containerRequest, AwsHttpServletResponse containerResponse,
+					Context lambdaContext) throws Exception {
+				containerRequest.setAttribute("AWS_CONTEXT", lambdaContext);
+				handler.apply(containerRequest, containerResponse);
+			}
+		};
+	}
 
     @Override
     public SpringLambdaContainerHandler<RequestType, AwsProxyResponse> buildAndInitialize() throws ContainerInitializationException {
