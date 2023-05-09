@@ -3,7 +3,6 @@ package com.amazonaws.serverless.proxy.spring;
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsLambdaServletContainerHandler;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsServletRegistration;
 import com.amazonaws.serverless.proxy.model.*;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
@@ -21,13 +20,19 @@ import org.apache.commons.codec.binary.Base64;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.web.servlet.DispatcherServlet;
 
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.FilterRegistration;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletRegistration;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
+
+import org.springframework.util.ReflectionUtils;
+import org.springframework.web.servlet.DispatcherServlet;
+
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -57,8 +62,8 @@ public class SpringAwsProxyTest {
         registration.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/echo/*");
         // servlet name mappings are disabled and will throw an exception
 
-        //handler.getApplicationInitializer().getDispatcherServlet().setThrowExceptionIfNoHandlerFound(true);
-        ((DispatcherServlet)((AwsServletRegistration)c.getServletRegistration("dispatcherServlet")).getServlet()).setThrowExceptionIfNoHandlerFound(true);
+        DispatcherServlet dServlet = extractDispatcherServletFromContext(c);
+        dServlet.setThrowExceptionIfNoHandlerFound(true);
     });
 
     private String type;
@@ -503,5 +508,17 @@ public class SpringAwsProxyTest {
             fail("Exception while parsing response body: " + e.getMessage());
         }
     }
+
+    private static DispatcherServlet extractDispatcherServletFromContext(ServletContext servletContext) {
+		ServletRegistration servletRegistration = servletContext.getServletRegistration("dispatcherServlet");
+		Field field = ReflectionUtils.findField(servletRegistration.getClass(), "servlet");
+		field.setAccessible(true);
+		try {
+			return (DispatcherServlet) field.get(servletRegistration);
+		}
+		catch (IllegalArgumentException | IllegalAccessException e) {
+			throw new IllegalStateException(e);
+		}
+	}
 }
 

@@ -20,6 +20,7 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.*;
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.services.lambda.runtime.Context;
+
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
@@ -49,13 +50,20 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
      * @return An initialized instance of the `SpringLambdaContainerHandler`
      * @throws ContainerInitializationException When the Spring framework fails to start.
      */
-    public static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(Class<?>... config) throws ContainerInitializationException {
-        return new SpringProxyHandlerBuilder<AwsProxyRequest>()
-                .defaultProxy()
-                .initializationWrapper(new InitializationWrapper())
-                .configurationClasses(config)
-                .buildAndInitialize();
-    }
+	public static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(Class<?>... config)
+			throws ContainerInitializationException {
+		// Temporary flag. Should be removed once spring-cloud-function delegation model
+		// becomes the only path.
+		boolean delegateToSpringCloudFunction = Boolean.parseBoolean(System.getenv().getOrDefault("spring.cloud.function.enable",
+						(String) System.getProperties().getOrDefault("spring.cloud.function.enable", "true")));
+		if (delegateToSpringCloudFunction) {
+			return getSpringNativeHandler(config);
+		} else {
+			return new SpringProxyHandlerBuilder<AwsProxyRequest>().defaultProxy()
+					.initializationWrapper(new InitializationWrapper()).configurationClasses(config)
+					.buildAndInitialize();
+		}
+	}
 
     /**
      * Creates a default SpringLambdaContainerHandler initialized with the `AwsProxyRequest` and `AwsProxyResponse` objects and sets the given profiles as active
@@ -188,4 +196,11 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
         reg.addMapping("/");
         reg.setLoadOnStartup(1);
     }
+
+    private static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getSpringNativeHandler(Class<?>... config) throws ContainerInitializationException {
+		SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = new SpringProxyHandlerBuilder<AwsProxyRequest>()
+				.defaultProxy().configurationClasses(config).buildSpringProxy();
+
+		return handler;
+	}
 }
