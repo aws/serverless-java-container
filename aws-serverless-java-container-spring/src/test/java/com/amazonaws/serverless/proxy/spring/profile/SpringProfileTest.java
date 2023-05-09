@@ -55,6 +55,7 @@ public class SpringProfileTest {
 
     @Test
     void profile_overrideProfile() throws Exception {
+    	System.setProperty("spring.cloud.function.enable", "false");
         AwsProxyRequest request = new AwsProxyRequestBuilder("/profile/spring-properties", "GET")
                 .build();
         SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = SpringLambdaContainerHandler.getAwsProxyHandler(EchoSpringAppConfig.class);
@@ -67,5 +68,6 @@ public class SpringProfileTest {
         assertEquals("override-profile", response.getValues().get("profileTest"));
         assertEquals("not-overridden", response.getValues().get("noOverride"));
         assertEquals("override-profile-from-bean", response.getValues().get("beanInjectedValue"));
+        System.setProperty("spring.cloud.function.enable", "true");
     }
 }

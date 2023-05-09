@@ -121,11 +121,13 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
      * Sets the ServletContext in the handler and initialized a new <code>FilterChainManager</code>
      * @param context An initialized ServletContext
      */
-    protected void setServletContext(final ServletContext context) {
+    public void setServletContext(final ServletContext context) {
         servletContext = context;
         // We assume custom implementations of the RequestWriter for HttpServletRequest will reuse
         // the existing AwsServletContext object since it has no dependencies other than the Lambda context
-        filterChainManager = new AwsFilterChainManager((AwsServletContext)servletContext);
+        if (context instanceof AwsServletContext) {
+        	filterChainManager = new AwsFilterChainManager((AwsServletContext)servletContext);
+        }
     }
 
     protected FilterChain getFilterChain(HttpServletRequest req, Servlet servlet) {
