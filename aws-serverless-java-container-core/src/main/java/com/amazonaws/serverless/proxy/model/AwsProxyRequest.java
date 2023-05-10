@@ -32,7 +32,7 @@ public class AwsProxyRequest {
     private String resource;
     private AwsProxyRequestContext requestContext;
     private MultiValuedTreeMap<String, String> multiValueQueryStringParameters;
-    private Map<String, String> queryStringParameters; 
+    private Map<String, String> queryStringParameters;
     private Headers multiValueHeaders;
     private SingleValueHeaders headers;
     private Map<String, String> pathParameters;
@@ -41,12 +41,13 @@ public class AwsProxyRequest {
     private String path;
     private boolean isBase64Encoded;
 
-    public AwsProxyRequest() {
-        multiValueHeaders = new Headers();
-        multiValueQueryStringParameters = new MultiValuedTreeMap<>();
-        pathParameters = new HashMap<>();
-        stageVariables = new HashMap<>();
-    }
+	public AwsProxyRequest() {
+		this.headers = new SingleValueHeaders();
+		multiValueHeaders = new Headers();
+		multiValueQueryStringParameters = new MultiValuedTreeMap<>();
+		pathParameters = new HashMap<>();
+		stageVariables = new HashMap<>();
+	}
 
 
     //-------------------------------------------------------------
@@ -131,17 +132,21 @@ public class AwsProxyRequest {
         return multiValueHeaders;
     }
 
-    public void setMultiValueHeaders(Headers multiValueHeaders) {
-        this.multiValueHeaders = multiValueHeaders;
-    }
+	public void setMultiValueHeaders(Headers multiValueHeaders) {
+		if (multiValueHeaders != null) {
+			this.multiValueHeaders = multiValueHeaders;
+		}
+	}
 
     public SingleValueHeaders getHeaders() {
         return headers;
     }
 
-    public void setHeaders(SingleValueHeaders headers) {
-        this.headers = headers;
-    }
+	public void setHeaders(SingleValueHeaders headers) {
+		if (headers != null) {
+			this.headers = headers;
+		}
+	}
 
 
     public Map<String, String> getPathParameters() {
