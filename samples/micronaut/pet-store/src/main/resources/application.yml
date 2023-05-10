@@ -1,6 +1,0 @@
-micronaut:
-  application:
-    name: pet-store
-jackson:
-  serialization:
-    indentOutput: true
