@@ -27,7 +27,7 @@ import static com.amazonaws.serverless.proxy.jersey.JerseyHandlerFilter.JERSEY_S
 
 /**
  * Implementation of Jersey's <code>Factory</code> object for <code>ServletContext</code> objects. This can be used
- * by Jersey to generate a Servlet context given an <code>AwsProxyRequest</code> event.
+ * by Jersey to generate a Servlet context given an <code>APIGatewayProxyRequestEvent</code> event.
  *
  * <pre>
  * <code>

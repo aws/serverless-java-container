@@ -3,12 +3,12 @@ package com.amazonaws.serverless.sample.spark;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spark.SparkLambdaContainerHandler;
 import com.amazonaws.serverless.sample.spark.filter.CognitoIdentityFilter;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 
 import spark.Spark;
 
@@ -22,7 +22,7 @@ import java.util.EnumSet;
 
 
 public class StreamLambdaHandler implements RequestStreamHandler {
-    private static SparkLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+    private static SparkLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponse> handler;
     static {
         try {
             handler = SparkLambdaContainerHandler.getAwsProxyHandler();

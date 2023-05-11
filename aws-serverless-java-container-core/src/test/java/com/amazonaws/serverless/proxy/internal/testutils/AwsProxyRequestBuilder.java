@@ -15,6 +15,8 @@ package com.amazonaws.serverless.proxy.internal.testutils;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.*;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -48,7 +50,7 @@ public class AwsProxyRequestBuilder {
     // Variables - Private
     //-------------------------------------------------------------
 
-    private AwsProxyRequest request;
+    private APIGatewayProxyRequestEvent request;
     private MultipartEntityBuilder multipartBuilder;
 
     //-------------------------------------------------------------
@@ -64,24 +66,24 @@ public class AwsProxyRequestBuilder {
         this(path, null);
     }
 
-    public AwsProxyRequestBuilder(AwsProxyRequest req) {
+    public AwsProxyRequestBuilder(APIGatewayProxyRequestEvent req) {
         request = req;
     }
 
 
     public AwsProxyRequestBuilder(String path, String httpMethod) {
-        this.request = new AwsProxyRequest();
+        this.request = new APIGatewayProxyRequestEvent();
         this.request.setMultiValueHeaders(new Headers()); // avoid NPE
         this.request.setHttpMethod(httpMethod);
         this.request.setPath(path);
         this.request.setMultiValueQueryStringParameters(new MultiValuedTreeMap<>());
-        this.request.setRequestContext(new AwsProxyRequestContext());
+        this.request.setRequestContext(new APIGatewayProxyRequestEvent.ProxyRequestContext());
         this.request.getRequestContext().setRequestId(UUID.randomUUID().toString());
         this.request.getRequestContext().setExtendedRequestId(UUID.randomUUID().toString());
         this.request.getRequestContext().setStage("test");
         this.request.getRequestContext().setProtocol("HTTP/1.1");
         this.request.getRequestContext().setRequestTimeEpoch(System.currentTimeMillis());
-        ApiGatewayRequestIdentity identity = new ApiGatewayRequestIdentity();
+        APIGatewayProxyRequestEvent.RequestIdentity identity = new APIGatewayProxyRequestEvent.RequestIdentity();
         identity.setSourceIp("127.0.0.1");
         this.request.getRequestContext().setIdentity(identity);
     }
@@ -92,7 +94,7 @@ public class AwsProxyRequestBuilder {
     //-------------------------------------------------------------
 
     public AwsProxyRequestBuilder alb() {
-        this.request.setRequestContext(new AwsProxyRequestContext());
+        this.request.setRequestContext(new APIGatewayProxyRequestEvent.ProxyRequestContext());
         this.request.getRequestContext().setElb(new AlbContext());
         this.request.getRequestContext().getElb().setTargetGroupArn(
                 "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/lambda-target/d6190d154bc908a5"
@@ -145,7 +147,7 @@ public class AwsProxyRequestBuilder {
         if (request.getMultiValueHeaders() == null) {
             request.setMultiValueHeaders(new Headers());
         }
-        request.getMultiValueHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED);
+        request.getMultiValueHeaders().get(HttpHeaders.CONTENT_TYPE).add(MediaType.APPLICATION_FORM_URLENCODED);  // TODO: Potentially reate CONTENT_TYPE list first
         String body = request.getBody();
         if (body == null) {
             body = "";
@@ -200,7 +202,8 @@ public class AwsProxyRequestBuilder {
             this.request.setMultiValueHeaders(new Headers());
         }
 
-        this.request.getMultiValueHeaders().add(key, value);
+        //this.request.getMultiValueHeaders().add(key, value);
+        this.request.getMultiValueHeaders().get(HttpHeaders.CONTENT_TYPE).add(MediaType.APPLICATION_FORM_URLENCODED);  // TODO: Potentially reate CONTENT_TYPE listfirst
         return this;
     }
 
@@ -221,7 +224,8 @@ public class AwsProxyRequestBuilder {
         }
 
         if (request.getRequestSource() == RequestSource.API_GATEWAY) {
-            this.request.getMultiValueQueryStringParameters().add(key, value);
+            //this.request.getMultiValueQueryStringParameters().add(key, value);
+            this.request.getMultiValueQueryStringParameters().get(HttpHeaders.CONTENT_TYPE).add(MediaType.APPLICATION_FORM_URLENCODED);  // TODO: Potentially reate CONTENT_TYPE listfirst
         }
         // ALB does not decode parameters automatically like API Gateway.
         if (request.getRequestSource() == RequestSource.ALB) {
@@ -378,10 +382,10 @@ public class AwsProxyRequestBuilder {
 
     public AwsProxyRequestBuilder userAgent(String agent) {
         if (request.getRequestContext() == null) {
-            request.setRequestContext(new AwsProxyRequestContext());
+            request.setRequestContext(new APIGatewayProxyRequestEvent.ProxyRequestContext());
         }
         if (request.getRequestContext().getIdentity() == null) {
-            request.getRequestContext().setIdentity(new ApiGatewayRequestIdentity());
+            request.getRequestContext().setIdentity(new APIGatewayProxyRequestEvent.RequestIdentity());
         }
 
         request.getRequestContext().getIdentity().setUserAgent(agent);
@@ -390,10 +394,10 @@ public class AwsProxyRequestBuilder {
 
     public AwsProxyRequestBuilder referer(String referer) {
         if (request.getRequestContext() == null) {
-            request.setRequestContext(new AwsProxyRequestContext());
+            request.setRequestContext(new APIGatewayProxyRequestEvent.ProxyRequestContext());
         }
         if (request.getRequestContext().getIdentity() == null) {
-            request.getRequestContext().setIdentity(new ApiGatewayRequestIdentity());
+            request.getRequestContext().setIdentity(new APIGatewayProxyRequestEvent.RequestIdentity());
         }
 
         request.getRequestContext().getIdentity().setCaller(referer);
@@ -411,18 +415,18 @@ public class AwsProxyRequestBuilder {
 
     public AwsProxyRequestBuilder fromJsonString(String jsonContent)
             throws IOException {
-        request = LambdaContainerHandler.getObjectMapper().readValue(jsonContent, AwsProxyRequest.class);
+        request = LambdaContainerHandler.getObjectMapper().readValue(jsonContent, APIGatewayProxyRequestEvent.class);
         return this;
     }
 
     @SuppressFBWarnings("PATH_TRAVERSAL_IN")
     public AwsProxyRequestBuilder fromJsonPath(String filePath)
             throws IOException {
-        request = LambdaContainerHandler.getObjectMapper().readValue(new File(filePath), AwsProxyRequest.class);
+        request = LambdaContainerHandler.getObjectMapper().readValue(new File(filePath), APIGatewayProxyRequestEvent.class);
         return this;
     }
 
-    public AwsProxyRequest build() {
+    public APIGatewayProxyRequestEvent build() {
         return this.request;
     }
 
@@ -448,7 +452,7 @@ public class AwsProxyRequestBuilder {
     public APIGatewayV2HTTPEvent toHttpApiV2Request() {
         APIGatewayV2HTTPEvent req = new APIGatewayV2HTTPEvent();
         req.setRawPath(request.getPath());
-        req.setIsBase64Encoded(request.isBase64Encoded());
+        req.setIsBase64Encoded(request.getIsBase64Encoded());
         req.setBody(request.getBody());
         if (request.getMultiValueHeaders() != null && request.getMultiValueHeaders().containsKey(HttpHeaders.COOKIE)) {
             req.setCookies(Arrays.asList(request.getMultiValueHeaders().getFirst(HttpHeaders.COOKIE).split(";")));

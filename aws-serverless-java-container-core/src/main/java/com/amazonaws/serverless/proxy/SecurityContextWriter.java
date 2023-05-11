@@ -12,8 +12,8 @@
  */
 package com.amazonaws.serverless.proxy;
 
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 
 import jakarta.ws.rs.core.SecurityContext;
 
@@ -28,7 +28,7 @@ public interface SecurityContextWriter<RequestType> {
      * library includes a default implementation that reads from the AWS_PROXY integration events.
      *
      * @see AwsProxySecurityContextWriter
-     * @see AwsProxyRequest
+     * @see APIGatewayProxyRequestEvent
      *
      * @param event The incoming Lambda event
      * @param lambdaContext The context for the AWS Lambda function

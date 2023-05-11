@@ -15,11 +15,11 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.serverless.proxy.model.Headers;
 import com.amazonaws.serverless.proxy.model.RequestSource;
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,8 +42,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Implementation of the <code>HttpServletRequest</code> interface that supports <code>AwsProxyRequest</code> object.
- * This object is initialized with an <code>AwsProxyRequest</code> event and a <code>SecurityContext</code> generated
+ * Implementation of the <code>HttpServletRequest</code> interface that supports <code>APIGatewayProxyRequestEvent</code> object.
+ * This object is initialized with an <code>APIGatewayProxyRequestEvent</code> event and a <code>SecurityContext</code> generated
  * by an implementation of the <code>SecurityContextWriter</code>.
  */
 public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
@@ -52,7 +52,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     // Variables - Private
     //-------------------------------------------------------------
 
-    private AwsProxyRequest request;
+    private APIGatewayProxyRequestEvent request;
     private SecurityContext securityContext;
     private AwsAsyncContext asyncContext;
     private static Logger log = LoggerFactory.getLogger(AwsProxyHttpServletRequest.class);
@@ -63,19 +63,19 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     //-------------------------------------------------------------
 
 
-    public AwsProxyHttpServletRequest(AwsProxyRequest awsProxyRequest, Context lambdaContext, SecurityContext awsSecurityContext) {
+    public AwsProxyHttpServletRequest(APIGatewayProxyRequestEvent awsProxyRequest, Context lambdaContext, SecurityContext awsSecurityContext) {
         this(awsProxyRequest, lambdaContext, awsSecurityContext, LambdaContainerHandler.getContainerConfig());
     }
 
 
-    public AwsProxyHttpServletRequest(AwsProxyRequest awsProxyRequest, Context lambdaContext, SecurityContext awsSecurityContext, ContainerConfig config) {
+    public AwsProxyHttpServletRequest(APIGatewayProxyRequestEvent awsProxyRequest, Context lambdaContext, SecurityContext awsSecurityContext, ContainerConfig config) {
         super(lambdaContext);
         this.request = awsProxyRequest;
         this.securityContext = awsSecurityContext;
         this.config = config;
     }
 
-    public AwsProxyRequest getAwsProxyRequest() {
+    public APIGatewayProxyRequestEvent getAwsProxyRequest() {
         return this.request;
     }
 
@@ -95,7 +95,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         if (request.getMultiValueHeaders() == null) {
             return new Cookie[0];
         }
-        String cookieHeader = request.getMultiValueHeaders().getFirst(HttpHeaders.COOKIE);
+        String cookieHeader = getFirst(request.getMultiValueHeaders(), HttpHeaders.COOKIE);
         if (cookieHeader == null) {
             return new Cookie[0];
         }
@@ -108,7 +108,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         if (request.getMultiValueHeaders() == null) {
             return -1L;
         }
-        String dateString = request.getMultiValueHeaders().getFirst(s);
+        String dateString = getFirst(request.getMultiValueHeaders(), s);
         if (dateString == null) {
             return -1L;
         }
@@ -154,7 +154,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         if (request.getMultiValueHeaders() == null) {
             return -1;
         }
-        String headerValue = request.getMultiValueHeaders().getFirst(s);
+        String headerValue = getFirst(request.getMultiValueHeaders(), s);
         if (headerValue == null) {
             return -1;
         }
@@ -195,7 +195,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             return this.generateQueryString(
                     request.getMultiValueQueryStringParameters(),
                     // ALB does not automatically decode parameters, so we don't want to re-encode them
-                    request.getRequestSource() != RequestSource.ALB,
+                    true, //request.getRequestSource() != RequestSource.ALB, TODO: check
                     config.getUriEncoding());
         } catch (ServletException e) {
             log.error("Could not generate query string", e);
@@ -286,7 +286,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         if (request.getMultiValueHeaders() == null) {
             return config.getDefaultContentCharset();
         }
-        return parseCharacterEncoding(request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
+        return parseCharacterEncoding(getFirst(request.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE));
     }
 
 
@@ -296,19 +296,19 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         if (request.getMultiValueHeaders() == null) {
             request.setMultiValueHeaders(new Headers());
         }
-        String currentContentType = request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
+        String currentContentType = getFirst(request.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE);
         if (currentContentType == null || "".equals(currentContentType)) {
             log.debug("Called set character encoding to " + SecurityUtils.crlf(s) + " on a request without a content type. Character encoding will not be set");
             return;
         }
 
-        request.getMultiValueHeaders().putSingle(HttpHeaders.CONTENT_TYPE, appendCharacterEncoding(currentContentType, s));
+        putSingle(request.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE, appendCharacterEncoding(currentContentType, s));
     }
 
 
     @Override
     public int getContentLength() {
-        String headerValue = request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_LENGTH);
+        String headerValue = getFirst(request.getMultiValueHeaders(), HttpHeaders.CONTENT_LENGTH);
         if (headerValue == null) {
             return -1;
         }
@@ -318,7 +318,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public long getContentLengthLong() {
-        String headerValue = request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_LENGTH);
+        String headerValue = getFirst(request.getMultiValueHeaders(), HttpHeaders.CONTENT_LENGTH);
         if (headerValue == null) {
             return -1;
         }
@@ -328,7 +328,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getContentType() {
-        String contentTypeHeader = request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
+        String contentTypeHeader = getFirst(request.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE);
         if (contentTypeHeader == null || "".equals(contentTypeHeader.trim())) {
             return null;
         }
@@ -386,7 +386,8 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getProtocol() {
-        return request.getRequestContext().getProtocol();
+        return null;
+        //return request.getRequestContext().getProtocol();    // TODO: Not supported in java-events yet.
     }
 
 
@@ -404,7 +405,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         }
 
         if (request.getMultiValueHeaders() != null && request.getMultiValueHeaders().containsKey(HOST_HEADER_NAME)) {
-            String hostHeader = request.getMultiValueHeaders().getFirst(HOST_HEADER_NAME);
+            String hostHeader = getFirst(request.getMultiValueHeaders(), HOST_HEADER_NAME);
             if (SecurityUtils.isValidHost(hostHeader, request.getRequestContext().getApiId(), region)) {
                 return hostHeader;
             }
@@ -421,7 +422,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         if (request.getMultiValueHeaders() == null) {
             return 443;
         }
-        String port = request.getMultiValueHeaders().getFirst(PORT_HEADER_NAME);
+        String port = getFirst(request.getMultiValueHeaders(), PORT_HEADER_NAME);
         if (SecurityUtils.isValidPort(port)) {
             return Integer.parseInt(port);
         } else {
@@ -432,7 +433,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     public ServletInputStream getInputStream() throws IOException {
         if (requestInputStream == null) {
-            requestInputStream = new AwsServletInputStream(bodyStringToInputStream(request.getBody(), request.isBase64Encoded()));
+            requestInputStream = new AwsServletInputStream(bodyStringToInputStream(request.getBody(), request.getIsBase64Encoded()));
         }
         return requestInputStream;
     }
@@ -456,19 +457,19 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getRemoteHost() {
-        return request.getMultiValueHeaders().getFirst(HttpHeaders.HOST);
+        return getFirst(request.getMultiValueHeaders(), HttpHeaders.HOST);
     }
 
 
     @Override
     public Locale getLocale() {
-        List<Locale> locales = parseAcceptLanguageHeader(request.getMultiValueHeaders().getFirst(HttpHeaders.ACCEPT_LANGUAGE));
+        List<Locale> locales = parseAcceptLanguageHeader(getFirst(request.getMultiValueHeaders(), HttpHeaders.ACCEPT_LANGUAGE));
         return locales.size() == 0 ? Locale.getDefault() : locales.get(0);
     }
 
     @Override
     public Enumeration<Locale> getLocales() {
-        List<Locale> locales = parseAcceptLanguageHeader(request.getMultiValueHeaders().getFirst(HttpHeaders.ACCEPT_LANGUAGE));
+        List<Locale> locales = parseAcceptLanguageHeader(getFirst(request.getMultiValueHeaders(), HttpHeaders.ACCEPT_LANGUAGE));
         return Collections.enumeration(locales);
     }
 

@@ -13,8 +13,8 @@
 package com.amazonaws.serverless.proxy;
 
 import com.amazonaws.serverless.proxy.internal.jaxrs.AwsProxySecurityContext;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 
 import jakarta.ws.rs.core.SecurityContext;
 
@@ -22,7 +22,7 @@ import jakarta.ws.rs.core.SecurityContext;
  * Default implementation of <code>SecurityContextWriter</code>. Creates a SecurityContext object based on an API Gateway
  * event and the Lambda context. This returns the default <code>AwsProxySecurityContext</code> instance.
  */
-public class AwsProxySecurityContextWriter implements SecurityContextWriter<AwsProxyRequest> {
+public class AwsProxySecurityContextWriter implements SecurityContextWriter<APIGatewayProxyRequestEvent> {
 
     //-------------------------------------------------------------
     // Variables - Private - Static
@@ -36,7 +36,7 @@ public class AwsProxySecurityContextWriter implements SecurityContextWriter<AwsP
     //-------------------------------------------------------------
 
     @Override
-    public SecurityContext writeSecurityContext(AwsProxyRequest event, Context lambdaContext) {
+    public SecurityContext writeSecurityContext(APIGatewayProxyRequestEvent event, Context lambdaContext) {
        currentContext = new AwsProxySecurityContext(lambdaContext, event);
 
         return currentContext;

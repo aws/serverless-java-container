@@ -12,9 +12,9 @@
  */
 package com.amazonaws.serverless.proxy.internal.jaxrs;
 
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.CognitoAuthorizerClaims;
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 
 import jakarta.ws.rs.core.SecurityContext;
 
@@ -48,7 +48,7 @@ public class AwsProxySecurityContext
     //-------------------------------------------------------------
 
     private Context lambdaContext;
-    private AwsProxyRequest event;
+    private APIGatewayProxyRequestEvent event;
 
 
     public Context getLambdaContext() {
@@ -56,7 +56,7 @@ public class AwsProxySecurityContext
     }
 
 
-    public AwsProxyRequest getEvent() {
+    public APIGatewayProxyRequestEvent getEvent() {
         return event;
     }
 
@@ -64,7 +64,7 @@ public class AwsProxySecurityContext
     // Constructors
     //-------------------------------------------------------------
 
-    public AwsProxySecurityContext(final Context lambdaContext, final AwsProxyRequest event) {
+    public AwsProxySecurityContext(final Context lambdaContext, final APIGatewayProxyRequestEvent event) {
         this.lambdaContext = lambdaContext;
         this.event = event;
     }

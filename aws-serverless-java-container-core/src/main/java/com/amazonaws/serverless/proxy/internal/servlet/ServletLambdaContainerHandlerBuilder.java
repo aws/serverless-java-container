@@ -14,9 +14,9 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.*;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -97,7 +97,7 @@ public abstract class ServletLambdaContainerHandlerBuilder<
                 .responseWriter((ResponseWriter<AwsHttpServletResponse, ResponseType>) new AwsProxyHttpServletResponseWriter())
                 .securityContextWriter((SecurityContextWriter<RequestType>) new AwsProxySecurityContextWriter())
                 .exceptionHandler((ExceptionHandler<ResponseType>) new AwsProxyExceptionHandler())
-                .requestTypeClass((Class<RequestType>) AwsProxyRequest.class)
+                .requestTypeClass((Class<RequestType>) APIGatewayProxyRequestEvent.class)
                 .responseTypeClass((Class<ResponseType>) AwsProxyResponse.class);
         return self();
     }

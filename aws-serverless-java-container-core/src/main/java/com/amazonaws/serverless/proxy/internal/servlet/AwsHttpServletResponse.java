@@ -14,8 +14,8 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.Headers;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
@@ -496,8 +496,8 @@ public class AwsHttpServletResponse
         return headers;
     }
 
-    AwsProxyRequest getAwsProxyRequest() {
-        return (AwsProxyRequest)request.getAttribute(API_GATEWAY_EVENT_PROPERTY);
+    APIGatewayProxyRequestEvent getAwsProxyRequest() {
+        return (APIGatewayProxyRequestEvent)request.getAttribute(API_GATEWAY_EVENT_PROPERTY);
     }
 
 

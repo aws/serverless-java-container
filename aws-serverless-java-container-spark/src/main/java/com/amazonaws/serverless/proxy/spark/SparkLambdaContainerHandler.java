@@ -16,10 +16,10 @@ package com.amazonaws.serverless.proxy.spark;
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.*;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.*;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.serverless.proxy.spark.embeddedserver.LambdaEmbeddedServer;
 import com.amazonaws.serverless.proxy.spark.embeddedserver.LambdaEmbeddedServerFactory;
 
@@ -58,7 +58,7 @@ import java.util.concurrent.CountDownLatch;
  * <pre>
  * {@code
  *     // always initialize the handler first
- *     SparkLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler =
+ *     SparkLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponse> handler =
  *             SparkLambdaContainerHandler.getAwsProxyHandler();
  *
  *     get("/hello", (req, res) -> {
@@ -94,7 +94,7 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType>
 
 
     /**
-     * Returns a new instance of an SparkLambdaContainerHandler initialized to work with <code>AwsProxyRequest</code>
+     * Returns a new instance of an SparkLambdaContainerHandler initialized to work with <code>APIGatewayProxyRequestEvent</code>
      * and <code>AwsProxyResponse</code> objects.
      *
      * @return a new instance of <code>SparkLambdaContainerHandler</code>
@@ -102,15 +102,16 @@ public class SparkLambdaContainerHandler<RequestType, ResponseType>
      * @throws ContainerInitializationException Throws this exception if we fail to initialize the Spark container.
      * This could be caused by the introspection used to insert the library as the default embedded container
      */
-    public static SparkLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler()
+    public static SparkLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponse> getAwsProxyHandler()
             throws ContainerInitializationException {
-        SparkLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> newHandler = new SparkLambdaContainerHandler<>(AwsProxyRequest.class,
-                                                                                         AwsProxyResponse.class,
-                                                                                         new AwsProxyHttpServletRequestReader(),
-                                                                                         new AwsProxyHttpServletResponseWriter(),
-                                                                                         new AwsProxySecurityContextWriter(),
-                                                                                         new AwsProxyExceptionHandler(),
-                                                                                         new LambdaEmbeddedServerFactory());
+        SparkLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponse> newHandler = new SparkLambdaContainerHandler<>(
+                APIGatewayProxyRequestEvent.class,
+                AwsProxyResponse.class,
+                new AwsProxyHttpServletRequestReader(),
+                new AwsProxyHttpServletResponseWriter(),
+                new AwsProxySecurityContextWriter(),
+                new AwsProxyExceptionHandler(),
+                new LambdaEmbeddedServerFactory());
 
         // For Spark we cannot call initialize here. It needs to be called manually after the routes are set
         //newHandler.initialize();
