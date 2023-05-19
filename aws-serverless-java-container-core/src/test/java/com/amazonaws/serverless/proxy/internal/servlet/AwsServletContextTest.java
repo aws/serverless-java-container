@@ -65,12 +65,19 @@ public class AwsServletContextTest {
         mimeType = ctx.getMimeType("file://" + tmpFilePath);
         assertEquals("text/plain", mimeType);
     }
+    @Test
+    void getMimeType_mimeTypeOfJavascript_expectApplicationJavascript() {
+        String tmpFilePath = TMP_DIR + "some.js";
+        AwsServletContext ctx = new AwsServletContext(null);
+        String mimeType = ctx.getMimeType(tmpFilePath);
+        assertEquals("text/javascript", mimeType);
+    }
 
     @Test
-    void getMimeType_unknownExtension_expectAppOctetStream() {
+    void getMimeType_unknownExtension_expectNull() {
         AwsServletContext ctx = new AwsServletContext(null);
         String mimeType = ctx.getMimeType("myfile.unkext");
-        assertEquals("application/octet-stream", mimeType);
+        assertNull(mimeType);
     }
 
 
