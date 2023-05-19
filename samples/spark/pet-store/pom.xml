@@ -37,14 +37,12 @@
             <version>[1.6,)</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.sparkjava/spark-core -->
         <dependency>
             <groupId>com.sparkjava</groupId>
             <artifactId>spark-core</artifactId>
             <version>${spark.version}</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
