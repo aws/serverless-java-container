@@ -238,6 +238,7 @@
                     <artifactId>maven-release-plugin</artifactId>
                     <version>3.0.0</version>
                     <configuration>
+                        <releaseProfiles>serverless-java-container-release</releaseProfiles>
                         <preparationGoals>clean verify install</preparationGoals>
                         <localCheckout>true</localCheckout>
                         <scmCommentPrefix>chore: release - </scmCommentPrefix>
@@ -285,13 +286,7 @@
 
     <profiles>
         <profile>
-            <id>release-sign-artifacts</id>
-            <activation>
-                <property>
-                    <name>performRelease</name>
-                    <value>true</value>
-                </property>
-            </activation>
+            <id>serverless-java-container-release</id>
             <build>
                 <plugins>
                     <plugin>
@@ -304,6 +299,31 @@
                                 <phase>verify</phase>
                                 <goals>
                                     <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>3.2.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
                                 </goals>
                             </execution>
                         </executions>
