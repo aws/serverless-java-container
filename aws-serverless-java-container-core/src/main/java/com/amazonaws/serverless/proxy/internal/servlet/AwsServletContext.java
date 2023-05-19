@@ -17,23 +17,25 @@ import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import jakarta.activation.spi.MimeTypeRegistryProvider;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import jakarta.servlet.*;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.descriptor.JspConfigDescriptor;
-import jakarta.activation.MimetypesFileTypeMap;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 /**
@@ -61,7 +63,6 @@ public class AwsServletContext
     private Map<String, String> initParameters;
     private AwsLambdaServletContainerHandler containerHandler;
     private Logger log = LoggerFactory.getLogger(AwsServletContext.class);
-    private MimetypesFileTypeMap mimeTypes; // lazily loaded in the getMimeType method
 
 
     //-------------------------------------------------------------
@@ -166,22 +167,16 @@ public class AwsServletContext
             return null;
         }
 
-        // this implementation would be nice but returns null on Lambda
-//        try {
-//            mimeType = Files.probeContentType(Paths.get(file));
-//        } catch (IOException | InvalidPathException e) {
-//            log("unable to probe for content type, will use fallback", e);
-//        }
+        String mimeType = null;
 
-        if (mimeTypes == null) {
-            mimeTypes = new MimetypesFileTypeMap();
+        // may not work on Lambda until mailcap package is present https://github.com/awslabs/aws-serverless-java-container/pull/504
+        try {
+            mimeType = Files.probeContentType(Paths.get(file));
+        } catch (IOException | InvalidPathException e) {
+            log("unable to probe for content type, will use fallback", e);
         }
-        String mimeType = mimeTypes.getContentType(file);
 
-        // The getContentType method of the MimetypesFileTypeMap
-        // returns MimetypesFileTypeMap.defaultType = application/octet-stream
-        // instead of null when the type cannot be found. trying to improve the result...
-        if (mimeType == null || MediaType.APPLICATION_OCTET_STREAM.equals(mimeType)) {
+        if (mimeType == null) {
             try {
                 String mimeTypeGuess = URLConnection.guessContentTypeFromName(new File(file).getName());
                 if (mimeTypeGuess !=null) {

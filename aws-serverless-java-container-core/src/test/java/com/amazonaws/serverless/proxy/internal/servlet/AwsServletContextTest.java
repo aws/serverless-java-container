@@ -74,10 +74,10 @@ public class AwsServletContextTest {
     }
 
     @Test
-    void getMimeType_unknownExtension_expectAppOctetStream() {
+    void getMimeType_unknownExtension_expectNull() {
         AwsServletContext ctx = new AwsServletContext(null);
         String mimeType = ctx.getMimeType("myfile.unkext");
-        assertEquals("application/octet-stream", mimeType);
+        assertNull(mimeType);
     }
 
 
