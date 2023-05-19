@@ -21,6 +21,7 @@ dependencies {
     exclude group: 'javax.inject', module: "javax.inject"
   }
 
+  testImplementation("com.amazonaws.serverless:aws-serverless-java-container-core:[2.0-SNAPSHOT,):tests")
   testImplementation("junit:junit:4.13.2")
 }
 

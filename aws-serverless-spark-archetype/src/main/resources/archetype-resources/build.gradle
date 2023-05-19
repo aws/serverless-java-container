@@ -12,6 +12,7 @@ dependencies {
           'com.fasterxml.jackson.core:jackson-databind:2.15.0',
   )
 
+  testImplementation("com.amazonaws.serverless:aws-serverless-java-container-core:[2.0-SNAPSHOT,):tests")
   testImplementation("junit:junit:4.13.2")
 }
 

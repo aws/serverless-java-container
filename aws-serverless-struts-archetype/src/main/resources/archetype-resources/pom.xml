@@ -27,6 +27,14 @@
             <artifactId>aws-serverless-java-container-struts</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.amazonaws.serverless</groupId>
+            <artifactId>aws-serverless-java-container-core</artifactId>
+            <version>${project.version}</version>
+            <classifier>tests</classifier>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.struts</groupId>

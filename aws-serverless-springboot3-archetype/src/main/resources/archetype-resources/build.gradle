@@ -11,6 +11,7 @@ dependencies {
           'com.amazonaws.serverless:aws-serverless-java-container-springboot3:[2.0-SNAPSHOT,)',
   )
 
+  testImplementation("com.amazonaws.serverless:aws-serverless-java-container-core:[2.0-SNAPSHOT,):tests")
   testImplementation("junit:junit:4.13.2")
 }
 
