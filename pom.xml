@@ -238,8 +238,6 @@
                     <artifactId>maven-release-plugin</artifactId>
                     <version>3.0.0</version>
                     <configuration>
-                        <preparationGoals>clean verify install</preparationGoals>
-                        <localCheckout>true</localCheckout>
                         <scmCommentPrefix>chore: release - </scmCommentPrefix>
                     </configuration>
                 </plugin>
