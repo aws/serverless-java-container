@@ -10,7 +10,6 @@ dependencies {
           'com.sparkjava:spark-core:2.9.4',
           'com.amazonaws.serverless:aws-serverless-java-container-spark:[1.0,)',
           'com.fasterxml.jackson.core:jackson-databind:2.15.0',
-          'io.symphonia:lambda-logging:1.0.3'
   )
 }
 

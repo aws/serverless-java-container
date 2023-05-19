@@ -45,13 +45,6 @@
             <artifactId>aws-serverless-java-container-springboot3</artifactId>
             <version>[2.0-SNAPSHOT,)</version>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/io.symphonia/lambda-logging -->
-        <dependency>
-            <groupId>io.symphonia</groupId>
-            <artifactId>lambda-logging</artifactId>
-            <version>1.0.3</version>
-        </dependency>
     </dependencies>
 
     <profiles>
