@@ -1,7 +1,6 @@
 apply plugin: 'java'
 
 repositories {
-  jcenter()
   mavenLocal()
   mavenCentral()
 }
@@ -13,7 +12,6 @@ dependencies {
           },
           'com.amazonaws.serverless:aws-serverless-java-container-springboot3:[2.0-SNAPSHOT,)',
   )
-  testImplementation("junit:junit")
 }
 
 task buildZip(type: Zip) {
