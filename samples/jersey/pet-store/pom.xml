@@ -75,11 +75,11 @@
             <version>${jackson.version}</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/io.symphonia/lambda-logging -->
+        <!-- https://mvnrepository.com/artifact/software.amazon.lambda/powertools-logging -->
         <dependency>
-            <groupId>io.symphonia</groupId>
-            <artifactId>lambda-logging</artifactId>
-            <version>1.0.3</version>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-logging</artifactId>
+            <version>1.15.0</version>
         </dependency>
 
     </dependencies>
