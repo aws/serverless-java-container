@@ -236,11 +236,12 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
-                    <version>2.5.3</version>
+                    <version>3.0.0</version>
                     <configuration>
                         <preparationGoals>clean verify install</preparationGoals>
                         <localCheckout>true</localCheckout>
                         <scmCommentPrefix>chore: release - </scmCommentPrefix>
+                        <autoVersionSubmodules>true</autoVersionSubmodules>
                     </configuration>
                 </plugin>
 
