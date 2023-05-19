@@ -42,6 +42,7 @@ dependencies {
   implementation ('com.amazonaws:aws-lambda-java-log4j2:1.5.1')
 
   testImplementation("com.amazonaws.serverless:aws-serverless-java-container-core:[2.0-SNAPSHOT,):tests")
+  testImplementation("org.apache.httpcomponents.client5:httpclient5:5.2.1")
   testImplementation('junit:junit:4.13.2')
   testImplementation('org.apache.struts:struts2-junit-plugin:6.1.2') {
     exclude group: 'org.apache.struts', module: 'struts2-core'

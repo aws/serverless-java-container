@@ -5,9 +5,9 @@ import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;;
 import org.junit.jupiter.api.Test;
 
 import jakarta.servlet.ServletException;
@@ -71,7 +71,7 @@ public class AwsProxyHttpServletRequestFormTest {
     void postForm_getParts_parsing() {
         try {
             AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/form", "POST")
-                    .header(MULTIPART_FORM_DATA.getContentType().getName(), MULTIPART_FORM_DATA.getContentType().getValue())
+                    .header(HttpHeaders.CONTENT_TYPE, MULTIPART_FORM_DATA.getContentType())
                     //.header(formData.getContentEncoding().getName(), formData.getContentEncoding().getValue())
                     .body(IOUtils.toString(MULTIPART_FORM_DATA.getContent(), Charset.defaultCharset()))
                     .build();
@@ -90,7 +90,7 @@ public class AwsProxyHttpServletRequestFormTest {
     void multipart_getParts_binary() {
         try {
             AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/form", "POST")
-                    .header(MULTIPART_BINARY_DATA.getContentType().getName(), MULTIPART_BINARY_DATA.getContentType().getValue())
+                    .header(HttpHeaders.CONTENT_TYPE, MULTIPART_BINARY_DATA.getContentType())
                     .header(HttpHeaders.CONTENT_LENGTH, MULTIPART_BINARY_DATA.getContentLength() + "")
                     .binaryBody(MULTIPART_BINARY_DATA.getContent())
                     .build();

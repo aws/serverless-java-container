@@ -18,10 +18,11 @@ import com.amazonaws.serverless.proxy.model.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.ByteArrayBody;
-import org.apache.http.entity.mime.content.StringBody;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
+import org.apache.hc.client5.http.entity.mime.ByteArrayBody;
+import org.apache.hc.client5.http.entity.mime.StringBody;
 
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
@@ -162,7 +163,7 @@ public class AwsProxyRequestBuilder {
         return this;
     }
 
-    public AwsProxyRequestBuilder formFieldPart(String fieldName, String fieldValue)
+    public AwsProxyRequestBuilder formTextFieldPart(String fieldName, String fieldValue)
             throws IOException {
         if (request.getMultiValueHeaders() == null) {
             request.setMultiValueHeaders(new Headers());
@@ -170,7 +171,7 @@ public class AwsProxyRequestBuilder {
         if (multipartBuilder == null) {
             multipartBuilder = MultipartEntityBuilder.create();
         }
-        multipartBuilder.addPart(fieldName, new StringBody(fieldValue));
+        multipartBuilder.addPart(fieldName, new StringBody(fieldValue, ContentType.TEXT_PLAIN));
         buildMultipartBody();
         return this;
     }
@@ -188,7 +189,7 @@ public class AwsProxyRequestBuilder {
         request.setBody(Base64.getMimeEncoder().encodeToString(finalBuffer));
         request.setIsBase64Encoded(true);
         this.request.setMultiValueHeaders(new Headers());
-        header(HttpHeaders.CONTENT_TYPE, bodyEntity.getContentType().getValue());
+        header(HttpHeaders.CONTENT_TYPE, bodyEntity.getContentType());
         header(HttpHeaders.CONTENT_LENGTH, bodyEntity.getContentLength() + "");
     }
 

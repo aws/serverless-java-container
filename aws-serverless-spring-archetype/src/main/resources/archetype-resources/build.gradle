@@ -18,6 +18,7 @@ dependencies {
   )
 
   testImplementation("com.amazonaws.serverless:aws-serverless-java-container-core:[2.0-SNAPSHOT,):tests")
+  testImplementation("org.apache.httpcomponents.client5:httpclient5:5.2.1")
   testImplementation("junit:junit:4.13.2")
 }
 
