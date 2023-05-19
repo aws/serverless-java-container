@@ -19,7 +19,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.web.servlet.DispatcherServlet;
@@ -469,7 +468,6 @@ public class SpringAwsProxyTest {
         SpringLambdaContainerHandler.getContainerConfig().setUseStageAsServletContext(false);
     }
 
-    @Disabled("Disabled until new release of commons-fileupload based on Jakarta APIs")
     @MethodSource("data")
     @ParameterizedTest
     void multipart_getFileName_returnsCorrectFileName(String reqType)

@@ -263,7 +263,6 @@ public class JerseyParamEncodingTest {
         validateSingleValueModel(resp, "3");
     }
 
-    @Disabled("Disabled until new release of commons-fileupload based on Jakarta APIs")
     @MethodSource("data")
     @ParameterizedTest
     void multipart_getFileSize_expectCorrectLength(String reqType)

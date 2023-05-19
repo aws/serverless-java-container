@@ -8,7 +8,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import jakarta.servlet.ServletException;
@@ -52,7 +51,6 @@ public class AwsProxyHttpServletRequestFormTest {
                                                                                   .build();
     private static final String ENCODED_FORM_ENTITY = PART_KEY_1 + "=" + ENCODED_VALUE + "&" + PART_KEY_2 + "=" + PART_VALUE_2;
 
-    @Disabled("Disabled until new release of commons-fileupload based on Jakarta APIs")
     @Test
     void postForm_getParam_getEncodedFullValue() {
         try {
@@ -69,7 +67,6 @@ public class AwsProxyHttpServletRequestFormTest {
         }
     }
 
-    @Disabled("Disabled until new release of commons-fileupload based on Jakarta APIs")
     @Test
     void postForm_getParts_parsing() {
         try {
@@ -89,7 +86,6 @@ public class AwsProxyHttpServletRequestFormTest {
         }
     }
 
-    @Disabled("Disabled until new release of commons-fileupload based on Jakarta APIs")
     @Test
     void multipart_getParts_binary() {
         try {

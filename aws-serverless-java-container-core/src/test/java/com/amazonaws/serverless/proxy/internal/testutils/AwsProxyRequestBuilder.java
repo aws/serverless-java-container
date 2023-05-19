@@ -155,7 +155,12 @@ public class AwsProxyRequestBuilder {
     }
 
     public AwsProxyRequestBuilder formFilePart(String fieldName, String fileName, byte[] content) throws IOException {
-        throw new UnsupportedOperationException();
+        if (multipartBuilder == null) {
+            multipartBuilder = MultipartEntityBuilder.create();
+        }
+        multipartBuilder.addPart(fieldName, new ByteArrayBody(content, fileName));
+        buildMultipartBody();
+        return this;
     }
 
     public AwsProxyRequestBuilder formTextFieldPart(String fieldName, String fieldValue)
