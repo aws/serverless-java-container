@@ -23,8 +23,8 @@ dependencies {
 
   testImplementation("com.amazonaws.serverless:aws-serverless-java-container-core:[2.0-SNAPSHOT,):tests")
   testImplementation("org.apache.httpcomponents.client5:httpclient5:5.2.1")
-  testImplementation(platform('org.junit:junit-bom:5.9.3'))
-  testImplementation('org.junit.jupiter:junit-jupiter')
+  testImplementation(platform("org.junit:junit-bom:5.9.3"))
+  testImplementation("org.junit.jupiter:junit-jupiter")
 }
 
 task buildZip(type: Zip) {
@@ -33,6 +33,10 @@ task buildZip(type: Zip) {
   into('lib') {
     from configurations.compileClasspath
   }
+}
+
+test {
+  useJUnitPlatform()
 }
 
 build.dependsOn buildZip
