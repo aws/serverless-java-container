@@ -1,33 +1,18 @@
-/*
- * Copyright 2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance
- * with the License. A copy of the License is located at
- *
- * http://aws.amazon.com/apache2.0/
- *
- * or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
- * OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
- * and limitations under the License.
- */
 package com.amazonaws.serverless.proxy.internal.servlet;
-
 
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.serverless.proxy.model.Headers;
-import com.amazonaws.serverless.proxy.model.RequestSource;
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.SecurityContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -41,49 +26,28 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * Implementation of the <code>HttpServletRequest</code> interface that supports <code>APIGatewayProxyRequestEvent</code> object.
- * This object is initialized with an <code>APIGatewayProxyRequestEvent</code> event and a <code>SecurityContext</code> generated
- * by an implementation of the <code>SecurityContextWriter</code>.
- */
-public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
+public class AwsAlbHttpServletRequest extends AwsHttpServletRequest{
 
     //-------------------------------------------------------------
     // Variables - Private
     //-------------------------------------------------------------
 
-    private APIGatewayProxyRequestEvent request;
+    private ApplicationLoadBalancerRequestEvent request;
     private SecurityContext securityContext;
     private AwsAsyncContext asyncContext;
     private static Logger log = LoggerFactory.getLogger(AwsProxyHttpServletRequest.class);
     private ContainerConfig config;
 
-    //-------------------------------------------------------------
-    // Constructors
-    //-------------------------------------------------------------
-
-
-    public AwsProxyHttpServletRequest(APIGatewayProxyRequestEvent awsProxyRequest, Context lambdaContext, SecurityContext awsSecurityContext) {
-        this(awsProxyRequest, lambdaContext, awsSecurityContext, LambdaContainerHandler.getContainerConfig());
+    public AwsAlbHttpServletRequest(ApplicationLoadBalancerRequestEvent albRequest, Context lambdaContext, SecurityContext awsSecurityContext) {
+        this(albRequest, lambdaContext, awsSecurityContext, LambdaContainerHandler.getContainerConfig());
     }
 
-
-    public AwsProxyHttpServletRequest(APIGatewayProxyRequestEvent awsProxyRequest, Context lambdaContext, SecurityContext awsSecurityContext, ContainerConfig config) {
+    public AwsAlbHttpServletRequest(ApplicationLoadBalancerRequestEvent albRequest, Context lambdaContext, SecurityContext awsSecurityContext, ContainerConfig config) {
         super(lambdaContext);
-        this.request = awsProxyRequest;
+        this.request = albRequest;
         this.securityContext = awsSecurityContext;
         this.config = config;
     }
-
-    public APIGatewayProxyRequestEvent getAwsProxyRequest() {
-        return this.request;
-    }
-
-    //-------------------------------------------------------------
-    // Implementation - HttpServletRequest
-    //-------------------------------------------------------------
-
-
     @Override
     public String getAuthType() {
         return securityContext.getAuthenticationScheme();
@@ -185,7 +149,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getContextPath() {
-        return generateContextPath(config, request.getRequestContext().getStage());
+        return "";
     }
 
 
@@ -301,7 +265,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             log.debug("Called set character encoding to " + SecurityUtils.crlf(s) + " on a request without a content type. Character encoding will not be set");
             return;
         }
-
         putSingle(request.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE, appendCharacterEncoding(currentContentType, s));
     }
 
@@ -338,7 +301,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getParameter(String s) {
-       String queryStringParameter = getFirstQueryParamValue(request.getMultiValueQueryStringParameters(), s, config.isQueryStringCaseSensitive());
+        String queryStringParameter = getFirstQueryParamValue(request.getMultiValueQueryStringParameters(), s, config.isQueryStringCaseSensitive());
         if (queryStringParameter != null) {
             return queryStringParameter;
         }
@@ -398,23 +361,24 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getServerName() {
-        String region = System.getenv("AWS_REGION");
-        if (region == null) {
-            // this is not a critical failure, we just put a static region in the URI
-            region = "us-east-1";
-        }
-
-        if (request.getMultiValueHeaders() != null && request.getMultiValueHeaders().containsKey(HOST_HEADER_NAME)) {
-            String hostHeader = getFirst(request.getMultiValueHeaders(), HOST_HEADER_NAME);
-            if (SecurityUtils.isValidHost(hostHeader, request.getRequestContext().getApiId(), region)) {
-                return hostHeader;
-            }
-        }
-
-        return new StringBuilder().append(request.getRequestContext().getApiId())
-                                                .append(".execute-api.")
-                                                .append(region)
-                                                .append(".amazonaws.com").toString();
+//        String region = System.getenv("AWS_REGION");
+//        if (region == null) {
+//            // this is not a critical failure, we just put a static region in the URI
+//            region = "us-east-1";
+//        }
+//
+//        if (request.getMultiValueHeaders() != null && request.getMultiValueHeaders().containsKey(HOST_HEADER_NAME)) {
+//            String hostHeader = getFirst(request.getMultiValueHeaders(), HOST_HEADER_NAME);
+//            if (SecurityUtils.isValidHost(hostHeader, request.getRequestContext().getApiId(), region)) {
+//                return hostHeader;
+//            }
+//        }
+//
+//        return new StringBuilder().append(request.getRequestContext().getApiId())
+//                .append(".execute-api.")
+//                .append(region)
+//                .append(".amazonaws.com").toString();
+        return "";
     }
 
     @Override
@@ -448,10 +412,11 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getRemoteAddr() {
-        if (request.getRequestContext() == null || request.getRequestContext().getIdentity() == null) {
-            return "127.0.0.1";
-        }
-        return request.getRequestContext().getIdentity().getSourceIp();
+//        if (request.getRequestContext() == null || request.getRequestContext().getIdentity() == null) {
+//            return "127.0.0.1";
+//        }
+//        return request.getRequestContext().getIdentity().getSourceIp();
+        return "";
     }
 
 
@@ -513,7 +478,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             throws IllegalStateException {
         asyncContext = new AwsAsyncContext(this, response, containerHandler);
         setAttribute(DISPATCHER_TYPE_ATTRIBUTE, DispatcherType.ASYNC);
-        log.debug("Starting async context for request: " + SecurityUtils.crlf(request.getRequestContext().getRequestId()));
+        log.debug("Starting async context for request: " + SecurityUtils.crlf(request.getRequestContext().getElb().getTargetGroupArn()));
         return asyncContext;
     }
 
@@ -523,14 +488,14 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             throws IllegalStateException {
         servletRequest.setAttribute(DISPATCHER_TYPE_ATTRIBUTE, DispatcherType.ASYNC);
         asyncContext = new AwsAsyncContext((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse, containerHandler);
-        log.debug("Starting async context for request: " + SecurityUtils.crlf(request.getRequestContext().getRequestId()));
+        log.debug("Starting async context for request: " + SecurityUtils.crlf(request.getRequestContext().getElb().getTargetGroupArn()));
         return asyncContext;
     }
 
     @Override
     public AsyncContext getAsyncContext() {
         if (asyncContext == null) {
-            throw new IllegalStateException("Request " + SecurityUtils.crlf(request.getRequestContext().getRequestId())
+            throw new IllegalStateException("Request " + SecurityUtils.crlf(request.getRequestContext().getElb().getTargetGroupArn())
                     + " is not in asynchronous mode. Call startAsync before attempting to get the async context.");
         }
         return asyncContext;
@@ -538,7 +503,8 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getRequestId() {
-        return request.getRequestContext().getRequestId();
+        //return request.getRequestContext().getRequestId();
+        return "";
     }
 
     @Override
@@ -557,15 +523,15 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     private List<String> getHeaderValues(String key) {
         // special cases for referer and user agent headers
-        List<String> values = new ArrayList<>();
-        if ("referer".equals(key.toLowerCase(Locale.ENGLISH))) {
-            values.add(request.getRequestContext().getIdentity().getCaller());
-            return values;
-        }
-        if ("user-agent".equals(key.toLowerCase(Locale.ENGLISH))) {
-            values.add(request.getRequestContext().getIdentity().getUserAgent());
-            return values;
-        }
+//        List<String> values = new ArrayList<>();
+//        if ("referer".equals(key.toLowerCase(Locale.ENGLISH))) {
+//            values.add(request.getRequestContext().getIdentity().getCaller());
+//            return values;
+//        }
+//        if ("user-agent".equals(key.toLowerCase(Locale.ENGLISH))) {
+//            values.add(request.getRequestContext().getIdentity().getUserAgent());
+//            return values;
+//        }
 
 //        if (request.getRequestSource() == RequestSource.API_GATEWAY) {
 //            if ("referer".equals(key.toLowerCase(Locale.ENGLISH))) {
@@ -584,6 +550,5 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
         return request.getMultiValueHeaders().get(key);
     }
-
 
 }

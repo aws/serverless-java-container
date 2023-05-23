@@ -7,6 +7,8 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.SpringLambdaContainerHandler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import org.springframework.web.context.support.GenericWebApplicationContext;
 
 import java.io.IOException;
@@ -15,7 +17,7 @@ import java.io.OutputStream;
 
 
 public class StreamLambdaHandler implements RequestStreamHandler {
-    private static final SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+    private static final SpringLambdaContainerHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> handler;
     static {
         try {
             handler = CustomSpringLambdaContainerHandler.getAwsProxyHandler(new GenericWebApplicationContext());

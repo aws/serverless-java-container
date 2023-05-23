@@ -4,6 +4,8 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import org.apache.commons.io.IOUtils;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
@@ -54,7 +56,7 @@ public class AwsProxyHttpServletRequestFormTest {
     @Test
     void postForm_getParam_getEncodedFullValue() {
         try {
-            AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/form", "POST")
+            APIGatewayProxyRequestEvent proxyRequest = new AwsProxyRequestBuilder("/form", "POST")
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED)
                     .body(ENCODED_FORM_ENTITY)
                     .build();
@@ -70,9 +72,8 @@ public class AwsProxyHttpServletRequestFormTest {
     @Test
     void postForm_getParts_parsing() {
         try {
-            AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/form", "POST")
+            APIGatewayProxyRequestEvent proxyRequest = new AwsProxyRequestBuilder("/form", "POST")
                     .header(HttpHeaders.CONTENT_TYPE, MULTIPART_FORM_DATA.getContentType())
-                    //.header(formData.getContentEncoding().getName(), formData.getContentEncoding().getValue())
                     .body(IOUtils.toString(MULTIPART_FORM_DATA.getContent(), Charset.defaultCharset()))
                     .build();
 
@@ -89,7 +90,7 @@ public class AwsProxyHttpServletRequestFormTest {
     @Test
     void multipart_getParts_binary() {
         try {
-            AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/form", "POST")
+            APIGatewayProxyRequestEvent proxyRequest = new AwsProxyRequestBuilder("/form", "POST")
                     .header(HttpHeaders.CONTENT_TYPE, MULTIPART_BINARY_DATA.getContentType())
                     .header(HttpHeaders.CONTENT_LENGTH, MULTIPART_BINARY_DATA.getContentLength() + "")
                     .binaryBody(MULTIPART_BINARY_DATA.getContent())
@@ -111,7 +112,7 @@ public class AwsProxyHttpServletRequestFormTest {
 
     @Test
     void postForm_getParamsBase64Encoded_expectAllParams() {
-        AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/form", "POST")
+        APIGatewayProxyRequestEvent proxyRequest = new AwsProxyRequestBuilder("/form", "POST")
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED).build();
         proxyRequest.setBody(Base64.getEncoder().encodeToString(ENCODED_FORM_ENTITY.getBytes(Charset.defaultCharset())));
         proxyRequest.setIsBase64Encoded(true);
@@ -129,7 +130,7 @@ public class AwsProxyHttpServletRequestFormTest {
      */
     @Test
     void postForm_emptyParamPresent() {
-        AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/form", "POST")
+        APIGatewayProxyRequestEvent proxyRequest = new AwsProxyRequestBuilder("/form", "POST")
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED).build();
         String body = PART_KEY_1 + "=" + "&" + PART_KEY_2 + "=" + PART_VALUE_2;
         proxyRequest.setBody(body);

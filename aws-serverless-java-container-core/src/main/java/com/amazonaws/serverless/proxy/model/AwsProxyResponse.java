@@ -13,9 +13,11 @@
 package com.amazonaws.serverless.proxy.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
 import java.util.Map;
 
 
@@ -33,7 +35,9 @@ public class AwsProxyResponse {
     private String statusDescription;
     private Map<String, String> headers;
     private Headers multiValueHeaders;
+    private List<String> cookies;
     private String body;
+
     private boolean isBase64Encoded;
 
 
@@ -136,5 +140,13 @@ public class AwsProxyResponse {
 
     public void setStatusDescription(String statusDescription) {
         this.statusDescription = statusDescription;
+    }
+
+    public List<String> getCookies() {
+        return cookies;
+    }
+
+    public void setCookies(List<String> cookies) {
+        this.cookies = cookies;
     }
 }

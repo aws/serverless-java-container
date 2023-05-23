@@ -15,8 +15,7 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.*;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -98,7 +97,7 @@ public abstract class ServletLambdaContainerHandlerBuilder<
                 .securityContextWriter((SecurityContextWriter<RequestType>) new AwsProxySecurityContextWriter())
                 .exceptionHandler((ExceptionHandler<ResponseType>) new AwsProxyExceptionHandler())
                 .requestTypeClass((Class<RequestType>) APIGatewayProxyRequestEvent.class)
-                .responseTypeClass((Class<ResponseType>) AwsProxyResponse.class);
+                .responseTypeClass((Class<ResponseType>) APIGatewayProxyResponseEvent.class);
         return self();
     }
 
@@ -110,13 +109,24 @@ public abstract class ServletLambdaContainerHandlerBuilder<
     public Builder defaultHttpApiV2Proxy() {
         initializationWrapper(new InitializationWrapper())
                 .requestReader((RequestReader<RequestType, ContainerRequestType>) new AwsHttpApiV2HttpServletRequestReader())
-                .responseWriter((ResponseWriter<AwsHttpServletResponse, ResponseType>) new AwsProxyHttpServletResponseWriter(true))
+                .responseWriter((ResponseWriter<AwsHttpServletResponse, ResponseType>) new AwsHttpApiV2HttpServletResponseWriter(true))
                 .securityContextWriter((SecurityContextWriter<RequestType>) new AwsHttpApiV2SecurityContextWriter())
-                .exceptionHandler((ExceptionHandler<ResponseType>) new AwsProxyExceptionHandler())
+                .exceptionHandler((ExceptionHandler<ResponseType>) new AwsHttpApiV2ExceptionHandler())
                 .requestTypeClass((Class<RequestType>) APIGatewayV2HTTPEvent.class)
-                .responseTypeClass((Class<ResponseType>) AwsProxyResponse.class);
+                .responseTypeClass((Class<ResponseType>) APIGatewayV2HTTPResponse.class);
         return self();
 
+    }
+
+    public Builder defaultAlbProxy() {
+        initializationWrapper(new InitializationWrapper())
+                .requestReader((RequestReader<RequestType, ContainerRequestType>) new AwsAlbHttpServletRequestReader())
+                .responseWriter((ResponseWriter<AwsHttpServletResponse, ResponseType>) new AwsAlbHttpServletResponseWriter())
+                .securityContextWriter((SecurityContextWriter<RequestType>) new AwsAlbSecurityContextWriter())
+                .exceptionHandler((ExceptionHandler<ResponseType>) new AwsAlbExceptionHandler())
+                .requestTypeClass((Class<RequestType>) ApplicationLoadBalancerRequestEvent.class)
+                .responseTypeClass((Class<ResponseType>) ApplicationLoadBalancerResponseEvent.class);
+        return self();
     }
 
     /**

@@ -3,6 +3,7 @@ package com.amazonaws.serverless.proxy;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -23,13 +24,13 @@ public class AwsProxySecurityContextWriterTest {
     @Test
     void write_returnClass_securityContext()
             throws NoSuchMethodException {
-        Method writeMethod = writer.getClass().getMethod("writeSecurityContext", AwsProxyRequest.class, Context.class);
+        Method writeMethod = writer.getClass().getMethod("writeSecurityContext", APIGatewayProxyRequestEvent.class, Context.class);
         assertEquals(SecurityContext.class, writeMethod.getReturnType());
     }
 
     @Test
     void write_noAuth_emptySecurityContext() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/test").build();
+        APIGatewayProxyRequestEvent request = new AwsProxyRequestBuilder("/test").build();
         SecurityContext context = writer.writeSecurityContext(request, null);
 
         assertNotNull(context);

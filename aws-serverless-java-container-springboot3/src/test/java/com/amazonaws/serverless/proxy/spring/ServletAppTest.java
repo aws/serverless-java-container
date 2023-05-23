@@ -6,7 +6,11 @@ import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.serverless.proxy.spring.servletapp.*;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -166,7 +170,7 @@ public class ServletAppTest {
         InputStream req = null;
         switch (type) {
             case "ALB":
-                req = reqBuilder.alb().buildStream();
+                req = reqBuilder.toAlbRequestStream();
                 break;
             case "API_GW":
                 req = reqBuilder.buildStream();
@@ -192,7 +196,7 @@ public class ServletAppTest {
         InputStream req = null;
         switch (type) {
             case "ALB":
-                req = reqBuilder.alb().buildStream();
+                req = reqBuilder.toAlbRequestStream();
                 break;
             case "API_GW":
                 req = reqBuilder.buildStream();
@@ -202,7 +206,8 @@ public class ServletAppTest {
         }
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         streamHandler.handleRequest(req, out, lambdaContext);
-        AwsProxyResponse resp = LambdaContainerHandler.getObjectMapper().readValue(out.toByteArray(), AwsProxyResponse.class);
+        ObjectMapper mapper = LambdaContainerHandler.getObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        APIGatewayProxyResponseEvent resp = mapper.readValue(out.toByteArray(), APIGatewayProxyResponseEvent.class);
         assertNotNull(resp);
         assertEquals(200, resp.getStatusCode());
         assertEquals("{\"s\":\"" + MessageController.UTF8_RESPONSE + "\"}", resp.getBody());

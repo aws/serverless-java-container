@@ -1,61 +1,37 @@
-/*
- * Copyright 2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance
- * with the License. A copy of the License is located at
- *
- * http://aws.amazon.com/apache2.0/
- *
- * or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
- * OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
- * and limitations under the License.
- */
 package com.amazonaws.serverless.proxy.internal.servlet;
-
 
 import com.amazonaws.serverless.exceptions.InvalidResponseObjectException;
 import com.amazonaws.serverless.proxy.ResponseWriter;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.Headers;
-import com.amazonaws.serverless.proxy.model.RequestSource;
 import com.amazonaws.services.lambda.runtime.Context;
-
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
 
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
-
 /**
- * Creates an <code>APIGatewayProxyResponseEvent</code> object given an <code>AwsHttpServletResponse</code> object. If the
+ * Creates an <code>APIGatewayV2HTTPResponse</code> object given an <code>AwsHttpServletResponse</code> object. If the
  * response is not populated with a status code we infer a default 200 status code.
  */
-public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpServletResponse, APIGatewayProxyResponseEvent> {
+public class AwsHttpApiV2HttpServletResponseWriter extends ResponseWriter<AwsHttpServletResponse, APIGatewayV2HTTPResponse> {
 
     private boolean writeSingleValueHeaders;
 
-    public AwsProxyHttpServletResponseWriter() {
+    public AwsHttpApiV2HttpServletResponseWriter() {
         this(false);
     }
 
-    public AwsProxyHttpServletResponseWriter(boolean singleValueHeaders) {
+    public AwsHttpApiV2HttpServletResponseWriter(boolean singleValueHeaders) {
         writeSingleValueHeaders = singleValueHeaders;
     }
-
-    //-------------------------------------------------------------
-    // Methods - Implementation
-    //-------------------------------------------------------------
-
     @Override
-    public APIGatewayProxyResponseEvent writeResponse(AwsHttpServletResponse containerResponse, Context lambdaContext)
-            throws InvalidResponseObjectException {
+    public APIGatewayV2HTTPResponse writeResponse(AwsHttpServletResponse containerResponse, Context lambdaContext) throws InvalidResponseObjectException {
         Timer.start("SERVLET_RESPONSE_WRITE");
-        APIGatewayProxyResponseEvent awsProxyResponse = new APIGatewayProxyResponseEvent();
+        APIGatewayV2HTTPResponse awsProxyResponse = new APIGatewayV2HTTPResponse();
         if (containerResponse.getAwsResponseBodyString() != null) {
             String responseString;
 

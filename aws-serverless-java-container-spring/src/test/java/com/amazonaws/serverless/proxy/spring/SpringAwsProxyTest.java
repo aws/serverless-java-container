@@ -15,7 +15,10 @@ import com.amazonaws.serverless.proxy.spring.echoapp.UnauthenticatedFilter;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.MapResponseModel;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.SingleValueModel;
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
@@ -49,8 +52,8 @@ public class SpringAwsProxyTest {
 
     private ObjectMapper objectMapper = new ObjectMapper();
     private MockLambdaContext lambdaContext = new MockLambdaContext();
-    private static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
-    private static SpringLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponse> httpApiHandler;
+    private static SpringLambdaContainerHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> handler;
+    private static SpringLambdaContainerHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> httpApiHandler;
 
     private AwsLambdaServletContainerHandler.StartupHandler h = (c -> {
         FilterRegistration.Dynamic registration = c.addFilter("UnauthenticatedFilter", UnauthenticatedFilter.class);
@@ -72,35 +75,62 @@ public class SpringAwsProxyTest {
         type = reqType;
     }
 
-    private AwsProxyResponse executeRequest(AwsProxyRequestBuilder requestBuilder, Context lambdaContext) {
+    private APIGatewayProxyResponseEvent executeRequest(AwsProxyRequestBuilder requestBuilder, Context lambdaContext) {
         try {
-            switch (type) {
-                case "API_GW":
-                    if (handler == null) {
-                        handler = SpringLambdaContainerHandler.getAwsProxyHandler(EchoSpringAppConfig.class);
-                        handler.onStartup(h);
-                    }
-                    return handler.proxy(requestBuilder.build(), lambdaContext);
-                case "ALB":
-                    if (handler == null) {
-                        handler = SpringLambdaContainerHandler.getAwsProxyHandler(EchoSpringAppConfig.class);
-                        handler.onStartup(h);
-                    }
-                    return handler.proxy(requestBuilder.alb().build(), lambdaContext);
-                case "HTTP_API":
-                    if (httpApiHandler == null) {
-                        httpApiHandler = SpringLambdaContainerHandler.getHttpApiV2ProxyHandler(EchoSpringAppConfig.class);
-                        httpApiHandler.onStartup(h);
-                    }
-                    return httpApiHandler.proxy(requestBuilder.toHttpApiV2Request(), lambdaContext);
-                default:
-                    throw new RuntimeException("Unknown request type: " + type);
+            if (handler == null) {
+                handler = SpringLambdaContainerHandler.getAwsProxyHandler(EchoSpringAppConfig.class);
+                handler.onStartup(h);
             }
+            return handler.proxy(requestBuilder.build(), lambdaContext);
         } catch (ContainerInitializationException e) {
             e.printStackTrace();
             fail("Could not execute request");
             throw new RuntimeException(e);
         }
+
+//        try {
+//            switch (type) {
+//                case "API_GW":
+//                    if (handler == null) {
+//                        handler = SpringLambdaContainerHandler.getAwsProxyHandler(EchoSpringAppConfig.class);
+//                        handler.onStartup(h);
+//                    }
+//                    return handler.proxy(requestBuilder.build(), lambdaContext);
+//                case "ALB":
+//                    if (handler == null) {
+//                        handler = SpringLambdaContainerHandler.getAwsProxyHandler(EchoSpringAppConfig.class);
+//                        handler.onStartup(h);
+//                    }
+//                    return handler.proxy(requestBuilder.alb().build(), lambdaContext);
+//                case "HTTP_API":
+//                    if (httpApiHandler == null) {
+//                        httpApiHandler = SpringLambdaContainerHandler.getHttpApiV2ProxyHandler(EchoSpringAppConfig.class);
+//                        httpApiHandler.onStartup(h);
+//                    }
+//                    return httpApiHandler.proxy(requestBuilder.toHttpApiV2Request(), lambdaContext);
+//                default:
+//                    throw new RuntimeException("Unknown request type: " + type);
+//            }
+//        } catch (ContainerInitializationException e) {
+//            e.printStackTrace();
+//            fail("Could not execute request");
+//            throw new RuntimeException(e);
+//        }
+    }
+
+    private APIGatewayV2HTTPResponse executeV2Request(AwsProxyRequestBuilder requestBuilder, Context lambdaContext) {
+        try {
+            if (httpApiHandler == null) {
+                httpApiHandler = SpringLambdaContainerHandler.getHttpApiV2ProxyHandler(EchoSpringAppConfig.class);
+                httpApiHandler.onStartup(h);
+            }
+            return httpApiHandler.proxy(requestBuilder.toHttpApiV2Request(), lambdaContext);
+        } catch (ContainerInitializationException e) {
+            e.printStackTrace();
+            fail("Could not execute request");
+            throw new RuntimeException(e);
+        }
+
     }
 
     @BeforeEach
@@ -116,7 +146,7 @@ public class SpringAwsProxyTest {
                 .json()
                 .header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE);
 
-        AwsProxyResponse output = executeRequest(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertNotNull(output);
         assertEquals(404, output.getStatusCode());
         validateSingleValueModel(output, RestControllerAdvice.ERROR_MESSAGE);
@@ -131,9 +161,9 @@ public class SpringAwsProxyTest {
                 .json()
                 .header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE);
 
-        AwsProxyResponse output = executeRequest(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type").split(";")[0]);
+        assertEquals("application/json", output.getMultiValueHeaders().get("Content-Type").get(0).split(";")[0]);
 
         validateMapResponseModel(output);
     }
@@ -146,9 +176,9 @@ public class SpringAwsProxyTest {
                 .json()
                 .header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE);
 
-        AwsProxyResponse output = executeRequest(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type").split(";")[0]);
+        assertEquals("application/json", output.getMultiValueHeaders().get("Content-Type").get(0).split(";")[0]);
 
         validateMapResponseModel(output);
     }
@@ -161,9 +191,9 @@ public class SpringAwsProxyTest {
                 .json()
                 .queryString(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE);
 
-        AwsProxyResponse output = executeRequest(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type").split(";")[0]);
+        assertEquals("application/json", output.getMultiValueHeaders().get("Content-Type").get(0).split(";")[0]);
 
         validateMapResponseModel(output);
     }
@@ -176,7 +206,7 @@ public class SpringAwsProxyTest {
                 .json()
                 .queryString("list", "v1,v2,v3");
 
-        AwsProxyResponse output = executeRequest(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
 
         validateSingleValueModel(output, "3");
@@ -192,7 +222,7 @@ public class SpringAwsProxyTest {
                 .queryString("multiple", "first")
                 .queryString("multiple", "second");
 
-        AwsProxyResponse output = executeRequest(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
         MapResponseModel response = objectMapper.readValue(output.getBody(), MapResponseModel.class);
 
@@ -212,7 +242,7 @@ public class SpringAwsProxyTest {
                         DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now().minus(1, ChronoUnit.SECONDS))
                 );
 
-        AwsProxyResponse output = executeRequest(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(304, output.getStatusCode());
         assertEquals("", output.getBody());
     }
@@ -228,7 +258,7 @@ public class SpringAwsProxyTest {
                         DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now().minus(5, ChronoUnit.DAYS))
                 );
 
-        AwsProxyResponse output = executeRequest(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
         assertEquals(EchoResource.STRING_BODY, output.getBody());
     }
@@ -242,9 +272,9 @@ public class SpringAwsProxyTest {
                 .json()
                 .authorizerPrincipal(AUTHORIZER_PRINCIPAL_ID);
 
-        AwsProxyResponse output = executeRequest(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type").split(";")[0]);
+        assertEquals("application/json", output.getMultiValueHeaders().get("Content-Type").get(0).split(";")[0]);
 
         validateSingleValueModel(output, AUTHORIZER_PRINCIPAL_ID);
     }
@@ -255,7 +285,7 @@ public class SpringAwsProxyTest {
         initSpringAwsProxyTest(reqType);
         AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/echo/test33", "GET");
 
-        AwsProxyResponse output = executeRequest(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(404, output.getStatusCode());
     }
 
@@ -267,7 +297,7 @@ public class SpringAwsProxyTest {
                 .header("Content-Type", "application/octet-stream")
                 .body("asdasdasd");
 
-        AwsProxyResponse output = executeRequest(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(415, output.getStatusCode());
     }
 
@@ -279,7 +309,7 @@ public class SpringAwsProxyTest {
                 .json()
                 .queryString("status", "201");
 
-        AwsProxyResponse output = executeRequest(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(405, output.getStatusCode());
     }
 
@@ -292,7 +322,7 @@ public class SpringAwsProxyTest {
                 .json()
                 .queryString("status", "201");
 
-        AwsProxyResponse output = executeRequest(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(401, output.getStatusCode());
     }
 
@@ -307,7 +337,7 @@ public class SpringAwsProxyTest {
                 .header("Content-Type", "application/json")
                 .body(objectMapper.writeValueAsString(singleValueModel));
 
-        AwsProxyResponse output = executeRequest(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
         assertNotNull(output.getBody());
         validateSingleValueModel(output, CUSTOM_HEADER_VALUE);
@@ -323,7 +353,7 @@ public class SpringAwsProxyTest {
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .body(objectMapper.writeValueAsString(singleValueModel));
         LambdaContainerHandler.getContainerConfig().setDefaultContentCharset("UTF-8");
-        AwsProxyResponse output = executeRequest(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
         assertNotNull(output.getBody());
         validateSingleValueModel(output, UNICODE_VALUE);
@@ -338,7 +368,7 @@ public class SpringAwsProxyTest {
                 .json()
                 .queryString("status", "201");
 
-        AwsProxyResponse output = executeRequest(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(201, output.getStatusCode());
     }
 
@@ -348,7 +378,7 @@ public class SpringAwsProxyTest {
         initSpringAwsProxyTest(reqType);
         AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/echo/binary", "GET");
 
-        AwsProxyResponse response = executeRequest(request, lambdaContext);
+        APIGatewayProxyResponseEvent response = executeRequest(request, lambdaContext);
         assertNotNull(response.getBody());
         assertTrue(Base64.isBase64(response.getBody()));
     }
@@ -361,7 +391,7 @@ public class SpringAwsProxyTest {
                 .header(HttpHeaders.CONTENT_TYPE, "text/plain")
                 .body("This is a populated body");
 
-        AwsProxyResponse response = executeRequest(request, lambdaContext);
+        APIGatewayProxyResponseEvent response = executeRequest(request, lambdaContext);
         assertNotNull(response.getBody());
         assertEquals(200, response.getStatusCode());
         try {
@@ -373,7 +403,7 @@ public class SpringAwsProxyTest {
         }
 
         AwsProxyRequestBuilder emptyReq = new AwsProxyRequestBuilder("/echo/request-body", "POST");
-        AwsProxyResponse emptyResp = executeRequest(emptyReq, lambdaContext);
+        APIGatewayProxyResponseEvent emptyResp = executeRequest(emptyReq, lambdaContext);
         try {
             SingleValueModel output = objectMapper.readValue(emptyResp.getBody(), SingleValueModel.class);
             assertNull(output.getValue());
@@ -400,7 +430,7 @@ public class SpringAwsProxyTest {
             fail("Could not serialize object to JSON");
         }
 
-        AwsProxyResponse output = executeRequest(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
     }
 
@@ -410,7 +440,7 @@ public class SpringAwsProxyTest {
         initSpringAwsProxyTest(reqType);
         AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/echo/request-URI", "GET");
 
-        AwsProxyResponse output = executeRequest(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
 
         validateSingleValueModel(output, "/echo/request-URI");
@@ -425,7 +455,7 @@ public class SpringAwsProxyTest {
                 .serverName("api.myserver.com")
                 .stage("prod");
         handler.stripBasePath("");
-        AwsProxyResponse output = executeRequest(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
 
         validateSingleValueModel(output, "https://api.myserver.com/echo/request-url");
@@ -440,7 +470,7 @@ public class SpringAwsProxyTest {
                 .serverName("api.myserver.com")
                 .stage("prod");
 
-        AwsProxyResponse output = executeRequest(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
 
         validateSingleValueModel(output, "Some Thing");
@@ -459,7 +489,7 @@ public class SpringAwsProxyTest {
         LambdaContainerHandler.getContainerConfig().addCustomDomain("api.myserver.com");
         SpringLambdaContainerHandler.getContainerConfig().setUseStageAsServletContext(true);
 
-        AwsProxyResponse output = executeRequest(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
 
         String expectedUri = "https://api.myserver.com/prod/echo/encoded-request-uri/" + EchoResource.TEST_GENERATE_URI;
@@ -477,13 +507,13 @@ public class SpringAwsProxyTest {
         AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/echo/attachment", "POST")
                 .formFilePart("testFile", "myFile.txt", "hello".getBytes());
 
-        AwsProxyResponse output = executeRequest(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
 
         assertEquals("testFile", output.getBody());
     }
 
-    private void validateMapResponseModel(AwsProxyResponse output) {
+    private void validateMapResponseModel(APIGatewayProxyResponseEvent output) {
         try {
             MapResponseModel response = objectMapper.readValue(output.getBody(), MapResponseModel.class);
             assertNotNull(response.getValues().get(CUSTOM_HEADER_KEY));
@@ -494,7 +524,7 @@ public class SpringAwsProxyTest {
         }
     }
 
-    private void validateSingleValueModel(AwsProxyResponse output, String value) {
+    private void validateSingleValueModel(APIGatewayProxyResponseEvent output, String value) {
         try {
             SingleValueModel response = objectMapper.readValue(output.getBody(), SingleValueModel.class);
             assertNotNull(response.getValue());

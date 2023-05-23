@@ -7,16 +7,18 @@ import com.amazonaws.serverless.proxy.spring.SpringLambdaContainerHandler;
 import com.amazonaws.serverless.proxy.spring.SpringProxyHandlerBuilder;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 
 import java.time.Instant;
 
-public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyResponse> {
-    private SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+public class LambdaHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    private SpringLambdaContainerHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> handler;
     private long constructorTime;
 
     public LambdaHandler() throws ContainerInitializationException {
         long startTime = Instant.now().toEpochMilli();
-        handler = new SpringProxyHandlerBuilder<AwsProxyRequest>()
+        handler = new SpringProxyHandlerBuilder<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent>()
                 .defaultProxy()
                 .asyncInit()
                 .configurationClasses(SlowAppConfig.class)
@@ -29,7 +31,7 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
     }
 
     @Override
-    public AwsProxyResponse handleRequest(AwsProxyRequest awsProxyRequest, Context context) {
+    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent awsProxyRequest, Context context) {
         return handler.proxy(awsProxyRequest, context);
     }
 }

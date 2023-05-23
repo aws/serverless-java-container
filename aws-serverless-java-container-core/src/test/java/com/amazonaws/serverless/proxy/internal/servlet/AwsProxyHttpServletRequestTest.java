@@ -5,6 +5,7 @@ import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -66,7 +67,7 @@ public class AwsProxyHttpServletRequestTest {
     private static final AwsProxyRequestBuilder REQUEST_NULL_QUERY_STRING;
 
     static {
-        AwsProxyRequest awsProxyRequest = new AwsProxyRequestBuilder("/hello", "GET").build();
+        APIGatewayProxyRequestEvent awsProxyRequest = new AwsProxyRequestBuilder("/hello", "GET").build();
         awsProxyRequest.setMultiValueQueryStringParameters(null);
         REQUEST_NULL_QUERY_STRING = new AwsProxyRequestBuilder(awsProxyRequest);
     }
@@ -90,7 +91,7 @@ public class AwsProxyHttpServletRequestTest {
             case "API_GW":
                 return new AwsProxyHttpServletRequest(req.build(), lambdaCtx, securityCtx);
             case "ALB":
-                return new AwsProxyHttpServletRequest(req.alb().build(), lambdaCtx, securityCtx);
+                //return new AwsProxyHttpServletRequest(req.alb().build(), lambdaCtx, securityCtx); TODO: This belongs to the ALB specific test class
             case "HTTP_API":
                 return new AwsHttpApiV2ProxyHttpServletRequest(req.toHttpApiV2Request(), lambdaCtx, securityCtx, LambdaContainerHandler.getContainerConfig());
             case "WRAP":

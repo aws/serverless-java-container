@@ -2,6 +2,7 @@ package com.amazonaws.serverless.proxy.model;
 
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -62,14 +63,13 @@ public class ApiGatewayAuthorizerContextTest {
     @Test
     void authorizerContext_serialize_customValues() {
         try {
-            AwsProxyRequest req = new AwsProxyRequestBuilder().fromJsonString(AUTHORIZER_REQUEST).build();
+            APIGatewayProxyRequestEvent req = new AwsProxyRequestBuilder().fromJsonString(AUTHORIZER_REQUEST).build();
 
-            assertNotNull(req.getRequestContext().getAuthorizer().getContextValue(FIELD_NAME_1));
-            assertNotNull(req.getRequestContext().getAuthorizer().getContextValue(FIELD_NAME_2));
-            assertEquals(FIELD_VALUE_1, req.getRequestContext().getAuthorizer().getContextValue(FIELD_NAME_1));
-            assertEquals(FIELD_VALUE_2, req.getRequestContext().getAuthorizer().getContextValue(FIELD_NAME_2));
-            assertEquals(PRINCIPAL, req.getRequestContext().getAuthorizer().getPrincipalId());
-            assertNull(req.getRequestContext().getAuthorizer().getContextValue("principalId"));
+            assertNotNull(req.getRequestContext().getAuthorizer().get(FIELD_NAME_1));
+            assertNotNull(req.getRequestContext().getAuthorizer().get(FIELD_NAME_2));
+            assertEquals(FIELD_VALUE_1, req.getRequestContext().getAuthorizer().get(FIELD_NAME_1));
+            assertEquals(FIELD_VALUE_2, req.getRequestContext().getAuthorizer().get(FIELD_NAME_2));
+            assertEquals(PRINCIPAL, req.getRequestContext().getAuthorizer().get("principalId"));
         } catch (IOException e) {
             e.printStackTrace();
             fail();

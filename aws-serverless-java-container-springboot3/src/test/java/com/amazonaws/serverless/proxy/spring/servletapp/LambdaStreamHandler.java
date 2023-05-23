@@ -10,15 +10,16 @@ import com.amazonaws.serverless.proxy.spring.SpringBootProxyHandlerBuilder;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
+import com.amazonaws.services.lambda.runtime.events.*;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 public class LambdaStreamHandler implements RequestStreamHandler {
-    private static SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
-    private static SpringBootLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponse> httpApiHandler;
+    private static SpringBootLambdaContainerHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> handler;
+    private static SpringBootLambdaContainerHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> httpApiHandler;
+    private static SpringBootLambdaContainerHandler<ApplicationLoadBalancerRequestEvent, ApplicationLoadBalancerResponseEvent> albHandler;
     private String type;
 
     public LambdaStreamHandler(String reqType) {
@@ -26,16 +27,23 @@ public class LambdaStreamHandler implements RequestStreamHandler {
         try {
             switch (type) {
                 case "API_GW":
+                    handler = new SpringBootProxyHandlerBuilder<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent>()
+                            .defaultProxy()
+                            .initializationWrapper(new InitializationWrapper())
+                            .servletApplication()
+                            .springBootApplication(ServletApplication.class)
+                            .buildAndInitialize();
+                    break;
                 case "ALB":
-                    handler = new SpringBootProxyHandlerBuilder<AwsProxyRequest, AwsProxyResponse>()
-                                .defaultProxy()
-                                .initializationWrapper(new InitializationWrapper())
-                                .servletApplication()
-                                .springBootApplication(ServletApplication.class)
-                                .buildAndInitialize();
+                    albHandler = new SpringBootProxyHandlerBuilder<ApplicationLoadBalancerRequestEvent, ApplicationLoadBalancerResponseEvent>()
+                            .defaultAlbProxy()
+                            .initializationWrapper(new InitializationWrapper())
+                            .servletApplication()
+                            .springBootApplication(ServletApplication.class)
+                            .buildAndInitialize();
                     break;
                 case "HTTP_API":
-                    httpApiHandler = new SpringBootProxyHandlerBuilder<APIGatewayV2HTTPEvent, AwsProxyResponse>()
+                    httpApiHandler = new SpringBootProxyHandlerBuilder<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse>()
                             .defaultHttpApiV2Proxy()
                             .initializationWrapper(new InitializationWrapper())
                             .servletApplication()
@@ -52,8 +60,10 @@ public class LambdaStreamHandler implements RequestStreamHandler {
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
         switch (type) {
             case "API_GW":
-            case "ALB":
                 handler.proxyStream(inputStream, outputStream, context);
+                break;
+            case "ALB":
+                albHandler.proxyStream(inputStream, outputStream, context);
                 break;
             case "HTTP_API":
                 httpApiHandler.proxyStream(inputStream, outputStream, context);

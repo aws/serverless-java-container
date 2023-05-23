@@ -1,61 +1,33 @@
-/*
- * Copyright 2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance
- * with the License. A copy of the License is located at
- *
- * http://aws.amazon.com/apache2.0/
- *
- * or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
- * OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
- * and limitations under the License.
- */
 package com.amazonaws.serverless.proxy.internal.servlet;
-
 
 import com.amazonaws.serverless.exceptions.InvalidResponseObjectException;
 import com.amazonaws.serverless.proxy.ResponseWriter;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.Headers;
-import com.amazonaws.serverless.proxy.model.RequestSource;
 import com.amazonaws.services.lambda.runtime.Context;
-
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerResponseEvent;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
 
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
-
-/**
- * Creates an <code>APIGatewayProxyResponseEvent</code> object given an <code>AwsHttpServletResponse</code> object. If the
- * response is not populated with a status code we infer a default 200 status code.
- */
-public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpServletResponse, APIGatewayProxyResponseEvent> {
+public class AwsAlbHttpServletResponseWriter extends ResponseWriter<AwsHttpServletResponse, ApplicationLoadBalancerResponseEvent> {
 
     private boolean writeSingleValueHeaders;
 
-    public AwsProxyHttpServletResponseWriter() {
+    public AwsAlbHttpServletResponseWriter() {
         this(false);
     }
 
-    public AwsProxyHttpServletResponseWriter(boolean singleValueHeaders) {
+    public AwsAlbHttpServletResponseWriter(boolean singleValueHeaders) {
         writeSingleValueHeaders = singleValueHeaders;
     }
-
-    //-------------------------------------------------------------
-    // Methods - Implementation
-    //-------------------------------------------------------------
-
     @Override
-    public APIGatewayProxyResponseEvent writeResponse(AwsHttpServletResponse containerResponse, Context lambdaContext)
-            throws InvalidResponseObjectException {
+    public ApplicationLoadBalancerResponseEvent writeResponse(AwsHttpServletResponse containerResponse, Context lambdaContext) throws InvalidResponseObjectException {
         Timer.start("SERVLET_RESPONSE_WRITE");
-        APIGatewayProxyResponseEvent awsProxyResponse = new APIGatewayProxyResponseEvent();
+        ApplicationLoadBalancerResponseEvent awsProxyResponse = new ApplicationLoadBalancerResponseEvent();
         if (containerResponse.getAwsResponseBodyString() != null) {
             String responseString;
 
@@ -75,12 +47,11 @@ public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpSer
 
         awsProxyResponse.setStatusCode(containerResponse.getStatus());
 
-//        Status responseStatus = Response.Status.fromStatusCode(containerResponse.getStatus());
-//
-//        if (containerResponse.getAwsProxyRequest() != null && containerResponse.getAwsProxyRequest().getRequestSource() == RequestSource.ALB
-//                && responseStatus != null) {
-//            awsProxyResponse.setStatusDescription(containerResponse.getStatus() + " " + responseStatus.getReasonPhrase());
-//        }
+        Response.Status responseStatus = Response.Status.fromStatusCode(containerResponse.getStatus());
+
+        if (containerResponse.getAwsProxyRequest() != null && responseStatus != null) {
+            awsProxyResponse.setStatusDescription(containerResponse.getStatus() + " " + responseStatus.getReasonPhrase());
+        }
 
         Timer.stop("SERVLET_RESPONSE_WRITE");
         return awsProxyResponse;

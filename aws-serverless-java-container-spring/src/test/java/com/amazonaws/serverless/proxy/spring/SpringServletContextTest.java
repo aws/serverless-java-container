@@ -11,6 +11,8 @@ import com.amazonaws.serverless.proxy.spring.echoapp.ContextResource;
 import com.amazonaws.serverless.proxy.spring.echoapp.CustomHeaderFilter;
 import com.amazonaws.serverless.proxy.spring.echoapp.EchoSpringAppConfig;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.ValidatedUserModel;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
@@ -29,7 +31,7 @@ public class SpringServletContextTest {
     private static final String STAGE = LambdaContainerHandler.SERVER_INFO + "/" + AwsServletContext.SERVLET_API_MAJOR_VERSION + "." + AwsServletContext.SERVLET_API_MINOR_VERSION;
     private MockLambdaContext lambdaContext = new MockLambdaContext();
 
-    private static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+    private static SpringLambdaContainerHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> handler;
 
     @BeforeAll
     public static void setUp() {
@@ -50,65 +52,65 @@ public class SpringServletContextTest {
 
     @Test
     void context_autowireValidContext_echoContext() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/servlet-context", "GET")
+        APIGatewayProxyRequestEvent request = new AwsProxyRequestBuilder("/echo/servlet-context", "GET")
                 .json()
                 .stage(STAGE)
                 .build();
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("text/plain", output.getMultiValueHeaders().getFirst("Content-Type").split(";")[0]);
+        assertEquals("text/plain", output.getMultiValueHeaders().get("Content-Type").get(0).split(";")[0]);
         assertEquals(STAGE, output.getBody());
     }
 
     @Test
     void context_contextAware_contextEcho() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/context/echo", "GET")
+        APIGatewayProxyRequestEvent request = new AwsProxyRequestBuilder("/context/echo", "GET")
                 .json()
                 .stage(STAGE)
                 .build();
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("text/plain", output.getMultiValueHeaders().getFirst("Content-Type").split(";")[0]);
+        assertEquals("text/plain", output.getMultiValueHeaders().get("Content-Type").get(0).split(";")[0]);
         assertEquals(STAGE, output.getBody());
     }
 
     @Test
     void filter_customHeaderFilter_echoHeaders() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/echo/headers", "GET")
+        APIGatewayProxyRequestEvent request = new AwsProxyRequestBuilder("/echo/headers", "GET")
                 .json()
                 .stage(STAGE)
                 .build();
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = handler.proxy(request, lambdaContext);
         assertNotNull(output.getMultiValueHeaders());
         assertTrue(output.getMultiValueHeaders().size() > 0);
         assertNotNull(output.getMultiValueHeaders().get(CustomHeaderFilter.HEADER_NAME));
-        assertEquals(CustomHeaderFilter.HEADER_VALUE, output.getMultiValueHeaders().getFirst(CustomHeaderFilter.HEADER_NAME));
+        assertEquals(CustomHeaderFilter.HEADER_VALUE, output.getMultiValueHeaders().get(CustomHeaderFilter.HEADER_NAME).get(0));
     }
 
     @Test
     void filter_validationFilter_emptyName() {
         ValidatedUserModel userModel = new ValidatedUserModel();
         userModel.setFirstName("Test");
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/context/user", "POST")
+        APIGatewayProxyRequestEvent request = new AwsProxyRequestBuilder("/context/user", "POST")
                 .json()
                 .body(userModel)
                 .build();
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = handler.proxy(request, lambdaContext);
         assertEquals(HttpStatus.BAD_REQUEST.value(), output.getStatusCode());
     }
 
     @Test
     void exception_populatedException_annotationValuesMappedCorrectly() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/context/exception", "GET")
+        APIGatewayProxyRequestEvent request = new AwsProxyRequestBuilder("/context/exception", "GET")
                 .stage(STAGE)
                 .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .build();
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = handler.proxy(request, lambdaContext);
 
         assertEquals(409, output.getStatusCode());
         assertTrue(output.getBody().contains(ContextResource.EXCEPTION_REASON));
@@ -116,18 +118,18 @@ public class SpringServletContextTest {
 
     @Test
     void cookie_injectInResponse_expectCustomSetCookie() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/context/cookie", "GET")
+        APIGatewayProxyRequestEvent request = new AwsProxyRequestBuilder("/context/cookie", "GET")
                 .stage(STAGE)
                 .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .build();
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        APIGatewayProxyResponseEvent output = handler.proxy(request, lambdaContext);
 
 
         assertEquals(200, output.getStatusCode());
         assertTrue(output.getMultiValueHeaders().containsKey(HttpHeaders.SET_COOKIE));
-        assertTrue(output.getMultiValueHeaders().getFirst(HttpHeaders.SET_COOKIE).contains(ContextResource.COOKIE_NAME + "=" + ContextResource.COOKIE_VALUE));
-        assertTrue(output.getMultiValueHeaders().getFirst(HttpHeaders.SET_COOKIE).contains(ContextResource.COOKIE_DOMAIN));
+        assertTrue(output.getMultiValueHeaders().get(HttpHeaders.SET_COOKIE).get(0).contains(ContextResource.COOKIE_NAME + "=" + ContextResource.COOKIE_VALUE));
+        assertTrue(output.getMultiValueHeaders().get(HttpHeaders.SET_COOKIE).get(0).contains(ContextResource.COOKIE_DOMAIN));
     }
 }
 

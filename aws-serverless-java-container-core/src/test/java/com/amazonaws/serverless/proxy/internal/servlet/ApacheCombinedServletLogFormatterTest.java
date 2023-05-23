@@ -4,6 +4,7 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 import com.amazonaws.serverless.proxy.model.ApiGatewayRequestIdentity;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,16 +28,16 @@ public class ApacheCombinedServletLogFormatterTest {
 
   private HttpServletRequest mockServletRequest;
   private HttpServletResponse mockServletResponse;
-  private AwsProxyRequest proxyRequest;
-  private AwsProxyRequestContext context;
+  private APIGatewayProxyRequestEvent proxyRequest;
+  private APIGatewayProxyRequestEvent.ProxyRequestContext context;
 
   @BeforeEach
   public void setup() {
-    proxyRequest = new AwsProxyRequest();
+    proxyRequest = new APIGatewayProxyRequestEvent();
     Clock fixedClock = Clock.fixed(Instant.ofEpochSecond(665888523L), ZoneId.of("UTC"));
     mockServletRequest = mock(HttpServletRequest.class);
-    context = new AwsProxyRequestContext();
-    context.setIdentity(new ApiGatewayRequestIdentity());
+    context = new APIGatewayProxyRequestEvent.ProxyRequestContext();
+    context.setIdentity(new APIGatewayProxyRequestEvent.RequestIdentity());
     when(mockServletRequest.getAttribute(eq(API_GATEWAY_CONTEXT_PROPERTY)))
         .thenReturn(context);
     when(mockServletRequest.getMethod())
@@ -62,7 +63,7 @@ public class ApacheCombinedServletLogFormatterTest {
     @Test
     void logsCurrentTimeWhenRequestTimeZero() {
         // given
-        context.setRequestTimeEpoch(0);
+        context.setRequestTimeEpoch(0L);
 
         // when
         String actual = sut.format(mockServletRequest, mockServletResponse, null);

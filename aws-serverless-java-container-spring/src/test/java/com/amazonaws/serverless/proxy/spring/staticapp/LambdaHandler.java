@@ -8,16 +8,19 @@
  import com.amazonaws.services.lambda.runtime.Context;
  import com.amazonaws.services.lambda.runtime.RequestHandler;
 
+ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+ import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
  import org.springframework.web.context.support.XmlWebApplicationContext;
 
 
  public class LambdaHandler
-   implements RequestHandler<AwsProxyRequest, AwsProxyResponse>
+   implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent>
  {
-   SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+   SpringLambdaContainerHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> handler;
    boolean isinitialized = false;
  
-   public AwsProxyResponse handleRequest(AwsProxyRequest awsProxyRequest, Context context)
+   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent awsProxyRequest, Context context)
    {
         if (!isinitialized) {
             isinitialized = true;
@@ -30,7 +33,7 @@
                 return null;
             }
         }
-        AwsProxyResponse res = handler.proxy(awsProxyRequest, context);
+       APIGatewayProxyResponseEvent res = handler.proxy(awsProxyRequest, context);
         return res;
    }
  }

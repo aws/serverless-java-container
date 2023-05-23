@@ -22,7 +22,8 @@ import com.amazonaws.serverless.proxy.jersey.model.SingleValueModel;
 import com.amazonaws.serverless.proxy.jersey.providers.ServletRequestFilter;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
+import com.amazonaws.serverless.proxy.model.Headers;
+import com.amazonaws.services.lambda.runtime.events.*;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,9 +38,7 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -66,6 +65,12 @@ public class JerseyAwsProxyTest {
     .register(new ResourceBinder())
     .property(LoggingFeature.LOGGING_FEATURE_VERBOSITY_SERVER, LoggingFeature.Verbosity.PAYLOAD_ANY);
 
+    private static ResourceConfig albApp = new ResourceConfig().packages("com.amazonaws.serverless.proxy.jersey")
+            .register(LoggingFeature.class)
+            .register(ServletRequestFilter.class)
+            .register(MultiPartFeature.class)
+            .register(new ResourceBinder())
+            .property(LoggingFeature.LOGGING_FEATURE_VERBOSITY_SERVER, LoggingFeature.Verbosity.PAYLOAD_ANY);
     private static ResourceConfig httpApiApp = new ResourceConfig().packages("com.amazonaws.serverless.proxy.jersey")
     .register(LoggingFeature.class)
     .register(ServletRequestFilter.class)
@@ -80,10 +85,12 @@ public class JerseyAwsProxyTest {
     .register(MultiPartFeature.class)
     .property(LoggingFeature.LOGGING_FEATURE_VERBOSITY_SERVER, LoggingFeature.Verbosity.PAYLOAD_ANY);
 
-    private static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
-    private static JerseyLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponse> httpApiHandler;
+    private static JerseyLambdaContainerHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> handler;
+    private static JerseyLambdaContainerHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> httpApiHandler;
 
-    private static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handlerWithoutRegisteredDependencies
+    private static JerseyLambdaContainerHandler<ApplicationLoadBalancerRequestEvent, ApplicationLoadBalancerResponseEvent> albHandler;
+
+    private static JerseyLambdaContainerHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> handlerWithoutRegisteredDependencies
     = JerseyLambdaContainerHandler.getAwsProxyHandler(appWithoutRegisteredDependencies);
 
     private static Context lambdaContext = new MockLambdaContext();
@@ -98,38 +105,128 @@ public class JerseyAwsProxyTest {
         return Arrays.asList(new Object[]{"API_GW", "ALB", "HTTP_API"});
     }
 
+
     private AwsProxyRequestBuilder getRequestBuilder(String path, String method) {
 
         return new AwsProxyRequestBuilder(path, method);
     }
 
     private AwsProxyResponse executeRequest(AwsProxyRequestBuilder requestBuilder, Context lambdaContext) {
+
         switch (type) {
             case "API_GW":
                 if (handler == null) {
                     handler = JerseyLambdaContainerHandler.getAwsProxyHandler(app);
                 }
-                return handler.proxy(requestBuilder.build(), lambdaContext);
+                APIGatewayProxyResponseEvent responseEvent = handler.proxy(requestBuilder.build(), lambdaContext);
+                return apiGwyToProxyResponse(responseEvent);
             case "ALB":
-                if (handler == null) {
-                    handler = JerseyLambdaContainerHandler.getAwsProxyHandler(app);
+                if (albHandler == null) {
+                    albHandler = JerseyLambdaContainerHandler.getAlbProxyHandler(albApp);
                 }
-                return handler.proxy(requestBuilder.alb().build(), lambdaContext);
+                ApplicationLoadBalancerResponseEvent albResponse = albHandler.proxy(requestBuilder.toAlbRequest(), lambdaContext);
+                return albToProxyResponse(albResponse);
+
             case "HTTP_API":
                 if (httpApiHandler == null) {
                     httpApiHandler = JerseyLambdaContainerHandler.getHttpApiV2ProxyHandler(httpApiApp);
                 }
-                return httpApiHandler.proxy(requestBuilder.toHttpApiV2Request(), lambdaContext);
+                APIGatewayV2HTTPResponse httpApiResponseEvent = httpApiHandler.proxy(requestBuilder.toHttpApiV2Request(), lambdaContext);
+                return httpApiToProxyResponse(httpApiResponseEvent);
             default:
                 throw new RuntimeException("Unknown request type: " + type);
         }
     }
 
+     private AwsProxyResponse apiGwyToProxyResponse(APIGatewayProxyResponseEvent event) {
+        AwsProxyResponse proxyResponse = new AwsProxyResponse();
+        if (Objects.nonNull(event.getBody())) {
+            proxyResponse.setBody(event.getBody());
+        }
+
+        if (Objects.nonNull(event.getIsBase64Encoded())) {
+            proxyResponse.setBase64Encoded(event.getIsBase64Encoded());
+        }
+
+        if (Objects.nonNull(event.getStatusCode())) {
+            proxyResponse.setStatusCode(event.getStatusCode());
+        }
+
+        if (Objects.nonNull(event.getHeaders())) {
+            proxyResponse.setHeaders(event.getHeaders());
+        }
+
+        if (Objects.nonNull(event.getMultiValueHeaders())) {
+            proxyResponse.setMultiValueHeaders(new Headers());
+
+            for (Map.Entry<String, List<String>> header: event.getMultiValueHeaders().entrySet()) {
+                proxyResponse.getMultiValueHeaders().put(header.getKey(), header.getValue());
+            }
+        }
+
+
+
+        return proxyResponse;
+    }
+
+    private AwsProxyResponse httpApiToProxyResponse(APIGatewayV2HTTPResponse event) {
+        AwsProxyResponse proxyResponse = new AwsProxyResponse();
+        if (Objects.nonNull(event.getBody())) {
+            proxyResponse.setBody(event.getBody());
+        }
+
+        proxyResponse.setBase64Encoded(event.getIsBase64Encoded());
+        proxyResponse.setStatusCode(event.getStatusCode());
+
+        if (Objects.nonNull(event.getHeaders())) {
+            proxyResponse.setHeaders(event.getHeaders());
+        }
+
+        if (Objects.nonNull(event.getMultiValueHeaders())) {
+            proxyResponse.setMultiValueHeaders(new Headers());
+
+            for (Map.Entry<String, List<String>> header: event.getMultiValueHeaders().entrySet()) {
+                proxyResponse.getMultiValueHeaders().put(header.getKey(), header.getValue());
+            }
+        }
+
+        if (Objects.nonNull(event.getCookies())) {
+            proxyResponse.setCookies(event.getCookies());
+        }
+
+        return proxyResponse;
+    }
+
+    private AwsProxyResponse albToProxyResponse(ApplicationLoadBalancerResponseEvent event) {
+        AwsProxyResponse proxyResponse = new AwsProxyResponse();
+        if (Objects.nonNull(event.getBody())) {
+            proxyResponse.setBody(event.getBody());
+        }
+
+        proxyResponse.setBase64Encoded(event.getIsBase64Encoded());
+        proxyResponse.setStatusCode(event.getStatusCode());
+
+        if (Objects.nonNull(event.getHeaders())) {
+            proxyResponse.setHeaders(event.getHeaders());
+        }
+
+        if (Objects.nonNull(event.getMultiValueHeaders())) {
+            proxyResponse.setMultiValueHeaders(new Headers());
+
+            for (Map.Entry<String, List<String>> header: event.getMultiValueHeaders().entrySet()) {
+                proxyResponse.getMultiValueHeaders().put(header.getKey(), header.getValue());
+            }
+        }
+
+        return proxyResponse;
+    }
+
     private JerseyLambdaContainerHandler getHandler() {
         switch (type) {
             case "API_GW":
-            case "ALB":
                 return handler;
+            case "ALB":
+                return albHandler;
             case "HTTP_API":
                 return httpApiHandler;
             default:
@@ -147,7 +244,7 @@ public class JerseyAwsProxyTest {
 
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
+        assertEquals("application/json", output.getMultiValueHeaders().computeIfAbsent("Content-Type", k -> new ArrayList<>()).get(0));
 
         validateMapResponseModel(output);
     }
@@ -162,7 +259,7 @@ public class JerseyAwsProxyTest {
 
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
+        assertEquals("application/json", output.getMultiValueHeaders().get("Content-Type").get(0));
 
         validateMapResponseModel(output);
     }
@@ -172,13 +269,13 @@ public class JerseyAwsProxyTest {
     void headers_servletRequest_failedDependencyInjection_expectInternalServerError(String reqType) {
         initJerseyAwsProxyTest(reqType);
         assumeTrue("API_GW".equals(type));
-        AwsProxyRequest request = getRequestBuilder("/echo/servlet-headers", "GET")
+        APIGatewayProxyRequestEvent request = getRequestBuilder("/echo/servlet-headers", "GET")
         .json()
         .header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
         .build();
 
-        AwsProxyResponse output = handlerWithoutRegisteredDependencies.proxy(request, lambdaContext);
-        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
+        APIGatewayProxyResponseEvent output = handlerWithoutRegisteredDependencies.proxy(request, lambdaContext);
+        assertEquals("application/json", output.getMultiValueHeaders().get("Content-Type").get(0));
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), output.getStatusCode());
     }
 
@@ -201,7 +298,7 @@ public class JerseyAwsProxyTest {
         AwsProxyRequestBuilder request = getRequestBuilder("/echo/servlet-context", "GET");
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
+        assertEquals("application/json", output.getMultiValueHeaders().get("Content-Type").get(0));
 
         validateSingleValueModel(output, AwsServletContext.SERVER_INFO);
     }
@@ -215,7 +312,7 @@ public class JerseyAwsProxyTest {
 
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
+        assertEquals("application/json", output.getMultiValueHeaders().get("Content-Type").get(0));
 
         validateSingleValueModel(output, "https");
     }
@@ -229,7 +326,7 @@ public class JerseyAwsProxyTest {
 
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
+        assertEquals("application/json", output.getMultiValueHeaders().get("Content-Type").get(0));
 
         validateSingleValueModel(output, ServletRequestFilter.FILTER_ATTRIBUTE_VALUE);
     }
@@ -245,7 +342,7 @@ public class JerseyAwsProxyTest {
 
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
+        assertEquals("application/json", output.getMultiValueHeaders().get("Content-Type").get(0));
         validateSingleValueModel(output, AUTHORIZER_PRINCIPAL_ID);
     }
 
@@ -262,7 +359,7 @@ public class JerseyAwsProxyTest {
 
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
+        assertEquals("application/json", output.getMultiValueHeaders().get("Content-Type").get(0));
 
         validateSingleValueModel(output, CUSTOM_HEADER_VALUE);
     }

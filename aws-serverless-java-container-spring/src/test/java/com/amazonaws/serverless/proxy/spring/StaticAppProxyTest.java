@@ -8,6 +8,8 @@ import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.spring.staticapp.LambdaHandler;
 
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 
@@ -23,14 +25,14 @@ public class StaticAppProxyTest {
 
     @Test
     void staticPage() {
-        AwsProxyRequest req = new AwsProxyRequestBuilder("/sample/page", "GET").build();
+        APIGatewayProxyRequestEvent req = new AwsProxyRequestBuilder("/sample/page", "GET").build();
         // we temporarily allow the container to read from any path
         LambdaContainerHandler.getContainerConfig().addValidFilePath("/");
-        AwsProxyResponse resp = lambdaHandler.handleRequest(req, new MockLambdaContext());
+        APIGatewayProxyResponseEvent resp = lambdaHandler.handleRequest(req, new MockLambdaContext());
 
         assertEquals(200, resp.getStatusCode());
         assertTrue(resp.getBody().startsWith("<!DOCTYPE html>"));
         assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
-        assertEquals(MediaType.TEXT_HTML, resp.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.TEXT_HTML, resp.getMultiValueHeaders().get(HttpHeaders.CONTENT_TYPE).get(0));
     }
 }

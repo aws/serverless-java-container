@@ -19,6 +19,7 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import jakarta.ws.rs.core.SecurityContext;
 
 import java.security.Principal;
+import java.util.Map;
 
 /**
  * default implementation of the <code>SecurityContext</code> object. This class supports 3 API Gateway's authorization methods:
@@ -83,20 +84,30 @@ public class AwsProxySecurityContext
         if (getAuthenticationScheme().equals(AUTH_SCHEME_CUSTOM) || getAuthenticationScheme().equals(AUTH_SCHEME_AWS_IAM)) {
             return () -> {
                 if (getAuthenticationScheme().equals(AUTH_SCHEME_CUSTOM)) {
-                    switch (event.getRequestSource()) {
-                    case API_GATEWAY:
-                        return event.getRequestContext().getAuthorizer().getPrincipalId();
-                    case ALB:
-                        return event.getMultiValueHeaders().getFirst(ALB_IDENTITY_HEADER);
-                    }
+                    return event.getRequestContext().getAuthorizer().get("principalId").toString(); // TODO: Check later
                 } else if (getAuthenticationScheme().equals(AUTH_SCHEME_AWS_IAM)) {
-                    // if we received credentials from Cognito Federated Identities then we return the identity id
+                    //if we received credentials from Cognito Federated Identities then we return the identity id
                     if (event.getRequestContext().getIdentity().getCognitoIdentityId() != null) {
                         return event.getRequestContext().getIdentity().getCognitoIdentityId();
                     } else { // otherwise the user arn from the credentials
                         return event.getRequestContext().getIdentity().getUserArn();
                     }
                 }
+//                if (getAuthenticationScheme().equals(AUTH_SCHEME_CUSTOM)) {
+//                    switch (event.getRequestSource()) {
+//                    case API_GATEWAY:
+//                        return event.getRequestContext().getAuthorizer().getPrincipalId();
+//                    case ALB:
+//                        return event.getMultiValueHeaders().getFirst(ALB_IDENTITY_HEADER);
+//                    }
+//                } else if (getAuthenticationScheme().equals(AUTH_SCHEME_AWS_IAM)) {
+//                    // if we received credentials from Cognito Federated Identities then we return the identity id
+//                    if (event.getRequestContext().getIdentity().getCognitoIdentityId() != null) {
+//                        return event.getRequestContext().getIdentity().getCognitoIdentityId();
+//                    } else { // otherwise the user arn from the credentials
+//                        return event.getRequestContext().getIdentity().getUserArn();
+//                    }
+//                }
 
                 // return null if we couldn't find a valid scheme
                 return null;
@@ -104,7 +115,7 @@ public class AwsProxySecurityContext
         }
 
         if (getAuthenticationScheme().equals(AUTH_SCHEME_COGNITO_POOL)) {
-            return new CognitoUserPoolPrincipal(event.getRequestContext().getAuthorizer().getClaims());
+            return new CognitoUserPoolPrincipal((Map<String, String>) event.getRequestContext().getAuthorizer().get("claims"));
         }
 
         throw new RuntimeException("Cannot recognize authorization scheme in event");
@@ -125,24 +136,33 @@ public class AwsProxySecurityContext
 
     @Override
     public String getAuthenticationScheme() {
-        switch (event.getRequestSource()) {
-        case API_GATEWAY:
-            if (event.getRequestContext().getAuthorizer() != null && event.getRequestContext().getAuthorizer().getClaims() != null
-                && event.getRequestContext().getAuthorizer().getClaims().getSubject() != null) {
-                return AUTH_SCHEME_COGNITO_POOL;
-            } else if (event.getRequestContext().getAuthorizer() != null) {
-                return AUTH_SCHEME_CUSTOM;
-            } else if (event.getRequestContext().getIdentity().getAccessKey() != null) {
-                return AUTH_SCHEME_AWS_IAM;
-            } else {
-                return null;
-            }
-        case ALB:
-            if (event.getMultiValueHeaders().containsKey(ALB_ACESS_TOKEN_HEADER)) {
-                return AUTH_SCHEME_CUSTOM;
-            }
+        if (event.getRequestContext().getAuthorizer() != null && ((Map<String, String>) event.getRequestContext().getAuthorizer().get("claims")).get("sub") != null) {
+            return AUTH_SCHEME_COGNITO_POOL;
+        } else if (event.getRequestContext().getAuthorizer() != null) {
+            return AUTH_SCHEME_CUSTOM;
+        } else if (event.getRequestContext().getIdentity() != null && event.getRequestContext().getIdentity().getAccessKey() != null) {
+            return AUTH_SCHEME_AWS_IAM;
+        } else {
+            return null;
         }
-        return null;
+//        switch (event.getRequestSource()) {
+//        case API_GATEWAY:
+//            if (event.getRequestContext().getAuthorizer() != null && event.getRequestContext().getAuthorizer().getClaims() != null
+//                && event.getRequestContext().getAuthorizer().getClaims().getSubject() != null) {
+//                return AUTH_SCHEME_COGNITO_POOL;
+//            } else if (event.getRequestContext().getAuthorizer() != null) {
+//                return AUTH_SCHEME_CUSTOM;
+//            } else if (event.getRequestContext().getIdentity().getAccessKey() != null) {
+//                return AUTH_SCHEME_AWS_IAM;
+//            } else {
+//                return null;
+//            }
+//        case ALB:
+//            if (event.getMultiValueHeaders().containsKey(ALB_ACESS_TOKEN_HEADER)) {
+//                return AUTH_SCHEME_CUSTOM;
+//            }
+//        }
+//        return null;
     }
 
 
@@ -152,18 +172,18 @@ public class AwsProxySecurityContext
      */
     public static class CognitoUserPoolPrincipal implements Principal {
 
-        private CognitoAuthorizerClaims claims;
+        private Map<String, String> claims;
 
-        CognitoUserPoolPrincipal(CognitoAuthorizerClaims c) {
+        CognitoUserPoolPrincipal(Map<String, String> c) {
             claims = c;
         }
 
         @Override
         public String getName() {
-            return claims.getSubject();
+            return claims.get("sub");
         }
 
-        public CognitoAuthorizerClaims getClaims() {
+        public Map<String, String> getClaims() {
             return claims;
         }
     }

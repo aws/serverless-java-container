@@ -9,6 +9,9 @@ import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRespon
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
@@ -19,9 +22,9 @@ import jakarta.servlet.ServletException;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class ServerlessServletEmbeddedServerFactoryTest {
-    private SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = new SpringBootLambdaContainerHandler<>(
-            AwsProxyRequest.class,
-            AwsProxyResponse.class,
+    private SpringBootLambdaContainerHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> handler = new SpringBootLambdaContainerHandler<>(
+            APIGatewayProxyRequestEvent.class,
+            APIGatewayProxyResponseEvent.class,
             new AwsProxyHttpServletRequestReader(),
             new AwsProxyHttpServletResponseWriter(),
             new AwsProxySecurityContextWriter(),

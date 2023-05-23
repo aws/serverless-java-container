@@ -8,6 +8,8 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.springslowapp.LambdaHandler;
 import com.amazonaws.serverless.proxy.spring.springslowapp.MessageController;
 import com.amazonaws.serverless.proxy.spring.springslowapp.SlowAppConfig;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -28,9 +30,9 @@ public class SlowAppTest {
         }
         System.out.println("Start time: " + slowApp.getConstructorTime());
         assertTrue(slowApp.getConstructorTime() < 10_000);
-        AwsProxyRequest req = new AwsProxyRequestBuilder("/hello", "GET").build();
+        APIGatewayProxyRequestEvent req = new AwsProxyRequestBuilder("/hello", "GET").build();
         long startRequestTime = Instant.now().toEpochMilli();
-        AwsProxyResponse resp = slowApp.handleRequest(req, new MockLambdaContext());
+        APIGatewayProxyResponseEvent resp = slowApp.handleRequest(req, new MockLambdaContext());
         long endRequestTime = Instant.now().toEpochMilli();
         assertTrue(endRequestTime - startRequestTime > SlowAppConfig.SlowDownInit.INIT_SLEEP_TIME_MS - 10_000);
         assertEquals(200, resp.getStatusCode());
