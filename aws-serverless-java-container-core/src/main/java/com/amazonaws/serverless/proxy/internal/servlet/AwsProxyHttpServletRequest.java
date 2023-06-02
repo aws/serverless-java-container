@@ -386,10 +386,8 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getProtocol() {
-        return null;
-        //return request.getRequestContext().getProtocol();    // TODO: Not supported in java-events yet.
+        return request.getRequestContext().getProtocol();
     }
-
 
     @Override
     public String getScheme() {

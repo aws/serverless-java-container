@@ -528,7 +528,16 @@ public class AwsProxyRequestBuilder {
     public AwsProxyRequestBuilder fromJsonString(String jsonContent)
             throws IOException {
         request = LambdaContainerHandler.getObjectMapper().readValue(jsonContent, APIGatewayProxyRequestEvent.class);
+        makeHeadersCaseInsensitive(request);
         return this;
+    }
+
+    private void makeHeadersCaseInsensitive(APIGatewayProxyRequestEvent request) {
+        Headers newHeaders = new Headers();
+        if (Objects.nonNull(request.getMultiValueHeaders())) {
+            newHeaders.putAll(request.getMultiValueHeaders());
+            request.setMultiValueHeaders(newHeaders);
+        }
     }
 
     @SuppressFBWarnings("PATH_TRAVERSAL_IN")
