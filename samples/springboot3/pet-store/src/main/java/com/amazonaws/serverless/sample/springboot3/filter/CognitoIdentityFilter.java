@@ -43,12 +43,12 @@ public class CognitoIdentityFilter implements Filter {
             filterChain.doFilter(servletRequest, servletResponse);
             return;
         }
-        if (!AwsProxyRequestContext.class.isAssignableFrom(apiGwContext.getClass())) {
+        if (!APIGatewayV2HTTPEvent.RequestContext.class.isAssignableFrom(apiGwContext.getClass())) {
             log.warn("API Gateway context object is not of valid type");
             filterChain.doFilter(servletRequest, servletResponse);
         }
 
-        AwsProxyRequestContext ctx = (AwsProxyRequestContext)apiGwContext;
+        APIGatewayV2HTTPEvent.RequestContext ctx = (APIGatewayV2HTTPEvent.RequestContext)apiGwContext;
         if (ctx.getIdentity() == null) {
             log.warn("Identity context is null");
             filterChain.doFilter(servletRequest, servletResponse);

@@ -24,6 +24,7 @@ import com.amazonaws.serverless.proxy.spring.embedded.ServerlessServletEmbeddedS
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.WebApplicationType;
@@ -96,9 +97,9 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
      * @return An initialized instance of the `SpringLambdaContainerHandler`
      * @throws ContainerInitializationException If an error occurs while initializing the Spring framework
      */
-    public static SpringBootLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponse> getHttpApiV2ProxyHandler(Class<?> springBootInitializer, String... profiles)
+    public static SpringBootLambdaContainerHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> getHttpApiV2ProxyHandler(Class<?> springBootInitializer, String... profiles)
             throws ContainerInitializationException {
-        return new SpringBootProxyHandlerBuilder<APIGatewayV2HTTPEvent, AwsProxyResponse>()
+        return new SpringBootProxyHandlerBuilder<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse>()
                 .defaultHttpApiV2Proxy()
                 .initializationWrapper(new InitializationWrapper())
                 .springBootApplication(springBootInitializer)
@@ -173,6 +174,7 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
             ((AwsHttpServletRequest)containerRequest).setServletContext(getServletContext());
             ((AwsHttpServletRequest)containerRequest).setResponse(containerResponse);
         }
+        log.debug("SERVLETCONTEXT DEBUG TEST" + getServletContext().toString());
         doFilter(containerRequest, containerResponse, reqServlet);
         Timer.stop("SPRINGBOOT2_HANDLE_REQUEST");
     }
