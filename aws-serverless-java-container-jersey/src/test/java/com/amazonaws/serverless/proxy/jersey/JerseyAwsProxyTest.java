@@ -20,7 +20,6 @@ import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.jersey.model.MapResponseModel;
 import com.amazonaws.serverless.proxy.jersey.model.SingleValueModel;
 import com.amazonaws.serverless.proxy.jersey.providers.ServletRequestFilter;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.Headers;
 import com.amazonaws.services.lambda.runtime.events.*;
@@ -119,106 +118,23 @@ public class JerseyAwsProxyTest {
                     handler = JerseyLambdaContainerHandler.getAwsProxyHandler(app);
                 }
                 APIGatewayProxyResponseEvent responseEvent = handler.proxy(requestBuilder.build(), lambdaContext);
-                return apiGwyToProxyResponse(responseEvent);
+                return Helpers.apiGwyToProxyResponse(responseEvent);
             case "ALB":
                 if (albHandler == null) {
                     albHandler = JerseyLambdaContainerHandler.getAlbProxyHandler(albApp);
                 }
                 ApplicationLoadBalancerResponseEvent albResponse = albHandler.proxy(requestBuilder.toAlbRequest(), lambdaContext);
-                return albToProxyResponse(albResponse);
+                return Helpers.albToProxyResponse(albResponse);
 
             case "HTTP_API":
                 if (httpApiHandler == null) {
                     httpApiHandler = JerseyLambdaContainerHandler.getHttpApiV2ProxyHandler(httpApiApp);
                 }
                 APIGatewayV2HTTPResponse httpApiResponseEvent = httpApiHandler.proxy(requestBuilder.toHttpApiV2Request(), lambdaContext);
-                return httpApiToProxyResponse(httpApiResponseEvent);
+                return Helpers.httpApiToProxyResponse(httpApiResponseEvent);
             default:
                 throw new RuntimeException("Unknown request type: " + type);
         }
-    }
-
-     private AwsProxyResponse apiGwyToProxyResponse(APIGatewayProxyResponseEvent event) {
-        AwsProxyResponse proxyResponse = new AwsProxyResponse();
-        if (Objects.nonNull(event.getBody())) {
-            proxyResponse.setBody(event.getBody());
-        }
-
-        if (Objects.nonNull(event.getIsBase64Encoded())) {
-            proxyResponse.setBase64Encoded(event.getIsBase64Encoded());
-        }
-
-        if (Objects.nonNull(event.getStatusCode())) {
-            proxyResponse.setStatusCode(event.getStatusCode());
-        }
-
-        if (Objects.nonNull(event.getHeaders())) {
-            proxyResponse.setHeaders(event.getHeaders());
-        }
-
-        if (Objects.nonNull(event.getMultiValueHeaders())) {
-            proxyResponse.setMultiValueHeaders(new Headers());
-
-            for (Map.Entry<String, List<String>> header: event.getMultiValueHeaders().entrySet()) {
-                proxyResponse.getMultiValueHeaders().put(header.getKey(), header.getValue());
-            }
-        }
-
-
-
-        return proxyResponse;
-    }
-
-    private AwsProxyResponse httpApiToProxyResponse(APIGatewayV2HTTPResponse event) {
-        AwsProxyResponse proxyResponse = new AwsProxyResponse();
-        if (Objects.nonNull(event.getBody())) {
-            proxyResponse.setBody(event.getBody());
-        }
-
-        proxyResponse.setBase64Encoded(event.getIsBase64Encoded());
-        proxyResponse.setStatusCode(event.getStatusCode());
-
-        if (Objects.nonNull(event.getHeaders())) {
-            proxyResponse.setHeaders(event.getHeaders());
-        }
-
-        if (Objects.nonNull(event.getMultiValueHeaders())) {
-            proxyResponse.setMultiValueHeaders(new Headers());
-
-            for (Map.Entry<String, List<String>> header: event.getMultiValueHeaders().entrySet()) {
-                proxyResponse.getMultiValueHeaders().put(header.getKey(), header.getValue());
-            }
-        }
-
-        if (Objects.nonNull(event.getCookies())) {
-            proxyResponse.setCookies(event.getCookies());
-        }
-
-        return proxyResponse;
-    }
-
-    private AwsProxyResponse albToProxyResponse(ApplicationLoadBalancerResponseEvent event) {
-        AwsProxyResponse proxyResponse = new AwsProxyResponse();
-        if (Objects.nonNull(event.getBody())) {
-            proxyResponse.setBody(event.getBody());
-        }
-
-        proxyResponse.setBase64Encoded(event.getIsBase64Encoded());
-        proxyResponse.setStatusCode(event.getStatusCode());
-
-        if (Objects.nonNull(event.getHeaders())) {
-            proxyResponse.setHeaders(event.getHeaders());
-        }
-
-        if (Objects.nonNull(event.getMultiValueHeaders())) {
-            proxyResponse.setMultiValueHeaders(new Headers());
-
-            for (Map.Entry<String, List<String>> header: event.getMultiValueHeaders().entrySet()) {
-                proxyResponse.getMultiValueHeaders().put(header.getKey(), header.getValue());
-            }
-        }
-
-        return proxyResponse;
     }
 
     private JerseyLambdaContainerHandler getHandler() {

@@ -1,9 +1,6 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
 
-import com.amazonaws.serverless.proxy.model.ApiGatewayRequestIdentity;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

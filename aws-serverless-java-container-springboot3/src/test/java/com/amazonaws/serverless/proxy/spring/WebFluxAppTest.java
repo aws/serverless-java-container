@@ -1,10 +1,7 @@
 package com.amazonaws.serverless.proxy.spring;
 
-import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.webfluxapp.LambdaHandler;
 import com.amazonaws.serverless.proxy.spring.webfluxapp.MessageController;
 import com.amazonaws.serverless.proxy.spring.webfluxapp.MessageData;

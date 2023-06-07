@@ -17,7 +17,6 @@ import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.serverless.proxy.model.Headers;
-import com.amazonaws.serverless.proxy.model.RequestSource;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -564,17 +563,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             values.add(request.getRequestContext().getIdentity().getUserAgent());
             return values;
         }
-
-//        if (request.getRequestSource() == RequestSource.API_GATEWAY) {
-//            if ("referer".equals(key.toLowerCase(Locale.ENGLISH))) {
-//                values.add(request.getRequestContext().getIdentity().getCaller());
-//                return values;
-//            }
-//            if ("user-agent".equals(key.toLowerCase(Locale.ENGLISH))) {
-//                values.add(request.getRequestContext().getIdentity().getUserAgent());
-//                return values;
-//            }
-//        }
 
         if (request.getMultiValueHeaders() == null) {
             return null;

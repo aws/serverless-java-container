@@ -12,7 +12,6 @@
  */
 package com.amazonaws.serverless.proxy.internal.jaxrs;
 
-import com.amazonaws.serverless.proxy.model.CognitoAuthorizerClaims;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 
@@ -93,23 +92,6 @@ public class AwsProxySecurityContext
                         return event.getRequestContext().getIdentity().getUserArn();
                     }
                 }
-//                if (getAuthenticationScheme().equals(AUTH_SCHEME_CUSTOM)) {
-//                    switch (event.getRequestSource()) {
-//                    case API_GATEWAY:
-//                        return event.getRequestContext().getAuthorizer().getPrincipalId();
-//                    case ALB:
-//                        return event.getMultiValueHeaders().getFirst(ALB_IDENTITY_HEADER);
-//                    }
-//                } else if (getAuthenticationScheme().equals(AUTH_SCHEME_AWS_IAM)) {
-//                    // if we received credentials from Cognito Federated Identities then we return the identity id
-//                    if (event.getRequestContext().getIdentity().getCognitoIdentityId() != null) {
-//                        return event.getRequestContext().getIdentity().getCognitoIdentityId();
-//                    } else { // otherwise the user arn from the credentials
-//                        return event.getRequestContext().getIdentity().getUserArn();
-//                    }
-//                }
-
-                // return null if we couldn't find a valid scheme
                 return null;
             };
         }
@@ -145,24 +127,6 @@ public class AwsProxySecurityContext
         } else {
             return null;
         }
-//        switch (event.getRequestSource()) {
-//        case API_GATEWAY:
-//            if (event.getRequestContext().getAuthorizer() != null && event.getRequestContext().getAuthorizer().getClaims() != null
-//                && event.getRequestContext().getAuthorizer().getClaims().getSubject() != null) {
-//                return AUTH_SCHEME_COGNITO_POOL;
-//            } else if (event.getRequestContext().getAuthorizer() != null) {
-//                return AUTH_SCHEME_CUSTOM;
-//            } else if (event.getRequestContext().getIdentity().getAccessKey() != null) {
-//                return AUTH_SCHEME_AWS_IAM;
-//            } else {
-//                return null;
-//            }
-//        case ALB:
-//            if (event.getMultiValueHeaders().containsKey(ALB_ACESS_TOKEN_HEADER)) {
-//                return AUTH_SCHEME_CUSTOM;
-//            }
-//        }
-//        return null;
     }
 
 

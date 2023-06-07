@@ -244,7 +244,6 @@ public class AwsFilterChainManagerTest {
 
         FilterChainHolder servlet1filterChain = chainManager.getFilterChain(req, servlet1);
         servlet1filterChain.doFilter(req, resp);
-
         assertEquals(1, servlet1.getServiceCalls());
         assertEquals(0, servlet2.getServiceCalls());
 

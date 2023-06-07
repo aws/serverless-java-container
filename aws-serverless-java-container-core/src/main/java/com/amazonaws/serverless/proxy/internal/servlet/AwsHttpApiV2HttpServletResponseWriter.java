@@ -51,13 +51,6 @@ public class AwsHttpApiV2HttpServletResponseWriter extends ResponseWriter<AwsHtt
 
         awsProxyResponse.setStatusCode(containerResponse.getStatus());
 
-//        Status responseStatus = Response.Status.fromStatusCode(containerResponse.getStatus());
-//
-//        if (containerResponse.getAwsProxyRequest() != null && containerResponse.getAwsProxyRequest().getRequestSource() == RequestSource.ALB
-//                && responseStatus != null) {
-//            awsProxyResponse.setStatusDescription(containerResponse.getStatus() + " " + responseStatus.getReasonPhrase());
-//        }
-
         Timer.stop("SERVLET_RESPONSE_WRITE");
         return awsProxyResponse;
     }

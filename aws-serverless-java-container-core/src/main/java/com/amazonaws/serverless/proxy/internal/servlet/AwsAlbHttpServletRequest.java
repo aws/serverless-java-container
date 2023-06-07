@@ -149,7 +149,7 @@ public class AwsAlbHttpServletRequest extends AwsHttpServletRequest{
 
     @Override
     public String getContextPath() {
-        return "";
+        return generateContextPath(config, null);
     }
 
 
@@ -159,7 +159,7 @@ public class AwsAlbHttpServletRequest extends AwsHttpServletRequest{
             return this.generateQueryString(
                     request.getMultiValueQueryStringParameters(),
                     // ALB does not automatically decode parameters, so we don't want to re-encode them
-                    true, //request.getRequestSource() != RequestSource.ALB, TODO: check
+                    true,
                     config.getUriEncoding());
         } catch (ServletException e) {
             log.error("Could not generate query string", e);
@@ -349,8 +349,7 @@ public class AwsAlbHttpServletRequest extends AwsHttpServletRequest{
 
     @Override
     public String getProtocol() {
-        return null;
-        //return request.getRequestContext().getProtocol();    // TODO: Not supported in java-events yet.
+        return "";
     }
 
 
@@ -361,24 +360,23 @@ public class AwsAlbHttpServletRequest extends AwsHttpServletRequest{
 
     @Override
     public String getServerName() {
-//        String region = System.getenv("AWS_REGION");
-//        if (region == null) {
-//            // this is not a critical failure, we just put a static region in the URI
-//            region = "us-east-1";
-//        }
-//
-//        if (request.getMultiValueHeaders() != null && request.getMultiValueHeaders().containsKey(HOST_HEADER_NAME)) {
-//            String hostHeader = getFirst(request.getMultiValueHeaders(), HOST_HEADER_NAME);
-//            if (SecurityUtils.isValidHost(hostHeader, request.getRequestContext().getApiId(), region)) {
-//                return hostHeader;
-//            }
-//        }
-//
-//        return new StringBuilder().append(request.getRequestContext().getApiId())
-//                .append(".execute-api.")
-//                .append(region)
-//                .append(".amazonaws.com").toString();
-        return "";
+        String region = System.getenv("AWS_REGION");
+        if (region == null) {
+            // this is not a critical failure, we just put a static region in the URI
+            region = "us-east-1";
+        }
+
+        if (request.getMultiValueHeaders() != null && request.getMultiValueHeaders().containsKey(HOST_HEADER_NAME)) {
+            String hostHeader = getFirst(request.getMultiValueHeaders(), HOST_HEADER_NAME);
+            if (SecurityUtils.isValidHost(hostHeader, "null", region)) { // ALB doesn't have apiId.
+                return hostHeader;
+            }
+        }
+
+        return new StringBuilder().append("null")
+                .append(".execute-api.")
+                .append(region)
+                .append(".amazonaws.com").toString();
     }
 
     @Override
@@ -412,10 +410,6 @@ public class AwsAlbHttpServletRequest extends AwsHttpServletRequest{
 
     @Override
     public String getRemoteAddr() {
-//        if (request.getRequestContext() == null || request.getRequestContext().getIdentity() == null) {
-//            return "127.0.0.1";
-//        }
-//        return request.getRequestContext().getIdentity().getSourceIp();
         return "";
     }
 
@@ -503,7 +497,6 @@ public class AwsAlbHttpServletRequest extends AwsHttpServletRequest{
 
     @Override
     public String getRequestId() {
-        //return request.getRequestContext().getRequestId();
         return "";
     }
 
@@ -522,29 +515,7 @@ public class AwsAlbHttpServletRequest extends AwsHttpServletRequest{
     //-------------------------------------------------------------
 
     private List<String> getHeaderValues(String key) {
-        // special cases for referer and user agent headers
-//        List<String> values = new ArrayList<>();
-//        if ("referer".equals(key.toLowerCase(Locale.ENGLISH))) {
-//            values.add(request.getRequestContext().getIdentity().getCaller());
-//            return values;
-//        }
-//        if ("user-agent".equals(key.toLowerCase(Locale.ENGLISH))) {
-//            values.add(request.getRequestContext().getIdentity().getUserAgent());
-//            return values;
-//        }
-
-//        if (request.getRequestSource() == RequestSource.API_GATEWAY) {
-//            if ("referer".equals(key.toLowerCase(Locale.ENGLISH))) {
-//                values.add(request.getRequestContext().getIdentity().getCaller());
-//                return values;
-//            }
-//            if ("user-agent".equals(key.toLowerCase(Locale.ENGLISH))) {
-//                values.add(request.getRequestContext().getIdentity().getUserAgent());
-//                return values;
-//            }
-//        }
-
-        if (request.getMultiValueHeaders() == null) {
+        if (Objects.isNull(request.getMultiValueHeaders())) {
             return null;
         }
 

@@ -1,7 +1,6 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 
 import com.amazonaws.services.lambda.runtime.Context;
@@ -91,7 +90,7 @@ public class AwsProxyHttpServletRequestTest {
             case "API_GW":
                 return new AwsProxyHttpServletRequest(req.build(), lambdaCtx, securityCtx);
             case "ALB":
-                //return new AwsProxyHttpServletRequest(req.alb().build(), lambdaCtx, securityCtx); TODO: This belongs to the ALB specific test class
+                return new AwsAlbHttpServletRequest(req.toAlbRequest(), lambdaCtx, securityCtx);
             case "HTTP_API":
                 return new AwsHttpApiV2ProxyHttpServletRequest(req.toHttpApiV2Request(), lambdaCtx, securityCtx, LambdaContainerHandler.getContainerConfig());
             case "WRAP":

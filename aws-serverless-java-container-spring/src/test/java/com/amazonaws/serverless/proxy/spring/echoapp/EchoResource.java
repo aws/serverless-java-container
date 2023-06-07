@@ -1,7 +1,6 @@
 package com.amazonaws.serverless.proxy.spring.echoapp;
 
 import com.amazonaws.serverless.proxy.RequestReader;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.MapResponseModel;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.SingleValueModel;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;

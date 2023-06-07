@@ -94,34 +94,6 @@ public class AwsProxyRequestBuilder {
     // Methods - Public
     //-------------------------------------------------------------
 
-//    public AwsProxyRequestBuilder alb() {
-//        this.request.setRequestContext(new APIGatewayProxyRequestEvent.ProxyRequestContext());
-//        this.request.getRequestContext().setElb(new AlbContext());
-//        this.request.getRequestContext().getElb().setTargetGroupArn(
-//                "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/lambda-target/d6190d154bc908a5"
-//        );
-//
-//        // ALB does not decode query string parameters so we re-encode them all
-//        if (request.getMultiValueQueryStringParameters() != null) {
-//            MultiValuedTreeMap<String, String> newQs = new MultiValuedTreeMap<>();
-//            for (Map.Entry<String, List<String>> e : request.getMultiValueQueryStringParameters().entrySet()) {
-//                for (String v : e.getValue()) {
-//                    try {
-//                        // this is a terrible hack. In our Spring tests we use the comma as a control character for lists
-//                        // this is allowed by the HTTP specs although not recommended.
-//                        String key = URLEncoder.encode(e.getKey(), "UTF-8").replaceAll("%2C", ",");
-//                        String value = URLEncoder.encode(v, "UTF-8").replaceAll("%2C", ",");
-//                        newQs.add(key, value);
-//                    } catch (UnsupportedEncodingException ex) {
-//                        throw new RuntimeException("Could not encode query string parameters: " + e.getKey() + "=" + v, ex);
-//                    }
-//                }
-//            }
-//            request.setMultiValueQueryStringParameters(newQs);
-//        }
-//        return this;
-//    }
-
     public ApplicationLoadBalancerRequestEvent toAlbRequest() {
         ApplicationLoadBalancerRequestEvent req = new ApplicationLoadBalancerRequestEvent();
 
@@ -135,6 +107,7 @@ public class AwsProxyRequestBuilder {
         req.setHttpMethod(request.getHttpMethod());
         req.setPath(request.getPath());
         req.setQueryStringParameters(request.getQueryStringParameters());
+        req.setMultiValueQueryStringParameters(request.getMultiValueQueryStringParameters());
         req.setHeaders(request.getHeaders());
         req.setMultiValueHeaders(request.getMultiValueHeaders());
         req.setBody(request.getBody());
@@ -142,23 +115,23 @@ public class AwsProxyRequestBuilder {
 
         // ALB does not decode query string parameters so we re-encode them all
 
-        if (request.getMultiValueQueryStringParameters() != null) {
-            MultiValuedTreeMap<String, String> newQs = new MultiValuedTreeMap<>();
-            for (Map.Entry<String, List<String>> e : request.getMultiValueQueryStringParameters().entrySet()) {
-                for (String v : e.getValue()) {
-                    try {
-                        // this is a terrible hack. In our Spring tests we use the comma as a control character for lists
-                        // this is allowed by the HTTP specs although not recommended.
-                        String key = URLEncoder.encode(e.getKey(), "UTF-8").replaceAll("%2C", ",");
-                        String value = URLEncoder.encode(v, "UTF-8").replaceAll("%2C", ",");
-                        newQs.add(key, value);
-                    } catch (UnsupportedEncodingException ex) {
-                        throw new RuntimeException("Could not encode query string parameters: " + e.getKey() + "=" + v, ex);
-                    }
-                }
-            }
-            req.setMultiValueQueryStringParameters(newQs);
-        }
+//        if (req.getMultiValueQueryStringParameters() != null) {
+//            MultiValuedTreeMap<String, String> newQs = new MultiValuedTreeMap<>();
+//            for (Map.Entry<String, List<String>> e : req.getMultiValueQueryStringParameters().entrySet()) {
+//                for (String v : e.getValue()) {
+//                    try {
+//                        // this is a terrible hack. In our Spring tests we use the comma as a control character for lists
+//                        // this is allowed by the HTTP specs although not recommended.
+//                        String key = URLEncoder.encode(e.getKey(), "UTF-8").replaceAll("%2C", ",");
+//                        String value = URLEncoder.encode(v, "UTF-8").replaceAll("%2C", ",");
+//                        newQs.add(key, value);
+//                    } catch (UnsupportedEncodingException ex) {
+//                        throw new RuntimeException("Could not encode query string parameters: " + e.getKey() + "=" + v, ex);
+//                    }
+//                }
+//            }
+//            req.setMultiValueQueryStringParameters(newQs);
+//        }
 
         return req;
     }
@@ -247,7 +220,6 @@ public class AwsProxyRequestBuilder {
             this.request.setMultiValueHeaders(new Headers());
         }
 
-        //this.request.getMultiValueHeaders().add(key, value);
         if (this.request.getMultiValueHeaders().get(key) != null) {
             this.request.getMultiValueHeaders().get(key).add(value);
         } else {
@@ -256,7 +228,6 @@ public class AwsProxyRequestBuilder {
             this.request.getMultiValueHeaders().put(key, values);
         }
 
-        //this.request.getMultiValueHeaders().get(HttpHeaders.CONTENT_TYPE).add(MediaType.APPLICATION_FORM_URLENCODED);  // TODO: Potentially reate CONTENT_TYPE listfirst
         return this;
     }
 
@@ -276,30 +247,13 @@ public class AwsProxyRequestBuilder {
             this.request.setMultiValueQueryStringParameters(new HashMap<String, List<String>>());
         }
 
- //       if (request.getRequestSource() == RequestSource.API_GATEWAY) {
         List<String> values = this.request.getMultiValueQueryStringParameters().get(key);
         if (values == null) {
             values = new ArrayList<>();
         }
         values.add(value);
         this.request.getMultiValueQueryStringParameters().put(key, values);
-//            this.request.getMultiValueQueryStringParameters().get(HttpHeaders.CONTENT_TYPE).add(MediaType.APPLICATION_FORM_URLENCODED);  // TODO: Potentially reate CONTENT_TYPE listfirst//       }
-//        // ALB does not decode parameters automatically like API Gateway.
-//        if (request.getRequestSource() == RequestSource.ALB) {
-//            try {
-//                //if (URLDecoder.decode(value, ContainerConfig.DEFAULT_CONTENT_CHARSET).equals(value)) {
-//                // TODO: Assume we are always given an unencoded value, smarter check here to encode
-//                // only if necessary
-//                this.request.getMultiValueQueryStringParameters().add(
-//                        key,
-//                        URLEncoder.encode(value, ContainerConfig.DEFAULT_CONTENT_CHARSET)
-//                );
-//                //}
-//            } catch (UnsupportedEncodingException e) {
-//                throw new RuntimeException(e);
-//            }
-//
-//        }
+
         return this;
     }
 
@@ -344,35 +298,10 @@ public class AwsProxyRequestBuilder {
         if (this.request.getRequestContext().getAuthorizer() == null) {
             this.request.getRequestContext().setAuthorizer(new HashMap<String, Object>());
         }
-        //this.request.getRequestContext().getAuthorizer().setPrincipalId(principal); // TODO: Check later
         this.request.getRequestContext().getAuthorizer().put("principalId", principal);
         this.request.getRequestContext().getAuthorizer().computeIfAbsent("claims", k -> new HashMap<String, String>());
-        //this.request.getRequestContext().getAuthorizer().getClaims().setSubject(principal); // TODO: Check later
         ((Map<String, String>) this.request.getRequestContext().getAuthorizer().get("claims")).put("sub", principal);
 
-//        if (this.request.getRequestSource() == RequestSource.API_GATEWAY) {
-//            if (this.request.getRequestContext().getAuthorizer() == null) {
-//                this.request.getRequestContext().setAuthorizer(new ApiGatewayAuthorizerContext());
-//            }
-//            this.request.getRequestContext().getAuthorizer().setPrincipalId(principal);
-//            if (this.request.getRequestContext().getAuthorizer().getClaims() == null) {
-//                this.request.getRequestContext().getAuthorizer().setClaims(new CognitoAuthorizerClaims());
-//            }
-//            this.request.getRequestContext().getAuthorizer().getClaims().setSubject(principal);
-//        }
-//        if (this.request.getRequestSource() == RequestSource.ALB) {
-//            header("x-amzn-oidc-identity", principal);
-//            try {
-//                header(
-//                        "x-amzn-oidc-accesstoken",
-//                        Base64.getMimeEncoder().encodeToString(
-//                                "test-token".getBytes(ContainerConfig.DEFAULT_CONTENT_CHARSET)
-//                        )
-//                );
-//            } catch (UnsupportedEncodingException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
         return this;
     }
 
@@ -398,7 +327,6 @@ public class AwsProxyRequestBuilder {
     }
 
     public AwsProxyRequestBuilder claim(String claim, String value) {
-        //this.request.getRequestContext().getAuthorizer().getClaims().setClaim(claim, value);
         ((Map<String, String>) this.request.getRequestContext().getAuthorizer().get("claims")).put(claim, value);
         return this;
     }
@@ -425,19 +353,6 @@ public class AwsProxyRequestBuilder {
         cookies += (cookies.equals("")?"":"; ") + name + "=" + value;
         putSingle(request.getMultiValueHeaders(), HttpHeaders.COOKIE, cookies);
         return this;
-
-
-//        cookies += (cookies.equals("")?"":"; ") + name + "=" + value;
-//
-//        List<String> values = request.getMultiValueHeaders().get(HttpHeaders.COOKIE);
-//        if (values != null) {
-//            values.clear();
-//            values.add(cookies);
-//        }
-
-
-
-        //return this;
     }
 
     private String getFirst(Map<String, List<String>> headers, String key) {
@@ -480,10 +395,6 @@ public class AwsProxyRequestBuilder {
         }
         putSingle(request.getMultiValueHeaders(), "Host", serverName);
 
-        //request.getMultiValueHeaders().putSingle("Host", serverName);
-//        List<String> values = request.getMultiValueHeaders().get("Host");
-//        values.clear();
-//        values.add(serverName);
         return this;
     }
 
@@ -519,9 +430,6 @@ public class AwsProxyRequestBuilder {
         List<String> values = findKey(request.getMultiValueHeaders(), HttpHeaders.AUTHORIZATION);
         values.add(authHeader);
 
-//        List<String> values = request.getMultiValueHeaders().get(HttpHeaders.AUTHORIZATION);
-//        values.add(authHeader);
-//        request.getMultiValueHeaders().put(HttpHeaders.AUTHORIZATION, values);
         return this;
     }
 

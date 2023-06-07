@@ -1,8 +1,6 @@
 package com.amazonaws.serverless.proxy.spring.springslowapp;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.SpringLambdaContainerHandler;
 import com.amazonaws.serverless.proxy.spring.SpringProxyHandlerBuilder;
 import com.amazonaws.services.lambda.runtime.Context;

@@ -2,15 +2,12 @@
 
 
  import com.amazonaws.serverless.exceptions.ContainerInitializationException;
- import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
- import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
  import com.amazonaws.serverless.proxy.spring.SpringLambdaContainerHandler;
  import com.amazonaws.services.lambda.runtime.Context;
  import com.amazonaws.services.lambda.runtime.RequestHandler;
 
  import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
  import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
- import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
  import org.springframework.web.context.support.XmlWebApplicationContext;
 
 

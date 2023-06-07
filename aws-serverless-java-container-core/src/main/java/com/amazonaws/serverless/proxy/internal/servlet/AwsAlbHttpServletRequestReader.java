@@ -45,9 +45,6 @@ public class AwsAlbHttpServletRequestReader extends RequestReader<ApplicationLoa
         }
         AwsAlbHttpServletRequest servletRequest = new AwsAlbHttpServletRequest(request, lambdaContext, securityContext, config);
         servletRequest.setServletContext(servletContext);
-        //servletRequest.setAttribute(API_GATEWAY_CONTEXT_PROPERTY, request.getRequestContext());
-        //servletRequest.setAttribute(API_GATEWAY_STAGE_VARS_PROPERTY, request.getStageVariables());
-        //servletRequest.setAttribute(API_GATEWAY_EVENT_PROPERTY, request);
         servletRequest.setAttribute(ALB_CONTEXT_PROPERTY, request.getRequestContext());
         servletRequest.setAttribute(LAMBDA_CONTEXT_PROPERTY, lambdaContext);
         servletRequest.setAttribute(JAX_SECURITY_CONTEXT_PROPERTY, securityContext);

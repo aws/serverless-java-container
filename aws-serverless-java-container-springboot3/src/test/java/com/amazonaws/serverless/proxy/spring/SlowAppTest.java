@@ -2,8 +2,6 @@ package com.amazonaws.serverless.proxy.spring;
 
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.slowapp.LambdaHandler;
 import com.amazonaws.serverless.proxy.spring.slowapp.MessageController;
 import com.amazonaws.serverless.proxy.spring.slowapp.SlowTestApplication;
