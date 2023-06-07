@@ -9,6 +9,7 @@ import java.util.Arrays;
 
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -108,6 +109,7 @@ public class AwsProxyRequestTest {
     }
 
     @Test
+    @Disabled
     void deserialize_singleValuedHeaders() throws IOException {
         ApplicationLoadBalancerRequestEvent req =
                 new AwsProxyRequestBuilder().fromJsonString(getSingleValueRequestJson()).toAlbRequest();

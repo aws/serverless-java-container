@@ -48,12 +48,17 @@ public class CognitoIdentityFilter implements Filter {
             filterChain.doFilter(servletRequest, servletResponse);
         }
 
-        APIGatewayV2HTTPEvent.RequestContext ctx = (APIGatewayV2HTTPEvent.RequestContext)apiGwContext;
-        if (ctx.getIdentity() == null) {
+        APIGatewayV2HTTPEvent.RequestContext.CognitoIdentity cognito = (APIGatewayV2HTTPEvent.RequestContext.CognitoIdentity)
+                servletRequest.getRequest()
+                        .getRequestContext()
+                        .getAuthorizer()
+                        .getIam()
+                        .getCognitoIdentity();
+        if (cognito == null) {
             log.warn("Identity context is null");
             filterChain.doFilter(servletRequest, servletResponse);
         }
-        String cognitoIdentityId = ctx.getIdentity().getCognitoIdentityId();
+        String cognitoIdentityId = cognito.getIdentityId();
         if (cognitoIdentityId == null || "".equals(cognitoIdentityId.trim())) {
             log.warn("Cognito identity id in request is null");
         }
