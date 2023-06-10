@@ -7,9 +7,9 @@ import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.jersey.model.MapResponseModel;
 import com.amazonaws.serverless.proxy.jersey.model.SingleValueModel;
 import com.amazonaws.serverless.proxy.jersey.providers.ServletRequestFilter;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.*;
+import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.glassfish.jersey.logging.LoggingFeature;

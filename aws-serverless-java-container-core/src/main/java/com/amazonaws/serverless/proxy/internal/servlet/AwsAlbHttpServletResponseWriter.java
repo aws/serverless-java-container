@@ -49,7 +49,7 @@ public class AwsAlbHttpServletResponseWriter extends ResponseWriter<AwsHttpServl
 
         Response.Status responseStatus = Response.Status.fromStatusCode(containerResponse.getStatus());
 
-        if (containerResponse.getAwsProxyRequest() != null && responseStatus != null) {
+        if (containerResponse.getAwsAlbRequest() != null && responseStatus != null) {
             awsProxyResponse.setStatusDescription(containerResponse.getStatus() + " " + responseStatus.getReasonPhrase());
         }
 

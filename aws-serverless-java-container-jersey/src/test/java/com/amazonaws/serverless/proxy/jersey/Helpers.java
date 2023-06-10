@@ -78,6 +78,10 @@ public class Helpers {
             proxyResponse.setHeaders(event.getHeaders());
         }
 
+        if (Objects.nonNull(event.getStatusDescription())) {
+            proxyResponse.setStatusDescription(event.getStatusDescription());
+        }
+
         if (Objects.nonNull(event.getMultiValueHeaders())) {
             proxyResponse.setMultiValueHeaders(new Headers());
 

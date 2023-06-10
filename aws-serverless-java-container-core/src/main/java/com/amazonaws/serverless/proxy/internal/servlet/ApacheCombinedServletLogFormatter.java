@@ -81,8 +81,6 @@ public class ApacheCombinedServletLogFormatter<ContainerRequestType extends Http
         StringBuilder logLineBuilder = new StringBuilder();
         APIGatewayProxyRequestEvent.ProxyRequestContext gatewayContext = (APIGatewayProxyRequestEvent.ProxyRequestContext)servletRequest.getAttribute(API_GATEWAY_CONTEXT_PROPERTY);
         APIGatewayV2HTTPEvent.RequestContext httpApiContext = (APIGatewayV2HTTPEvent.RequestContext)servletRequest.getAttribute(HTTP_API_CONTEXT_PROPERTY);
-        ApplicationLoadBalancerRequestEvent.RequestContext albContext = (ApplicationLoadBalancerRequestEvent.RequestContext)servletRequest.getAttribute(ALB_CONTEXT_PROPERTY);
-
         // %h
         logLineBuilder.append(servletRequest.getRemoteAddr());
         logLineBuilder.append(" ");

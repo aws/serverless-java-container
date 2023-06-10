@@ -15,10 +15,9 @@ public class AwsAlbSecurityContext implements SecurityContext {
     //-------------------------------------------------------------
 
     static final String AUTH_SCHEME_CUSTOM = "CUSTOM_AUTHORIZER";
-    static final String AUTH_SCHEME_COGNITO_POOL = "COGNITO_USER_POOL";
     static final String AUTH_SCHEME_AWS_IAM = "AWS_IAM";
 
-    static final String ALB_ACESS_TOKEN_HEADER = "x-amzn-oidc-accesstoken";
+    static final String ALB_ACCESS_TOKEN_HEADER = "x-amzn-oidc-accesstoken";
     static final String ALB_IDENTITY_HEADER = "x-amzn-oidc-identity";
 
 
@@ -83,7 +82,7 @@ public class AwsAlbSecurityContext implements SecurityContext {
 
     @Override
     public String getAuthenticationScheme() {
-        if (event.getMultiValueHeaders().containsKey(ALB_ACESS_TOKEN_HEADER)) {
+        if (event.getMultiValueHeaders().containsKey(ALB_ACCESS_TOKEN_HEADER)) {
             return AUTH_SCHEME_CUSTOM;
         }
         return null;

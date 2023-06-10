@@ -14,10 +14,9 @@ package com.amazonaws.serverless.proxy;
 
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.ErrorModel;
-import com.amazonaws.serverless.proxy.model.Headers;
 
+import com.amazonaws.serverless.proxy.model.Headers;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.slf4j.Logger;
@@ -60,16 +59,14 @@ public class AwsProxyExceptionHandler
     // Variables - Private - Static
     //-------------------------------------------------------------
 
-    private static final Map<String, List<String>> headers = new HashMap<>();
+    private static final Headers headers = new Headers();
 
     //-------------------------------------------------------------
     // Constructors
     //-------------------------------------------------------------
 
     static {
-        List<String> values = new ArrayList<>();
-        values.add(MediaType.APPLICATION_JSON);
-        headers.put(HttpHeaders.CONTENT_TYPE, values);
+        headers.putSingle(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
     }
 
 
@@ -89,7 +86,6 @@ public class AwsProxyExceptionHandler
 
         responseEvent.setMultiValueHeaders(headers);
         if (ex instanceof InvalidRequestEventException || ex instanceof InternalServerErrorException) {
-            //return new APIGatewayProxyResponseEvent(500, headers, getErrorJson(INTERNAL_SERVER_ERROR));
             responseEvent.setBody(getErrorJson(INTERNAL_SERVER_ERROR));
             responseEvent.setStatusCode(500);
             return responseEvent;

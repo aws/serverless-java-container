@@ -19,8 +19,6 @@ import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.jersey.suppliers.AwsProxyServletContextSupplier;
 import com.amazonaws.serverless.proxy.jersey.suppliers.AwsProxyServletRequestSupplier;
 import com.amazonaws.serverless.proxy.jersey.suppliers.AwsProxyServletResponseSupplier;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
-
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.*;
 

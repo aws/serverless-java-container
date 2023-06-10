@@ -21,6 +21,7 @@ import com.amazonaws.serverless.proxy.model.Headers;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+import jakarta.ws.rs.core.Response;
 
 import java.util.Base64;
 import java.util.HashMap;
@@ -70,14 +71,6 @@ public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpSer
         }
 
         awsProxyResponse.setStatusCode(containerResponse.getStatus());
-
-//        Status responseStatus = Response.Status.fromStatusCode(containerResponse.getStatus());
-//
-//        if (containerResponse.getAwsProxyRequest() != null && containerResponse.getAwsProxyRequest().getRequestSource() == RequestSource.ALB
-//                && responseStatus != null) {
-//            awsProxyResponse.setStatusDescription(containerResponse.getStatus() + " " + responseStatus.getReasonPhrase());
-//        }
-
         Timer.stop("SERVLET_RESPONSE_WRITE");
         return awsProxyResponse;
     }

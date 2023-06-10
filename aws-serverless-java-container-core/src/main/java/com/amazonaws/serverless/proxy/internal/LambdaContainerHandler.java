@@ -101,7 +101,6 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
                                      ExceptionHandler<ResponseType> exceptionHandler,
                                      InitializationWrapper init) {
         log.info("Starting Lambda Container Handler");
-        log.info("Starting Lambda Container Handler twice");
         requestTypeClass = requestClass;
         responseTypeClass = responseClass;
         this.requestReader = requestReader;

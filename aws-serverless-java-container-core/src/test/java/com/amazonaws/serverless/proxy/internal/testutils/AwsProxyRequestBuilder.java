@@ -113,26 +113,6 @@ public class AwsProxyRequestBuilder {
         req.setBody(request.getBody());
         req.setIsBase64Encoded(request.getIsBase64Encoded());
 
-        // ALB does not decode query string parameters so we re-encode them all
-
-//        if (req.getMultiValueQueryStringParameters() != null) {
-//            MultiValuedTreeMap<String, String> newQs = new MultiValuedTreeMap<>();
-//            for (Map.Entry<String, List<String>> e : req.getMultiValueQueryStringParameters().entrySet()) {
-//                for (String v : e.getValue()) {
-//                    try {
-//                        // this is a terrible hack. In our Spring tests we use the comma as a control character for lists
-//                        // this is allowed by the HTTP specs although not recommended.
-//                        String key = URLEncoder.encode(e.getKey(), "UTF-8").replaceAll("%2C", ",");
-//                        String value = URLEncoder.encode(v, "UTF-8").replaceAll("%2C", ",");
-//                        newQs.add(key, value);
-//                    } catch (UnsupportedEncodingException ex) {
-//                        throw new RuntimeException("Could not encode query string parameters: " + e.getKey() + "=" + v, ex);
-//                    }
-//                }
-//            }
-//            req.setMultiValueQueryStringParameters(newQs);
-//        }
-
         return req;
     }
 

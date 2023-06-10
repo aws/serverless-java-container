@@ -16,7 +16,17 @@ public class AwsAlbSecurityContextTest {
             .header(ALB_IDENTITY_HEADER, COGNITO_IDENTITY_ID)
             .toAlbRequest();
 
+    private static final ApplicationLoadBalancerRequestEvent ALB_REQUEST_COGNITO_USER_POOL_NO_IDENTITY_HEADER = new AwsProxyRequestBuilder("/hello", "GET")
+            .header(ALB_ACESS_TOKEN_HEADER, "xxxxx")
+            .toAlbRequest();
 
+
+    @Test
+    void localVars_constructor_nullValues() {
+        AwsAlbSecurityContext context = new AwsAlbSecurityContext(null, null);
+        assertNull(context.getEvent());
+        assertNull(context.getLambdaContext());
+    }
     @Test
     void alb_noAuth_expectEmptyScheme() {
         AwsAlbSecurityContext context = new AwsAlbSecurityContext(null, ALB_REQUEST_NO_AUTH);
@@ -32,6 +42,24 @@ public class AwsAlbSecurityContextTest {
         assertTrue(context.isSecure());
         assertEquals(AUTH_SCHEME_CUSTOM, context.getAuthenticationScheme());
         assertEquals(COGNITO_IDENTITY_ID, context.getUserPrincipal().getName());
+    }
+
+    @Test
+    void getUserPrincipal_nullScheme_returnsNull() {
+        AwsAlbSecurityContext context = new AwsAlbSecurityContext(null, ALB_REQUEST_NO_AUTH);
+        assertNull(context.getUserPrincipal().getName());
+    }
+
+    @Test
+    void cognitoAuth_noIdentityHeader_returnsNull() {
+        AwsAlbSecurityContext context = new AwsAlbSecurityContext(null, ALB_REQUEST_COGNITO_USER_POOL_NO_IDENTITY_HEADER);
+        assertNull(context.getUserPrincipal().getName());
+    }
+
+    @Test
+    void alb_expectNoUserInRole() {
+        AwsAlbSecurityContext context = new AwsAlbSecurityContext(null, ALB_REQUEST_NO_AUTH);
+        assertFalse(context.isUserInRole("Role"));
     }
 
 }
