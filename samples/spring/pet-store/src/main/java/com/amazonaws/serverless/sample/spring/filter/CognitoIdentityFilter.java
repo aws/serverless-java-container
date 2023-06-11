@@ -2,7 +2,9 @@ package com.amazonaws.serverless.sample.spring.filter;
 
 
 import com.amazonaws.serverless.proxy.RequestReader;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequest;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpApiV2ProxyHttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,25 +43,30 @@ public class CognitoIdentityFilter implements Filter {
         if (apiGwContext == null) {
             log.warn("API Gateway context is null");
             filterChain.doFilter(servletRequest, servletResponse);
+            return;
         }
-        if (!AwsProxyRequestContext.class.isAssignableFrom(apiGwContext.getClass())) {
+        if (!APIGatewayV2HTTPEvent.RequestContext.class.isAssignableFrom(apiGwContext.getClass())) {
             log.warn("API Gateway context object is not of valid type");
             filterChain.doFilter(servletRequest, servletResponse);
         }
 
-        AwsProxyRequestContext ctx = (AwsProxyRequestContext)apiGwContext;
-        if (ctx.getIdentity() == null) {
+        APIGatewayV2HTTPEvent.RequestContext.CognitoIdentity cognito = (APIGatewayV2HTTPEvent.RequestContext.CognitoIdentity)
+                ((AwsHttpApiV2ProxyHttpServletRequest)servletRequest).getRequest()
+                        .getRequestContext()
+                        .getAuthorizer()
+                        .getIam()
+                        .getCognitoIdentity();
+        if (cognito == null) {
             log.warn("Identity context is null");
             filterChain.doFilter(servletRequest, servletResponse);
         }
-        String cognitoIdentityId = ctx.getIdentity().getCognitoIdentityId();
+        String cognitoIdentityId = cognito.getIdentityId();
         if (cognitoIdentityId == null || "".equals(cognitoIdentityId.trim())) {
             log.warn("Cognito identity id in request is null");
         }
         servletRequest.setAttribute(COGNITO_IDENTITY_ATTRIBUTE, cognitoIdentityId);
         filterChain.doFilter(servletRequest, servletResponse);
     }
-
 
     @Override
     public void destroy() {

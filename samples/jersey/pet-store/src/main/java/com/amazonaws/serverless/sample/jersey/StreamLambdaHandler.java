@@ -4,10 +4,10 @@ package com.amazonaws.serverless.sample.jersey;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.jersey.JerseyLambdaContainerHandler;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -29,7 +29,7 @@ public class StreamLambdaHandler implements RequestStreamHandler {
             .property(ServerProperties.MOXY_JSON_FEATURE_DISABLE,true)
                                                              .packages("com.amazonaws.serverless.sample.jersey")
                                                              .register(JacksonFeature.class);
-    private static final JerseyLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponse> handler
+    private static final JerseyLambdaContainerHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> handler
             = JerseyLambdaContainerHandler.getAwsProxyHandler(jerseyApplication);
 
     public StreamLambdaHandler() {

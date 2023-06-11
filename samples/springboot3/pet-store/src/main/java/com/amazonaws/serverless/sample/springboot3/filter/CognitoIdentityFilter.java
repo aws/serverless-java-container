@@ -2,7 +2,9 @@ package com.amazonaws.serverless.sample.springboot3.filter;
 
 
 import com.amazonaws.serverless.proxy.RequestReader;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequest;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpApiV2ProxyHttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +51,7 @@ public class CognitoIdentityFilter implements Filter {
         }
 
         APIGatewayV2HTTPEvent.RequestContext.CognitoIdentity cognito = (APIGatewayV2HTTPEvent.RequestContext.CognitoIdentity)
-                servletRequest.getRequest()
+                ((AwsHttpApiV2ProxyHttpServletRequest)servletRequest).getRequest()
                         .getRequestContext()
                         .getAuthorizer()
                         .getIam()
