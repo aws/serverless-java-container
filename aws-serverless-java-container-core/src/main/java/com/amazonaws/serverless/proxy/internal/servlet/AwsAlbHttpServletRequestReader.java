@@ -38,7 +38,7 @@ public class AwsAlbHttpServletRequestReader extends RequestReader<ApplicationLoa
         }
 
         request.setPath(stripBasePath(request.getPath(), config));
-        if (request.getMultiValueHeaders() != null && request.getMultiValueHeaders().get(HttpHeaders.CONTENT_TYPE) != null && request.getMultiValueHeaders().get(HttpHeaders.CONTENT_TYPE).get(0) != null) {   //TODO: check
+        if (request.getMultiValueHeaders() != null && request.getMultiValueHeaders().get(HttpHeaders.CONTENT_TYPE) != null && request.getMultiValueHeaders().get(HttpHeaders.CONTENT_TYPE).get(0) != null) {
             String contentType = request.getMultiValueHeaders().get(HttpHeaders.CONTENT_TYPE).get(0);
             // put single as we always expect to have one and only one content type in a request.
             request.getMultiValueHeaders().put(HttpHeaders.CONTENT_TYPE, new ArrayList<>(Arrays.asList(getContentTypeWithCharset(contentType, config))));

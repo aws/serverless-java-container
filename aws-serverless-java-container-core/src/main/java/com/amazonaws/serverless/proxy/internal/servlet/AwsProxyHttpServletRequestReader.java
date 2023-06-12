@@ -52,7 +52,7 @@ public class AwsProxyHttpServletRequestReader extends RequestReader<APIGatewayPr
         }
 
         request.setPath(stripBasePath(request.getPath(), config));
-        if (request.getMultiValueHeaders() != null && request.getMultiValueHeaders().get(HttpHeaders.CONTENT_TYPE) != null && request.getMultiValueHeaders().get(HttpHeaders.CONTENT_TYPE).get(0) != null) {   //TODO: check
+        if (request.getMultiValueHeaders() != null && request.getMultiValueHeaders().get(HttpHeaders.CONTENT_TYPE) != null && request.getMultiValueHeaders().get(HttpHeaders.CONTENT_TYPE).get(0) != null) {
             String contentType = request.getMultiValueHeaders().get(HttpHeaders.CONTENT_TYPE).get(0);
             // put single as we always expect to have one and only one content type in a request.
             request.getMultiValueHeaders().put(HttpHeaders.CONTENT_TYPE, new ArrayList<>(Arrays.asList(getContentTypeWithCharset(contentType, config))));
@@ -62,7 +62,6 @@ public class AwsProxyHttpServletRequestReader extends RequestReader<APIGatewayPr
         servletRequest.setAttribute(API_GATEWAY_CONTEXT_PROPERTY, request.getRequestContext());
         servletRequest.setAttribute(API_GATEWAY_STAGE_VARS_PROPERTY, request.getStageVariables());
         servletRequest.setAttribute(API_GATEWAY_EVENT_PROPERTY, request);
-        //servletRequest.setAttribute(ALB_CONTEXT_PROPERTY, request.getRequestContext().getElb());  TODO: elb
         servletRequest.setAttribute(LAMBDA_CONTEXT_PROPERTY, lambdaContext);
         servletRequest.setAttribute(JAX_SECURITY_CONTEXT_PROPERTY, securityContext);
 

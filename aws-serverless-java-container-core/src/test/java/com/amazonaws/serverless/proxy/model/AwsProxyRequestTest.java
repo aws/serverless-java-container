@@ -114,7 +114,7 @@ public class AwsProxyRequestTest {
         ApplicationLoadBalancerRequestEvent req =
                 new AwsProxyRequestBuilder().fromJsonString(getSingleValueRequestJson()).toAlbRequest();
 
-        assertThat(req.getHeaders().get("accept"), is("*")); //TODO: Move this to alb specific test file, if any.
+        assertThat(req.getHeaders().get("accept"), is("*"));
     }
 
     /**

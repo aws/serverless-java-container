@@ -94,7 +94,7 @@ public class AwsHttpApiV2SecurityContext implements SecurityContext {
         if (event.getRequestContext().getAuthorizer() == null) {
             return null;
         }
-        if (event.getRequestContext().getAuthorizer().getJwt() != null) { //TODO: Confirm
+        if (event.getRequestContext().getAuthorizer().getJwt() != null) {
             return AUTH_SCHEME_JWT;
         }
         return null;
