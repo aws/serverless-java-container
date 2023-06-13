@@ -8,7 +8,7 @@ repositories {
 dependencies {
   implementation (
           'com.amazonaws.serverless:aws-serverless-java-container-jersey:[2.0-SNAPSHOT,)',
-          'com.fasterxml.jackson.core:jackson-databind:2.15.1',
+          'com.fasterxml.jackson.core:jackson-databind:2.15.2',
   )
 
   implementation("org.glassfish.jersey.media:jersey-media-json-jackson:3.1.2") {
