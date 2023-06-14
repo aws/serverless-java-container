@@ -1,7 +1,6 @@
 package ${groupId};
 
 import com.amazonaws.serverless.proxy.jersey.JerseyLambdaContainerHandler;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;

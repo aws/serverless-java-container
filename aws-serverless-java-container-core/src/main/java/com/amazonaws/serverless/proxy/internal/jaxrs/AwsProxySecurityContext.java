@@ -38,7 +38,9 @@ public class AwsProxySecurityContext
     static final String AUTH_SCHEME_CUSTOM = "CUSTOM_AUTHORIZER";
     static final String AUTH_SCHEME_COGNITO_POOL = "COGNITO_USER_POOL";
     static final String AUTH_SCHEME_AWS_IAM = "AWS_IAM";
-
+    static final String PRINCIPAL_ID_KEY = "principal_id";
+    static final String CLAIMS_KEY = "claims";
+    static final String SUB_KEY = "sub";
     static final String ALB_ACESS_TOKEN_HEADER = "x-amzn-oidc-accesstoken";
     static final String ALB_IDENTITY_HEADER = "x-amzn-oidc-identity";
 
@@ -83,7 +85,7 @@ public class AwsProxySecurityContext
         if (getAuthenticationScheme().equals(AUTH_SCHEME_CUSTOM) || getAuthenticationScheme().equals(AUTH_SCHEME_AWS_IAM)) {
             return () -> {
                 if (getAuthenticationScheme().equals(AUTH_SCHEME_CUSTOM)) {
-                    return event.getRequestContext().getAuthorizer().get("principalId").toString();
+                    return event.getRequestContext().getAuthorizer().get(PRINCIPAL_ID_KEY).toString();
                 } else if (getAuthenticationScheme().equals(AUTH_SCHEME_AWS_IAM)) {
                     // if we received credentials from Cognito Federated Identities then we return the identity id
                     if (event.getRequestContext().getIdentity().getCognitoIdentityId() != null) {
@@ -97,7 +99,7 @@ public class AwsProxySecurityContext
         }
 
         if (getAuthenticationScheme().equals(AUTH_SCHEME_COGNITO_POOL)) {
-            return new CognitoUserPoolPrincipal((Map<String, String>) event.getRequestContext().getAuthorizer().get("claims"));
+            return new CognitoUserPoolPrincipal((Map<String, String>) event.getRequestContext().getAuthorizer().get(CLAIMS_KEY));
         }
 
         throw new RuntimeException("Cannot recognize authorization scheme in event");
@@ -118,7 +120,7 @@ public class AwsProxySecurityContext
 
     @Override
     public String getAuthenticationScheme() {
-        if (event.getRequestContext().getAuthorizer() != null && ((Map<String, String>) event.getRequestContext().getAuthorizer().get("claims")).get("sub") != null) {
+        if (event.getRequestContext().getAuthorizer() != null && ((Map<String, String>) event.getRequestContext().getAuthorizer().get(CLAIMS_KEY)).get(SUB_KEY) != null) {
             return AUTH_SCHEME_COGNITO_POOL;
         } else if (event.getRequestContext().getAuthorizer() != null) {
             return AUTH_SCHEME_CUSTOM;
@@ -144,7 +146,7 @@ public class AwsProxySecurityContext
 
         @Override
         public String getName() {
-            return claims.get("sub");
+            return claims.get(SUB_KEY);
         }
 
         public Map<String, String> getClaims() {
