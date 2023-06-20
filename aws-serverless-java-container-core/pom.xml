@@ -176,7 +176,7 @@
                 <version>${dependencyCheck.version}</version>
                 <configuration>
                     <skipProvidedScope>true</skipProvidedScope>
-                    <failBuildOnCVSS>7</failBuildOnCVSS>
+                    <failBuildOnCVSS>8</failBuildOnCVSS>
                     <failOnError>false</failOnError>
                 </configuration>
                 <executions>

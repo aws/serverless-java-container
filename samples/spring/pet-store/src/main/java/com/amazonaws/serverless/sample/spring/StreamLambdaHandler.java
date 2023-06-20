@@ -3,7 +3,6 @@ package com.amazonaws.serverless.sample.spring;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.SpringLambdaContainerHandler;
 import com.amazonaws.serverless.sample.spring.filter.CognitoIdentityFilter;
 import com.amazonaws.services.lambda.runtime.Context;

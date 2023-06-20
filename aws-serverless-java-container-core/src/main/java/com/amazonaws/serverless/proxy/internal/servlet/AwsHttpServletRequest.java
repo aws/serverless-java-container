@@ -749,7 +749,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         return new Locale(language, country);
     }
 
-    static String decodeRequestPath(String requestPath, ContainerConfig config) {
+    public static String decodeRequestPath(String requestPath, ContainerConfig config) {
         try {
             return URLDecoder.decode(requestPath, config.getUriEncoding());
         } catch (UnsupportedEncodingException ex) {
@@ -760,7 +760,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
 
     }
 
-    static String cleanUri(String uri) {
+    public static String cleanUri(String uri) {
         String finalUri = (uri == null ? "/" : uri);
         if (finalUri.equals("/")) {
             return finalUri;
