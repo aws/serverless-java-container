@@ -40,6 +40,17 @@ public class ServletAppTest {
 
     @MethodSource("data")
     @ParameterizedTest
+    void asyncRequest(String reqType) {
+        initServletAppTest(reqType);
+        AwsProxyRequestBuilder req = new AwsProxyRequestBuilder("/async", "POST")
+                .json()
+                .body("{\"name\":\"bob\"}");
+        AwsProxyResponse resp = handler.handleRequest(req, lambdaContext);
+        assertEquals("{\"name\":\"BOB\"}", resp.getBody());
+    }
+
+    @MethodSource("data")
+    @ParameterizedTest
     void helloRequest_respondsWithSingleMessage(String reqType) {
         initServletAppTest(reqType);
         AwsProxyRequestBuilder req = new AwsProxyRequestBuilder("/hello", "GET");
