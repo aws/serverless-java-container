@@ -322,6 +322,10 @@ public class AwsHttpServletResponse
                 }
             }
 
+            @Override
+            public void flush() throws IOException {
+                flushBuffer();
+            }
 
             @Override
             public void close()
