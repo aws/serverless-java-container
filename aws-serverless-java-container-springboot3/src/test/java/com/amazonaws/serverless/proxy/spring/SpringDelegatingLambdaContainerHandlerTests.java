@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.ws.rs.core.HttpHeaders;
 
+@SuppressWarnings("rawtypes")
 public class SpringDelegatingLambdaContainerHandlerTests {
 
 	private static String API_GATEWAY_EVENT = "{\n"
@@ -208,7 +209,9 @@ public class SpringDelegatingLambdaContainerHandlerTests {
 		InputStream targetStream = new ByteArrayInputStream(this.generateHttpRequest(jsonEvent, "POST", "/async", "{\"name\":\"bob\"}", null));
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		handler.handleRequest(targetStream, output, null);
-		System.out.println(output.toString(StandardCharsets.UTF_8));
+		Map result = mapper.readValue(output.toString(StandardCharsets.UTF_8), Map.class);
+		assertEquals(200, result.get("statusCode"));
+		assertEquals("{\"name\":\"BOB\"}", result.get("body"));
 	}
 
 	@MethodSource("data")
@@ -219,7 +222,9 @@ public class SpringDelegatingLambdaContainerHandlerTests {
 		InputStream targetStream = new ByteArrayInputStream(this.generateHttpRequest(jsonEvent, "POST", "/validate", mapper.writeValueAsString(ud), null));
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		handler.handleRequest(targetStream, output, null);
-		System.out.println(output.toString(StandardCharsets.UTF_8));
+		Map result = mapper.readValue(output.toString(StandardCharsets.UTF_8), Map.class);
+		assertEquals(400, result.get("statusCode"));
+		assertEquals("3", result.get("body"));
 	}
 
 	@MethodSource("data")
@@ -233,7 +238,9 @@ public class SpringDelegatingLambdaContainerHandlerTests {
 		InputStream targetStream = new ByteArrayInputStream(this.generateHttpRequest(jsonEvent, "POST", "/validate", mapper.writeValueAsString(ud), null));
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		handler.handleRequest(targetStream, output, null);
-		System.out.println(output.toString(StandardCharsets.UTF_8));
+		Map result = mapper.readValue(output.toString(StandardCharsets.UTF_8), Map.class);
+		assertEquals(200, result.get("statusCode"));
+		assertEquals("VALID", result.get("body"));
 	}
 
 	@MethodSource("data")
@@ -244,10 +251,12 @@ public class SpringDelegatingLambdaContainerHandlerTests {
         		mapper.writeValueAsString(new MessageData("test message")), null));
         ByteArrayOutputStream output = new ByteArrayOutputStream();
 		handler.handleRequest(targetStream, output, null);
-		System.out.println(output.toString(StandardCharsets.UTF_8));
+		Map result = mapper.readValue(output.toString(StandardCharsets.UTF_8), Map.class);
+		assertEquals(200, result.get("statusCode"));
+		assertEquals("VALID", result.get("test message"));
     }
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({"unchecked" })
 	@MethodSource("data")
 	@ParameterizedTest
 	void messageObject_propertiesInContentType_returnsCorrectMessage(String jsonEvent) throws Exception {
@@ -265,7 +274,6 @@ public class SpringDelegatingLambdaContainerHandlerTests {
 		assertEquals("test message", result.get("body"));
     }
 
-	@SuppressWarnings({ "rawtypes" })
 	private byte[] generateHttpRequest(String jsonEvent, String method, String path, String body, Map headers) throws Exception {
 		Map requestMap = mapper.readValue(jsonEvent, Map.class);
 		if (requestMap.get("version").equals("2.0")) {
@@ -274,7 +282,7 @@ public class SpringDelegatingLambdaContainerHandlerTests {
 		return generateHttpRequest(requestMap, method, path, body, headers);
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "unchecked"})
 	private byte[] generateHttpRequest(Map requestMap, String method, String path, String body, Map headers) throws Exception {
 		requestMap.put("path", path);
 		requestMap.put("httpMethod", method);
@@ -285,7 +293,7 @@ public class SpringDelegatingLambdaContainerHandlerTests {
 		return mapper.writeValueAsBytes(requestMap);
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "unchecked"})
 	private byte[] generateHttpRequest2(Map requestMap, String method, String path, String body, Map headers) throws Exception {
 		Map map = mapper.readValue(API_GATEWAY_EVENT_V2, Map.class);
 		Map http = (Map) ((Map) map.get("requestContext")).get("http");
