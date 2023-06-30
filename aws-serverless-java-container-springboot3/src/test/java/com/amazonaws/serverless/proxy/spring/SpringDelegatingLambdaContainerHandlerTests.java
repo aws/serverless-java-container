@@ -253,7 +253,7 @@ public class SpringDelegatingLambdaContainerHandlerTests {
 		handler.handleRequest(targetStream, output, null);
 		Map result = mapper.readValue(output.toString(StandardCharsets.UTF_8), Map.class);
 		assertEquals(200, result.get("statusCode"));
-		assertEquals("VALID", result.get("test message"));
+		assertEquals("test message", result.get("body"));
     }
 
 	@SuppressWarnings({"unchecked" })
