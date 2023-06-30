@@ -3,26 +3,16 @@ package com.amazonaws.serverless.proxy.spring;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.cloud.function.serverless.web.FunctionClassUtils;
 import org.springframework.cloud.function.serverless.web.ProxyHttpServletRequest;
 import org.springframework.cloud.function.serverless.web.ProxyMvc;
-import org.springframework.core.KotlinDetector;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 import com.amazonaws.serverless.proxy.AwsHttpApiV2SecurityContextWriter;
@@ -61,8 +51,6 @@ import jakarta.servlet.http.HttpServletRequest;
  *
  */
 public class SpringDelegatingLambdaContainerHandler implements RequestStreamHandler {
-
-	private static Log logger = LogFactory.getLog(SpringDelegatingLambdaContainerHandler.class);
 
 	private final Class<?>[] startupClasses;
 
