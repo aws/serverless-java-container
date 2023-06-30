@@ -4,6 +4,9 @@
 *.jar
 *.war
 *.ear
+*.project
+*.classpath
+*.settings
 
 # Idea project files
 .idea/

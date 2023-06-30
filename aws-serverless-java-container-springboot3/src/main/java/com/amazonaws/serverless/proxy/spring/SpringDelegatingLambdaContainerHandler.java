@@ -3,13 +3,27 @@ package com.amazonaws.serverless.proxy.spring;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.cloud.function.serverless.web.FunctionClassUtils;
 import org.springframework.cloud.function.serverless.web.ProxyHttpServletRequest;
 import org.springframework.cloud.function.serverless.web.ProxyMvc;
+import org.springframework.core.KotlinDetector;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.StringUtils;
 
 import com.amazonaws.serverless.proxy.AwsHttpApiV2SecurityContextWriter;
 import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
@@ -48,6 +62,8 @@ import jakarta.servlet.http.HttpServletRequest;
  */
 public class SpringDelegatingLambdaContainerHandler implements RequestStreamHandler {
 
+	private static Log logger = LogFactory.getLog(SpringDelegatingLambdaContainerHandler.class);
+
 	private final Class<?>[] startupClasses;
 
 	private final ProxyMvc mvc;
@@ -55,6 +71,10 @@ public class SpringDelegatingLambdaContainerHandler implements RequestStreamHand
 	private final ObjectMapper mapper;
 
 	private final AwsProxyHttpServletResponseWriter responseWriter;
+
+	public SpringDelegatingLambdaContainerHandler() {
+		this(new Class[] {FunctionClassUtils.getStartClass()});
+	}
 
 	public SpringDelegatingLambdaContainerHandler(Class<?>... startupClasses) {
 		this.startupClasses = startupClasses;
@@ -84,15 +104,17 @@ public class SpringDelegatingLambdaContainerHandler implements RequestStreamHand
 		}
 	}
 
-
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private HttpServletRequest generateRequest(Map request, Context lambdaContext, SecurityContextWriter securityWriter) {
 		AwsProxyRequest v1Request = this.mapper.convertValue(request, AwsProxyRequest.class);
 
 		ProxyHttpServletRequest httpRequest = new ProxyHttpServletRequest(this.mvc.getApplicationContext().getServletContext(),
 				v1Request.getHttpMethod(), v1Request.getPath());
-		httpRequest.setContentType("application/json");
-		httpRequest.setContent(v1Request.getBody().getBytes(StandardCharsets.UTF_8));
+
+		if (StringUtils.hasText(v1Request.getBody())) {
+			httpRequest.setContentType("application/json");
+			httpRequest.setContent(v1Request.getBody().getBytes(StandardCharsets.UTF_8));
+		}
 		httpRequest.setAttribute(RequestReader.API_GATEWAY_CONTEXT_PROPERTY, v1Request.getRequestContext());
 		httpRequest.setAttribute(RequestReader.API_GATEWAY_STAGE_VARS_PROPERTY, v1Request.getStageVariables());
 		httpRequest.setAttribute(RequestReader.API_GATEWAY_EVENT_PROPERTY, v1Request);
@@ -107,8 +129,11 @@ public class SpringDelegatingLambdaContainerHandler implements RequestStreamHand
 		HttpApiV2ProxyRequest v2Request = this.mapper.convertValue(request, HttpApiV2ProxyRequest.class);
         ProxyHttpServletRequest httpRequest = new ProxyHttpServletRequest(this.mvc.getApplicationContext().getServletContext(),
         		v2Request.getRequestContext().getHttp().getMethod(), v2Request.getRequestContext().getHttp().getPath());
-        httpRequest.setContentType("application/json");
-        httpRequest.setContent(v2Request.getBody().getBytes(StandardCharsets.UTF_8));
+
+        if (StringUtils.hasText(v2Request.getBody())) {
+        	httpRequest.setContentType("application/json");
+        	httpRequest.setContent(v2Request.getBody().getBytes(StandardCharsets.UTF_8));
+        }
         httpRequest.setAttribute(RequestReader.HTTP_API_CONTEXT_PROPERTY, v2Request.getRequestContext());
         httpRequest.setAttribute(RequestReader.HTTP_API_STAGE_VARS_PROPERTY, v2Request.getStageVariables());
         httpRequest.setAttribute(RequestReader.HTTP_API_EVENT_PROPERTY, v2Request);
