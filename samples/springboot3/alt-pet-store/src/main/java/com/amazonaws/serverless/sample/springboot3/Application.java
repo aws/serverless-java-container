@@ -42,7 +42,7 @@ public class Application {
 
     @Bean("CognitoIdentityFilter")
     public Filter cognitoFilter() {
-    	return new CognitoIdentityFilter();
+        return new CognitoIdentityFilter();
     }
 
     public static void main(String[] args) {
