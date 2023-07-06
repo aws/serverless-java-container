@@ -29,10 +29,11 @@ public class AwsProxyRequest {
     //-------------------------------------------------------------
 
     private String body;
+    private String version;
     private String resource;
     private AwsProxyRequestContext requestContext;
     private MultiValuedTreeMap<String, String> multiValueQueryStringParameters;
-    private Map<String, String> queryStringParameters; 
+    private Map<String, String> queryStringParameters;
     private Headers multiValueHeaders;
     private SingleValueHeaders headers;
     private Map<String, String> pathParameters;
@@ -95,6 +96,13 @@ public class AwsProxyRequest {
         return resource;
     }
 
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
     public void setResource(String resource) {
         this.resource = resource;
