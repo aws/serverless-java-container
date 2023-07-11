@@ -9,7 +9,6 @@ import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.validation.Valid;
-import reactor.core.publisher.Mono;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,12 +21,6 @@ public class MessageController {
     public static final String UTF8_RESPONSE = "öüäß фрыцшщ";
     public static final String EX_MESSAGE = "404 exception message";
 
-
-    @RequestMapping(path="/hi", method=RequestMethod.GET, produces = {"text/plain"})
-    public Mono<String> hi() {
-        return Mono.just(HELLO_MESSAGE);
-    }
-
     @SuppressWarnings({ "unchecked", "rawtypes" })
 	@RequestMapping(path = "/async", method = RequestMethod.POST)
 	@ResponseBody
@@ -36,7 +29,6 @@ public class MessageController {
 		result.setResult(Collections.singletonMap("name", value.get("name").toUpperCase()));
 		return result;
 	}
-
 
     @RequestMapping(path="/hello", method=RequestMethod.GET, produces = {"text/plain"})
     public String hello() {
