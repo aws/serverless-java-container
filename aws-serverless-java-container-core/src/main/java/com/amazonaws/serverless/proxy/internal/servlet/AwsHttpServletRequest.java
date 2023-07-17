@@ -24,7 +24,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.fileupload2.core.FileItem;
 import org.apache.commons.fileupload2.core.FileUploadException;
-import org.apache.commons.fileupload2.core.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload2.core.DiskFileItemFactory;
 import org.apache.commons.fileupload2.jakarta.JakartaServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
