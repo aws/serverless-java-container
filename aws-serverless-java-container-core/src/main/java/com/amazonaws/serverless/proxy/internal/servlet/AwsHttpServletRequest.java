@@ -44,6 +44,8 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -546,39 +548,57 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     }
 
     protected String[] getQueryParamValues(MultiValuedTreeMap<String, String> qs, String key, boolean isCaseSensitive) {
+        return getQueryParamValuesAsList(qs, key, isCaseSensitive).toArray(new String[0]);
+    }
+
+    protected List<String> getQueryParamValuesAsList(MultiValuedTreeMap<String, String> qs, String key, boolean isCaseSensitive) {
         if (qs != null) {
             if (isCaseSensitive) {
-                return qs.get(key).toArray(new String[0]);
+                return qs.get(key);
             }
 
             for (String k : qs.keySet()) {
                 if (k.toLowerCase(Locale.getDefault()).equals(key.toLowerCase(Locale.getDefault()))) {
-                    return qs.get(k).toArray(new String[0]);
+                    return qs.get(k);
                 }
             }
         }
 
-        return new String[0];
+        return new ArrayList<String>();
     }
 
     protected Map<String, String[]> generateParameterMap(MultiValuedTreeMap<String, String> qs, ContainerConfig config) {
-        Map<String, String[]> output = new HashMap<>();
+        Map<String, String[]> output;
 
-        Map<String, List<String>> params = getFormUrlEncodedParametersMap();
-        params.entrySet().stream().parallel().forEach(e -> {
-            output.put(e.getKey(), e.getValue().toArray(new String[0]));
-        });
+        Map<String, List<String>> formEncodedParams = getFormUrlEncodedParametersMap();
 
-        if (qs != null) {
-            qs.keySet().stream().parallel().forEach(e -> {
-                List<String> newValues = new ArrayList<>();
-                if (output.containsKey(e)) {
-                    String[] values = output.get(e);
-                    newValues.addAll(Arrays.asList(values));
-                }
-                newValues.addAll(Arrays.asList(getQueryParamValues(qs, e, config.isQueryStringCaseSensitive())));
-                output.put(e, newValues.toArray(new String[0]));
-            });
+        if (qs == null) {
+            // Just transform the List<String> values to String[]
+            output = formEncodedParams.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, (e) -> e.getValue().toArray(new String[0])));
+        } else {
+            Map<String, List<String>> queryStringParams;
+            if (config.isQueryStringCaseSensitive()) {
+                queryStringParams = qs;
+            } else {
+                // If it's case insensitive, we check the entire map on every parameter
+                queryStringParams = qs.entrySet().stream().parallel().collect(
+                    Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> getQueryParamValuesAsList(qs, e.getKey(), false)
+                    ));
+            }
+
+            // Merge formEncodedParams and queryStringParams Maps
+            output = Stream.of(formEncodedParams, queryStringParams).flatMap(m -> m.entrySet().stream())
+                .collect(
+                    Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> e.getValue().toArray(new String[0]),
+                        // If a parameter is in both Maps, we merge the list of values (and ultimately transform to String[])
+                        (formParam, queryParam) -> Stream.of(formParam, queryParam).flatMap(Stream::of).toArray(String[]::new)
+                    ));
+
         }
 
         return output;
