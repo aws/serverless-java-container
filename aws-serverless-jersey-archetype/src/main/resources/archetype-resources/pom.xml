@@ -17,7 +17,7 @@
 
         <jersey.version>3.1.2</jersey.version>
         <jackson.version>2.15.2</jackson.version>
-        <junit.version>5.9.3</junit.version>
+        <junit.version>5.10.0</junit.version>
     </properties>
 
     <dependencies>
