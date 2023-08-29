@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 /**
- * This object in in charge of matching a servlet request to a set of filter, creating the filter chain for a request,
+ * This object is in charge of matching a servlet request to a set of filters, creating the filter chain for a request,
  * and cache filter chains that were already loaded for re-use. This object should be used by the framework-specific
  * implementations that use the <code>HttpServletRequest</code> and <code>HttpServletResponse</code> objects.
  *
