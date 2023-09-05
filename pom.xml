@@ -79,7 +79,7 @@
         <jacoco.minCoverage>0.7</jacoco.minCoverage>
         <dependencyCheck.version>8.4.0</dependencyCheck.version>
         <jackson.version>2.15.2</jackson.version>
-        <slf4j.version>2.0.7</slf4j.version>
+        <slf4j.version>2.0.9</slf4j.version>
         <junit.version>5.10.0</junit.version>
         <mockito.version>5.5.0</mockito.version>
         <hamcrest.version>1.3</hamcrest.version>
