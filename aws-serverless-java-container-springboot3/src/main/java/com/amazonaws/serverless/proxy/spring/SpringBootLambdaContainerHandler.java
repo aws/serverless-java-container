@@ -22,6 +22,7 @@ import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.serverless.proxy.spring.embedded.ServerlessReactiveServletEmbeddedServerFactory;
 import com.amazonaws.serverless.proxy.spring.embedded.ServerlessServletEmbeddedServerFactory;
 import com.amazonaws.services.lambda.runtime.Context;
+import jakarta.servlet.AsyncContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.WebApplicationType;
@@ -172,7 +173,19 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
             ((AwsHttpServletRequest)containerRequest).setResponse(containerResponse);
         }
         doFilter(containerRequest, containerResponse, reqServlet);
+        if(requiresAsyncReDispatch(containerRequest)) {
+            doFilter(containerRequest, containerResponse, reqServlet);
+        }
         Timer.stop("SPRINGBOOT2_HANDLE_REQUEST");
+    }
+
+    private boolean requiresAsyncReDispatch(HttpServletRequest request) {
+        if (request.isAsyncStarted()) {
+            AsyncContext asyncContext = request.getAsyncContext();
+            return asyncContext instanceof AwsAsyncContext
+                    && ((AwsAsyncContext) asyncContext).isDispatchStarted();
+        }
+        return false;
     }
 
 
