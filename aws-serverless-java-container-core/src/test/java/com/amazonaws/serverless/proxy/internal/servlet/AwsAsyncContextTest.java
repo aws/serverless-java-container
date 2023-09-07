@@ -10,6 +10,7 @@ import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import jakarta.servlet.AsyncContext;
@@ -32,6 +33,7 @@ public class AwsAsyncContextTest {
     private AwsServletContextTest.TestServlet srv2 = new AwsServletContextTest.TestServlet("srv2");
     private AwsServletContext ctx = getCtx();
 
+    @Disabled //AwsAsyncContext does not sends to servlet anymore
     @Test
     void dispatch_sendsToCorrectServlet() {
         AwsProxyHttpServletRequest req = new AwsProxyHttpServletRequest(new AwsProxyRequestBuilder("/srv1/hello", "GET").build(), lambdaCtx, null);
@@ -58,6 +60,7 @@ public class AwsAsyncContextTest {
         assertEquals(202, handler.getResponse().getStatus());
     }
 
+    @Disabled //AwsAsyncContext does not sends to servlet anymore
     @Test
     void dispatchNewPath_sendsToCorrectServlet() throws InvalidRequestEventException {
         AwsProxyHttpServletRequest req = (AwsProxyHttpServletRequest)reader.readRequest(new AwsProxyRequestBuilder("/srv1/hello", "GET").build(), null, lambdaCtx, LambdaContainerHandler.getContainerConfig());
