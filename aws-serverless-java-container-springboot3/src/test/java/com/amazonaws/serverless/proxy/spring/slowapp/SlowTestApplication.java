@@ -8,7 +8,9 @@ import java.time.Instant;
 
 @SpringBootApplication(exclude = {
         org.springframework.boot.autoconfigure.security.reactive.ReactiveUserDetailsServiceAutoConfiguration.class,
-        org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration.class
+        org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration.class,
+        org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration.class,
+        org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration.class
 })
 public class SlowTestApplication {
 
