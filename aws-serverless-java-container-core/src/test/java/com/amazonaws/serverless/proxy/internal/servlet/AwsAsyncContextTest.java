@@ -42,7 +42,6 @@ public class AwsAsyncContextTest {
         req.setContainerHandler(handler);
 
         AsyncContext asyncCtx = req.startAsync();
-        handler.setDesiredStatus(301);
         asyncCtx.dispatch("/srv4/hello");
         assertEquals("/srv1/hello", req.getRequestURI());
     }
