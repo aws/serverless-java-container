@@ -33,7 +33,21 @@ public class AwsAsyncContextTest {
     private AwsServletContextTest.TestServlet srv2 = new AwsServletContextTest.TestServlet("srv2");
     private AwsServletContext ctx = getCtx();
 
-    @Disabled //AwsAsyncContext does not sends to servlet anymore
+
+    @Test
+    void dispatch_amendsPath() throws InvalidRequestEventException {
+        AwsProxyHttpServletRequest req = (AwsProxyHttpServletRequest)reader.readRequest(new AwsProxyRequestBuilder("/srv1/hello", "GET").build(), null, lambdaCtx, LambdaContainerHandler.getContainerConfig());
+        req.setResponse(handler.getContainerResponse(req, new CountDownLatch(1)));
+        req.setServletContext(ctx);
+        req.setContainerHandler(handler);
+
+        AsyncContext asyncCtx = req.startAsync();
+        handler.setDesiredStatus(301);
+        asyncCtx.dispatch("/srv4/hello");
+        assertEquals("/srv1/hello", req.getRequestURI());
+    }
+
+    @Disabled("AwsAsyncContext does not sends to servlet anymore")
     @Test
     void dispatch_sendsToCorrectServlet() {
         AwsProxyHttpServletRequest req = new AwsProxyHttpServletRequest(new AwsProxyRequestBuilder("/srv1/hello", "GET").build(), lambdaCtx, null);
@@ -60,7 +74,7 @@ public class AwsAsyncContextTest {
         assertEquals(202, handler.getResponse().getStatus());
     }
 
-    @Disabled //AwsAsyncContext does not sends to servlet anymore
+    @Disabled("AwsAsyncContext does not sends to servlet anymore")
     @Test
     void dispatchNewPath_sendsToCorrectServlet() throws InvalidRequestEventException {
         AwsProxyHttpServletRequest req = (AwsProxyHttpServletRequest)reader.readRequest(new AwsProxyRequestBuilder("/srv1/hello", "GET").build(), null, lambdaCtx, LambdaContainerHandler.getContainerConfig());
