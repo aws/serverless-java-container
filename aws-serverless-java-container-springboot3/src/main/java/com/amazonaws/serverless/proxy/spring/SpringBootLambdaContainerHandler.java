@@ -174,6 +174,7 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
         }
         doFilter(containerRequest, containerResponse, reqServlet);
         if(requiresAsyncReDispatch(containerRequest)) {
+            reqServlet = ((AwsServletContext)getServletContext()).getServletForPath(containerRequest.getPathInfo());
             doFilter(containerRequest, containerResponse, reqServlet);
         }
         Timer.stop("SPRINGBOOT2_HANDLE_REQUEST");
