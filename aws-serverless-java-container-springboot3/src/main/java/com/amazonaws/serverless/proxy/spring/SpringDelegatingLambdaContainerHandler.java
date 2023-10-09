@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayV2HTTPEvent;
 import org.springframework.cloud.function.serverless.web.FunctionClassUtils;
 import org.springframework.cloud.function.serverless.web.ProxyHttpServletRequest;
 import org.springframework.cloud.function.serverless.web.ProxyMvc;
@@ -20,7 +21,6 @@ import com.amazonaws.serverless.proxy.SecurityContextWriter;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
-import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -112,7 +112,7 @@ public class SpringDelegatingLambdaContainerHandler implements RequestStreamHand
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public HttpServletRequest generateRequest2(Map request, Context lambdaContext, SecurityContextWriter securityWriter) {
-        HttpApiV2ProxyRequest v2Request = this.mapper.convertValue(request, HttpApiV2ProxyRequest.class);
+        APIGatewayV2HTTPEvent v2Request = this.mapper.convertValue(request, APIGatewayV2HTTPEvent.class);
         ProxyHttpServletRequest httpRequest = new ProxyHttpServletRequest(this.mvc.getApplicationContext().getServletContext(),
                 v2Request.getRequestContext().getHttp().getMethod(), v2Request.getRequestContext().getHttp().getPath());
 

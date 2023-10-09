@@ -15,6 +15,7 @@ package com.amazonaws.serverless.proxy.internal.testutils;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.*;
 
+import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayV2HTTPEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.io.IOUtils;
@@ -435,7 +436,7 @@ public class AwsProxyRequestBuilder {
     }
 
     public InputStream toHttpApiV2RequestStream() {
-        HttpApiV2ProxyRequest req = toHttpApiV2Request();
+        APIGatewayV2HTTPEvent req = toHttpApiV2Request();
         try {
             String requestJson = LambdaContainerHandler.getObjectMapper().writeValueAsString(req);
             return new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
@@ -444,13 +445,13 @@ public class AwsProxyRequestBuilder {
         }
     }
 
-    public HttpApiV2ProxyRequest toHttpApiV2Request() {
-        HttpApiV2ProxyRequest req = new HttpApiV2ProxyRequest();
+    public APIGatewayV2HTTPEvent toHttpApiV2Request() {
+        APIGatewayV2HTTPEvent req = new APIGatewayV2HTTPEvent();
         req.setRawPath(request.getPath());
-        req.setBase64Encoded(request.isBase64Encoded());
+        req.setIsBase64Encoded(request.isBase64Encoded());
         req.setBody(request.getBody());
         if (request.getMultiValueHeaders() != null && request.getMultiValueHeaders().containsKey(HttpHeaders.COOKIE)) {
-            req.setCookies(Arrays.asList(request.getMultiValueHeaders().getFirst(HttpHeaders.COOKIE).split(";")));
+            req.setCookies(Arrays.asList(request.getMultiValueHeaders().get(HttpHeaders.COOKIE).get(0).split(";")));
         }
         req.setHeaders(new TreeMap<>(String.CASE_INSENSITIVE_ORDER));
         if (request.getMultiValueHeaders() != null) {
@@ -494,8 +495,8 @@ public class AwsProxyRequestBuilder {
         req.setVersion("2.0");
         req.setStageVariables(request.getStageVariables());
 
-        HttpApiV2ProxyRequestContext ctx = new HttpApiV2ProxyRequestContext();
-        HttpApiV2HttpContext httpCtx = new HttpApiV2HttpContext();
+        APIGatewayV2HTTPEvent.RequestContext ctx = new APIGatewayV2HTTPEvent.RequestContext();
+        APIGatewayV2HTTPEvent.RequestContext.Http httpCtx = new APIGatewayV2HTTPEvent.RequestContext.Http();
         httpCtx.setMethod(request.getHttpMethod());
         httpCtx.setPath(request.getPath());
         httpCtx.setProtocol("HTTP/1.1");
@@ -520,12 +521,12 @@ public class AwsProxyRequestBuilder {
             ctx.setTime(request.getRequestContext().getRequestTime());
 
             if (request.getRequestContext().getAuthorizer() != null) {
-                HttpApiV2AuthorizerMap auth = new HttpApiV2AuthorizerMap();
-                HttpApiV2JwtAuthorizer jwt = new HttpApiV2JwtAuthorizer();
+                APIGatewayV2HTTPEvent.RequestContext.Authorizer auth = new APIGatewayV2HTTPEvent.RequestContext.Authorizer();
+                APIGatewayV2HTTPEvent.RequestContext.Authorizer.JWT jwt = new APIGatewayV2HTTPEvent.RequestContext.Authorizer.JWT();
                 // TODO: Anything we should map here?
                 jwt.setClaims(new HashMap<>());
                 jwt.setScopes(new ArrayList<>());
-                auth.putJwtAuthorizer(jwt);
+                auth.setJwt(jwt);
                 ctx.setAuthorizer(auth);
             }
         }
