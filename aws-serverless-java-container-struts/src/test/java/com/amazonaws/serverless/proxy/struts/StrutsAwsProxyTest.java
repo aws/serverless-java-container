@@ -62,7 +62,7 @@ public class StrutsAwsProxyTest extends StrutsRestTestCase<EchoAction> {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final StrutsLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = StrutsLambdaContainerHandler
             .getAwsProxyHandler();
-    private final StrutsLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> httpApiHandler = StrutsLambdaContainerHandler
+    private final StrutsLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponse> httpApiHandler = StrutsLambdaContainerHandler
             .getHttpApiV2ProxyHandler();
     private final Context lambdaContext = new MockLambdaContext();
     private String type;
