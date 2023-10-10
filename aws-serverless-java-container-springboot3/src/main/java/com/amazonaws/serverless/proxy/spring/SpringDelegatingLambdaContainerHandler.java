@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayV2HTTPEvent;
 import org.springframework.cloud.function.serverless.web.FunctionClassUtils;
 import org.springframework.cloud.function.serverless.web.ProxyHttpServletRequest;
@@ -20,7 +22,6 @@ import com.amazonaws.serverless.proxy.RequestReader;
 import com.amazonaws.serverless.proxy.SecurityContextWriter;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -92,7 +93,7 @@ public class SpringDelegatingLambdaContainerHandler implements RequestStreamHand
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private HttpServletRequest generateRequest(Map request, Context lambdaContext, SecurityContextWriter securityWriter) {
-        AwsProxyRequest v1Request = this.mapper.convertValue(request, AwsProxyRequest.class);
+        APIGatewayProxyRequestEvent v1Request = this.mapper.convertValue(request, APIGatewayProxyRequestEvent.class);
 
         ProxyHttpServletRequest httpRequest = new ProxyHttpServletRequest(this.mvc.getApplicationContext().getServletContext(),
                 v1Request.getHttpMethod(), v1Request.getPath());
@@ -104,7 +105,7 @@ public class SpringDelegatingLambdaContainerHandler implements RequestStreamHand
         httpRequest.setAttribute(RequestReader.API_GATEWAY_CONTEXT_PROPERTY, v1Request.getRequestContext());
         httpRequest.setAttribute(RequestReader.API_GATEWAY_STAGE_VARS_PROPERTY, v1Request.getStageVariables());
         httpRequest.setAttribute(RequestReader.API_GATEWAY_EVENT_PROPERTY, v1Request);
-        httpRequest.setAttribute(RequestReader.ALB_CONTEXT_PROPERTY, v1Request.getRequestContext().getElb());
+        //httpRequest.setAttribute(RequestReader.ALB_CONTEXT_PROPERTY, v1Request.getRequestContext().getElb());
         httpRequest.setAttribute(RequestReader.LAMBDA_CONTEXT_PROPERTY, lambdaContext);
         httpRequest.setAttribute(RequestReader.JAX_SECURITY_CONTEXT_PROPERTY, securityWriter.writeSecurityContext(v1Request, lambdaContext));
         return httpRequest;
@@ -125,6 +126,22 @@ public class SpringDelegatingLambdaContainerHandler implements RequestStreamHand
         httpRequest.setAttribute(RequestReader.HTTP_API_EVENT_PROPERTY, v2Request);
         httpRequest.setAttribute(RequestReader.LAMBDA_CONTEXT_PROPERTY, lambdaContext);
         httpRequest.setAttribute(RequestReader.JAX_SECURITY_CONTEXT_PROPERTY, securityWriter.writeSecurityContext(v2Request, lambdaContext));
+        return httpRequest;
+    }
+
+    public HttpServletRequest generateAlbRequest(Map request, Context lambdaContext, SecurityContextWriter securityWriter) {
+        ApplicationLoadBalancerRequestEvent albRequest = this.mapper.convertValue(request, ApplicationLoadBalancerRequestEvent.class);
+        ProxyHttpServletRequest httpRequest = new ProxyHttpServletRequest(this.mvc.getApplicationContext().getServletContext(),
+                albRequest.getHttpMethod(), albRequest.getPath());
+
+        if (StringUtils.hasText(albRequest.getBody())) {
+            httpRequest.setContentType("application/json");
+            httpRequest.setContent(albRequest.getBody().getBytes(StandardCharsets.UTF_8));
+        }
+        httpRequest.setAttribute(RequestReader.ALB_CONTEXT_PROPERTY, albRequest.getRequestContext());
+        httpRequest.setAttribute(RequestReader.ALB_EVENT_PROPERTY, albRequest);
+        httpRequest.setAttribute(RequestReader.LAMBDA_CONTEXT_PROPERTY, lambdaContext);
+        httpRequest.setAttribute(RequestReader.JAX_SECURITY_CONTEXT_PROPERTY, securityWriter.writeSecurityContext(albRequest, lambdaContext));
         return httpRequest;
     }
 }

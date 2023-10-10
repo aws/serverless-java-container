@@ -15,10 +15,11 @@ package com.amazonaws.serverless.proxy.spring;
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.*;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.*;
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayV2HTTPEvent;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
@@ -44,13 +45,13 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
     private boolean refreshContext = false;
 
     /**
-     * Creates a default SpringLambdaContainerHandler initialized with the `AwsProxyRequest` and `AwsProxyResponse` objects
+     * Creates a default SpringLambdaContainerHandler initialized with the `APIGatewayProxyRequestEvent` and `AwsProxyResponse` objects
      * @param config A set of classes annotated with the Spring @Configuration annotation
      * @return An initialized instance of the `SpringLambdaContainerHandler`
      * @throws ContainerInitializationException When the Spring framework fails to start.
      */
-    public static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(Class<?>... config) throws ContainerInitializationException {
-        return new SpringProxyHandlerBuilder<AwsProxyRequest>()
+    public static SpringLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponse> getAwsProxyHandler(Class<?>... config) throws ContainerInitializationException {
+        return new SpringProxyHandlerBuilder<APIGatewayProxyRequestEvent>()
                 .defaultProxy()
                 .initializationWrapper(new InitializationWrapper())
                 .configurationClasses(config)
@@ -58,15 +59,15 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
     }
 
     /**
-     * Creates a default SpringLambdaContainerHandler initialized with the `AwsProxyRequest` and `AwsProxyResponse` objects and sets the given profiles as active
+     * Creates a default SpringLambdaContainerHandler initialized with the `APIGatewayProxyRequestEvent` and `AwsProxyResponse` objects and sets the given profiles as active
      * @param applicationContext A custom ConfigurableWebApplicationContext to be used
      * @param profiles The spring profiles to activate
      * @return An initialized instance of the `SpringLambdaContainerHandler`
      * @throws ContainerInitializationException When the Spring framework fails to start.
      */
-    public static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(ConfigurableWebApplicationContext applicationContext, String... profiles)
+    public static SpringLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponse> getAwsProxyHandler(ConfigurableWebApplicationContext applicationContext, String... profiles)
             throws ContainerInitializationException {
-        return new SpringProxyHandlerBuilder<AwsProxyRequest>()
+        return new SpringProxyHandlerBuilder<APIGatewayProxyRequestEvent>()
                 .defaultProxy()
                 .initializationWrapper(new InitializationWrapper())
                 .springApplicationContext(applicationContext)
@@ -83,6 +84,14 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
     public static SpringLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponse> getHttpApiV2ProxyHandler(Class<?>... config) throws ContainerInitializationException {
         return new SpringProxyHandlerBuilder<APIGatewayV2HTTPEvent>()
                 .defaultHttpApiV2Proxy()
+                .initializationWrapper(new InitializationWrapper())
+                .configurationClasses(config)
+                .buildAndInitialize();
+    }
+
+    public static SpringLambdaContainerHandler<ApplicationLoadBalancerRequestEvent, AwsProxyResponse> getAlbProxyHandler(Class<?>... config) throws ContainerInitializationException {
+        return new SpringProxyHandlerBuilder<ApplicationLoadBalancerRequestEvent>()
+                .defaultAlbProxy()
                 .initializationWrapper(new InitializationWrapper())
                 .configurationClasses(config)
                 .buildAndInitialize();

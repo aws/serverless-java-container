@@ -1,7 +1,7 @@
 package ${groupId};
 
 import com.amazonaws.serverless.proxy.jersey.JerseyLambdaContainerHandler;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
+import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
@@ -28,7 +28,7 @@ public class StreamLambdaHandler implements RequestStreamHandler {
             .property(ServerProperties.MOXY_JSON_FEATURE_DISABLE,true)
             .register(PingResource.class)
             .register(JacksonFeature.class);
-    private static final JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler
+    private static final JerseyLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponse> handler
             = JerseyLambdaContainerHandler.getAwsProxyHandler(jerseyApplication);
 
     @Override

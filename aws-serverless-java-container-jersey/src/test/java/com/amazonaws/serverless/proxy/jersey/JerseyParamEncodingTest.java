@@ -2,16 +2,20 @@ package com.amazonaws.serverless.proxy.jersey;
 
 
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequestHelper;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.jersey.model.MapResponseModel;
 import com.amazonaws.serverless.proxy.jersey.model.SingleValueModel;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
+import com.amazonaws.serverless.proxy.jersey.providers.ServletRequestFilter;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
 
+import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayV2HTTPEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.glassfish.jersey.logging.LoggingFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.jupiter.api.Disabled;
@@ -66,7 +70,7 @@ public class JerseyParamEncodingTest {
     .register(new ResourceBinder())
     .property("jersey.config.server.tracing.type", "ALL")
     .property("jersey.config.server.tracing.threshold", "VERBOSE");
-    private static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+    private static JerseyLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponse> handler;
 
     private static ResourceConfig httpApiApp = new ResourceConfig().packages("com.amazonaws.serverless.proxy.jersey")
     .register(MultiPartFeature.class)
@@ -74,6 +78,14 @@ public class JerseyParamEncodingTest {
     .property("jersey.config.server.tracing.type", "ALL")
     .property("jersey.config.server.tracing.threshold", "VERBOSE");
     private static JerseyLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponse> httpApiHandler;
+
+    private static ResourceConfig albApp = new ResourceConfig().packages("com.amazonaws.serverless.proxy.jersey")
+            .register(LoggingFeature.class)
+            .register(ServletRequestFilter.class)
+            .register(MultiPartFeature.class)
+            .register(new ResourceBinder())
+            .property(LoggingFeature.LOGGING_FEATURE_VERBOSITY_SERVER, LoggingFeature.Verbosity.PAYLOAD_ANY);
+    private static JerseyLambdaContainerHandler<ApplicationLoadBalancerRequestEvent, AwsProxyResponse> albHandler;
 
     private static Context lambdaContext = new MockLambdaContext();
 
@@ -100,10 +112,10 @@ public class JerseyParamEncodingTest {
                 }
                 return handler.proxy(requestBuilder.build(), lambdaContext);
             case "ALB":
-                if (handler == null) {
-                    handler = JerseyLambdaContainerHandler.getAwsProxyHandler(app);
+                if (albHandler == null) {
+                    albHandler = JerseyLambdaContainerHandler.getAlbProxyHandler(albApp);
                 }
-                return handler.proxy(requestBuilder.alb().build(), lambdaContext);
+                return albHandler.proxy(requestBuilder.toAlbRequest(), lambdaContext);
             case "HTTP_API":
                 if (httpApiHandler == null) {
                     httpApiHandler = JerseyLambdaContainerHandler.getHttpApiV2ProxyHandler(httpApiApp);
@@ -124,7 +136,7 @@ public class JerseyParamEncodingTest {
 
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
+        assertEquals("application/json", AwsHttpServletRequestHelper.getFirst(output.getMultiValueHeaders(), "Content-Type"));
 
         validateMapResponseModel(output, QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE);
     }
@@ -139,7 +151,7 @@ public class JerseyParamEncodingTest {
 
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
+        assertEquals("application/json", AwsHttpServletRequestHelper.getFirst(output.getMultiValueHeaders(), "Content-Type"));
 
         validateMapResponseModel(output, QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE);
     }
@@ -155,7 +167,7 @@ public class JerseyParamEncodingTest {
 
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type"));
+        assertEquals("application/json", AwsHttpServletRequestHelper.getFirst(output.getMultiValueHeaders(), "Content-Type"));
 
         validateMapResponseModel(output, QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE);
     }

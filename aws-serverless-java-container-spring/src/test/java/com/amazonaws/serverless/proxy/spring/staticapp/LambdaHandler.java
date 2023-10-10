@@ -2,22 +2,22 @@
 
 
  import com.amazonaws.serverless.exceptions.ContainerInitializationException;
- import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
  import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
  import com.amazonaws.serverless.proxy.spring.SpringLambdaContainerHandler;
  import com.amazonaws.services.lambda.runtime.Context;
  import com.amazonaws.services.lambda.runtime.RequestHandler;
 
+ import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
  import org.springframework.web.context.support.XmlWebApplicationContext;
 
 
  public class LambdaHandler
-   implements RequestHandler<AwsProxyRequest, AwsProxyResponse>
+   implements RequestHandler<APIGatewayProxyRequestEvent, AwsProxyResponse>
  {
-   SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+   SpringLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponse> handler;
    boolean isinitialized = false;
  
-   public AwsProxyResponse handleRequest(AwsProxyRequest awsProxyRequest, Context context)
+   public AwsProxyResponse handleRequest(APIGatewayProxyRequestEvent awsProxyRequest, Context context)
    {
         if (!isinitialized) {
             isinitialized = true;

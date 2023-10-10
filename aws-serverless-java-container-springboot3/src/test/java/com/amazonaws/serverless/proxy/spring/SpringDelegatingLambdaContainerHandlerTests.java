@@ -94,7 +94,7 @@ public class SpringDelegatingLambdaContainerHandlerTests {
             + "            \"accessKey\": null,\n"
             + "            \"accountId\": null,\n"
             + "            \"caller\": null,\n"
-            + "            \"cognitoAmr\": null,\n"
+           // + "            \"cognitoAmr\": null,\n"
             + "            \"cognitoAuthenticationProvider\": null,\n"
             + "            \"cognitoAuthenticationType\": null,\n"
             + "            \"cognitoIdentityId\": null,\n"

@@ -166,7 +166,7 @@ public class ServletAppTest {
         InputStream req = null;
         switch (type) {
             case "ALB":
-                req = reqBuilder.alb().buildStream();
+                req = reqBuilder.toAlbRequestStream();
                 break;
             case "API_GW":
                 req = reqBuilder.buildStream();
@@ -192,7 +192,7 @@ public class ServletAppTest {
         InputStream req = null;
         switch (type) {
             case "ALB":
-                req = reqBuilder.alb().buildStream();
+                req = reqBuilder.toAlbRequestStream();
                 break;
             case "API_GW":
                 req = reqBuilder.buildStream();

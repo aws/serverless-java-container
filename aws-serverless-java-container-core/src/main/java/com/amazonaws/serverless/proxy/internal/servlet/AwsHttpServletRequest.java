@@ -16,11 +16,9 @@ import com.amazonaws.serverless.proxy.RequestReader;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
-import com.amazonaws.serverless.proxy.model.Headers;
-import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.fileupload2.core.FileItem;
 import org.apache.commons.fileupload2.core.FileUploadException;
@@ -139,7 +137,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     public HttpSession getSession(boolean b) {
         log.debug("Trying to access session. Lambda functions are stateless and should not rely on the session");
         if (b && null == this.session) {
-            AwsProxyRequestContext requestContext = (AwsProxyRequestContext) getAttribute(RequestReader.API_GATEWAY_CONTEXT_PROPERTY);
+            APIGatewayProxyRequestEvent.ProxyRequestContext requestContext = (APIGatewayProxyRequestEvent.ProxyRequestContext) getAttribute(RequestReader.API_GATEWAY_CONTEXT_PROPERTY);
             this.session = new AwsHttpSession(requestContext.getRequestId());
         }
         return this.session;
@@ -310,7 +308,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
      * @param encodeCharset Charset to use for encoding the query string
      * @return The generated query string for the URI
      */
-    protected String generateQueryString(MultiValuedTreeMap<String, String> parameters, boolean encode, String encodeCharset)
+    protected String generateQueryString(Map<String, List<String>> parameters, boolean encode, String encodeCharset)
             throws ServletException {
         if (parameters == null || parameters.size() == 0) {
             return null;
@@ -442,15 +440,15 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         return new AwsServletInputStream(requestBodyStream);
     }
 
-    protected String getFirstQueryParamValue(MultiValuedTreeMap<String, String> queryString, String key, boolean isCaseSensitive) {
+    protected String getFirstQueryParamValue(Map<String, List<String>> queryString, String key, boolean isCaseSensitive) {
         if (queryString != null) {
             if (isCaseSensitive) {
-                return queryString.getFirst(key);
+                return getFirst(queryString, key);
             }
 
             for (String k : queryString.keySet()) {
                 if (k.toLowerCase(Locale.getDefault()).equals(key.toLowerCase(Locale.getDefault()))) {
-                    return queryString.getFirst(k);
+                    return getFirst(queryString, k);
                 }
             }
         }
@@ -467,6 +465,29 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         } else {
             return new String[0];
         }
+    }
+
+    public static String getFirst(Map<String, List<String>> map, String key) {
+        List<String> values = map.get(key);
+        if (values == null || values.size() == 0) {
+            return null;
+        }
+        return values.get(0);
+    }
+
+    public static void putSingle(Map<String, List<String>> map, String key, String value) {
+        List<String> values = findKey(map, key);
+        values.clear();
+        values.add(value);
+    }
+
+    public static List<String> findKey(Map<String, List<String>> map, String key) {
+        List<String> values = map.get(key);
+        if (values == null) {
+            values = new ArrayList<>();
+            map.put(key, values);
+        }
+        return values;
     }
 
 
@@ -547,7 +568,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         return multipartFormParameters;
     }
 
-    protected String[] getQueryParamValues(MultiValuedTreeMap<String, String> qs, String key, boolean isCaseSensitive) {
+    protected String[] getQueryParamValues(Map<String, List<String>> qs, String key, boolean isCaseSensitive) {
         List<String> value = getQueryParamValuesAsList(qs, key, isCaseSensitive);
         if (value == null){
             return null;
@@ -555,7 +576,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         return value.toArray(new String[0]);
     }
 
-    protected List<String> getQueryParamValuesAsList(MultiValuedTreeMap<String, String> qs, String key, boolean isCaseSensitive) {
+    protected List<String> getQueryParamValuesAsList(Map<String, List<String>> qs, String key, boolean isCaseSensitive) {
         if (qs != null) {
             if (isCaseSensitive) {
                 return qs.get(key);
@@ -571,7 +592,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         return Collections.emptyList();
     }
 
-    protected Map<String, String[]> generateParameterMap(MultiValuedTreeMap<String, String> qs, ContainerConfig config) {
+    protected Map<String, String[]> generateParameterMap(Map<String, List<String>> qs, ContainerConfig config) {
         Map<String, String[]> output;
 
         Map<String, List<String>> formEncodedParams = getFormUrlEncodedParametersMap();
@@ -608,16 +629,16 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         return output;
     }
 
-    protected String getSchemeFromHeader(Headers headers) {
+    protected String getSchemeFromHeader(Map<String, List<String>> headers) {
         // if we don't have any headers to deduce the value we assume HTTPS - API Gateway's default
         if (headers == null) {
             return "https";
         }
-        String cfScheme = headers.getFirst(CF_PROTOCOL_HEADER_NAME);
+        String cfScheme = getFirst(headers, CF_PROTOCOL_HEADER_NAME);
         if (cfScheme != null && SecurityUtils.isValidScheme(cfScheme)) {
             return cfScheme;
         }
-        String gwScheme = headers.getFirst(PROTOCOL_HEADER_NAME);
+        String gwScheme = getFirst(headers, PROTOCOL_HEADER_NAME);
         if (gwScheme != null && SecurityUtils.isValidScheme(gwScheme)) {
             return gwScheme;
         }
@@ -750,7 +771,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         return new Locale(language, country);
     }
 
-    static String decodeRequestPath(String requestPath, ContainerConfig config) {
+    public static String decodeRequestPath(String requestPath, ContainerConfig config) {
         try {
             return URLDecoder.decode(requestPath, config.getUriEncoding());
         } catch (UnsupportedEncodingException ex) {
@@ -761,7 +782,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
 
     }
 
-    static String cleanUri(String uri) {
+    public static String cleanUri(String uri) {
         String finalUri = (uri == null ? "/" : uri);
         if (finalUri.equals("/")) {
             return finalUri;

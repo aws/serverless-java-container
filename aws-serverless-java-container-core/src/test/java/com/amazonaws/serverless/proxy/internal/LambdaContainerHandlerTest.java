@@ -7,9 +7,9 @@ import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletReques
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
 import org.apache.hc.client5.http.impl.classic.RequestAbortedException;
 import org.junit.jupiter.api.Test;
 
@@ -23,7 +23,7 @@ public class LambdaContainerHandlerTest {
     private boolean throwException = false;
 
     ExceptionContainerHandlerTest handler = new ExceptionContainerHandlerTest(
-            AwsProxyRequest.class, AwsProxyResponse.class,
+            APIGatewayProxyRequestEvent.class, AwsProxyResponse.class,
             new AwsProxyHttpServletRequestReader(), new AwsProxyHttpServletResponseWriter(),
             new AwsProxySecurityContextWriter(), new AwsProxyExceptionHandler(), new InitializationWrapper()
     );
@@ -69,12 +69,12 @@ public class LambdaContainerHandlerTest {
         assertEquals("OK", resp.getBody());
     }
 
-    public class ExceptionContainerHandlerTest extends LambdaContainerHandler<AwsProxyRequest, AwsProxyResponse, HttpServletRequest, AwsHttpServletResponse> {
+    public class ExceptionContainerHandlerTest extends LambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponse, HttpServletRequest, AwsHttpServletResponse> {
 
         public static final String RUNTIME_MESSAGE = "test RuntimeException";
         public static final String NON_RUNTIME_MESSAGE = "test NonRuntimeException";
 
-        protected ExceptionContainerHandlerTest(Class<AwsProxyRequest> requestClass, Class<AwsProxyResponse> responseClass, RequestReader<AwsProxyRequest, HttpServletRequest> requestReader, ResponseWriter<AwsHttpServletResponse, AwsProxyResponse> responseWriter, SecurityContextWriter<AwsProxyRequest> securityContextWriter, ExceptionHandler<AwsProxyResponse> exceptionHandler, InitializationWrapper init) {
+        protected ExceptionContainerHandlerTest(Class<APIGatewayProxyRequestEvent> requestClass, Class<AwsProxyResponse> responseClass, RequestReader<APIGatewayProxyRequestEvent, HttpServletRequest> requestReader, ResponseWriter<AwsHttpServletResponse, AwsProxyResponse> responseWriter, SecurityContextWriter<APIGatewayProxyRequestEvent> securityContextWriter, ExceptionHandler<AwsProxyResponse> exceptionHandler, InitializationWrapper init) {
             super(requestClass, responseClass, requestReader, responseWriter, securityContextWriter, exceptionHandler, init);
         }
 

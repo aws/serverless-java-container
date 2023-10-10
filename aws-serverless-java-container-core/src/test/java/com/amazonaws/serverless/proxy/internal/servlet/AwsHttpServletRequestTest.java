@@ -1,47 +1,44 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
-import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 
+import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
 import org.junit.jupiter.api.Test;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.ws.rs.core.HttpHeaders;
 
+import static com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequest.findKey;
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-import java.util.Arrays;
+import java.util.*;
 
 
 public class AwsHttpServletRequestTest {
 
-    private static final AwsProxyRequest contentTypeRequest = new AwsProxyRequestBuilder("/test", "GET")
+    private static final APIGatewayProxyRequestEvent contentTypeRequest = new AwsProxyRequestBuilder("/test", "GET")
             .header(HttpHeaders.CONTENT_TYPE, "application/xml; charset=utf-8").build();
-    private static final AwsProxyRequest validCookieRequest = new AwsProxyRequestBuilder("/cookie", "GET")
+    private static final APIGatewayProxyRequestEvent validCookieRequest = new AwsProxyRequestBuilder("/cookie", "GET")
             .header(HttpHeaders.COOKIE, "yummy_cookie=choco; tasty_cookie=strawberry").build();
-    private static final AwsProxyRequest complexAcceptHeader = new AwsProxyRequestBuilder("/accept", "GET")
+    private static final APIGatewayProxyRequestEvent complexAcceptHeader = new AwsProxyRequestBuilder("/accept", "GET")
             .header(HttpHeaders.ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8").build();
-    private static final AwsProxyRequest queryString = new AwsProxyRequestBuilder("/test", "GET")
+    private static final APIGatewayProxyRequestEvent queryString = new AwsProxyRequestBuilder("/test", "GET")
             .queryString("one", "two").queryString("three", "four").build();
-    private static final AwsProxyRequest queryStringNullValue = new AwsProxyRequestBuilder("/test", "GET")
+    private static final APIGatewayProxyRequestEvent queryStringNullValue = new AwsProxyRequestBuilder("/test", "GET")
             .queryString("one", "two").queryString("three", null).build();
-    private static final AwsProxyRequest encodedQueryString = new AwsProxyRequestBuilder("/test", "GET")
+    private static final APIGatewayProxyRequestEvent encodedQueryString = new AwsProxyRequestBuilder("/test", "GET")
             .queryString("one", "two").queryString("json", "{\"name\":\"faisal\"}").build();
-    private static final AwsProxyRequest multipleParams = new AwsProxyRequestBuilder("/test", "GET")
+    private static final APIGatewayProxyRequestEvent multipleParams = new AwsProxyRequestBuilder("/test", "GET")
             .queryString("one", "two").queryString("one", "three").queryString("json", "{\"name\":\"faisal\"}").build();
-    private static final AwsProxyRequest formEncodedAndQueryString = new AwsProxyRequestBuilder("/test", "POST")
+    private static final APIGatewayProxyRequestEvent formEncodedAndQueryString = new AwsProxyRequestBuilder("/test", "POST")
             .queryString("one", "two").queryString("one", "three")
             .queryString("five", "six")
             .form("one", "four")
             .form("seven", "eight").build();
-    private static final AwsProxyRequest differentCasing = new AwsProxyRequestBuilder("/test", "POST")
+    private static final APIGatewayProxyRequestEvent differentCasing = new AwsProxyRequestBuilder("/test", "POST")
             .queryString("one", "two").queryString("one", "three")
             .queryString("ONE", "four").build();
 
@@ -98,7 +95,7 @@ public class AwsHttpServletRequestTest {
     void headers_parseHeaderValue_base64EncodedCookieValue() {
         String value = Base64.getUrlEncoder().encodeToString("a".getBytes());
         String cookieValue = "jwt=" + value + "; secondValue=second";
-        AwsProxyRequest req = new AwsProxyRequestBuilder("/test", "GET").header(HttpHeaders.COOKIE, cookieValue).build();
+        APIGatewayProxyRequestEvent req = new AwsProxyRequestBuilder("/test", "GET").header(HttpHeaders.COOKIE, cookieValue).build();
         AwsHttpServletRequest context = new AwsProxyHttpServletRequest(req, null, null);
 
         Cookie[] cookies = context.getCookies();
@@ -111,7 +108,7 @@ public class AwsHttpServletRequestTest {
     @Test
     void headers_parseHeaderValue_cookieWithSeparatorInValue() {
         String cookieValue = "jwt==test; secondValue=second";
-        AwsProxyRequest req = new AwsProxyRequestBuilder("/test", "GET").header(HttpHeaders.COOKIE, cookieValue).build();
+        APIGatewayProxyRequestEvent req = new AwsProxyRequestBuilder("/test", "GET").header(HttpHeaders.COOKIE, cookieValue).build();
         AwsHttpServletRequest context = new AwsProxyHttpServletRequest(req, null, null);
 
         Cookie[] cookies = context.getCookies();
@@ -297,10 +294,11 @@ public class AwsHttpServletRequestTest {
 
     @Test
     void queryParamValues_getQueryParamValues() {
-        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(new AwsProxyRequest(), mockContext, null);
-        MultiValuedTreeMap<String, String> map = new MultiValuedTreeMap<>();
-        map.add("test", "test");
-        map.add("test", "test2");
+        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(new APIGatewayProxyRequestEvent(), mockContext, null);
+        Map<String, List<String>> map = new HashMap<>();
+        List<String> values = findKey(map, "test");
+        values.add("test");
+        values.add("test2");
         String[] result1 = request.getQueryParamValues(map, "test", true);
         assertArrayEquals(new String[]{"test", "test2"}, result1);
         String[] result2 = request.getQueryParamValues(map, "TEST", true);
@@ -309,10 +307,11 @@ public class AwsHttpServletRequestTest {
 
     @Test
     void queryParamValues_getQueryParamValues_caseInsensitive() {
-        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(new AwsProxyRequest(), mockContext, null);
-        MultiValuedTreeMap<String, String> map = new MultiValuedTreeMap<>();
-        map.add("test", "test");
-        map.add("test", "test2");
+        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(new APIGatewayProxyRequestEvent(), mockContext, null);
+        Map<String, List<String>> map = new HashMap<>();
+        List<String> values = findKey(map, "test");
+        values.add("test");
+        values.add("test2");
         String[] result1 = request.getQueryParamValues(map, "test", false);
         assertArrayEquals(new String[]{"test", "test2"}, result1);
         String[] result2 = request.getQueryParamValues(map, "TEST", false);

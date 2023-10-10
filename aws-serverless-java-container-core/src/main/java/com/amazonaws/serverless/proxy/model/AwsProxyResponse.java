@@ -13,9 +13,11 @@
 package com.amazonaws.serverless.proxy.model;
 
 
+import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequestHelper;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
 import java.util.Map;
 
 
@@ -32,7 +34,7 @@ public class AwsProxyResponse {
     private int statusCode;
     private String statusDescription;
     private Map<String, String> headers;
-    private Headers multiValueHeaders;
+    private Map<String, List<String>> multiValueHeaders;
     private String body;
     private boolean isBase64Encoded;
 
@@ -71,8 +73,8 @@ public class AwsProxyResponse {
         if (this.multiValueHeaders == null) {
             this.multiValueHeaders = new Headers();
         }
-
-        this.multiValueHeaders.add(key, value);
+        AwsHttpServletRequestHelper.putSingle(this.multiValueHeaders, key, value);
+        //this.multiValueHeaders.add(key, value);
     }
 
 
@@ -100,12 +102,12 @@ public class AwsProxyResponse {
     }
 
 
-    public Headers getMultiValueHeaders() {
+    public Map<String, List<String>> getMultiValueHeaders() {
         return multiValueHeaders;
     }
 
 
-    public void setMultiValueHeaders(Headers multiValueHeaders) {
+    public void setMultiValueHeaders(Map<String, List<String>> multiValueHeaders) {
         this.multiValueHeaders = multiValueHeaders;
     }
 

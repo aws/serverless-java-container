@@ -1,6 +1,5 @@
 package com.amazonaws.serverless.proxy.spring.profile;
 
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
@@ -8,6 +7,7 @@ import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.spring.SpringLambdaContainerHandler;
 import com.amazonaws.serverless.proxy.spring.echoapp.EchoSpringAppConfig;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.MapResponseModel;
+import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,10 +39,10 @@ public class SpringProfileTest {
 
     @Test
     void profile_defaultProfile() throws Exception {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/profile/spring-properties", "GET")
+        APIGatewayProxyRequestEvent request = new AwsProxyRequestBuilder("/profile/spring-properties", "GET")
                 .build();
 
-        SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = SpringLambdaContainerHandler.getAwsProxyHandler(EchoSpringAppConfig.class);
+        SpringLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponse> handler = SpringLambdaContainerHandler.getAwsProxyHandler(EchoSpringAppConfig.class);
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
 
@@ -55,9 +55,9 @@ public class SpringProfileTest {
 
     @Test
     void profile_overrideProfile() throws Exception {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/profile/spring-properties", "GET")
+        APIGatewayProxyRequestEvent request = new AwsProxyRequestBuilder("/profile/spring-properties", "GET")
                 .build();
-        SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = SpringLambdaContainerHandler.getAwsProxyHandler(EchoSpringAppConfig.class);
+        SpringLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponse> handler = SpringLambdaContainerHandler.getAwsProxyHandler(EchoSpringAppConfig.class);
         handler.activateSpringProfiles("override");
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());

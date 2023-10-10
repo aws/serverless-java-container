@@ -2,10 +2,10 @@ package com.amazonaws.serverless.proxy.spring;
 
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.securityapp.LambdaHandler;
 import com.amazonaws.serverless.proxy.spring.securityapp.SecurityConfig;
+import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
 import org.junit.jupiter.api.Test;
 
 import jakarta.ws.rs.core.HttpHeaders;
@@ -25,7 +25,7 @@ public class SecurityAppTest {
 
     @Test
     void helloRequest_withAuth_respondsWithSingleMessage() {
-        AwsProxyRequest req = new AwsProxyRequestBuilder("/hello", "GET").build();
+        APIGatewayProxyRequestEvent req = new AwsProxyRequestBuilder("/hello", "GET").build();
         AwsProxyResponse resp = handler.handleRequest(req, lambdaContext);
         assertEquals(401, resp.getStatusCode());
         assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.WWW_AUTHENTICATE));

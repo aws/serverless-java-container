@@ -1,21 +1,18 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
-
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
-import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
-import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
-import org.junit.jupiter.api.Test;
-
+import com.amazonaws.serverless.proxy.model.ContainerConfig;
+import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.HttpHeaders;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
-public class AwsProxyHttpServletRequestReaderTest {
-    private AwsProxyHttpServletRequestReader reader = new AwsProxyHttpServletRequestReader();
+public class AwsAlbHttpServletRequestReaderTest {
+    private AwsAlbHttpServletRequestReader reader = new AwsAlbHttpServletRequestReader();
 
     private static final String TEST_HEADER_KEY = "x-test";
     private static final String TEST_HEADER_VALUE = "header";
@@ -24,7 +21,7 @@ public class AwsProxyHttpServletRequestReaderTest {
 
     @Test
     void readRequest_validAwsProxy_populatedRequest() {
-        APIGatewayProxyRequestEvent request = new AwsProxyRequestBuilder("/path", "GET").header(TEST_HEADER_KEY, TEST_HEADER_VALUE).build();
+        ApplicationLoadBalancerRequestEvent request = new AwsProxyRequestBuilder("/path", "GET").header(TEST_HEADER_KEY, TEST_HEADER_VALUE).toAlbRequest();
         try {
             HttpServletRequest servletRequest = reader.readRequest(request, null, null, ContainerConfig.defaultConfig());
             assertNotNull(servletRequest.getHeader(TEST_HEADER_KEY));
@@ -37,7 +34,7 @@ public class AwsProxyHttpServletRequestReaderTest {
 
     @Test
     void readRequest_urlDecode_expectDecodedPath() {
-        APIGatewayProxyRequestEvent request = new AwsProxyRequestBuilder(ENCODED_REQUEST_PATH, "GET").build();
+        ApplicationLoadBalancerRequestEvent request = new AwsProxyRequestBuilder(ENCODED_REQUEST_PATH, "GET").toAlbRequest();
         try {
             HttpServletRequest servletRequest = reader.readRequest(request, null, null, ContainerConfig.defaultConfig());
             assertNotNull(servletRequest);
@@ -53,7 +50,7 @@ public class AwsProxyHttpServletRequestReaderTest {
     @Test
     void readRequest_contentCharset_doesNotOverrideRequestCharset() {
         String requestCharset = "application/json; charset=UTF-8";
-        APIGatewayProxyRequestEvent request = new AwsProxyRequestBuilder(ENCODED_REQUEST_PATH, "GET").header(HttpHeaders.CONTENT_TYPE, requestCharset).build();
+        ApplicationLoadBalancerRequestEvent request = new AwsProxyRequestBuilder(ENCODED_REQUEST_PATH, "GET").header(HttpHeaders.CONTENT_TYPE, requestCharset).toAlbRequest();
         try {
             HttpServletRequest servletRequest = reader.readRequest(request, null, null, ContainerConfig.defaultConfig());
             assertNotNull(servletRequest);
@@ -69,7 +66,7 @@ public class AwsProxyHttpServletRequestReaderTest {
     @Test
     void readRequest_contentCharset_setsDefaultCharsetWhenNotSpecified() {
         String requestCharset = "application/json";
-        APIGatewayProxyRequestEvent request = new AwsProxyRequestBuilder(ENCODED_REQUEST_PATH, "GET").header(HttpHeaders.CONTENT_TYPE, requestCharset).build();
+        ApplicationLoadBalancerRequestEvent request = new AwsProxyRequestBuilder(ENCODED_REQUEST_PATH, "GET").header(HttpHeaders.CONTENT_TYPE, requestCharset).toAlbRequest();
         try {
             HttpServletRequest servletRequest = reader.readRequest(request, null, null, ContainerConfig.defaultConfig());
             assertNotNull(servletRequest);
@@ -86,7 +83,7 @@ public class AwsProxyHttpServletRequestReaderTest {
     @Test
     void readRequest_contentCharset_appendsCharsetToComplextContentType() {
         String contentType = "multipart/form-data; boundary=something";
-        APIGatewayProxyRequestEvent request = new AwsProxyRequestBuilder(ENCODED_REQUEST_PATH, "GET").header(HttpHeaders.CONTENT_TYPE, contentType).build();
+        ApplicationLoadBalancerRequestEvent request = new AwsProxyRequestBuilder(ENCODED_REQUEST_PATH, "GET").header(HttpHeaders.CONTENT_TYPE, contentType).toAlbRequest();
         try {
             HttpServletRequest servletRequest = reader.readRequest(request, null, null, ContainerConfig.defaultConfig());
             assertNotNull(servletRequest);
@@ -103,7 +100,7 @@ public class AwsProxyHttpServletRequestReaderTest {
     @Test
     void readRequest_validEventEmptyPath_expectException() {
         try {
-            APIGatewayProxyRequestEvent req = new AwsProxyRequestBuilder(null, "GET").build();
+            ApplicationLoadBalancerRequestEvent req = new AwsProxyRequestBuilder(null, "GET").toAlbRequest();
             HttpServletRequest servletReq = reader.readRequest(req, null, null, ContainerConfig.defaultConfig());
             assertNotNull(servletReq);
         } catch (InvalidRequestEventException e) {
@@ -115,29 +112,29 @@ public class AwsProxyHttpServletRequestReaderTest {
     @Test
     void readRequest_invalidEventEmptyMethod_expectException() {
         try {
-            APIGatewayProxyRequestEvent req = new AwsProxyRequestBuilder("/path", null).build();
+            ApplicationLoadBalancerRequestEvent req = new AwsProxyRequestBuilder("/path", null).toAlbRequest();
             reader.readRequest(req, null, null, ContainerConfig.defaultConfig());
             fail("Expected InvalidRequestEventException");
         } catch (InvalidRequestEventException e) {
-            assertEquals(AwsProxyHttpServletRequestReader.INVALID_REQUEST_ERROR, e.getMessage());
+            assertEquals(AwsAlbHttpServletRequestReader.INVALID_REQUEST_ERROR, e.getMessage());
         }
     }
 
     @Test
     void readRequest_invalidEventEmptyContext_expectException() {
         try {
-            APIGatewayProxyRequestEvent req = new AwsProxyRequestBuilder("/path", "GET").build();
+            ApplicationLoadBalancerRequestEvent req = new AwsProxyRequestBuilder("/path", "GET").toAlbRequest();
             req.setRequestContext(null);
             reader.readRequest(req, null, null, ContainerConfig.defaultConfig());
             fail("Expected InvalidRequestEventException");
         } catch (InvalidRequestEventException e) {
-            assertEquals(AwsProxyHttpServletRequestReader.INVALID_REQUEST_ERROR, e.getMessage());
+            assertEquals(AwsAlbHttpServletRequestReader.INVALID_REQUEST_ERROR, e.getMessage());
         }
     }
 
     @Test
     void readRequest_nullHeaders_expectSuccess() {
-        APIGatewayProxyRequestEvent req = new AwsProxyRequestBuilder("/path", "GET").build();
+        ApplicationLoadBalancerRequestEvent req = new AwsProxyRequestBuilder("/path", "GET").toAlbRequest();
         req.setMultiValueHeaders(null);
         try {
             HttpServletRequest servletReq = reader.readRequest(req, null, null, ContainerConfig.defaultConfig());
@@ -151,7 +148,7 @@ public class AwsProxyHttpServletRequestReaderTest {
 
     @Test
     void readRequest_emptyHeaders_expectSuccess() {
-        APIGatewayProxyRequestEvent req = new AwsProxyRequestBuilder("/path", "GET").build();
+        ApplicationLoadBalancerRequestEvent req = new AwsProxyRequestBuilder("/path", "GET").toAlbRequest();
         try {
             HttpServletRequest servletReq = reader.readRequest(req, null, null, ContainerConfig.defaultConfig());
             String headerValue = servletReq.getHeader(HttpHeaders.CONTENT_TYPE);

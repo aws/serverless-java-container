@@ -13,8 +13,8 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.proxy.LogFormatter;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
 
+import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayV2HTTPEvent;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -78,7 +78,7 @@ public class ApacheCombinedServletLogFormatter<ContainerRequestType extends Http
     public String format(ContainerRequestType servletRequest, ContainerResponseType servletResponse, SecurityContext ctx) {
         //LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\"" combined
         StringBuilder logLineBuilder = new StringBuilder();
-        AwsProxyRequestContext gatewayContext = (AwsProxyRequestContext)servletRequest.getAttribute(API_GATEWAY_CONTEXT_PROPERTY);
+        APIGatewayProxyRequestEvent.ProxyRequestContext gatewayContext = (APIGatewayProxyRequestEvent.ProxyRequestContext)servletRequest.getAttribute(API_GATEWAY_CONTEXT_PROPERTY);
         APIGatewayV2HTTPEvent.RequestContext httpApiContext = (APIGatewayV2HTTPEvent.RequestContext)servletRequest.getAttribute(HTTP_API_CONTEXT_PROPERTY);
 
         // %h
@@ -107,7 +107,7 @@ public class ApacheCombinedServletLogFormatter<ContainerRequestType extends Http
 
         // %t
         long timeEpoch = ZonedDateTime.now(clock).toEpochSecond();
-        if (gatewayContext != null && gatewayContext.getRequestTimeEpoch() > 0) {
+        if (gatewayContext != null && gatewayContext.getRequestTimeEpoch() != null && gatewayContext.getRequestTimeEpoch() > 0) {
             timeEpoch = gatewayContext.getRequestTimeEpoch() / 1000;
         } else if (httpApiContext != null && httpApiContext.getTimeEpoch() > 0) {
             timeEpoch = httpApiContext.getTimeEpoch() / 1000;

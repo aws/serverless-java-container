@@ -2,6 +2,7 @@ package com.amazonaws.serverless.proxy.spring;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequestHelper;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsLambdaServletContainerHandler;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletRegistration;
 import com.amazonaws.serverless.proxy.model.*;
@@ -15,6 +16,8 @@ import com.amazonaws.serverless.proxy.spring.echoapp.UnauthenticatedFilter;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.MapResponseModel;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.SingleValueModel;
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayV2HTTPEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,8 +52,9 @@ public class SpringAwsProxyTest {
 
     private ObjectMapper objectMapper = new ObjectMapper();
     private MockLambdaContext lambdaContext = new MockLambdaContext();
-    private static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+    private static SpringLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponse> handler;
     private static SpringLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponse> httpApiHandler;
+    private static SpringLambdaContainerHandler<ApplicationLoadBalancerRequestEvent, AwsProxyResponse> albHandler;
 
     private AwsLambdaServletContainerHandler.StartupHandler h = (c -> {
         FilterRegistration.Dynamic registration = c.addFilter("UnauthenticatedFilter", UnauthenticatedFilter.class);
@@ -82,11 +86,11 @@ public class SpringAwsProxyTest {
                     }
                     return handler.proxy(requestBuilder.build(), lambdaContext);
                 case "ALB":
-                    if (handler == null) {
-                        handler = SpringLambdaContainerHandler.getAwsProxyHandler(EchoSpringAppConfig.class);
-                        handler.onStartup(h);
+                    if (albHandler == null) {
+                        albHandler = SpringLambdaContainerHandler.getAlbProxyHandler(EchoSpringAppConfig.class);
+                        albHandler.onStartup(h);
                     }
-                    return handler.proxy(requestBuilder.alb().build(), lambdaContext);
+                    return albHandler.proxy(requestBuilder.toAlbRequest(), lambdaContext);
                 case "HTTP_API":
                     if (httpApiHandler == null) {
                         httpApiHandler = SpringLambdaContainerHandler.getHttpApiV2ProxyHandler(EchoSpringAppConfig.class);
@@ -101,6 +105,21 @@ public class SpringAwsProxyTest {
             fail("Could not execute request");
             throw new RuntimeException(e);
         }
+    }
+
+    private AwsProxyResponse executeV2Request(AwsProxyRequestBuilder requestBuilder, Context lambdaContext) {
+        try {
+            if (httpApiHandler == null) {
+                httpApiHandler = SpringLambdaContainerHandler.getHttpApiV2ProxyHandler(EchoSpringAppConfig.class);
+                httpApiHandler.onStartup(h);
+            }
+            return httpApiHandler.proxy(requestBuilder.toHttpApiV2Request(), lambdaContext);
+        } catch (ContainerInitializationException e) {
+            e.printStackTrace();
+            fail("Could not execute request");
+            throw new RuntimeException(e);
+        }
+
     }
 
     @BeforeEach
@@ -133,8 +152,7 @@ public class SpringAwsProxyTest {
 
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type").split(";")[0]);
-
+        assertEquals("application/json", AwsHttpServletRequestHelper.getFirst(output.getMultiValueHeaders(), "Content-Type").split(";")[0]);
         validateMapResponseModel(output);
     }
 
@@ -148,7 +166,7 @@ public class SpringAwsProxyTest {
 
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type").split(";")[0]);
+        assertEquals("application/json", AwsHttpServletRequestHelper.getFirst(output.getMultiValueHeaders(), "Content-Type").split(";")[0]);
 
         validateMapResponseModel(output);
     }
@@ -163,7 +181,7 @@ public class SpringAwsProxyTest {
 
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type").split(";")[0]);
+        assertEquals("application/json", AwsHttpServletRequestHelper.getFirst(output.getMultiValueHeaders(), "Content-Type").split(";")[0]);
 
         validateMapResponseModel(output);
     }
@@ -244,7 +262,7 @@ public class SpringAwsProxyTest {
 
         AwsProxyResponse output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", output.getMultiValueHeaders().getFirst("Content-Type").split(";")[0]);
+        assertEquals("application/json", AwsHttpServletRequestHelper.getFirst(output.getMultiValueHeaders(), "Content-Type").split(";")[0]);
 
         validateSingleValueModel(output, AUTHORIZER_PRINCIPAL_ID);
     }

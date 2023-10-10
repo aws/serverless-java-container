@@ -1,40 +1,38 @@
 package com.amazonaws.serverless.proxy;
 
-
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.exceptions.InvalidResponseObjectException;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequestHelper;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.ErrorModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import jakarta.ws.rs.InternalServerErrorException;
-import jakarta.ws.rs.core.HttpHeaders;
-import jakarta.ws.rs.core.MediaType;
-import java.io.*;
-
-
-public class AwsProxyExceptionHandlerTest {
+public class AwsAlbExceptionHandlerTest {
     private static final String INTERNAL_SERVER_ERROR_MESSAGE = "Internal server error";
     private static final String INVALID_REQUEST_MESSAGE = "Invalid request error";
     private static final String INVALID_RESPONSE_MESSAGE = "Invalid response error";
-    private AwsProxyExceptionHandler exceptionHandler;
+    private AwsAlbExceptionHandler exceptionHandler;
     private ObjectMapper objectMapper;
 
 
     @BeforeEach
     public void setUp() {
-        exceptionHandler = new AwsProxyExceptionHandler();
+        exceptionHandler = new AwsAlbExceptionHandler();
         objectMapper = new ObjectMapper();
     }
 
@@ -62,7 +60,7 @@ public class AwsProxyExceptionHandlerTest {
 
         assertNotNull(resp);
         assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
-        assertEquals(MediaType.APPLICATION_JSON, AwsHttpServletRequestHelper.getFirst(resp.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE)); //resp.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.APPLICATION_JSON, resp.getMultiValueHeaders().get(HttpHeaders.CONTENT_TYPE).get(0));
     }
 
     @Test
@@ -89,7 +87,7 @@ public class AwsProxyExceptionHandlerTest {
 
         assertNotNull(resp);
         assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
-        assertEquals(MediaType.APPLICATION_JSON, AwsHttpServletRequestHelper.getFirst(resp.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.APPLICATION_JSON, resp.getMultiValueHeaders().get(HttpHeaders.CONTENT_TYPE).get(0));
     }
 
     @Test
@@ -127,7 +125,7 @@ public class AwsProxyExceptionHandlerTest {
 
         assertNotNull(resp);
         assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
-        assertEquals(MediaType.APPLICATION_JSON, AwsHttpServletRequestHelper.getFirst(resp.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.APPLICATION_JSON, resp.getMultiValueHeaders().get(HttpHeaders.CONTENT_TYPE).get(0));
     }
 
     @Test
@@ -138,7 +136,7 @@ public class AwsProxyExceptionHandlerTest {
         assertNotNull(resp);
         assertEquals(502, resp.getStatusCode());
         assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
-        assertEquals(MediaType.APPLICATION_JSON, AwsHttpServletRequestHelper.getFirst(resp.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.APPLICATION_JSON, resp.getMultiValueHeaders().get(HttpHeaders.CONTENT_TYPE).get(0));
         String body = objectMapper.writeValueAsString(new ErrorModel(AwsProxyExceptionHandler.GATEWAY_TIMEOUT_ERROR));
         assertEquals(body, resp.getBody());
     }
@@ -181,7 +179,7 @@ public class AwsProxyExceptionHandlerTest {
         AwsProxyResponse resp = objectMapper.readValue(new ByteArrayInputStream(respStream.toByteArray()), AwsProxyResponse.class);
         assertNotNull(resp);
         assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
-        assertEquals(MediaType.APPLICATION_JSON, AwsHttpServletRequestHelper.getFirst(resp.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.APPLICATION_JSON, resp.getMultiValueHeaders().get(HttpHeaders.CONTENT_TYPE).get(0));
     }
 
     @Test
@@ -222,7 +220,7 @@ public class AwsProxyExceptionHandlerTest {
         AwsProxyResponse resp = objectMapper.readValue(new ByteArrayInputStream(respStream.toByteArray()), AwsProxyResponse.class);
         assertNotNull(resp);
         assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
-        assertEquals(MediaType.APPLICATION_JSON, AwsHttpServletRequestHelper.getFirst(resp.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.APPLICATION_JSON, resp.getMultiValueHeaders().get(HttpHeaders.CONTENT_TYPE).get(0));
     }
 
     @Test

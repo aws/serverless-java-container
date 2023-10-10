@@ -14,9 +14,10 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.*;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 
+import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayV2HTTPEvent;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -97,7 +98,18 @@ public abstract class ServletLambdaContainerHandlerBuilder<
                 .responseWriter((ResponseWriter<AwsHttpServletResponse, ResponseType>) new AwsProxyHttpServletResponseWriter())
                 .securityContextWriter((SecurityContextWriter<RequestType>) new AwsProxySecurityContextWriter())
                 .exceptionHandler((ExceptionHandler<ResponseType>) new AwsProxyExceptionHandler())
-                .requestTypeClass((Class<RequestType>) AwsProxyRequest.class)
+                .requestTypeClass((Class<RequestType>) APIGatewayProxyRequestEvent.class)
+                .responseTypeClass((Class<ResponseType>) AwsProxyResponse.class);
+        return self();
+    }
+
+    public Builder defaultAlbProxy() {
+        initializationWrapper(new InitializationWrapper())
+                .requestReader((RequestReader<RequestType, ContainerRequestType>) new AwsAlbHttpServletRequestReader())
+                .responseWriter((ResponseWriter<AwsHttpServletResponse, ResponseType>) new AwsAlbHttpServletResponseWriter())
+                .securityContextWriter((SecurityContextWriter<RequestType>) new AwsAlbSecurityContextWriter())
+                .exceptionHandler((ExceptionHandler<ResponseType>) new AwsAlbExceptionHandler())
+                .requestTypeClass((Class<RequestType>) ApplicationLoadBalancerRequestEvent.class)
                 .responseTypeClass((Class<ResponseType>) AwsProxyResponse.class);
         return self();
     }
