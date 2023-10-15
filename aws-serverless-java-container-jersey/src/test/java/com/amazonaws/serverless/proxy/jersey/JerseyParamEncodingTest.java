@@ -8,10 +8,10 @@ import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.jersey.model.MapResponseModel;
 import com.amazonaws.serverless.proxy.jersey.model.SingleValueModel;
 import com.amazonaws.serverless.proxy.jersey.providers.ServletRequestFilter;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
 import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayV2HTTPEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -70,14 +70,14 @@ public class JerseyParamEncodingTest {
     .register(new ResourceBinder())
     .property("jersey.config.server.tracing.type", "ALL")
     .property("jersey.config.server.tracing.threshold", "VERBOSE");
-    private static JerseyLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponse> handler;
+    private static JerseyLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponseEvent> handler;
 
     private static ResourceConfig httpApiApp = new ResourceConfig().packages("com.amazonaws.serverless.proxy.jersey")
     .register(MultiPartFeature.class)
     .register(new ResourceBinder())
     .property("jersey.config.server.tracing.type", "ALL")
     .property("jersey.config.server.tracing.threshold", "VERBOSE");
-    private static JerseyLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponse> httpApiHandler;
+    private static JerseyLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponseEvent> httpApiHandler;
 
     private static ResourceConfig albApp = new ResourceConfig().packages("com.amazonaws.serverless.proxy.jersey")
             .register(LoggingFeature.class)
@@ -85,7 +85,7 @@ public class JerseyParamEncodingTest {
             .register(MultiPartFeature.class)
             .register(new ResourceBinder())
             .property(LoggingFeature.LOGGING_FEATURE_VERBOSITY_SERVER, LoggingFeature.Verbosity.PAYLOAD_ANY);
-    private static JerseyLambdaContainerHandler<ApplicationLoadBalancerRequestEvent, AwsProxyResponse> albHandler;
+    private static JerseyLambdaContainerHandler<ApplicationLoadBalancerRequestEvent, AwsProxyResponseEvent> albHandler;
 
     private static Context lambdaContext = new MockLambdaContext();
 
@@ -104,7 +104,7 @@ public class JerseyParamEncodingTest {
         return new AwsProxyRequestBuilder(path, method);
     }
 
-    private AwsProxyResponse executeRequest(AwsProxyRequestBuilder requestBuilder, Context lambdaContext) {
+    private AwsProxyResponseEvent executeRequest(AwsProxyRequestBuilder requestBuilder, Context lambdaContext) {
         switch (type) {
             case "API_GW":
                 if (handler == null) {
@@ -134,7 +134,7 @@ public class JerseyParamEncodingTest {
         .json()
         .queryString(QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE);
 
-        AwsProxyResponse output = executeRequest(request, lambdaContext);
+        AwsProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
         assertEquals("application/json", AwsHttpServletRequestHelper.getFirst(output.getMultiValueHeaders(), "Content-Type"));
 
@@ -149,7 +149,7 @@ public class JerseyParamEncodingTest {
         .json()
         .queryString(QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE);
 
-        AwsProxyResponse output = executeRequest(request, lambdaContext);
+        AwsProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
         assertEquals("application/json", AwsHttpServletRequestHelper.getFirst(output.getMultiValueHeaders(), "Content-Type"));
 
@@ -165,7 +165,7 @@ public class JerseyParamEncodingTest {
         .json()
         .queryString(QUERY_STRING_KEY, QUERY_STRING_ENCODED_VALUE);
 
-        AwsProxyResponse output = executeRequest(request, lambdaContext);
+        AwsProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
         assertEquals("application/json", AwsHttpServletRequestHelper.getFirst(output.getMultiValueHeaders(), "Content-Type"));
 
@@ -178,7 +178,7 @@ public class JerseyParamEncodingTest {
         initJerseyParamEncodingTest(reqType);
         AwsProxyRequestBuilder request = getRequestBuilder("/echo/decoded-param", "GET").queryString("param", SIMPLE_ENCODED_PARAM);
 
-        AwsProxyResponse resp = executeRequest(request, lambdaContext);
+        AwsProxyResponseEvent resp = executeRequest(request, lambdaContext);
         assertEquals(200, resp.getStatusCode());
         validateSingleValueModel(resp, SIMPLE_ENCODED_PARAM);
     }
@@ -189,7 +189,7 @@ public class JerseyParamEncodingTest {
         initJerseyParamEncodingTest(reqType);
         AwsProxyRequestBuilder request = getRequestBuilder("/echo/decoded-param", "GET").queryString("param", JSON_ENCODED_PARAM);
 
-        AwsProxyResponse resp = executeRequest(request, lambdaContext);
+        AwsProxyResponseEvent resp = executeRequest(request, lambdaContext);
         assertEquals(200, resp.getStatusCode());
         validateSingleValueModel(resp, JSON_ENCODED_PARAM);
     }
@@ -205,7 +205,7 @@ public class JerseyParamEncodingTest {
         } catch (UnsupportedEncodingException e) {
             fail("Could not encode parameter value");
         }
-        AwsProxyResponse resp = executeRequest(request, lambdaContext);
+        AwsProxyResponseEvent resp = executeRequest(request, lambdaContext);
         assertEquals(200, resp.getStatusCode());
         validateSingleValueModel(resp, encodedVal);
     }
@@ -221,7 +221,7 @@ public class JerseyParamEncodingTest {
         } catch (UnsupportedEncodingException e) {
             fail("Could not encode parameter value");
         }
-        AwsProxyResponse resp = executeRequest(request, lambdaContext);
+        AwsProxyResponseEvent resp = executeRequest(request, lambdaContext);
         assertEquals(200, resp.getStatusCode());
         validateSingleValueModel(resp, encodedVal);
     }
@@ -232,7 +232,7 @@ public class JerseyParamEncodingTest {
         initJerseyParamEncodingTest(reqType);
         String paramValue = "/+=";
         AwsProxyRequestBuilder request = getRequestBuilder("/echo/encoded-param", "GET").queryString("param", paramValue);
-        AwsProxyResponse resp = executeRequest(request, lambdaContext);
+        AwsProxyResponseEvent resp = executeRequest(request, lambdaContext);
         assertNotNull(resp);
         assertEquals(200, resp.getStatusCode());
         validateSingleValueModel(resp, "%2F%2B%3D");
@@ -245,7 +245,7 @@ public class JerseyParamEncodingTest {
         String encodedParam = "http%3A%2F%2Fhelloresource.com";
         String path = "/echo/encoded-path/" + encodedParam;
         AwsProxyRequestBuilder request = getRequestBuilder(path, "GET");
-        AwsProxyResponse resp = executeRequest(request, lambdaContext);
+        AwsProxyResponseEvent resp = executeRequest(request, lambdaContext);
         assertNotNull(resp);
         assertEquals(200, resp.getStatusCode());
         validateSingleValueModel(resp, encodedParam);
@@ -258,7 +258,7 @@ public class JerseyParamEncodingTest {
         String encodedParam = "http://helloresource.com";
         String path = "/echo/encoded-path/" + encodedParam;
         AwsProxyRequestBuilder request = getRequestBuilder(path, "GET");
-        AwsProxyResponse resp = executeRequest(request, lambdaContext);
+        AwsProxyResponseEvent resp = executeRequest(request, lambdaContext);
         assertNotNull(resp);
         assertEquals(404, resp.getStatusCode());
     }
@@ -269,7 +269,7 @@ public class JerseyParamEncodingTest {
     void queryParam_listOfString_expectCorrectLength(String reqType) {
         initJerseyParamEncodingTest(reqType);
         AwsProxyRequestBuilder request = getRequestBuilder("/echo/list-query-string", "GET").queryString("list", "v1,v2,v3");
-        AwsProxyResponse resp = executeRequest(request, lambdaContext);
+        AwsProxyResponseEvent resp = executeRequest(request, lambdaContext);
         assertNotNull(resp);
         assertEquals(200, resp.getStatusCode());
         validateSingleValueModel(resp, "3");
@@ -282,13 +282,13 @@ public class JerseyParamEncodingTest {
         initJerseyParamEncodingTest(reqType);
         AwsProxyRequestBuilder request = getRequestBuilder("/echo/file-size", "POST")
         .formFilePart("file", "myfile.jpg", FILE_CONTENTS);
-        AwsProxyResponse resp = executeRequest(request, lambdaContext);
+        AwsProxyResponseEvent resp = executeRequest(request, lambdaContext);
         assertNotNull(resp);
         assertEquals(200, resp.getStatusCode());
         validateSingleValueModel(resp, "" + FILE_CONTENTS.length);
     }
 
-    private void validateSingleValueModel(AwsProxyResponse output, String value) {
+    private void validateSingleValueModel(AwsProxyResponseEvent output, String value) {
         try {
             SingleValueModel response = objectMapper.readValue(output.getBody(), SingleValueModel.class);
             assertNotNull(response.getValue());
@@ -299,7 +299,7 @@ public class JerseyParamEncodingTest {
         }
     }
 
-    private void validateMapResponseModel(AwsProxyResponse output, String key, String value) {
+    private void validateMapResponseModel(AwsProxyResponseEvent output, String key, String value) {
         try {
             MapResponseModel response = objectMapper.readValue(output.getBody(), MapResponseModel.class);
             assertNotNull(response.getValues().get(key));

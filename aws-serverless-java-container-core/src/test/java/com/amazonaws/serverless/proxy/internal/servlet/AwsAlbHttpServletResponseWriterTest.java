@@ -4,9 +4,9 @@ import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.exceptions.InvalidResponseObjectException;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 
@@ -26,17 +26,17 @@ public class AwsAlbHttpServletResponseWriterTest {
         AwsHttpServletResponse response = new AwsHttpServletResponse(servletRequest, new CountDownLatch(1));
         response.setAwsResponseBodyString("Random string");
 
-        AwsProxyResponse res3 = responseWriter.writeResponse(response, new MockLambdaContext());
+        AwsProxyResponseEvent res3 = responseWriter.writeResponse(response, new MockLambdaContext());
         assertTrue(res3.getHeaders().isEmpty());
 
         response.setContentType("application/octet-stream");
-        AwsProxyResponse res2 = responseWriter.writeResponse(response, new MockLambdaContext());
-        assertTrue(res2.isBase64Encoded());
+        AwsProxyResponseEvent res2 = responseWriter.writeResponse(response, new MockLambdaContext());
+        assertTrue(res2.getIsBase64Encoded());
 
         response.setHeader("Connection", "Keep-Alive");
         response.setContentType("application/octet-stream;");
         response.setStatus(200);
-        AwsProxyResponse res1 = responseWriter.writeResponse(response, new MockLambdaContext());
+        AwsProxyResponseEvent res1 = responseWriter.writeResponse(response, new MockLambdaContext());
         assertNotNull(res1);
         assertEquals(200, res1.getStatusCode());
     }

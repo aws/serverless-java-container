@@ -6,9 +6,9 @@ import com.amazonaws.serverless.proxy.AwsProxyExceptionHandler;
 import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
 import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper;
@@ -130,7 +130,7 @@ public class AwsProxyRequestDispatcherTest {
         final String secondPart = "second";
         APIGatewayProxyRequestEvent proxyRequest = new AwsProxyRequestBuilder("/hello", "GET").build();
 
-        AwsProxyResponse resp = mockLambdaHandler((AwsProxyHttpServletRequest req, AwsHttpServletResponse res) -> {
+        AwsProxyResponseEvent resp = mockLambdaHandler((AwsProxyHttpServletRequest req, AwsHttpServletResponse res) -> {
             if (req.getAttribute("cnt") == null) {
                 res.getOutputStream().write(firstPart.getBytes());
                 req.setAttribute("cnt", 1);
@@ -151,7 +151,7 @@ public class AwsProxyRequestDispatcherTest {
         final String headerKey = "X-Custom-Header";
         APIGatewayProxyRequestEvent proxyRequest = new AwsProxyRequestBuilder("/hello", "GET").build();
 
-        AwsProxyResponse resp = mockLambdaHandler((AwsProxyHttpServletRequest req, AwsHttpServletResponse res) -> {
+        AwsProxyResponseEvent resp = mockLambdaHandler((AwsProxyHttpServletRequest req, AwsHttpServletResponse res) -> {
             if (req.getAttribute("cnt") == null) {
                 res.getOutputStream().write(firstPart.getBytes());
                 req.setAttribute("cnt", 1);
@@ -172,10 +172,10 @@ public class AwsProxyRequestDispatcherTest {
     }
 
 
-    private AwsLambdaServletContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponse, HttpServletRequest, AwsHttpServletResponse> mockLambdaHandler(RequestHandler h) {
-        return new AwsLambdaServletContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponse, HttpServletRequest, AwsHttpServletResponse>(
+    private AwsLambdaServletContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponseEvent, HttpServletRequest, AwsHttpServletResponse> mockLambdaHandler(RequestHandler h) {
+        return new AwsLambdaServletContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponseEvent, HttpServletRequest, AwsHttpServletResponse>(
                 APIGatewayProxyRequestEvent.class,
-                AwsProxyResponse.class,
+                AwsProxyResponseEvent.class,
                 new AwsProxyHttpServletRequestReader(),
                 new AwsProxyHttpServletResponseWriter(),
                 new AwsProxySecurityContextWriter(),

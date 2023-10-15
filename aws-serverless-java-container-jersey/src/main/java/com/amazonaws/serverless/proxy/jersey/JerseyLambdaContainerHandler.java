@@ -19,11 +19,11 @@ import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.jersey.suppliers.AwsProxyServletContextSupplier;
 import com.amazonaws.serverless.proxy.jersey.suppliers.AwsProxyServletRequestSupplier;
 import com.amazonaws.serverless.proxy.jersey.suppliers.AwsProxyServletResponseSupplier;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 
 import com.amazonaws.services.lambda.runtime.Context;
 
 import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
 import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayV2HTTPEvent;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
@@ -89,10 +89,10 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
      *                         <code>ResourceConfig</code> object
      * @return A <code>JerseyLambdaContainerHandler</code> object
      */
-    public static JerseyLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponse> getAwsProxyHandler(Application jaxRsApplication) {
-        JerseyLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponse> newHandler = new JerseyLambdaContainerHandler<>(
+    public static JerseyLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponseEvent> getAwsProxyHandler(Application jaxRsApplication) {
+        JerseyLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponseEvent> newHandler = new JerseyLambdaContainerHandler<>(
                 APIGatewayProxyRequestEvent.class,
-                AwsProxyResponse.class,
+                AwsProxyResponseEvent.class,
                 new AwsProxyHttpServletRequestReader(),
                 new AwsProxyHttpServletResponseWriter(),
                 new AwsProxySecurityContextWriter(),
@@ -111,10 +111,10 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
      *                         <code>ResourceConfig</code> object
      * @return A <code>JerseyLambdaContainerHandler</code> object
      */
-    public static JerseyLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponse> getHttpApiV2ProxyHandler(Application jaxRsApplication) {
-        JerseyLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponse> newHandler = new JerseyLambdaContainerHandler<>(
+    public static JerseyLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponseEvent> getHttpApiV2ProxyHandler(Application jaxRsApplication) {
+        JerseyLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponseEvent> newHandler = new JerseyLambdaContainerHandler<>(
                 APIGatewayV2HTTPEvent.class,
-                AwsProxyResponse.class,
+                AwsProxyResponseEvent.class,
                 new AwsHttpApiV2HttpServletRequestReader(),
                 new AwsProxyHttpServletResponseWriter(true),
                 new AwsHttpApiV2SecurityContextWriter(),
@@ -124,10 +124,10 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
         return newHandler;
     }
 
-    public static JerseyLambdaContainerHandler<ApplicationLoadBalancerRequestEvent, AwsProxyResponse> getAlbProxyHandler(Application jaxRsApplication) {
-        JerseyLambdaContainerHandler<ApplicationLoadBalancerRequestEvent, AwsProxyResponse> newHandler = new JerseyLambdaContainerHandler<>(
+    public static JerseyLambdaContainerHandler<ApplicationLoadBalancerRequestEvent, AwsProxyResponseEvent> getAlbProxyHandler(Application jaxRsApplication) {
+        JerseyLambdaContainerHandler<ApplicationLoadBalancerRequestEvent, AwsProxyResponseEvent> newHandler = new JerseyLambdaContainerHandler<>(
                 ApplicationLoadBalancerRequestEvent.class,
-                AwsProxyResponse.class,
+                AwsProxyResponseEvent.class,
                 new AwsAlbHttpServletRequestReader(),
                 new AwsProxyHttpServletResponseWriter(true),
                 new AwsAlbSecurityContextWriter(),

@@ -3,19 +3,19 @@ package com.amazonaws.serverless.proxy.spring.webfluxapp;
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.InitializationWrapper;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
 import com.amazonaws.serverless.proxy.spring.SpringBootProxyHandlerBuilder;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
 import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayV2HTTPEvent;
 
-public class LambdaHandler implements RequestHandler<AwsProxyRequestBuilder, AwsProxyResponse> {
-    private static SpringBootLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponse> handler;
-    private static SpringBootLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponse> httpApiHandler;
-    private static SpringBootLambdaContainerHandler<ApplicationLoadBalancerRequestEvent, AwsProxyResponse> albHandler;
+public class LambdaHandler implements RequestHandler<AwsProxyRequestBuilder, AwsProxyResponseEvent> {
+    private static SpringBootLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponseEvent> handler;
+    private static SpringBootLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponseEvent> httpApiHandler;
+    private static SpringBootLambdaContainerHandler<ApplicationLoadBalancerRequestEvent, AwsProxyResponseEvent> albHandler;
 
     private String type;
 
@@ -51,7 +51,7 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequestBuilder, Aws
     }
 
     @Override
-    public AwsProxyResponse handleRequest(AwsProxyRequestBuilder awsProxyRequest, Context context) {
+    public AwsProxyResponseEvent handleRequest(AwsProxyRequestBuilder awsProxyRequest, Context context) {
         switch (type) {
             case "API_GW":
                 return handler.proxy(awsProxyRequest.build(), context);

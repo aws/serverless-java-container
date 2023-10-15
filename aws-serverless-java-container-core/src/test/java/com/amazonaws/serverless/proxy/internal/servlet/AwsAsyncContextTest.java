@@ -7,8 +7,8 @@ import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
 import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
 import org.junit.jupiter.api.Test;
 
@@ -86,13 +86,13 @@ public class AwsAsyncContextTest {
         return ctx;
     }
 
-    public static class MockContainerHandler extends AwsLambdaServletContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponse, HttpServletRequest, AwsHttpServletResponse> {
+    public static class MockContainerHandler extends AwsLambdaServletContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponseEvent, HttpServletRequest, AwsHttpServletResponse> {
         private int desiredStatus;
         private HttpServletResponse response;
         private Servlet selectedServlet;
 
         public MockContainerHandler() {
-            super(APIGatewayProxyRequestEvent.class, AwsProxyResponse.class, new AwsProxyHttpServletRequestReader(), new AwsProxyHttpServletResponseWriter(), new AwsProxySecurityContextWriter(), new AwsProxyExceptionHandler());
+            super(APIGatewayProxyRequestEvent.class, AwsProxyResponseEvent.class, new AwsProxyHttpServletRequestReader(), new AwsProxyHttpServletResponseWriter(), new AwsProxySecurityContextWriter(), new AwsProxyExceptionHandler());
             desiredStatus = 200;
         }
 

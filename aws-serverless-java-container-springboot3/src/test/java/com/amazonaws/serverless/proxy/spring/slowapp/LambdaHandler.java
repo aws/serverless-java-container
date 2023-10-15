@@ -1,17 +1,17 @@
 package com.amazonaws.serverless.proxy.spring.slowapp;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
 import com.amazonaws.serverless.proxy.spring.SpringBootProxyHandlerBuilder;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
 import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
 
 import java.time.Instant;
 
-public class LambdaHandler implements RequestHandler<APIGatewayProxyRequestEvent, AwsProxyResponse> {
-    private SpringBootLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponse> handler;
+public class LambdaHandler implements RequestHandler<APIGatewayProxyRequestEvent, AwsProxyResponseEvent> {
+    private SpringBootLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponseEvent> handler;
     private long constructorTime;
 
     public LambdaHandler() {
@@ -34,7 +34,7 @@ public class LambdaHandler implements RequestHandler<APIGatewayProxyRequestEvent
     }
 
     @Override
-    public AwsProxyResponse handleRequest(APIGatewayProxyRequestEvent awsProxyRequest, Context context) {
+    public AwsProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent awsProxyRequest, Context context) {
         return handler.proxy(awsProxyRequest, context);
     }
 }

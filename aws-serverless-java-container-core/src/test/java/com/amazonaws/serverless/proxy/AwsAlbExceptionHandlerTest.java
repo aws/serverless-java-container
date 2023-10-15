@@ -2,8 +2,8 @@ package com.amazonaws.serverless.proxy;
 
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.exceptions.InvalidResponseObjectException;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.ErrorModel;
+import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.InternalServerErrorException;
@@ -38,7 +38,7 @@ public class AwsAlbExceptionHandlerTest {
 
     @Test
     void typedHandle_InvalidRequestEventException_500State() {
-        AwsProxyResponse resp = exceptionHandler.handle(new InvalidRequestEventException(INVALID_REQUEST_MESSAGE, null));
+        AwsProxyResponseEvent resp = exceptionHandler.handle(new InvalidRequestEventException(INVALID_REQUEST_MESSAGE, null));
 
         assertNotNull(resp);
         assertEquals(500, resp.getStatusCode());
@@ -47,7 +47,7 @@ public class AwsAlbExceptionHandlerTest {
     @Test
     void typedHandle_InvalidRequestEventException_responseString()
             throws JsonProcessingException {
-        AwsProxyResponse resp = exceptionHandler.handle(new InvalidRequestEventException(INVALID_REQUEST_MESSAGE, null));
+        AwsProxyResponseEvent resp = exceptionHandler.handle(new InvalidRequestEventException(INVALID_REQUEST_MESSAGE, null));
 
         assertNotNull(resp);
         String body = objectMapper.writeValueAsString(new ErrorModel(AwsProxyExceptionHandler.INTERNAL_SERVER_ERROR));
@@ -56,7 +56,7 @@ public class AwsAlbExceptionHandlerTest {
 
     @Test
     void typedHandle_InvalidRequestEventException_jsonContentTypeHeader() {
-        AwsProxyResponse resp = exceptionHandler.handle(new InvalidRequestEventException(INVALID_REQUEST_MESSAGE, null));
+        AwsProxyResponseEvent resp = exceptionHandler.handle(new InvalidRequestEventException(INVALID_REQUEST_MESSAGE, null));
 
         assertNotNull(resp);
         assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
@@ -65,7 +65,7 @@ public class AwsAlbExceptionHandlerTest {
 
     @Test
     void typedHandle_InvalidResponseObjectException_502State() {
-        AwsProxyResponse resp = exceptionHandler.handle(new InvalidResponseObjectException(INVALID_RESPONSE_MESSAGE, null));
+        AwsProxyResponseEvent resp = exceptionHandler.handle(new InvalidResponseObjectException(INVALID_RESPONSE_MESSAGE, null));
 
         assertNotNull(resp);
         assertEquals(502, resp.getStatusCode());
@@ -74,7 +74,7 @@ public class AwsAlbExceptionHandlerTest {
     @Test
     void typedHandle_InvalidResponseObjectException_responseString()
             throws JsonProcessingException {
-        AwsProxyResponse resp = exceptionHandler.handle(new InvalidResponseObjectException(INVALID_RESPONSE_MESSAGE, null));
+        AwsProxyResponseEvent resp = exceptionHandler.handle(new InvalidResponseObjectException(INVALID_RESPONSE_MESSAGE, null));
 
         assertNotNull(resp);
         String body = objectMapper.writeValueAsString(new ErrorModel(AwsProxyExceptionHandler.GATEWAY_TIMEOUT_ERROR));
@@ -83,7 +83,7 @@ public class AwsAlbExceptionHandlerTest {
 
     @Test
     void typedHandle_InvalidResponseObjectException_jsonContentTypeHeader() {
-        AwsProxyResponse resp = exceptionHandler.handle(new InvalidResponseObjectException(INVALID_RESPONSE_MESSAGE, null));
+        AwsProxyResponseEvent resp = exceptionHandler.handle(new InvalidResponseObjectException(INVALID_RESPONSE_MESSAGE, null));
 
         assertNotNull(resp);
         assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
@@ -97,7 +97,7 @@ public class AwsAlbExceptionHandlerTest {
         InternalServerErrorException mockInternalServerErrorException = Mockito.mock(InternalServerErrorException.class);
         Mockito.when(mockInternalServerErrorException.getMessage()).thenReturn(INTERNAL_SERVER_ERROR_MESSAGE);
 
-        AwsProxyResponse resp = exceptionHandler.handle(mockInternalServerErrorException);
+        AwsProxyResponseEvent resp = exceptionHandler.handle(mockInternalServerErrorException);
 
         assertNotNull(resp);
         assertEquals(500, resp.getStatusCode());
@@ -109,7 +109,7 @@ public class AwsAlbExceptionHandlerTest {
         InternalServerErrorException mockInternalServerErrorException = Mockito.mock(InternalServerErrorException.class);
         Mockito.when(mockInternalServerErrorException.getMessage()).thenReturn(INTERNAL_SERVER_ERROR_MESSAGE);
 
-        AwsProxyResponse resp = exceptionHandler.handle(mockInternalServerErrorException);
+        AwsProxyResponseEvent resp = exceptionHandler.handle(mockInternalServerErrorException);
 
         assertNotNull(resp);
         String body = objectMapper.writeValueAsString(new ErrorModel(AwsProxyExceptionHandler.INTERNAL_SERVER_ERROR));
@@ -121,7 +121,7 @@ public class AwsAlbExceptionHandlerTest {
         InternalServerErrorException mockInternalServerErrorException = Mockito.mock(InternalServerErrorException.class);
         Mockito.when(mockInternalServerErrorException.getMessage()).thenReturn(INTERNAL_SERVER_ERROR_MESSAGE);
 
-        AwsProxyResponse resp = exceptionHandler.handle(mockInternalServerErrorException);
+        AwsProxyResponseEvent resp = exceptionHandler.handle(mockInternalServerErrorException);
 
         assertNotNull(resp);
         assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
@@ -131,7 +131,7 @@ public class AwsAlbExceptionHandlerTest {
     @Test
     void typedHandle_NullPointerException_responseObject()
             throws JsonProcessingException {
-        AwsProxyResponse resp = exceptionHandler.handle(new NullPointerException());
+        AwsProxyResponseEvent resp = exceptionHandler.handle(new NullPointerException());
 
         assertNotNull(resp);
         assertEquals(502, resp.getStatusCode());
@@ -149,7 +149,7 @@ public class AwsAlbExceptionHandlerTest {
 
         assertNotNull(respStream);
         assertTrue(respStream.size() > 0);
-        AwsProxyResponse resp = objectMapper.readValue(new ByteArrayInputStream(respStream.toByteArray()), AwsProxyResponse.class);
+        AwsProxyResponseEvent resp = objectMapper.readValue(new ByteArrayInputStream(respStream.toByteArray()), AwsProxyResponseEvent.class);
         assertNotNull(resp);
         assertEquals(500, resp.getStatusCode());
     }
@@ -162,7 +162,7 @@ public class AwsAlbExceptionHandlerTest {
 
         assertNotNull(respStream);
         assertTrue(respStream.size() > 0);
-        AwsProxyResponse resp = objectMapper.readValue(new ByteArrayInputStream(respStream.toByteArray()), AwsProxyResponse.class);
+        AwsProxyResponseEvent resp = objectMapper.readValue(new ByteArrayInputStream(respStream.toByteArray()), AwsProxyResponseEvent.class);
         assertNotNull(resp);
         String body = objectMapper.writeValueAsString(new ErrorModel(AwsProxyExceptionHandler.INTERNAL_SERVER_ERROR));
         assertEquals(body, resp.getBody());
@@ -176,7 +176,7 @@ public class AwsAlbExceptionHandlerTest {
 
         assertNotNull(respStream);
         assertTrue(respStream.size() > 0);
-        AwsProxyResponse resp = objectMapper.readValue(new ByteArrayInputStream(respStream.toByteArray()), AwsProxyResponse.class);
+        AwsProxyResponseEvent resp = objectMapper.readValue(new ByteArrayInputStream(respStream.toByteArray()), AwsProxyResponseEvent.class);
         assertNotNull(resp);
         assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
         assertEquals(MediaType.APPLICATION_JSON, resp.getMultiValueHeaders().get(HttpHeaders.CONTENT_TYPE).get(0));
@@ -190,7 +190,7 @@ public class AwsAlbExceptionHandlerTest {
 
         assertNotNull(respStream);
         assertTrue(respStream.size() > 0);
-        AwsProxyResponse resp = objectMapper.readValue(new ByteArrayInputStream(respStream.toByteArray()), AwsProxyResponse.class);
+        AwsProxyResponseEvent resp = objectMapper.readValue(new ByteArrayInputStream(respStream.toByteArray()), AwsProxyResponseEvent.class);
         assertNotNull(resp);
         assertEquals(502, resp.getStatusCode());
     }
@@ -203,7 +203,7 @@ public class AwsAlbExceptionHandlerTest {
 
         assertNotNull(respStream);
         assertTrue(respStream.size() > 0);
-        AwsProxyResponse resp = objectMapper.readValue(new ByteArrayInputStream(respStream.toByteArray()), AwsProxyResponse.class);
+        AwsProxyResponseEvent resp = objectMapper.readValue(new ByteArrayInputStream(respStream.toByteArray()), AwsProxyResponseEvent.class);
         assertNotNull(resp);
         String body = objectMapper.writeValueAsString(new ErrorModel(AwsProxyExceptionHandler.GATEWAY_TIMEOUT_ERROR));
         assertEquals(body, resp.getBody());
@@ -217,7 +217,7 @@ public class AwsAlbExceptionHandlerTest {
 
         assertNotNull(respStream);
         assertTrue(respStream.size() > 0);
-        AwsProxyResponse resp = objectMapper.readValue(new ByteArrayInputStream(respStream.toByteArray()), AwsProxyResponse.class);
+        AwsProxyResponseEvent resp = objectMapper.readValue(new ByteArrayInputStream(respStream.toByteArray()), AwsProxyResponseEvent.class);
         assertNotNull(resp);
         assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
         assertEquals(MediaType.APPLICATION_JSON, resp.getMultiValueHeaders().get(HttpHeaders.CONTENT_TYPE).get(0));

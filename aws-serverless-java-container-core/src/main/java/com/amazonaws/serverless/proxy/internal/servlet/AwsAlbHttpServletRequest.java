@@ -46,7 +46,7 @@ public class AwsAlbHttpServletRequest extends AwsHttpServletRequest {
         this.config = config;
     }
 
-    public ApplicationLoadBalancerRequestEvent getAwsProxyRequest() {
+    public ApplicationLoadBalancerRequestEvent getAlbRequest() {
         return this.request;
     }
     @Override

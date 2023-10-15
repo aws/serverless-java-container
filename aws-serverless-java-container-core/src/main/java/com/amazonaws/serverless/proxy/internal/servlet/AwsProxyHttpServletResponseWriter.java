@@ -17,9 +17,9 @@ import com.amazonaws.serverless.exceptions.InvalidResponseObjectException;
 import com.amazonaws.serverless.proxy.ResponseWriter;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.Headers;
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
 
 import java.util.Base64;
 import java.util.HashMap;
@@ -30,7 +30,7 @@ import java.util.Map;
  * Creates an <code>AwsProxyResponse</code> object given an <code>AwsHttpServletResponse</code> object. If the
  * response is not populated with a status code we infer a default 200 status code.
  */
-public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpServletResponse, AwsProxyResponse> {
+public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpServletResponse, AwsProxyResponseEvent> {
 
     private boolean writeSingleValueHeaders;
 
@@ -47,10 +47,10 @@ public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpSer
     //-------------------------------------------------------------
 
     @Override
-    public AwsProxyResponse writeResponse(AwsHttpServletResponse containerResponse, Context lambdaContext)
+    public AwsProxyResponseEvent writeResponse(AwsHttpServletResponse containerResponse, Context lambdaContext)
             throws InvalidResponseObjectException {
         Timer.start("SERVLET_RESPONSE_WRITE");
-        AwsProxyResponse awsProxyResponse = new AwsProxyResponse();
+        AwsProxyResponseEvent awsProxyResponse = new AwsProxyResponseEvent();
         if (containerResponse.getAwsResponseBodyString() != null) {
             String responseString;
 
@@ -58,7 +58,7 @@ public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpSer
                 responseString = containerResponse.getAwsResponseBodyString();
             } else {
                 responseString = Base64.getEncoder().encodeToString(containerResponse.getAwsResponseBodyBytes());
-                awsProxyResponse.setBase64Encoded(true);
+                awsProxyResponse.setIsBase64Encoded(true);
             }
 
             awsProxyResponse.setBody(responseString);

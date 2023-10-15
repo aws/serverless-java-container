@@ -14,9 +14,9 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.*;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 
 import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
 import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayV2HTTPEvent;
 import jakarta.servlet.http.HttpServletRequest;
@@ -99,7 +99,7 @@ public abstract class ServletLambdaContainerHandlerBuilder<
                 .securityContextWriter((SecurityContextWriter<RequestType>) new AwsProxySecurityContextWriter())
                 .exceptionHandler((ExceptionHandler<ResponseType>) new AwsProxyExceptionHandler())
                 .requestTypeClass((Class<RequestType>) APIGatewayProxyRequestEvent.class)
-                .responseTypeClass((Class<ResponseType>) AwsProxyResponse.class);
+                .responseTypeClass((Class<ResponseType>) AwsProxyResponseEvent.class);
         return self();
     }
 
@@ -110,7 +110,7 @@ public abstract class ServletLambdaContainerHandlerBuilder<
                 .securityContextWriter((SecurityContextWriter<RequestType>) new AwsAlbSecurityContextWriter())
                 .exceptionHandler((ExceptionHandler<ResponseType>) new AwsAlbExceptionHandler())
                 .requestTypeClass((Class<RequestType>) ApplicationLoadBalancerRequestEvent.class)
-                .responseTypeClass((Class<ResponseType>) AwsProxyResponse.class);
+                .responseTypeClass((Class<ResponseType>) AwsProxyResponseEvent.class);
         return self();
     }
 
@@ -126,7 +126,7 @@ public abstract class ServletLambdaContainerHandlerBuilder<
                 .securityContextWriter((SecurityContextWriter<RequestType>) new AwsHttpApiV2SecurityContextWriter())
                 .exceptionHandler((ExceptionHandler<ResponseType>) new AwsProxyExceptionHandler())
                 .requestTypeClass((Class<RequestType>) APIGatewayV2HTTPEvent.class)
-                .responseTypeClass((Class<ResponseType>) AwsProxyResponse.class);
+                .responseTypeClass((Class<ResponseType>) AwsProxyResponseEvent.class);
         return self();
 
     }

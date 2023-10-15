@@ -15,6 +15,7 @@ package com.amazonaws.serverless.proxy.jersey;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
 import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
 import jakarta.inject.Singleton;
 
@@ -22,7 +23,6 @@ import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.jupiter.api.Test;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 
 /**
  * Test that one can access the Jersey injection manager
@@ -42,7 +42,7 @@ public class JerseyInjectionTest {
     private static ResourceConfig app = new ResourceConfig().register(MultiPartFeature.class)
                                                             .register(new ResourceBinder());
 
-    private static JerseyLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponse> handler = JerseyLambdaContainerHandler.getAwsProxyHandler(
+    private static JerseyLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponseEvent> handler = JerseyLambdaContainerHandler.getAwsProxyHandler(
             app);
 
     @Test

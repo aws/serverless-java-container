@@ -3,9 +3,9 @@ package com.amazonaws.serverless.proxy.spring;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.serverless.proxy.spring.servletapp.*;
+import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -45,7 +45,7 @@ public class ServletAppTest {
         AwsProxyRequestBuilder req = new AwsProxyRequestBuilder("/async", "POST")
                 .json()
                 .body("{\"name\":\"bob\"}");
-        AwsProxyResponse resp = handler.handleRequest(req, lambdaContext);
+        AwsProxyResponseEvent resp = handler.handleRequest(req, lambdaContext);
         assertEquals("{\"name\":\"BOB\"}", resp.getBody());
     }
 
@@ -54,7 +54,7 @@ public class ServletAppTest {
     void helloRequest_respondsWithSingleMessage(String reqType) {
         initServletAppTest(reqType);
         AwsProxyRequestBuilder req = new AwsProxyRequestBuilder("/hello", "GET");
-        AwsProxyResponse resp = handler.handleRequest(req, lambdaContext);
+        AwsProxyResponseEvent resp = handler.handleRequest(req, lambdaContext);
         assertEquals(MessageController.HELLO_MESSAGE, resp.getBody());
     }
 
@@ -67,7 +67,7 @@ public class ServletAppTest {
                 .header(HttpHeaders.ACCEPT, MediaType.TEXT_PLAIN)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
                 .body(ud);
-        AwsProxyResponse resp = handler.handleRequest(req, lambdaContext);
+        AwsProxyResponseEvent resp = handler.handleRequest(req, lambdaContext);
         try {
             System.out.println(LambdaContainerHandler.getObjectMapper().writeValueAsString(resp));
         } catch (JsonProcessingException e) {
@@ -96,7 +96,7 @@ public class ServletAppTest {
         AwsProxyRequestBuilder req = new AwsProxyRequestBuilder("/message", "POST")
                 .json()
                 .body(new MessageData("test message"));
-        AwsProxyResponse resp = handler.handleRequest(req, lambdaContext);
+        AwsProxyResponseEvent resp = handler.handleRequest(req, lambdaContext);
         assertNotNull(resp);
         assertEquals(200, resp.getStatusCode());
         assertEquals("test message", resp.getBody());
@@ -110,7 +110,7 @@ public class ServletAppTest {
                 .header(HttpHeaders.CONTENT_TYPE, "application/json;v=1")
                 .header(HttpHeaders.ACCEPT, "application/json;v=1")
                 .body(new MessageData("test message"));
-        AwsProxyResponse resp = handler.handleRequest(req, lambdaContext);
+        AwsProxyResponseEvent resp = handler.handleRequest(req, lambdaContext);
         assertNotNull(resp);
         assertEquals(200, resp.getStatusCode());
         assertEquals("test message", resp.getBody());
@@ -121,7 +121,7 @@ public class ServletAppTest {
     void echoMessage_fileNameLikeParameter_returnsMessage(String reqType) {
         initServletAppTest(reqType);
         AwsProxyRequestBuilder req = new AwsProxyRequestBuilder("/echo/test.test.test", "GET");
-        AwsProxyResponse resp = handler.handleRequest(req, lambdaContext);
+        AwsProxyResponseEvent resp = handler.handleRequest(req, lambdaContext);
         assertNotNull(resp);
         assertEquals(200, resp.getStatusCode());
         assertEquals("test.test.test", resp.getBody());
@@ -136,7 +136,7 @@ public class ServletAppTest {
         LambdaContainerHandler.getContainerConfig().setDefaultContentCharset(ContainerConfig.DEFAULT_CONTENT_CHARSET);
         AwsProxyRequestBuilder req = new AwsProxyRequestBuilder("/content-type/utf8", "GET")
                 .header(HttpHeaders.ACCEPT, MediaType.TEXT_PLAIN);
-        AwsProxyResponse resp = handler.handleRequest(req, lambdaContext);
+        AwsProxyResponseEvent resp = handler.handleRequest(req, lambdaContext);
         assertNotNull(resp);
         assertEquals(200, resp.getStatusCode());
         assertEquals("text/plain; charset=UTF-8", resp.getMultiValueHeaders().get(HttpHeaders.CONTENT_TYPE).stream().collect(Collectors.joining(",")));
@@ -149,7 +149,7 @@ public class ServletAppTest {
         initServletAppTest(reqType);
         LambdaContainerHandler.getContainerConfig().setDefaultContentCharset(ContainerConfig.DEFAULT_CONTENT_CHARSET);
         AwsProxyRequestBuilder req = new AwsProxyRequestBuilder("/content-type/jsonutf8", "GET");
-        AwsProxyResponse resp = handler.handleRequest(req, lambdaContext);
+        AwsProxyResponseEvent resp = handler.handleRequest(req, lambdaContext);
         assertNotNull(resp);
         assertEquals(200, resp.getStatusCode());
         assertEquals("{\"s\":\"" + MessageController.UTF8_RESPONSE + "\"}", resp.getBody());
@@ -176,7 +176,7 @@ public class ServletAppTest {
         }
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         streamHandler.handleRequest(req, out, lambdaContext);
-        AwsProxyResponse resp = LambdaContainerHandler.getObjectMapper().readValue(out.toByteArray(), AwsProxyResponse.class);
+        AwsProxyResponseEvent resp = LambdaContainerHandler.getObjectMapper().readValue(out.toByteArray(), AwsProxyResponseEvent.class);
         assertNotNull(resp);
         assertEquals(200, resp.getStatusCode());
         assertEquals(MessageController.UTF8_RESPONSE, resp.getBody());
@@ -202,7 +202,7 @@ public class ServletAppTest {
         }
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         streamHandler.handleRequest(req, out, lambdaContext);
-        AwsProxyResponse resp = LambdaContainerHandler.getObjectMapper().readValue(out.toByteArray(), AwsProxyResponse.class);
+        AwsProxyResponseEvent resp = LambdaContainerHandler.getObjectMapper().readValue(out.toByteArray(), AwsProxyResponseEvent.class);
         assertNotNull(resp);
         assertEquals(200, resp.getStatusCode());
         assertEquals("{\"s\":\"" + MessageController.UTF8_RESPONSE + "\"}", resp.getBody());
@@ -213,7 +213,7 @@ public class ServletAppTest {
     void springExceptionMapping_throw404Ex_expectMappedTo404(String reqType) {
         initServletAppTest(reqType);
         AwsProxyRequestBuilder req = new AwsProxyRequestBuilder("/ex/customstatus", "GET");
-        AwsProxyResponse resp = handler.handleRequest(req, lambdaContext);
+        AwsProxyResponseEvent resp = handler.handleRequest(req, lambdaContext);
         assertNotNull(resp);
         assertEquals(404, resp.getStatusCode());
     }
@@ -226,7 +226,7 @@ public class ServletAppTest {
                 .header(HttpHeaders.CONTENT_TYPE, "application/json;v=1")
                 .header(HttpHeaders.ACCEPT, "application/json;v=1")
                 .body(new MessageData("test message"));
-        AwsProxyResponse resp = handler.handleRequest(req, lambdaContext);
+        AwsProxyResponseEvent resp = handler.handleRequest(req, lambdaContext);
         if ("HTTP_API".equals(type)) {
             assertNotNull(resp.getHeaders());
         } else {

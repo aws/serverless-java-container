@@ -14,16 +14,16 @@ package com.amazonaws.serverless.proxy.spring;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.internal.servlet.ServletLambdaContainerHandlerBuilder;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
+import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
 import org.springframework.boot.WebApplicationType;
 
 import jakarta.servlet.http.HttpServletRequest;
 
 public final class SpringBootProxyHandlerBuilder<RequestType> extends ServletLambdaContainerHandlerBuilder<
         RequestType,
-            AwsProxyResponse,
+            AwsProxyResponseEvent,
             HttpServletRequest,
-            SpringBootLambdaContainerHandler<RequestType, AwsProxyResponse>,
+            SpringBootLambdaContainerHandler<RequestType, AwsProxyResponseEvent>,
             SpringBootProxyHandlerBuilder<RequestType>> {
     private Class<?> springBootInitializer;
     private String[] profiles;
@@ -51,12 +51,12 @@ public final class SpringBootProxyHandlerBuilder<RequestType> extends ServletLam
     }
 
     @Override
-    public SpringBootLambdaContainerHandler<RequestType, AwsProxyResponse> build() throws ContainerInitializationException {
+    public SpringBootLambdaContainerHandler<RequestType, AwsProxyResponseEvent> build() throws ContainerInitializationException {
         validate();
         if (springBootInitializer == null) {
             throw new ContainerInitializationException("Missing spring boot application class in builder", null);
         }
-        SpringBootLambdaContainerHandler<RequestType, AwsProxyResponse> handler =  new SpringBootLambdaContainerHandler<RequestType, AwsProxyResponse>(
+        SpringBootLambdaContainerHandler<RequestType, AwsProxyResponseEvent> handler =  new SpringBootLambdaContainerHandler<RequestType, AwsProxyResponseEvent>(
                 requestTypeClass,
                 responseTypeClass,
                 requestReader,
@@ -74,8 +74,8 @@ public final class SpringBootProxyHandlerBuilder<RequestType> extends ServletLam
     }
 
     @Override
-    public SpringBootLambdaContainerHandler<RequestType, AwsProxyResponse> buildAndInitialize() throws ContainerInitializationException {
-        SpringBootLambdaContainerHandler<RequestType, AwsProxyResponse> handler = build();
+    public SpringBootLambdaContainerHandler<RequestType, AwsProxyResponseEvent> buildAndInitialize() throws ContainerInitializationException {
+        SpringBootLambdaContainerHandler<RequestType, AwsProxyResponseEvent> handler = build();
         initializationWrapper.start(handler);
         return handler;
     }

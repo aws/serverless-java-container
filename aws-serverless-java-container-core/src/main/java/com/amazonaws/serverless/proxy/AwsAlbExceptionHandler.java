@@ -2,8 +2,8 @@ package com.amazonaws.serverless.proxy;
 
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.ErrorModel;
+import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.core.HttpHeaders;
@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class AwsAlbExceptionHandler implements ExceptionHandler<AwsProxyResponse>{
+public class AwsAlbExceptionHandler implements ExceptionHandler<AwsProxyResponseEvent>{
 
     private Logger log = LoggerFactory.getLogger(AwsAlbExceptionHandler.class);
 
@@ -46,13 +46,13 @@ public class AwsAlbExceptionHandler implements ExceptionHandler<AwsProxyResponse
         headers.put(HttpHeaders.CONTENT_TYPE, values);
     }
     @Override
-    public AwsProxyResponse handle(Throwable ex) {
+    public AwsProxyResponseEvent handle(Throwable ex) {
         log.error("Called exception handler for:", ex);
 
         // adding a print stack trace in case we have no appender or we are running inside SAM local, where need the
         // output to go to the stderr.
         ex.printStackTrace();
-        AwsProxyResponse responseEvent = new AwsProxyResponse();
+        AwsProxyResponseEvent responseEvent = new AwsProxyResponseEvent();
 
         responseEvent.setMultiValueHeaders(headers);
         if (ex instanceof InvalidRequestEventException || ex instanceof InternalServerErrorException) {
@@ -69,7 +69,7 @@ public class AwsAlbExceptionHandler implements ExceptionHandler<AwsProxyResponse
 
     @Override
     public void handle(Throwable ex, OutputStream stream) throws IOException {
-        AwsProxyResponse response = handle(ex);
+        AwsProxyResponseEvent response = handle(ex);
 
         LambdaContainerHandler.getObjectMapper().writeValue(stream, response);
     }

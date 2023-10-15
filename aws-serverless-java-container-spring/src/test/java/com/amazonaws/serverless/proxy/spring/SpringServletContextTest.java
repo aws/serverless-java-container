@@ -3,7 +3,6 @@ package com.amazonaws.serverless.proxy.spring;
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequestHelper;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
@@ -11,6 +10,7 @@ import com.amazonaws.serverless.proxy.spring.echoapp.ContextResource;
 import com.amazonaws.serverless.proxy.spring.echoapp.CustomHeaderFilter;
 import com.amazonaws.serverless.proxy.spring.echoapp.EchoSpringAppConfig;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.ValidatedUserModel;
+import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
 import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -30,7 +30,7 @@ public class SpringServletContextTest {
     private static final String STAGE = LambdaContainerHandler.SERVER_INFO + "/" + AwsServletContext.SERVLET_API_MAJOR_VERSION + "." + AwsServletContext.SERVLET_API_MINOR_VERSION;
     private MockLambdaContext lambdaContext = new MockLambdaContext();
 
-    private static SpringLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponse> handler;
+    private static SpringLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponseEvent> handler;
 
     @BeforeAll
     public static void setUp() {
@@ -56,7 +56,7 @@ public class SpringServletContextTest {
                 .stage(STAGE)
                 .build();
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        AwsProxyResponseEvent output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
         assertEquals("text/plain", AwsHttpServletRequestHelper.getFirst(output.getMultiValueHeaders(), "Content-Type").split(";")[0]);
         assertEquals(STAGE, output.getBody());
@@ -69,7 +69,7 @@ public class SpringServletContextTest {
                 .stage(STAGE)
                 .build();
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        AwsProxyResponseEvent output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
         assertEquals("text/plain", AwsHttpServletRequestHelper.getFirst(output.getMultiValueHeaders(), "Content-Type").split(";")[0]);
         assertEquals(STAGE, output.getBody());
@@ -82,7 +82,7 @@ public class SpringServletContextTest {
                 .stage(STAGE)
                 .build();
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        AwsProxyResponseEvent output = handler.proxy(request, lambdaContext);
         assertNotNull(output.getMultiValueHeaders());
         assertTrue(output.getMultiValueHeaders().size() > 0);
         assertNotNull(output.getMultiValueHeaders().get(CustomHeaderFilter.HEADER_NAME));
@@ -98,7 +98,7 @@ public class SpringServletContextTest {
                 .body(userModel)
                 .build();
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        AwsProxyResponseEvent output = handler.proxy(request, lambdaContext);
         assertEquals(HttpStatus.BAD_REQUEST.value(), output.getStatusCode());
     }
 
@@ -109,7 +109,7 @@ public class SpringServletContextTest {
                 .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .build();
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        AwsProxyResponseEvent output = handler.proxy(request, lambdaContext);
 
         assertEquals(409, output.getStatusCode());
         assertTrue(output.getBody().contains(ContextResource.EXCEPTION_REASON));
@@ -122,7 +122,7 @@ public class SpringServletContextTest {
                 .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .build();
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
+        AwsProxyResponseEvent output = handler.proxy(request, lambdaContext);
 
 
         assertEquals(200, output.getStatusCode());

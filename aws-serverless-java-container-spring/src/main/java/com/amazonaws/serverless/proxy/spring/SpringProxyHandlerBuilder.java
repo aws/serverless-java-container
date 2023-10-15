@@ -14,7 +14,7 @@ package com.amazonaws.serverless.proxy.spring;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.internal.servlet.ServletLambdaContainerHandlerBuilder;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
+import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
@@ -22,9 +22,9 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public class SpringProxyHandlerBuilder<RequestType> extends ServletLambdaContainerHandlerBuilder<
             RequestType,
-            AwsProxyResponse,
+            AwsProxyResponseEvent,
             HttpServletRequest,
-            SpringLambdaContainerHandler<RequestType, AwsProxyResponse>,
+            SpringLambdaContainerHandler<RequestType, AwsProxyResponseEvent>,
             SpringProxyHandlerBuilder<RequestType>> {
     private ConfigurableWebApplicationContext springContext;
     private Class[] configurationClasses;
@@ -52,7 +52,7 @@ public class SpringProxyHandlerBuilder<RequestType> extends ServletLambdaContain
     }
 
     @Override
-    public SpringLambdaContainerHandler<RequestType, AwsProxyResponse> build() throws ContainerInitializationException {
+    public SpringLambdaContainerHandler<RequestType, AwsProxyResponseEvent> build() throws ContainerInitializationException {
         validate();
         if (springContext == null && (configurationClasses == null || configurationClasses.length == 0)) {
             throw new ContainerInitializationException("Missing both configuration classes and application context, at least" +
@@ -66,14 +66,14 @@ public class SpringProxyHandlerBuilder<RequestType> extends ServletLambdaContain
             }
         }
 
-        SpringLambdaContainerHandler<RequestType, AwsProxyResponse> handler = createHandler(ctx);
+        SpringLambdaContainerHandler<RequestType, AwsProxyResponseEvent> handler = createHandler(ctx);
         if (profiles != null) {
             handler.activateSpringProfiles(profiles);
         }
         return handler;
     }
 
-    protected SpringLambdaContainerHandler<RequestType, AwsProxyResponse> createHandler(ConfigurableWebApplicationContext ctx) {
+    protected SpringLambdaContainerHandler<RequestType, AwsProxyResponseEvent> createHandler(ConfigurableWebApplicationContext ctx) {
         return new SpringLambdaContainerHandler<>(
                 requestTypeClass, responseTypeClass, requestReader, responseWriter,
                 securityContextWriter, exceptionHandler, ctx, initializationWrapper
@@ -81,8 +81,8 @@ public class SpringProxyHandlerBuilder<RequestType> extends ServletLambdaContain
     }
 
     @Override
-    public SpringLambdaContainerHandler<RequestType, AwsProxyResponse> buildAndInitialize() throws ContainerInitializationException {
-        SpringLambdaContainerHandler<RequestType, AwsProxyResponse> handler = build();
+    public SpringLambdaContainerHandler<RequestType, AwsProxyResponseEvent> buildAndInitialize() throws ContainerInitializationException {
+        SpringLambdaContainerHandler<RequestType, AwsProxyResponseEvent> handler = build();
         initializationWrapper.start(handler);
         return handler;
     }

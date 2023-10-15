@@ -14,10 +14,10 @@ package com.amazonaws.serverless.proxy;
 
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.ErrorModel;
 import com.amazonaws.serverless.proxy.model.Headers;
 
+import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +39,7 @@ import java.io.OutputStream;
  * @see ExceptionHandler
  */
 public class AwsProxyExceptionHandler
-        implements ExceptionHandler<AwsProxyResponse> {
+        implements ExceptionHandler<AwsProxyResponseEvent> {
 
     private Logger log = LoggerFactory.getLogger(AwsProxyExceptionHandler.class);
 
@@ -72,23 +72,29 @@ public class AwsProxyExceptionHandler
 
 
     @Override
-    public AwsProxyResponse handle(Throwable ex) {
+    public AwsProxyResponseEvent handle(Throwable ex) {
         log.error("Called exception handler for:", ex);
 
         // adding a print stack trace in case we have no appender or we are running inside SAM local, where need the
         // output to go to the stderr.
         ex.printStackTrace();
+        AwsProxyResponseEvent responseEvent = new AwsProxyResponseEvent();
+        responseEvent.setMultiValueHeaders(headers);
         if (ex instanceof InvalidRequestEventException || ex instanceof InternalServerErrorException) {
-            return new AwsProxyResponse(500, headers, getErrorJson(INTERNAL_SERVER_ERROR));
+            responseEvent.setBody(getErrorJson(INTERNAL_SERVER_ERROR));
+            responseEvent.setStatusCode(500);
+            return responseEvent;
         } else {
-            return new AwsProxyResponse(502, headers, getErrorJson(GATEWAY_TIMEOUT_ERROR));
+            responseEvent.setBody(getErrorJson(GATEWAY_TIMEOUT_ERROR));
+            responseEvent.setStatusCode(502);
+            return responseEvent;
         }
     }
 
 
     @Override
     public void handle(Throwable ex, OutputStream stream) throws IOException {
-        AwsProxyResponse response = handle(ex);
+        AwsProxyResponseEvent response = handle(ex);
 
         LambdaContainerHandler.getObjectMapper().writeValue(stream, response);
     }

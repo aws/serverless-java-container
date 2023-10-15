@@ -3,11 +3,11 @@ package com.amazonaws.serverless.proxy.spring;
 
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequestHelper;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.spring.staticapp.LambdaHandler;
 
+import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
 import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
@@ -27,7 +27,7 @@ public class StaticAppProxyTest {
         APIGatewayProxyRequestEvent req = new AwsProxyRequestBuilder("/sample/page", "GET").build();
         // we temporarily allow the container to read from any path
         LambdaContainerHandler.getContainerConfig().addValidFilePath("/");
-        AwsProxyResponse resp = lambdaHandler.handleRequest(req, new MockLambdaContext());
+        AwsProxyResponseEvent resp = lambdaHandler.handleRequest(req, new MockLambdaContext());
 
         assertEquals(200, resp.getStatusCode());
         assertTrue(resp.getBody().startsWith("<!DOCTYPE html>"));
