@@ -3,12 +3,12 @@ package com.amazonaws.serverless.proxy;
 
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.exceptions.InvalidResponseObjectException;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequestHelper;
 import com.amazonaws.serverless.proxy.model.ErrorModel;
 import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import static com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequest.getFirst;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -62,7 +62,7 @@ public class AwsProxyExceptionHandlerTest {
 
         assertNotNull(resp);
         assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
-        assertEquals(MediaType.APPLICATION_JSON, AwsHttpServletRequestHelper.getFirst(resp.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE)); //resp.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.APPLICATION_JSON, getFirst(resp.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE)); //resp.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
     }
 
     @Test
@@ -89,7 +89,7 @@ public class AwsProxyExceptionHandlerTest {
 
         assertNotNull(resp);
         assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
-        assertEquals(MediaType.APPLICATION_JSON, AwsHttpServletRequestHelper.getFirst(resp.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.APPLICATION_JSON, getFirst(resp.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE));
     }
 
     @Test
@@ -127,7 +127,7 @@ public class AwsProxyExceptionHandlerTest {
 
         assertNotNull(resp);
         assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
-        assertEquals(MediaType.APPLICATION_JSON, AwsHttpServletRequestHelper.getFirst(resp.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.APPLICATION_JSON, getFirst(resp.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE));
     }
 
     @Test
@@ -138,7 +138,7 @@ public class AwsProxyExceptionHandlerTest {
         assertNotNull(resp);
         assertEquals(502, resp.getStatusCode());
         assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
-        assertEquals(MediaType.APPLICATION_JSON, AwsHttpServletRequestHelper.getFirst(resp.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.APPLICATION_JSON, getFirst(resp.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE));
         String body = objectMapper.writeValueAsString(new ErrorModel(AwsProxyExceptionHandler.GATEWAY_TIMEOUT_ERROR));
         assertEquals(body, resp.getBody());
     }
@@ -181,7 +181,7 @@ public class AwsProxyExceptionHandlerTest {
         AwsProxyResponseEvent resp = objectMapper.readValue(new ByteArrayInputStream(respStream.toByteArray()), AwsProxyResponseEvent.class);
         assertNotNull(resp);
         assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
-        assertEquals(MediaType.APPLICATION_JSON, AwsHttpServletRequestHelper.getFirst(resp.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.APPLICATION_JSON, getFirst(resp.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE));
     }
 
     @Test
@@ -222,7 +222,7 @@ public class AwsProxyExceptionHandlerTest {
         AwsProxyResponseEvent resp = objectMapper.readValue(new ByteArrayInputStream(respStream.toByteArray()), AwsProxyResponseEvent.class);
         assertNotNull(resp);
         assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
-        assertEquals(MediaType.APPLICATION_JSON, AwsHttpServletRequestHelper.getFirst(resp.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.APPLICATION_JSON, getFirst(resp.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE));
     }
 
     @Test

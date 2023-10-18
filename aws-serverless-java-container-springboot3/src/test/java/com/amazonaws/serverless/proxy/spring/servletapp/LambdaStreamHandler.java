@@ -2,7 +2,6 @@ package com.amazonaws.serverless.proxy.spring.servletapp;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.InitializationWrapper;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequestHelper;
 import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
 import com.amazonaws.serverless.proxy.spring.SpringBootProxyHandlerBuilder;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -11,7 +10,6 @@ import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerReque
 import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
 import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayV2HTTPEvent;
-import jakarta.ws.rs.core.HttpHeaders;
 
 import java.io.IOException;
 import java.io.InputStream;

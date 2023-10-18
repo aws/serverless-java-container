@@ -2,7 +2,6 @@ package com.amazonaws.serverless.proxy.spring;
 
 
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequestHelper;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.spring.staticapp.LambdaHandler;
@@ -14,6 +13,7 @@ import org.springframework.http.HttpHeaders;
 
 import jakarta.ws.rs.core.MediaType;
 
+import static com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequest.getFirst;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -32,6 +32,6 @@ public class StaticAppProxyTest {
         assertEquals(200, resp.getStatusCode());
         assertTrue(resp.getBody().startsWith("<!DOCTYPE html>"));
         assertTrue(resp.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
-        assertEquals(MediaType.TEXT_HTML, AwsHttpServletRequestHelper.getFirst(resp.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE));
+        assertEquals(MediaType.TEXT_HTML, getFirst(resp.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE));
     }
 }

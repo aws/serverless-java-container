@@ -2,7 +2,6 @@ package com.amazonaws.serverless.proxy.spring;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequestHelper;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
@@ -23,6 +22,7 @@ import jakarta.servlet.FilterRegistration;
 
 import java.util.EnumSet;
 
+import static com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequest.getFirst;
 import static org.junit.jupiter.api.Assertions.*;
 
 // we don't use the spring annotations to pretend we are running in the actual container
@@ -58,7 +58,7 @@ public class SpringServletContextTest {
 
         AwsProxyResponseEvent output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("text/plain", AwsHttpServletRequestHelper.getFirst(output.getMultiValueHeaders(), "Content-Type").split(";")[0]);
+        assertEquals("text/plain", getFirst(output.getMultiValueHeaders(), "Content-Type").split(";")[0]);
         assertEquals(STAGE, output.getBody());
     }
 
@@ -71,7 +71,7 @@ public class SpringServletContextTest {
 
         AwsProxyResponseEvent output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("text/plain", AwsHttpServletRequestHelper.getFirst(output.getMultiValueHeaders(), "Content-Type").split(";")[0]);
+        assertEquals("text/plain", getFirst(output.getMultiValueHeaders(), "Content-Type").split(";")[0]);
         assertEquals(STAGE, output.getBody());
     }
 
@@ -86,7 +86,7 @@ public class SpringServletContextTest {
         assertNotNull(output.getMultiValueHeaders());
         assertTrue(output.getMultiValueHeaders().size() > 0);
         assertNotNull(output.getMultiValueHeaders().get(CustomHeaderFilter.HEADER_NAME));
-        assertEquals(CustomHeaderFilter.HEADER_VALUE, AwsHttpServletRequestHelper.getFirst(output.getMultiValueHeaders(), CustomHeaderFilter.HEADER_NAME));
+        assertEquals(CustomHeaderFilter.HEADER_VALUE, getFirst(output.getMultiValueHeaders(), CustomHeaderFilter.HEADER_NAME));
     }
 
     @Test
@@ -128,8 +128,8 @@ public class SpringServletContextTest {
         assertEquals(200, output.getStatusCode());
         assertTrue(output.getMultiValueHeaders().containsKey(HttpHeaders.SET_COOKIE));
 
-        assertTrue(AwsHttpServletRequestHelper.getFirst(output.getMultiValueHeaders(), HttpHeaders.SET_COOKIE).contains(ContextResource.COOKIE_NAME + "=" + ContextResource.COOKIE_VALUE));
-        assertTrue(AwsHttpServletRequestHelper.getFirst(output.getMultiValueHeaders(), HttpHeaders.SET_COOKIE).contains(ContextResource.COOKIE_DOMAIN));
+        assertTrue(getFirst(output.getMultiValueHeaders(), HttpHeaders.SET_COOKIE).contains(ContextResource.COOKIE_NAME + "=" + ContextResource.COOKIE_VALUE));
+        assertTrue(getFirst(output.getMultiValueHeaders(), HttpHeaders.SET_COOKIE).contains(ContextResource.COOKIE_DOMAIN));
     }
 }
 

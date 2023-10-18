@@ -13,6 +13,7 @@
 package com.amazonaws.serverless.proxy.internal.testutils;
 
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequest;
 import com.amazonaws.serverless.proxy.model.*;
 
 import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
@@ -40,7 +41,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-import static com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequestHelper.*;
+import static com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequest.getFirst;
 
 
 /**
@@ -330,7 +331,7 @@ public class AwsProxyRequestBuilder {
         }
 
         cookies += (cookies.equals("")?"":"; ") + name + "=" + value;
-        putSingle(request.getMultiValueHeaders(), HttpHeaders.COOKIE, cookies);
+        AwsHttpServletRequest.putSingle(request.getMultiValueHeaders(), HttpHeaders.COOKIE, cookies);
         return this;
     }
 
@@ -338,7 +339,7 @@ public class AwsProxyRequestBuilder {
         if (request.getMultiValueHeaders() == null) {
             request.setMultiValueHeaders(new Headers());
         }
-        putSingle(request.getMultiValueHeaders(),"CloudFront-Forwarded-Proto", scheme);
+        AwsHttpServletRequest.putSingle(request.getMultiValueHeaders(),"CloudFront-Forwarded-Proto", scheme);
         return this;
     }
 
@@ -346,7 +347,7 @@ public class AwsProxyRequestBuilder {
         if (request.getMultiValueHeaders() == null) {
             request.setMultiValueHeaders(new Headers());
         }
-        putSingle(request.getMultiValueHeaders(), "Host", serverName);
+        AwsHttpServletRequest.putSingle(request.getMultiValueHeaders(), "Host", serverName);
         return this;
     }
 
@@ -379,7 +380,7 @@ public class AwsProxyRequestBuilder {
         // we remove the existing authorization strategy
         request.getMultiValueHeaders().remove(HttpHeaders.AUTHORIZATION);
         String authHeader = "Basic " + Base64.getMimeEncoder().encodeToString((username + ":" + password).getBytes(Charset.defaultCharset()));
-        List<String> values = findKey(request.getMultiValueHeaders(), HttpHeaders.AUTHORIZATION);
+        List<String> values = AwsHttpServletRequest.findKey(request.getMultiValueHeaders(), HttpHeaders.AUTHORIZATION);
         values.add(authHeader);
         return this;
     }

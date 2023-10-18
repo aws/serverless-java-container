@@ -2,7 +2,6 @@ package com.amazonaws.serverless.proxy.jersey;
 
 
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequestHelper;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.jersey.model.MapResponseModel;
@@ -30,6 +29,7 @@ import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Collection;
 
+import static com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequest.getFirst;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -136,7 +136,7 @@ public class JerseyParamEncodingTest {
 
         AwsProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", AwsHttpServletRequestHelper.getFirst(output.getMultiValueHeaders(), "Content-Type"));
+        assertEquals("application/json", getFirst(output.getMultiValueHeaders(), "Content-Type"));
 
         validateMapResponseModel(output, QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE);
     }
@@ -151,7 +151,7 @@ public class JerseyParamEncodingTest {
 
         AwsProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", AwsHttpServletRequestHelper.getFirst(output.getMultiValueHeaders(), "Content-Type"));
+        assertEquals("application/json", getFirst(output.getMultiValueHeaders(), "Content-Type"));
 
         validateMapResponseModel(output, QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE);
     }
@@ -167,7 +167,7 @@ public class JerseyParamEncodingTest {
 
         AwsProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", AwsHttpServletRequestHelper.getFirst(output.getMultiValueHeaders(), "Content-Type"));
+        assertEquals("application/json", getFirst(output.getMultiValueHeaders(), "Content-Type"));
 
         validateMapResponseModel(output, QUERY_STRING_KEY, QUERY_STRING_NON_ENCODED_VALUE);
     }

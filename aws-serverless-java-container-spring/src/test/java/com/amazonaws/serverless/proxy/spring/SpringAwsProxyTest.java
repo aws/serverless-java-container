@@ -2,7 +2,6 @@ package com.amazonaws.serverless.proxy.spring;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequestHelper;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsLambdaServletContainerHandler;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletRegistration;
 import com.amazonaws.serverless.proxy.model.*;
@@ -41,6 +40,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.UUID;
 
+import static com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequest.getFirst;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -153,7 +153,7 @@ public class SpringAwsProxyTest {
 
         AwsProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", AwsHttpServletRequestHelper.getFirst(output.getMultiValueHeaders(), "Content-Type").split(";")[0]);
+        assertEquals("application/json", getFirst(output.getMultiValueHeaders(), "Content-Type").split(";")[0]);
         validateMapResponseModel(output);
     }
 
@@ -167,7 +167,7 @@ public class SpringAwsProxyTest {
 
         AwsProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", AwsHttpServletRequestHelper.getFirst(output.getMultiValueHeaders(), "Content-Type").split(";")[0]);
+        assertEquals("application/json", getFirst(output.getMultiValueHeaders(), "Content-Type").split(";")[0]);
 
         validateMapResponseModel(output);
     }
@@ -182,7 +182,7 @@ public class SpringAwsProxyTest {
 
         AwsProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", AwsHttpServletRequestHelper.getFirst(output.getMultiValueHeaders(), "Content-Type").split(";")[0]);
+        assertEquals("application/json", getFirst(output.getMultiValueHeaders(), "Content-Type").split(";")[0]);
 
         validateMapResponseModel(output);
     }
@@ -263,7 +263,7 @@ public class SpringAwsProxyTest {
 
         AwsProxyResponseEvent output = executeRequest(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
-        assertEquals("application/json", AwsHttpServletRequestHelper.getFirst(output.getMultiValueHeaders(), "Content-Type").split(";")[0]);
+        assertEquals("application/json", getFirst(output.getMultiValueHeaders(), "Content-Type").split(";")[0]);
 
         validateSingleValueModel(output, AUTHORIZER_PRINCIPAL_ID);
     }

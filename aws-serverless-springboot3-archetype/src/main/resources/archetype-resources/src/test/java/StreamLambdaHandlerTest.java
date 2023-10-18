@@ -2,7 +2,6 @@ package ${groupId};
 
 
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
-import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequestHelper;
 import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
@@ -20,6 +19,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequest.getFirst;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class StreamLambdaHandlerTest {
@@ -52,7 +52,7 @@ public class StreamLambdaHandlerTest {
         assertTrue(response.getBody().contains("Hello, World!"));
 
         assertTrue(response.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
-        assertTrue(AwsHttpServletRequestHelper.getFirst(response.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE).startsWith(MediaType.APPLICATION_JSON));
+        assertTrue(getFirst(response.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE).startsWith(MediaType.APPLICATION_JSON));
     }
 
     @Test

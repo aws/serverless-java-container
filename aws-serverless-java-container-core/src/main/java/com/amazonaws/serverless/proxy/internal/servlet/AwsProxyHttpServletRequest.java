@@ -33,12 +33,14 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
+
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 
 /**
  * Implementation of the <code>HttpServletRequest</code> interface that supports <code>APIGatewayProxyRequestEvent</code> object.
@@ -91,43 +93,73 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public Cookie[] getCookies() {
-        return AwsHttpServletRequestHelper.getCookies(request.getMultiValueHeaders());
+        if (request.getMultiValueHeaders() == null) {
+            return new Cookie[0];
+        }
+        String cookieHeader = getFirst(request.getMultiValueHeaders(), HttpHeaders.COOKIE);
+        if (cookieHeader == null) {
+            return new Cookie[0];
+        }
+        return this.parseCookieHeaderValue(cookieHeader);
     }
 
 
     @Override
     public long getDateHeader(String s) {
-        return AwsHttpServletRequestHelper.getDateHeader(request.getMultiValueHeaders(), s, log);
+        if (request.getMultiValueHeaders() == null) {
+            return -1L;
+        }
+        String dateString = getFirst(request.getMultiValueHeaders(), s);
+        if (dateString == null) {
+            return -1L;
+        }
+        try {
+            return Instant.from(ZonedDateTime.parse(dateString, dateFormatter)).toEpochMilli();
+        } catch (DateTimeParseException e) {
+            log.warn("Invalid date header in request" + SecurityUtils.crlf(dateString));
+            return -1L;
+        }
     }
-
 
     @Override
     public String getHeader(String s) {
-        return AwsHttpServletRequestHelper.getHeader(
-                request.getMultiValueHeaders(),
-                request.getRequestContext().getIdentity().getCaller(),
-                request.getRequestContext().getIdentity().getUserAgent(),
-                s,
-                getHeaderValues(s)
-        );
+        List<String> values = getHeaderValues(s);
+        if (values == null || values.size() == 0) {
+            return null;
+        }
+        return values.get(0);
     }
 
 
     @Override
     public Enumeration<String> getHeaders(String s) {
-        return AwsHttpServletRequestHelper.getHeaders(request.getMultiValueHeaders(), s);
+        if (request.getMultiValueHeaders() == null || request.getMultiValueHeaders().get(s) == null) {
+            return Collections.emptyEnumeration();
+        }
+        return Collections.enumeration(request.getMultiValueHeaders().get(s));
     }
 
 
     @Override
     public Enumeration<String> getHeaderNames() {
-        return AwsHttpServletRequestHelper.getHeaderNames(request.getMultiValueHeaders());
+        if (request.getMultiValueHeaders() == null) {
+            return Collections.emptyEnumeration();
+        }
+        return Collections.enumeration(request.getMultiValueHeaders().keySet());
     }
 
 
     @Override
     public int getIntHeader(String s) {
-        return AwsHttpServletRequestHelper.getIntHeader(request.getMultiValueHeaders(), s);
+        if (request.getMultiValueHeaders() == null) {
+            return -1;
+        }
+        String headerValue = getFirst(request.getMultiValueHeaders(), s);
+        if (headerValue == null) {
+            return -1;
+        }
+
+        return Integer.parseInt(headerValue);
     }
 
 
@@ -139,31 +171,42 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getPathInfo() {
-        return AwsHttpServletRequestHelper.getPathInfo(request.getPath());
+        String pathInfo = cleanUri(request.getPath());
+        return decodeRequestPath(pathInfo, LambdaContainerHandler.getContainerConfig());
     }
 
 
     @Override
     public String getPathTranslated() {
-        return AwsHttpServletRequestHelper.getPathTranslated();
+        // Return null because it is an archive on a remote system
+        return null;
     }
 
 
     @Override
     public String getContextPath() {
-        return AwsHttpServletRequestHelper.getContextPath(config, request.getRequestContext().getStage(), this);
+        return generateContextPath(config, request.getRequestContext().getStage());
     }
 
 
     @Override
     public String getQueryString() {
-        return AwsHttpServletRequestHelper.getQueryString(request.getMultiValueQueryStringParameters(), config, log, this);
+        try {
+            return this.generateQueryString(
+                    request.getMultiValueQueryStringParameters(),
+                    // ALB does not automatically decode parameters, so we don't want to re-encode them
+                    true,
+                    config.getUriEncoding());
+        } catch (ServletException e) {
+            log.error("Could not generate query string", e);
+            return null;
+        }
     }
 
 
     @Override
     public String getRemoteUser() {
-        return AwsHttpServletRequestHelper.getRemoteUser(securityContext);
+        return securityContext.getUserPrincipal().getName();
     }
 
 
@@ -176,19 +219,19 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public Principal getUserPrincipal() {
-        return AwsHttpServletRequestHelper.getUserPrincipal(securityContext);
+        return securityContext.getUserPrincipal();
     }
 
 
     @Override
     public String getRequestURI() {
-        return AwsHttpServletRequestHelper.getRequestURI(request.getPath(), this);
+        return cleanUri(getContextPath()) + cleanUri(request.getPath());
     }
 
 
     @Override
     public StringBuffer getRequestURL() {
-        return AwsHttpServletRequestHelper.getRequestURL(request.getPath(), this);
+        return generateRequestURL(request.getPath());
     }
 
 
@@ -216,7 +259,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     public Collection<Part> getParts()
             throws IOException, ServletException {
-        return AwsHttpServletRequestHelper.getParts(this);
+        return getMultipartFormParametersMap().values();
     }
 
 
@@ -240,11 +283,10 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getCharacterEncoding() {
-        return AwsHttpServletRequestHelper.getCharacterEncoding(
-                request.getMultiValueHeaders(),
-                config,
-                this
-        );
+        if (request.getMultiValueHeaders() == null) {
+            return config.getDefaultContentCharset();
+        }
+        return parseCharacterEncoding(getFirst(request.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE));
     }
 
 
@@ -266,60 +308,78 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public int getContentLength() {
-        return AwsHttpServletRequestHelper.getContentLength(request.getMultiValueHeaders());
+        String headerValue = getFirst(request.getMultiValueHeaders(), HttpHeaders.CONTENT_LENGTH);
+        if (headerValue == null) {
+            return -1;
+        }
+        return Integer.parseInt(headerValue);
     }
-
 
     @Override
     public long getContentLengthLong() {
-        return AwsHttpServletRequestHelper.getContentLengthLong(request.getMultiValueHeaders());
+        String headerValue = getFirst(request.getMultiValueHeaders(), HttpHeaders.CONTENT_LENGTH);
+        if (headerValue == null) {
+            return -1;
+        }
+        return Long.parseLong(headerValue);
     }
 
 
     @Override
     public String getContentType() {
-        return AwsHttpServletRequestHelper.getContentType(request.getMultiValueHeaders());
+        String contentTypeHeader = getFirst(request.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE);
+        if (contentTypeHeader == null || "".equals(contentTypeHeader.trim())) {
+            return null;
+        }
+
+        return contentTypeHeader;
     }
 
     @Override
     public String getParameter(String s) {
-        return AwsHttpServletRequestHelper.getParameter(
-                request.getMultiValueQueryStringParameters(),
-                s,
-                config,
-                this
-        );
+        String queryStringParameter = getFirstQueryParamValue(request.getMultiValueQueryStringParameters(), s, config.isQueryStringCaseSensitive());
+        if (queryStringParameter != null) {
+            return queryStringParameter;
+        }
+
+        String[] bodyParams = getFormBodyParameterCaseInsensitive(s);
+        if (bodyParams.length == 0) {
+            return null;
+        } else {
+            return bodyParams[0];
+        }
     }
 
 
     @Override
     public Enumeration<String> getParameterNames() {
-        return AwsHttpServletRequestHelper.getParameterNames(
-                request.getMultiValueQueryStringParameters(),
-                this
-        );
+        Set<String> formParameterNames = getFormUrlEncodedParametersMap().keySet();
+        if (request.getMultiValueQueryStringParameters() == null) {
+            return Collections.enumeration(formParameterNames);
+        }
+        return Collections.enumeration(Stream.concat(formParameterNames.stream(),
+                request.getMultiValueQueryStringParameters().keySet().stream()).collect(Collectors.toSet()));
     }
 
 
     @Override
     @SuppressFBWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS") // suppressing this as according to the specs we should be returning null here if we can't find params
     public String[] getParameterValues(String s) {
-        return AwsHttpServletRequestHelper.getParameterValues(
-                request.getMultiValueQueryStringParameters(),
-                s,
-                config,
-                this
-        );
+        List<String> values = new ArrayList<>(Arrays.asList(getQueryParamValues(request.getMultiValueQueryStringParameters(), s, config.isQueryStringCaseSensitive())));
+
+        values.addAll(Arrays.asList(getFormBodyParameterCaseInsensitive(s)));
+
+        if (values.size() == 0) {
+            return null;
+        } else {
+            return values.toArray(new String[0]);
+        }
     }
 
 
     @Override
     public Map<String, String[]> getParameterMap() {
-        return AwsHttpServletRequestHelper.getParameterMap(
-                request.getMultiValueQueryStringParameters(),
-                config,
-                this
-        );
+        return generateParameterMap(request.getMultiValueQueryStringParameters(), config);
     }
 
 
@@ -331,40 +391,56 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getScheme() {
-        return AwsHttpServletRequestHelper.getScheme(
-                request.getMultiValueHeaders(),
-                this
-        );
+        return getSchemeFromHeader(request.getMultiValueHeaders());
     }
 
     @Override
     public String getServerName() {
-        return AwsHttpServletRequestHelper.getServerName(
-                request.getMultiValueHeaders(),
-                request.getRequestContext().getApiId()
-        );
+        String region = System.getenv("AWS_REGION");
+        if (region == null) {
+            // this is not a critical failure, we just put a static region in the URI
+            region = "us-east-1";
+        }
+
+        if (request.getMultiValueHeaders() != null && request.getMultiValueHeaders().containsKey(HOST_HEADER_NAME)) {
+            String hostHeader = getFirst(request.getMultiValueHeaders(), HOST_HEADER_NAME);
+            if (SecurityUtils.isValidHost(hostHeader, request.getRequestContext().getApiId(), region)) {
+                return hostHeader;
+            }
+        }
+
+        return new StringBuilder().append(request.getRequestContext().getApiId())
+                .append(".execute-api.")
+                .append(region)
+                .append(".amazonaws.com").toString();
     }
 
     @Override
     public int getServerPort() {
-        return AwsHttpServletRequestHelper.getServerPort(request.getMultiValueHeaders());
+        if (request.getMultiValueHeaders() == null) {
+            return 443;
+        }
+        String port = getFirst(request.getMultiValueHeaders(), PORT_HEADER_NAME);
+        if (SecurityUtils.isValidPort(port)) {
+            return Integer.parseInt(port);
+        } else {
+            return 443; // default port
+        }
     }
 
     @Override
     public ServletInputStream getInputStream() throws IOException {
-        return AwsHttpServletRequestHelper.getInputStream(
-                requestInputStream,
-                request.getBody(),
-                request.getIsBase64Encoded(),
-                this
-        );
+        if (requestInputStream == null) {
+            requestInputStream = new AwsServletInputStream(bodyStringToInputStream(request.getBody(), request.getIsBase64Encoded()));
+        }
+        return requestInputStream;
     }
 
 
     @Override
     public BufferedReader getReader()
             throws IOException {
-        return AwsHttpServletRequestHelper.getReader(request.getBody());
+        return new BufferedReader(new StringReader(request.getBody()));
     }
 
 
@@ -379,35 +455,31 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getRemoteHost() {
-        return AwsHttpServletRequestHelper.getRemoteHost(request.getMultiValueHeaders());
+        return getFirst(request.getMultiValueHeaders(), HttpHeaders.HOST);
     }
 
 
     @Override
     public Locale getLocale() {
-        return AwsHttpServletRequestHelper.getLocale(
-                request.getMultiValueHeaders(),
-                this
-        );
+        List<Locale> locales = parseAcceptLanguageHeader(getFirst(request.getMultiValueHeaders(), HttpHeaders.ACCEPT_LANGUAGE));
+        return locales.size() == 0 ? Locale.getDefault() : locales.get(0);
     }
 
     @Override
     public Enumeration<Locale> getLocales() {
-        return AwsHttpServletRequestHelper.getLocales(
-                request.getMultiValueHeaders(),
-                this
-        );
+        List<Locale> locales = parseAcceptLanguageHeader(getFirst(request.getMultiValueHeaders(), HttpHeaders.ACCEPT_LANGUAGE));
+        return Collections.enumeration(locales);
     }
 
     @Override
     public boolean isSecure() {
-        return AwsHttpServletRequestHelper.isSecure(securityContext);
+        return securityContext.isSecure();
     }
 
 
     @Override
     public RequestDispatcher getRequestDispatcher(String s) {
-        return AwsHttpServletRequestHelper.getRequestDispatcher(s, this);
+        return getServletContext().getRequestDispatcher(s);
     }
 
 
