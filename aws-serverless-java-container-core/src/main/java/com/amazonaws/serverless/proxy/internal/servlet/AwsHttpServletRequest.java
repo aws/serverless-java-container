@@ -548,7 +548,11 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     }
 
     protected String[] getQueryParamValues(MultiValuedTreeMap<String, String> qs, String key, boolean isCaseSensitive) {
-        return getQueryParamValuesAsList(qs, key, isCaseSensitive).toArray(new String[0]);
+        List<String> value = getQueryParamValuesAsList(qs, key, isCaseSensitive);
+        if (value == null){
+            return null;
+        }
+        return value.toArray(new String[0]);
     }
 
     protected List<String> getQueryParamValuesAsList(MultiValuedTreeMap<String, String> qs, String key, boolean isCaseSensitive) {
@@ -564,7 +568,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
             }
         }
 
-        return new ArrayList<String>();
+        return Collections.emptyList();
     }
 
     protected Map<String, String[]> generateParameterMap(MultiValuedTreeMap<String, String> qs, ContainerConfig config) {
