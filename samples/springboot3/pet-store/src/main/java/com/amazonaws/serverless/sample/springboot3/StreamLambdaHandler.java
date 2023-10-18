@@ -3,9 +3,9 @@ package com.amazonaws.serverless.sample.springboot3;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
+import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
 import com.amazonaws.serverless.sample.springboot3.filter.CognitoIdentityFilter;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
@@ -20,7 +20,7 @@ import java.util.EnumSet;
 
 
 public class StreamLambdaHandler implements RequestStreamHandler {
-    private static SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
+    private static SpringBootLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponseEvent> handler;
     static {
         try {
             handler = SpringBootLambdaContainerHandler.getAwsProxyHandler(Application.class);
