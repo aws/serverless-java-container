@@ -3,9 +3,9 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import com.amazonaws.serverless.proxy.AwsProxyExceptionHandler;
 import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
+import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
 import org.junit.jupiter.api.Test;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,15 +40,15 @@ public class ServletLambdaContainerHandlerBuilderTest {
         assertTrue(test.requestReader instanceof AwsProxyHttpServletRequestReader);
         assertTrue(test.responseWriter instanceof AwsProxyHttpServletResponseWriter);
         assertTrue(test.securityContextWriter instanceof AwsProxySecurityContextWriter);
-        assertSame(AwsProxyRequest.class, test.requestTypeClass);
-        assertSame(AwsProxyResponse.class, test.responseTypeClass);
+        assertSame(APIGatewayProxyRequestEvent.class, test.requestTypeClass);
+        assertSame(AwsProxyResponseEvent.class, test.responseTypeClass);
         assertEquals("test", test.name);
     }
 
-    public static final class TestHandler extends AwsLambdaServletContainerHandler<AwsProxyRequest, AwsProxyResponse, HttpServletRequest, AwsHttpServletResponse> {
+    public static final class TestHandler extends AwsLambdaServletContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponseEvent, HttpServletRequest, AwsHttpServletResponse> {
 
         public TestHandler() {
-            super(AwsProxyRequest.class, AwsProxyResponse.class, new AwsProxyHttpServletRequestReader(), new AwsProxyHttpServletResponseWriter(), new AwsProxySecurityContextWriter(), new AwsProxyExceptionHandler());
+            super(APIGatewayProxyRequestEvent.class, AwsProxyResponseEvent.class, new AwsProxyHttpServletRequestReader(), new AwsProxyHttpServletResponseWriter(), new AwsProxySecurityContextWriter(), new AwsProxyExceptionHandler());
         }
         @Override
         protected AwsHttpServletResponse getContainerResponse(HttpServletRequest request, CountDownLatch latch) {
@@ -68,8 +68,8 @@ public class ServletLambdaContainerHandlerBuilderTest {
 
     public static final class TestBuilder
             extends ServletLambdaContainerHandlerBuilder<
-            AwsProxyRequest,
-            AwsProxyResponse,
+            APIGatewayProxyRequestEvent,
+            AwsProxyResponseEvent,
             HttpServletRequest,
             TestHandler,
             TestBuilder> {

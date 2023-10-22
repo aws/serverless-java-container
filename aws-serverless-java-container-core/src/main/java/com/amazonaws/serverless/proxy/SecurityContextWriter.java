@@ -12,7 +12,6 @@
  */
 package com.amazonaws.serverless.proxy;
 
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import jakarta.ws.rs.core.SecurityContext;

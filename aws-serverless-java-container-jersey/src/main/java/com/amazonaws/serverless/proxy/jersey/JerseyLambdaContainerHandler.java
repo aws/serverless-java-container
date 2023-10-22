@@ -19,12 +19,13 @@ import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.jersey.suppliers.AwsProxyServletContextSupplier;
 import com.amazonaws.serverless.proxy.jersey.suppliers.AwsProxyServletRequestSupplier;
 import com.amazonaws.serverless.proxy.jersey.suppliers.AwsProxyServletResponseSupplier;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 
-import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.services.lambda.runtime.Context;
 
+import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
+import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayV2HTTPEvent;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.internal.inject.InjectionManager;
 import org.glassfish.jersey.process.internal.RequestScoped;
@@ -50,11 +51,11 @@ import java.util.concurrent.CountDownLatch;
  *
  * <pre>
  * {@code
- *   public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyResponse> {
+ *   public class LambdaHandler implements RequestHandler<APIGatewayProxyRequestEvent, AwsProxyResponse> {
  *     private ResourceConfig jerseyApplication = new ResourceConfig().packages("your.app.package");
  *     private JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> container = JerseyLambdaContainerHandler.getAwsProxyHandler(jerseyApplication);
  *
- *     public AwsProxyResponse handleRequest(AwsProxyRequest awsProxyRequest, Context context) {
+ *     public AwsProxyResponse handleRequest(APIGatewayProxyRequestEvent awsProxyRequest, Context context) {
  *       return container.proxy(awsProxyRequest, context);
  *     }
  *   }
@@ -81,17 +82,17 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
 
     /**
      * Returns an initialized <code>JerseyLambdaContainerHandler</code> that includes <code>RequestReader</code> and
-     * <code>ResponseWriter</code> objects for the <code>AwsProxyRequest</code> and <code>AwsProxyResponse</code>
+     * <code>ResponseWriter</code> objects for the <code>APIGatewayProxyRequestEvent</code> and <code>AwsProxyResponse</code>
      * objects.
      *
      * @param jaxRsApplication A configured Jax-Rs application object. For Jersey apps this can be the default
      *                         <code>ResourceConfig</code> object
      * @return A <code>JerseyLambdaContainerHandler</code> object
      */
-    public static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> getAwsProxyHandler(Application jaxRsApplication) {
-        JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> newHandler = new JerseyLambdaContainerHandler<>(
-                AwsProxyRequest.class,
-                AwsProxyResponse.class,
+    public static JerseyLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponseEvent> getAwsProxyHandler(Application jaxRsApplication) {
+        JerseyLambdaContainerHandler<APIGatewayProxyRequestEvent, AwsProxyResponseEvent> newHandler = new JerseyLambdaContainerHandler<>(
+                APIGatewayProxyRequestEvent.class,
+                AwsProxyResponseEvent.class,
                 new AwsProxyHttpServletRequestReader(),
                 new AwsProxyHttpServletResponseWriter(),
                 new AwsProxySecurityContextWriter(),
@@ -110,14 +111,27 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
      *                         <code>ResourceConfig</code> object
      * @return A <code>JerseyLambdaContainerHandler</code> object
      */
-    public static JerseyLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> getHttpApiV2ProxyHandler(Application jaxRsApplication) {
-        JerseyLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> newHandler = new JerseyLambdaContainerHandler<>(
-                HttpApiV2ProxyRequest.class,
-                AwsProxyResponse.class,
+    public static JerseyLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponseEvent> getHttpApiV2ProxyHandler(Application jaxRsApplication) {
+        JerseyLambdaContainerHandler<APIGatewayV2HTTPEvent, AwsProxyResponseEvent> newHandler = new JerseyLambdaContainerHandler<>(
+                APIGatewayV2HTTPEvent.class,
+                AwsProxyResponseEvent.class,
                 new AwsHttpApiV2HttpServletRequestReader(),
                 new AwsProxyHttpServletResponseWriter(true),
                 new AwsHttpApiV2SecurityContextWriter(),
                 new AwsProxyExceptionHandler(),
+                jaxRsApplication);
+        newHandler.initialize();
+        return newHandler;
+    }
+
+    public static JerseyLambdaContainerHandler<ApplicationLoadBalancerRequestEvent, AwsProxyResponseEvent> getAlbProxyHandler(Application jaxRsApplication) {
+        JerseyLambdaContainerHandler<ApplicationLoadBalancerRequestEvent, AwsProxyResponseEvent> newHandler = new JerseyLambdaContainerHandler<>(
+                ApplicationLoadBalancerRequestEvent.class,
+                AwsProxyResponseEvent.class,
+                new AwsAlbHttpServletRequestReader(),
+                new AwsProxyHttpServletResponseWriter(true),
+                new AwsAlbSecurityContextWriter(),
+                new AwsAlbExceptionHandler(),
                 jaxRsApplication);
         newHandler.initialize();
         return newHandler;

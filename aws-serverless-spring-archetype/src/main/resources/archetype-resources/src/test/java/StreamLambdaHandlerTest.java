@@ -4,7 +4,7 @@ package ${groupId};
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
+import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -19,6 +19,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequest.getFirst;
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -42,17 +43,17 @@ public class StreamLambdaHandlerTest {
 
         handle(requestStream, responseStream);
 
-        AwsProxyResponse response = readResponse(responseStream);
+        AwsProxyResponseEvent response = readResponse(responseStream);
         assertNotNull(response);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusCode());
 
-        assertFalse(response.isBase64Encoded());
+        assertFalse(response.getIsBase64Encoded());
 
         assertTrue(response.getBody().contains("pong"));
         assertTrue(response.getBody().contains("Hello, World!"));
 
         assertTrue(response.getMultiValueHeaders().containsKey(HttpHeaders.CONTENT_TYPE));
-        assertTrue(response.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE).startsWith(MediaType.APPLICATION_JSON));
+        assertTrue(getFirst(response.getMultiValueHeaders(), HttpHeaders.CONTENT_TYPE).startsWith(MediaType.APPLICATION_JSON));
     }
 
     @Test
@@ -64,7 +65,7 @@ public class StreamLambdaHandlerTest {
 
         handle(requestStream, responseStream);
 
-        AwsProxyResponse response = readResponse(responseStream);
+        AwsProxyResponseEvent response = readResponse(responseStream);
         assertNotNull(response);
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatusCode());
     }
@@ -78,9 +79,9 @@ public class StreamLambdaHandlerTest {
         }
     }
 
-    private AwsProxyResponse readResponse(ByteArrayOutputStream responseStream) {
+    private AwsProxyResponseEvent readResponse(ByteArrayOutputStream responseStream) {
         try {
-            return LambdaContainerHandler.getObjectMapper().readValue(responseStream.toByteArray(), AwsProxyResponse.class);
+            return LambdaContainerHandler.getObjectMapper().readValue(responseStream.toByteArray(), AwsProxyResponseEvent.class);
         } catch (IOException e) {
             e.printStackTrace();
             fail("Error while parsing response: " + e.getMessage());

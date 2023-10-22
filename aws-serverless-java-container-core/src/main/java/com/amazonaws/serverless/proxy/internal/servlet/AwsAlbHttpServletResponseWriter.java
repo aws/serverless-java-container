@@ -1,17 +1,4 @@
-/*
- * Copyright 2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance
- * with the License. A copy of the License is located at
- *
- * http://aws.amazon.com/apache2.0/
- *
- * or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
- * OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
- * and limitations under the License.
- */
 package com.amazonaws.serverless.proxy.internal.servlet;
-
 
 import com.amazonaws.serverless.exceptions.InvalidResponseObjectException;
 import com.amazonaws.serverless.proxy.ResponseWriter;
@@ -20,35 +7,26 @@ import com.amazonaws.serverless.proxy.internal.testutils.Timer;
 import com.amazonaws.serverless.proxy.model.Headers;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
+import jakarta.ws.rs.core.Response;
 
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
-
-/**
- * Creates an <code>AwsProxyResponse</code> object given an <code>AwsHttpServletResponse</code> object. If the
- * response is not populated with a status code we infer a default 200 status code.
- */
-public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpServletResponse, AwsProxyResponseEvent> {
+public class AwsAlbHttpServletResponseWriter extends ResponseWriter<AwsHttpServletResponse, AwsProxyResponseEvent> {
 
     private boolean writeSingleValueHeaders;
 
-    public AwsProxyHttpServletResponseWriter() {
+    public AwsAlbHttpServletResponseWriter() {
         this(false);
     }
 
-    public AwsProxyHttpServletResponseWriter(boolean singleValueHeaders) {
+    public AwsAlbHttpServletResponseWriter(boolean singleValueHeaders) {
         writeSingleValueHeaders = singleValueHeaders;
     }
 
-    //-------------------------------------------------------------
-    // Methods - Implementation
-    //-------------------------------------------------------------
-
     @Override
-    public AwsProxyResponseEvent writeResponse(AwsHttpServletResponse containerResponse, Context lambdaContext)
-            throws InvalidResponseObjectException {
+    public AwsProxyResponseEvent writeResponse(AwsHttpServletResponse containerResponse, Context lambdaContext) throws InvalidResponseObjectException {
         Timer.start("SERVLET_RESPONSE_WRITE");
         AwsProxyResponseEvent awsProxyResponse = new AwsProxyResponseEvent();
         if (containerResponse.getAwsResponseBodyString() != null) {
@@ -70,6 +48,12 @@ public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpSer
 
         awsProxyResponse.setStatusCode(containerResponse.getStatus());
 
+        Response.Status responseStatus = Response.Status.fromStatusCode(containerResponse.getStatus());
+
+        if (containerResponse.getAwsAlbRequest() != null && responseStatus != null) {
+            awsProxyResponse.setStatusDescription(containerResponse.getStatus() + " " + responseStatus.getReasonPhrase());
+        }
+
         Timer.stop("SERVLET_RESPONSE_WRITE");
         return awsProxyResponse;
     }
@@ -86,12 +70,11 @@ public class AwsProxyHttpServletResponseWriter extends ResponseWriter<AwsHttpSer
     }
 
     private boolean isBinary(String contentType) {
-        if(contentType != null) {
+        if (contentType != null) {
             int semidx = contentType.indexOf(';');
-            if(semidx >= 0) {
+            if (semidx >= 0) {
                 return LambdaContainerHandler.getContainerConfig().isBinaryContentType(contentType.substring(0, semidx));
-            }
-            else {
+            } else {
                 return LambdaContainerHandler.getContainerConfig().isBinaryContentType(contentType);
             }
         }

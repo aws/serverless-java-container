@@ -1,47 +1,26 @@
-/*
- * Copyright 2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance
- * with the License. A copy of the License is located at
- *
- * http://aws.amazon.com/apache2.0/
- *
- * or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
- * OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
- * and limitations under the License.
- */
 package com.amazonaws.serverless.proxy;
 
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.ErrorModel;
-import com.amazonaws.serverless.proxy.model.Headers;
-
 import com.amazonaws.services.lambda.runtime.events.AwsProxyResponseEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-/**
- * Default implementation of the <code>ExceptionHandler</code> object that returns AwsProxyResponse objects.
- *
- * Returns application/json messages with a status code of 500 when the RequestReader failed to read the incoming event
- *  or if InternalServerErrorException is thrown.
- * For all other exceptions returns a 502. Responses are populated with a JSON object containing a message property.
- *
- * @see ExceptionHandler
- */
-public class AwsProxyExceptionHandler
-        implements ExceptionHandler<AwsProxyResponseEvent> {
+public class AwsAlbExceptionHandler implements ExceptionHandler<AwsProxyResponseEvent>{
 
-    private Logger log = LoggerFactory.getLogger(AwsProxyExceptionHandler.class);
+    private Logger log = LoggerFactory.getLogger(AwsAlbExceptionHandler.class);
 
     //-------------------------------------------------------------
     // Constants
@@ -55,22 +34,17 @@ public class AwsProxyExceptionHandler
     // Variables - Private - Static
     //-------------------------------------------------------------
 
-    private static Headers headers = new Headers();
+    private static final Map<String, List<String>> headers = new HashMap<>();
 
     //-------------------------------------------------------------
     // Constructors
     //-------------------------------------------------------------
 
     static {
-        headers.putSingle(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+        List<String> values = new ArrayList<>();
+        values.add(MediaType.APPLICATION_JSON);
+        headers.put(HttpHeaders.CONTENT_TYPE, values);
     }
-
-
-    //-------------------------------------------------------------
-    // Implementation - ExceptionHandler
-    //-------------------------------------------------------------
-
-
     @Override
     public AwsProxyResponseEvent handle(Throwable ex) {
         log.error("Called exception handler for:", ex);
@@ -79,8 +53,10 @@ public class AwsProxyExceptionHandler
         // output to go to the stderr.
         ex.printStackTrace();
         AwsProxyResponseEvent responseEvent = new AwsProxyResponseEvent();
+
         responseEvent.setMultiValueHeaders(headers);
         if (ex instanceof InvalidRequestEventException || ex instanceof InternalServerErrorException) {
+            //return new APIGatewayProxyResponseEvent(500, headers, getErrorJson(INTERNAL_SERVER_ERROR));
             responseEvent.setBody(getErrorJson(INTERNAL_SERVER_ERROR));
             responseEvent.setStatusCode(500);
             return responseEvent;
@@ -91,14 +67,12 @@ public class AwsProxyExceptionHandler
         }
     }
 
-
     @Override
     public void handle(Throwable ex, OutputStream stream) throws IOException {
         AwsProxyResponseEvent response = handle(ex);
 
         LambdaContainerHandler.getObjectMapper().writeValue(stream, response);
     }
-
 
     //-------------------------------------------------------------
     // Methods - Protected

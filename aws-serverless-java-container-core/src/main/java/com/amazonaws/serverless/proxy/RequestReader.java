@@ -51,6 +51,11 @@ public abstract class RequestReader<RequestType, ContainerRequestType> {
     public static final String ALB_CONTEXT_PROPERTY = "com.amazonaws.alb.request.context";
 
     /**
+     * The key to store the entire Application Load Balancer event
+     */
+    public static final String ALB_EVENT_PROPERTY = "com.amazonaws.alb.request";
+
+    /**
      * The key to store the entire API Gateway event
      */
     public static final String API_GATEWAY_EVENT_PROPERTY = "com.amazonaws.apigateway.request";

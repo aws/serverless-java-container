@@ -14,9 +14,10 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.Headers;
 
+import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +39,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
+import static com.amazonaws.serverless.proxy.RequestReader.ALB_EVENT_PROPERTY;
 import static com.amazonaws.serverless.proxy.RequestReader.API_GATEWAY_EVENT_PROPERTY;
 
 
@@ -484,6 +486,11 @@ public class AwsHttpServletResponse
         return responseBody;
     }
 
+    /* This is added for test purposes **/
+    void setAwsResponseBodyString(String bodyString) {
+        responseBody = bodyString;
+    }
+
     byte[] getAwsResponseBodyBytes() {
         if (bodyOutputStream != null) {
             return bodyOutputStream.toByteArray();
@@ -496,10 +503,13 @@ public class AwsHttpServletResponse
         return headers;
     }
 
-    AwsProxyRequest getAwsProxyRequest() {
-        return (AwsProxyRequest)request.getAttribute(API_GATEWAY_EVENT_PROPERTY);
+    APIGatewayProxyRequestEvent getAwsProxyRequest() {
+        return (APIGatewayProxyRequestEvent)request.getAttribute(API_GATEWAY_EVENT_PROPERTY);
     }
 
+    ApplicationLoadBalancerRequestEvent getAwsAlbRequest() {
+        return (ApplicationLoadBalancerRequestEvent)request.getAttribute(ALB_EVENT_PROPERTY);
+    }
 
     //-------------------------------------------------------------
     // Methods - Private
