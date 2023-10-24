@@ -2,7 +2,7 @@ package com.amazonaws.serverless.sample.spring.filter;
 
 
 import com.amazonaws.serverless.proxy.RequestReader;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
+import com.amazonaws.services.lambda.runtime.events.apigateway.APIGatewayProxyRequestEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,12 +42,12 @@ public class CognitoIdentityFilter implements Filter {
             log.warn("API Gateway context is null");
             filterChain.doFilter(servletRequest, servletResponse);
         }
-        if (!AwsProxyRequestContext.class.isAssignableFrom(apiGwContext.getClass())) {
+        if (!APIGatewayProxyRequestEvent.ProxyRequestContext.class.isAssignableFrom(apiGwContext.getClass())) {
             log.warn("API Gateway context object is not of valid type");
             filterChain.doFilter(servletRequest, servletResponse);
         }
 
-        AwsProxyRequestContext ctx = (AwsProxyRequestContext)apiGwContext;
+        APIGatewayProxyRequestEvent.ProxyRequestContext ctx = (APIGatewayProxyRequestEvent.ProxyRequestContext)apiGwContext;
         if (ctx.getIdentity() == null) {
             log.warn("Identity context is null");
             filterChain.doFilter(servletRequest, servletResponse);

@@ -105,7 +105,6 @@ public class SpringDelegatingLambdaContainerHandler implements RequestStreamHand
         httpRequest.setAttribute(RequestReader.API_GATEWAY_CONTEXT_PROPERTY, v1Request.getRequestContext());
         httpRequest.setAttribute(RequestReader.API_GATEWAY_STAGE_VARS_PROPERTY, v1Request.getStageVariables());
         httpRequest.setAttribute(RequestReader.API_GATEWAY_EVENT_PROPERTY, v1Request);
-        //httpRequest.setAttribute(RequestReader.ALB_CONTEXT_PROPERTY, v1Request.getRequestContext().getElb());
         httpRequest.setAttribute(RequestReader.LAMBDA_CONTEXT_PROPERTY, lambdaContext);
         httpRequest.setAttribute(RequestReader.JAX_SECURITY_CONTEXT_PROPERTY, securityWriter.writeSecurityContext(v1Request, lambdaContext));
         return httpRequest;
