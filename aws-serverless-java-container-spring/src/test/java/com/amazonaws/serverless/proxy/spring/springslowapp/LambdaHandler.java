@@ -18,7 +18,6 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
         long startTime = Instant.now().toEpochMilli();
         handler = new SpringProxyHandlerBuilder<AwsProxyRequest>()
                 .defaultProxy()
-                .asyncInit()
                 .configurationClasses(SlowAppConfig.class)
                 .buildAndInitialize();
         constructorTime = Instant.now().toEpochMilli() - startTime;
