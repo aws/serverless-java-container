@@ -86,7 +86,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     private ServletContext servletContext;
     private AwsHttpSession session;
     private String queryString;
-    private Map<String, Part> multipartFormParameters;
+    private Map<String, List<Part>> multipartFormParameters;
     private Map<String, List<String>> urlEncodedFormParameters;
 
     protected AwsHttpServletResponse response;
@@ -511,7 +511,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     }
 
     @SuppressFBWarnings({"FILE_UPLOAD_FILENAME", "WEAK_FILENAMEUTILS"})
-    protected Map<String, Part> getMultipartFormParametersMap() {
+    protected Map<String, List<Part>> getMultipartFormParametersMap() {
         if (multipartFormParameters != null) {
             return multipartFormParameters;
         }
@@ -537,7 +537,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
                     newPart.addHeader(h, item.getHeaders().getHeader(h));
                 });
 
-                multipartFormParameters.put(item.getFieldName(), newPart);
+                addPart(multipartFormParameters, item.getFieldName(), newPart);
             }
         } catch (FileUploadException e) {
             Timer.stop("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
@@ -545,6 +545,14 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         }
         Timer.stop("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
         return multipartFormParameters;
+    }
+    private void addPart(Map<String, List<Part>> params, String fieldName, Part newPart) {
+        List<Part> partList = params.get(fieldName);
+        if (Objects.isNull(partList)) {
+            partList = new ArrayList<>();
+            params.put(fieldName, partList);
+        }
+        partList.add(newPart);
     }
 
     protected String[] getQueryParamValues(MultiValuedTreeMap<String, String> qs, String key, boolean isCaseSensitive) {

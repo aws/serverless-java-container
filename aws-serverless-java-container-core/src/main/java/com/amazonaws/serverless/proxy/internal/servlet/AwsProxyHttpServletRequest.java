@@ -259,14 +259,23 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     public Collection<Part> getParts()
             throws IOException, ServletException {
-        return getMultipartFormParametersMap().values();
+        List<Part> partList =
+                getMultipartFormParametersMap().values().stream()
+                        .flatMap(List::stream)
+                        .collect(Collectors.toList());
+        return partList;
     }
 
 
     @Override
     public Part getPart(String s)
             throws IOException, ServletException {
-        return getMultipartFormParametersMap().get(s);
+        // In case there's multiple files with the same fieldName, we return the first one in the list
+        List<Part> values = getMultipartFormParametersMap().get(s);
+        if (Objects.isNull(values)) {
+            return null;
+        }
+        return getMultipartFormParametersMap().get(s).get(0);
     }
 
 
