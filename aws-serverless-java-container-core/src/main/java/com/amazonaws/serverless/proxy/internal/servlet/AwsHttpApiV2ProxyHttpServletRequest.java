@@ -236,25 +236,6 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
     }
 
     @Override
-    public Collection<Part> getParts() throws IOException, ServletException {
-        List<Part> partList =
-                getMultipartFormParametersMap().values().stream()
-                        .flatMap(List::stream)
-                        .collect(Collectors.toList());
-        return partList;
-    }
-
-    @Override
-    public Part getPart(String s) throws IOException, ServletException {
-        // In case there's multiple files with the same fieldName, we return the first one in the list
-        List<Part> values = getMultipartFormParametersMap().get(s);
-        if (Objects.isNull(values)) {
-            return null;
-        }
-        return getMultipartFormParametersMap().get(s).get(0);
-    }
-
-    @Override
     public <T extends HttpUpgradeHandler> T upgrade(Class<T> aClass) throws IOException, ServletException {
         throw new UnsupportedOperationException();
     }

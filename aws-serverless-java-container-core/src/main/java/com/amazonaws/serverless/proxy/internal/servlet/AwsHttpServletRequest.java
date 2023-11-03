@@ -510,6 +510,27 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         return urlEncodedFormParameters;
     }
 
+    @Override
+    public Collection<Part> getParts()
+            throws IOException, ServletException {
+        List<Part> partList =
+                getMultipartFormParametersMap().values().stream()
+                        .flatMap(List::stream)
+                        .collect(Collectors.toList());
+        return partList;
+    }
+
+    @Override
+    public Part getPart(String s)
+            throws IOException, ServletException {
+        // In case there's multiple files with the same fieldName, we return the first one in the list
+        List<Part> values = getMultipartFormParametersMap().get(s);
+        if (Objects.isNull(values)) {
+            return null;
+        }
+        return getMultipartFormParametersMap().get(s).get(0);
+    }
+
     @SuppressFBWarnings({"FILE_UPLOAD_FILENAME", "WEAK_FILENAMEUTILS"})
     protected Map<String, List<Part>> getMultipartFormParametersMap() {
         if (multipartFormParameters != null) {
