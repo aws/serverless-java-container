@@ -37,6 +37,7 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
@@ -232,16 +233,6 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     public void logout() throws ServletException {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Collection<Part> getParts() throws IOException, ServletException {
-        return getMultipartFormParametersMap().values();
-    }
-
-    @Override
-    public Part getPart(String s) throws IOException, ServletException {
-        return getMultipartFormParametersMap().get(s);
     }
 
     @Override

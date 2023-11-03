@@ -255,21 +255,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         throw new UnsupportedOperationException();
     }
 
-
-    @Override
-    public Collection<Part> getParts()
-            throws IOException, ServletException {
-        return getMultipartFormParametersMap().values();
-    }
-
-
-    @Override
-    public Part getPart(String s)
-            throws IOException, ServletException {
-        return getMultipartFormParametersMap().get(s);
-    }
-
-
     @Override
     public <T extends HttpUpgradeHandler> T upgrade(Class<T> aClass)
             throws IOException, ServletException {
