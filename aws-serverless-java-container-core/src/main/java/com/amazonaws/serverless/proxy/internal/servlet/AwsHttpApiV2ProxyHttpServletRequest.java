@@ -348,7 +348,7 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
 
         if (headers != null && headers.containsKey(HOST_HEADER_NAME)) {
             String hostHeader = headers.getFirst(HOST_HEADER_NAME);
-            if (SecurityUtils.isValidHost(hostHeader, request.getRequestContext().getApiId(), region)) {
+            if (SecurityUtils.isValidHost(hostHeader, request.getRequestContext().getApiId(), request.getRequestContext().getElb(), region)) {
                 return hostHeader;
             }
         }

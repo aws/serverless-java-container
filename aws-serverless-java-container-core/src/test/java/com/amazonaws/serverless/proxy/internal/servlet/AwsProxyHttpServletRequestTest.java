@@ -5,6 +5,7 @@ import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -638,6 +639,16 @@ public class AwsProxyHttpServletRequestTest {
         HttpServletRequest servletReq = getRequest(proxyReq, null, null);
         String serverName = servletReq.getServerName();
         assertEquals("testapi.com", serverName);
+    }
+
+    @Test
+    void serverName_albHostHeader_returnsHostHeader() {
+        initAwsProxyHttpServletRequestTest("ALB");
+        AwsProxyRequestBuilder proxyReq = new AwsProxyRequestBuilder("/test", "GET")
+                .header(HttpHeaders.HOST, "testapi.us-east-1.elb.amazonaws.com");
+        HttpServletRequest servletReq = getRequest(proxyReq, null, null);
+        String serverName = servletReq.getServerName();
+        assertEquals("testapi.us-east-1.elb.amazonaws.com", serverName);
     }
 
     private AwsProxyRequestBuilder getRequestWithHeaders() {
