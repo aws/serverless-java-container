@@ -96,7 +96,7 @@ public abstract class ServletLambdaContainerHandlerBuilder<
                 .requestReader((RequestReader<RequestType, ContainerRequestType>) new AwsProxyHttpServletRequestReader())
                 .responseWriter((ResponseWriter<AwsHttpServletResponse, ResponseType>) new AwsProxyHttpServletResponseWriter())
                 .securityContextWriter((SecurityContextWriter<RequestType>) new AwsProxySecurityContextWriter())
-                .exceptionHandler((ExceptionHandler<ResponseType>) new AwsProxyExceptionHandler())
+                .exceptionHandler(defaultExceptionHandler())
                 .requestTypeClass((Class<RequestType>) AwsProxyRequest.class)
                 .responseTypeClass((Class<ResponseType>) AwsProxyResponse.class);
         return self();
@@ -112,11 +112,15 @@ public abstract class ServletLambdaContainerHandlerBuilder<
                 .requestReader((RequestReader<RequestType, ContainerRequestType>) new AwsHttpApiV2HttpServletRequestReader())
                 .responseWriter((ResponseWriter<AwsHttpServletResponse, ResponseType>) new AwsProxyHttpServletResponseWriter(true))
                 .securityContextWriter((SecurityContextWriter<RequestType>) new AwsHttpApiV2SecurityContextWriter())
-                .exceptionHandler((ExceptionHandler<ResponseType>) new AwsProxyExceptionHandler())
+                .exceptionHandler(defaultExceptionHandler())
                 .requestTypeClass((Class<RequestType>) HttpApiV2ProxyRequest.class)
                 .responseTypeClass((Class<ResponseType>) AwsProxyResponse.class);
         return self();
 
+    }
+
+    protected ExceptionHandler<ResponseType> defaultExceptionHandler() {
+        return (ExceptionHandler<ResponseType>) new AwsProxyExceptionHandler();
     }
 
     /**

@@ -13,6 +13,7 @@
 package com.amazonaws.serverless.proxy.spring;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
+import com.amazonaws.serverless.proxy.ExceptionHandler;
 import com.amazonaws.serverless.proxy.internal.servlet.ServletLambdaContainerHandlerBuilder;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import org.springframework.boot.WebApplicationType;
@@ -78,5 +79,10 @@ public final class SpringBootProxyHandlerBuilder<RequestType> extends ServletLam
         SpringBootLambdaContainerHandler<RequestType, AwsProxyResponse> handler = build();
         initializationWrapper.start(handler);
         return handler;
+    }
+
+    @Override
+    protected ExceptionHandler<AwsProxyResponse> defaultExceptionHandler() {
+        return new SpringBootAwsProxyExceptionHandler();
     }
 }
