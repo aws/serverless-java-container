@@ -17,7 +17,7 @@ dependencies {
     exclude group: 'com.fasterxml.jackson.core', module: "jackson-core"
   }
 
-  implementation("org.glassfish.jersey.inject:jersey-hk2:3.1.3") {
+  implementation("org.glassfish.jersey.inject:jersey-hk2:3.1.4") {
     exclude group: 'javax.inject', module: "javax.inject"
   }
 }
