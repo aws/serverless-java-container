@@ -15,9 +15,9 @@
     <version>2.0.0-SNAPSHOT</version>
 
     <properties>
-        <spring.version>6.1.1</spring.version>
-        <springboot.version>3.2.0</springboot.version>
-        <springsecurity.version>6.2.0</springsecurity.version>
+        <spring.version>6.1.2</spring.version>
+        <springboot.version>3.2.1</springboot.version>
+        <springsecurity.version>6.2.1</springsecurity.version>
     </properties>
 
     <dependencies>
