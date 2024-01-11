@@ -1,22 +1,21 @@
 package com.amazonaws.serverless.proxy.spring;
 
-import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import java.util.Arrays;
+import java.util.Collection;
+
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.webfluxapp.LambdaHandler;
 import com.amazonaws.serverless.proxy.spring.webfluxapp.MessageController;
 import com.amazonaws.serverless.proxy.spring.webfluxapp.MessageData;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-
-import java.util.Arrays;
-import java.util.Collection;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class WebFluxAppTest {
 

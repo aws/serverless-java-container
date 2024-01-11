@@ -25,8 +25,8 @@ import jakarta.servlet.ServletException;
 
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 public class ServerlessServletEmbeddedServerFactory implements ServletWebServerFactory, WebServer {
-    private ServletContextInitializer[] initializers;
-    private AwsLambdaServletContainerHandler handler;
+    @SuppressWarnings("rawtypes")
+	private AwsLambdaServletContainerHandler handler;
 
     public ServerlessServletEmbeddedServerFactory() {
         super();
@@ -35,7 +35,6 @@ public class ServerlessServletEmbeddedServerFactory implements ServletWebServerF
 
     @Override
     public WebServer getWebServer(ServletContextInitializer... initializers) {
-        this.initializers = initializers;
         for (ServletContextInitializer i : initializers) {
             try {
                 if (handler.getServletContext() == null) {
