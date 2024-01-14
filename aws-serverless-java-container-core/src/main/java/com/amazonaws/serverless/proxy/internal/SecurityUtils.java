@@ -12,6 +12,8 @@
  */
 package com.amazonaws.serverless.proxy.internal;
 
+import com.amazonaws.serverless.proxy.model.AlbContext;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
@@ -21,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -60,11 +63,15 @@ public final class SecurityUtils {
         return SCHEMES.contains(scheme);
     }
 
-    public static boolean isValidHost(String host, String apiId, String region) {
+    public static boolean isValidHost(String host, String apiId, AlbContext elb, String region) {
         if (host == null) {
             return false;
         }
-        if (host.endsWith(".amazonaws.com")) {
+        if (!Objects.isNull(elb)) {
+            String albhost = new StringBuilder().append(region)
+                                                .append(".elb.amazonaws.com").toString();
+            return host.endsWith(albhost) || LambdaContainerHandler.getContainerConfig().getCustomDomainNames().contains(host);
+        } else if (host.endsWith(".amazonaws.com")) {
             String defaultHost = new StringBuilder().append(apiId)
                                                     .append(".execute-api.")
                                                     .append(region)

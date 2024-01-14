@@ -231,7 +231,7 @@ public class AwsProxyExceptionHandlerTest {
 
     @Test
     void errorMessage_GatewayTimeout_staticString() {
-        assertEquals("Gateway timeout", AwsProxyExceptionHandler.GATEWAY_TIMEOUT_ERROR);
+        assertEquals("Gateway Timeout", AwsProxyExceptionHandler.GATEWAY_TIMEOUT_ERROR);
     }
 
     @Test

@@ -255,21 +255,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         throw new UnsupportedOperationException();
     }
 
-
-    @Override
-    public Collection<Part> getParts()
-            throws IOException, ServletException {
-        return getMultipartFormParametersMap().values();
-    }
-
-
-    @Override
-    public Part getPart(String s)
-            throws IOException, ServletException {
-        return getMultipartFormParametersMap().get(s);
-    }
-
-
     @Override
     public <T extends HttpUpgradeHandler> T upgrade(Class<T> aClass)
             throws IOException, ServletException {
@@ -405,7 +390,7 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
         if (request.getMultiValueHeaders() != null && request.getMultiValueHeaders().containsKey(HOST_HEADER_NAME)) {
             String hostHeader = request.getMultiValueHeaders().getFirst(HOST_HEADER_NAME);
-            if (SecurityUtils.isValidHost(hostHeader, request.getRequestContext().getApiId(), region)) {
+            if (SecurityUtils.isValidHost(hostHeader, request.getRequestContext().getApiId(), request.getRequestContext().getElb(), region)) {
                 return hostHeader;
             }
         }

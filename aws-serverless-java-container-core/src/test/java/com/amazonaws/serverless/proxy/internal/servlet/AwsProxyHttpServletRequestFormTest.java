@@ -4,7 +4,9 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 
+import jakarta.servlet.http.Part;
 import org.apache.commons.io.IOUtils;
+import org.apache.hc.client5.http.entity.mime.MultipartPartBuilder;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
@@ -17,10 +19,7 @@ import jakarta.ws.rs.core.MediaType;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -31,6 +30,7 @@ public class AwsProxyHttpServletRequestFormTest {
     private static final String PART_KEY_2 = "test2";
     private static final String PART_VALUE_2 = "value2";
     private static final String FILE_KEY = "file_upload_1";
+    private static final String FILE_KEY_2 = "file_upload_2";
     private static final String FILE_NAME = "testImage.jpg";
 
     private static final String ENCODED_VALUE = "test123a%3D1%262@3";
@@ -41,6 +41,7 @@ public class AwsProxyHttpServletRequestFormTest {
                                                                                 .build();
     private static final int FILE_SIZE = 512;
     private static byte[] FILE_BYTES = new byte[FILE_SIZE];
+    private static byte[] FILE_BYTES_2 = new byte[FILE_SIZE];
     static {
         new Random().nextBytes(FILE_BYTES);
     }
@@ -49,6 +50,10 @@ public class AwsProxyHttpServletRequestFormTest {
                                                                                   .addTextBody(PART_KEY_2, PART_VALUE_2)
                                                                                   .addBinaryBody(FILE_KEY, FILE_BYTES, ContentType.IMAGE_JPEG, FILE_NAME)
                                                                                   .build();
+    private static final HttpEntity MULTIPART_BINARY_DATA_2 = MultipartEntityBuilder.create()
+            .addBinaryBody(FILE_KEY, FILE_BYTES, ContentType.IMAGE_JPEG, FILE_NAME)
+            .addBinaryBody(FILE_KEY, FILE_BYTES_2, ContentType.IMAGE_JPEG, FILE_NAME)
+            .build();
     private static final String ENCODED_FORM_ENTITY = PART_KEY_1 + "=" + ENCODED_VALUE + "&" + PART_KEY_2 + "=" + PART_VALUE_2;
 
     @Test
@@ -104,6 +109,30 @@ public class AwsProxyHttpServletRequestFormTest {
             assertEquals(FILE_NAME, request.getPart(FILE_KEY).getSubmittedFileName());
             assertEquals(PART_VALUE_1, IOUtils.toString(request.getPart(PART_KEY_1).getInputStream(), Charset.defaultCharset()));
             assertEquals(PART_VALUE_2, IOUtils.toString(request.getPart(PART_KEY_2).getInputStream(), Charset.defaultCharset()));
+        } catch (IOException | ServletException e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Test
+    void multipart_getParts_returnsMultiplePartsWithSameFieldName() {
+        try {
+            AwsProxyRequest proxyRequest = new AwsProxyRequestBuilder("/form", "POST")
+                    .header(HttpHeaders.CONTENT_TYPE, MULTIPART_BINARY_DATA_2.getContentType())
+                    .header(HttpHeaders.CONTENT_LENGTH, MULTIPART_BINARY_DATA_2.getContentLength() + "")
+                    .binaryBody(MULTIPART_BINARY_DATA_2.getContent())
+                    .build();
+
+            HttpServletRequest request = new AwsProxyHttpServletRequest(proxyRequest, null, null);
+            assertNotNull(request.getParts());
+            assertEquals(2, request.getParts().size());
+            assertNotNull(request.getPart(FILE_KEY));
+            List<Part> partList = new ArrayList<>(request.getParts());
+            assertEquals(partList.get(0).getSubmittedFileName(), partList.get(1).getSubmittedFileName());
+            assertEquals(partList.get(0).getName(), partList.get(1).getName());
+            assertEquals(FILE_SIZE, request.getPart(FILE_KEY).getSize());
+            assertEquals(FILE_KEY, request.getPart(FILE_KEY).getName());
+            assertEquals(FILE_NAME, request.getPart(FILE_KEY).getSubmittedFileName());
         } catch (IOException | ServletException e) {
             fail(e.getMessage());
         }

@@ -22,10 +22,11 @@ import com.amazonaws.serverless.proxy.model.Headers;
 import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 import com.amazonaws.services.lambda.runtime.Context;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.apache.commons.fileupload2.core.DiskFileItem;
 import org.apache.commons.fileupload2.core.FileItem;
 import org.apache.commons.fileupload2.core.FileUploadException;
 import org.apache.commons.fileupload2.core.DiskFileItemFactory;
-import org.apache.commons.fileupload2.jakarta.JakartaServletFileUpload;
+import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.NullInputStream;
@@ -41,9 +42,11 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -84,7 +87,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     private ServletContext servletContext;
     private AwsHttpSession session;
     private String queryString;
-    private Map<String, Part> multipartFormParameters;
+    private Map<String, List<Part>> multipartFormParameters;
     private Map<String, List<String>> urlEncodedFormParameters;
 
     protected AwsHttpServletResponse response;
@@ -310,7 +313,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
      */
     protected String generateQueryString(MultiValuedTreeMap<String, String> parameters, boolean encode, String encodeCharset)
             throws ServletException {
-        if (parameters == null || parameters.size() == 0) {
+        if (parameters == null || parameters.isEmpty()) {
             return null;
         }
         if (queryString != null) {
@@ -394,7 +397,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     }
 
     protected String appendCharacterEncoding(String currentContentType, String newEncoding) {
-        if (currentContentType == null || "".equals(currentContentType.trim())) {
+        if (currentContentType == null || currentContentType.trim().isEmpty()) {
             return null;
         }
 
@@ -427,13 +430,13 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         } else {
             String encoding = getCharacterEncoding();
             if (encoding == null) {
-                encoding = StandardCharsets.ISO_8859_1.name();
+                encoding = Charset.defaultCharset().name();
             }
             try {
                 bodyBytes = body.getBytes(encoding);
             } catch (Exception e) {
                 log.error("Could not read request with character encoding: " + SecurityUtils.crlf(encoding), e);
-                bodyBytes = body.getBytes(StandardCharsets.ISO_8859_1.name());
+                bodyBytes = body.getBytes(Charset.defaultCharset());
             }
         }
         ByteArrayInputStream requestBodyStream = new ByteArrayInputStream(bodyBytes);
@@ -484,7 +487,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         Timer.start("SERVLET_REQUEST_GET_FORM_PARAMS");
         String rawBodyContent = null;
         try {
-            rawBodyContent = IOUtils.toString(getInputStream());
+            rawBodyContent = IOUtils.toString(getInputStream(), getCharacterEncoding());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -508,8 +511,29 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         return urlEncodedFormParameters;
     }
 
+    @Override
+    public Collection<Part> getParts()
+            throws IOException, ServletException {
+        List<Part> partList =
+                getMultipartFormParametersMap().values().stream()
+                        .flatMap(List::stream)
+                        .collect(Collectors.toList());
+        return partList;
+    }
+
+    @Override
+    public Part getPart(String s)
+            throws IOException, ServletException {
+        // In case there's multiple files with the same fieldName, we return the first one in the list
+        List<Part> values = getMultipartFormParametersMap().get(s);
+        if (Objects.isNull(values)) {
+            return null;
+        }
+        return getMultipartFormParametersMap().get(s).get(0);
+    }
+
     @SuppressFBWarnings({"FILE_UPLOAD_FILENAME", "WEAK_FILENAMEUTILS"})
-    protected Map<String, Part> getMultipartFormParametersMap() {
+    protected Map<String, List<Part>> getMultipartFormParametersMap() {
         if (multipartFormParameters != null) {
             return multipartFormParameters;
         }
@@ -520,11 +544,12 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         Timer.start("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
         multipartFormParameters = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
-        JakartaServletFileUpload upload = new JakartaServletFileUpload(DiskFileItemFactory.builder().get());
+        JakartaServletFileUpload<DiskFileItem, DiskFileItemFactory> upload =
+                new JakartaServletFileUpload<>(DiskFileItemFactory.builder().get());
 
         try {
-            List<FileItem> items = upload.parseRequest(this);
-            for (FileItem item : items) {
+            List<DiskFileItem> items = upload.parseRequest(this);
+            for (FileItem<DiskFileItem> item : items) {
                 String fileName = FilenameUtils.getName(item.getName());
                 AwsProxyRequestPart newPart = new AwsProxyRequestPart(item.get());
                 newPart.setName(item.getFieldName());
@@ -535,7 +560,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
                     newPart.addHeader(h, item.getHeaders().getHeader(h));
                 });
 
-                multipartFormParameters.put(item.getFieldName(), newPart);
+                addPart(multipartFormParameters, item.getFieldName(), newPart);
             }
         } catch (FileUploadException e) {
             Timer.stop("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
@@ -544,41 +569,71 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         Timer.stop("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
         return multipartFormParameters;
     }
+    private void addPart(Map<String, List<Part>> params, String fieldName, Part newPart) {
+        List<Part> partList = params.get(fieldName);
+        if (Objects.isNull(partList)) {
+            partList = new ArrayList<>();
+            params.put(fieldName, partList);
+        }
+        partList.add(newPart);
+    }
 
     protected String[] getQueryParamValues(MultiValuedTreeMap<String, String> qs, String key, boolean isCaseSensitive) {
+        List<String> value = getQueryParamValuesAsList(qs, key, isCaseSensitive);
+        if (value == null){
+            return null;
+        }
+        return value.toArray(new String[0]);
+    }
+
+    protected List<String> getQueryParamValuesAsList(MultiValuedTreeMap<String, String> qs, String key, boolean isCaseSensitive) {
         if (qs != null) {
             if (isCaseSensitive) {
-                return qs.get(key).toArray(new String[0]);
+                return qs.get(key);
             }
 
             for (String k : qs.keySet()) {
                 if (k.toLowerCase(Locale.getDefault()).equals(key.toLowerCase(Locale.getDefault()))) {
-                    return qs.get(k).toArray(new String[0]);
+                    return qs.get(k);
                 }
             }
         }
 
-        return new String[0];
+        return Collections.emptyList();
     }
 
     protected Map<String, String[]> generateParameterMap(MultiValuedTreeMap<String, String> qs, ContainerConfig config) {
-        Map<String, String[]> output = new HashMap<>();
+        Map<String, String[]> output;
 
-        Map<String, List<String>> params = getFormUrlEncodedParametersMap();
-        params.entrySet().stream().parallel().forEach(e -> {
-            output.put(e.getKey(), e.getValue().toArray(new String[0]));
-        });
+        Map<String, List<String>> formEncodedParams = getFormUrlEncodedParametersMap();
 
-        if (qs != null) {
-            qs.keySet().stream().parallel().forEach(e -> {
-                List<String> newValues = new ArrayList<>();
-                if (output.containsKey(e)) {
-                    String[] values = output.get(e);
-                    newValues.addAll(Arrays.asList(values));
-                }
-                newValues.addAll(Arrays.asList(getQueryParamValues(qs, e, config.isQueryStringCaseSensitive())));
-                output.put(e, newValues.toArray(new String[0]));
-            });
+        if (qs == null) {
+            // Just transform the List<String> values to String[]
+            output = formEncodedParams.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, (e) -> e.getValue().toArray(new String[0])));
+        } else {
+            Map<String, List<String>> queryStringParams;
+            if (config.isQueryStringCaseSensitive()) {
+                queryStringParams = qs;
+            } else {
+                // If it's case insensitive, we check the entire map on every parameter
+                queryStringParams = qs.entrySet().stream().parallel().collect(
+                    Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> getQueryParamValuesAsList(qs, e.getKey(), false)
+                    ));
+            }
+
+            // Merge formEncodedParams and queryStringParams Maps
+            output = Stream.of(formEncodedParams, queryStringParams).flatMap(m -> m.entrySet().stream())
+                .collect(
+                    Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> e.getValue().toArray(new String[0]),
+                        // If a parameter is in both Maps, we merge the list of values (and ultimately transform to String[])
+                        (formParam, queryParam) -> Stream.of(formParam, queryParam).flatMap(Stream::of).toArray(String[]::new)
+                    ));
+
         }
 
         return output;
@@ -631,11 +686,10 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
             return values;
         }
 
-        for (String v : headerValue.split(valueSeparator)) {
-            String curValue = v;
+        for (String curValue : headerValue.split(valueSeparator)) {
             float curPreference = 1.0f;
             HeaderValue newValue = new HeaderValue();
-            newValue.setRawValue(v);
+            newValue.setRawValue(curValue);
 
             for (String q : curValue.split(qualifierSeparator)) {
 
@@ -651,7 +705,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
                     // if the length of the value is 0 we assume that we are looking at a
                     // base64 encoded value with padding so we just set the value. This is because
                     // we assume that empty values in a key/value pair will contain at least a white space
-                    if (kv[1].length() == 0) {
+                    if (kv[1].isEmpty()) {
                         val = q.trim();
                     }
                     // this was a base64 string with an additional = for padding, set the value only
@@ -699,7 +753,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         );
 
         List<Locale> locales = new ArrayList<>();
-        if (values.size() == 0) {
+        if (values.isEmpty()) {
             locales.add(Locale.getDefault());
         } else {
             for (HeaderValue locale : values) {

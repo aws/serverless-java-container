@@ -38,8 +38,13 @@ import java.util.concurrent.TimeUnit;
  * seconds has already been used up.
  */
 public class AsyncInitializationWrapper extends InitializationWrapper {
+
     private static final int DEFAULT_INIT_GRACE_TIME_MS = 150;
     private static final String INIT_GRACE_TIME_ENVIRONMENT_VARIABLE_NAME = "AWS_SERVERLESS_JAVA_CONTAINER_INIT_GRACE_TIME";
+    private static final String INITIALIZATION_TYPE_ENVIRONMENT_VARIABLE_NAME = "AWS_LAMBDA_INITIALIZATION_TYPE";
+    private static final String INITIALIZATION_TYPE_ON_DEMAND = "on-demand";
+    private static final String INITIALIZATION_TYPE = System.getenv().getOrDefault(INITIALIZATION_TYPE_ENVIRONMENT_VARIABLE_NAME,INITIALIZATION_TYPE_ON_DEMAND);
+    private static final boolean ASYNC_INIT_DISABLED = !INITIALIZATION_TYPE.equals(INITIALIZATION_TYPE_ON_DEMAND);
     private static final int INIT_GRACE_TIME_MS = Integer.parseInt(System.getenv().getOrDefault(
             INIT_GRACE_TIME_ENVIRONMENT_VARIABLE_NAME, Integer.toString(DEFAULT_INIT_GRACE_TIME_MS)));
     private static final int LAMBDA_MAX_INIT_TIME_MS = 10_000;
@@ -47,6 +52,7 @@ public class AsyncInitializationWrapper extends InitializationWrapper {
     private CountDownLatch initializationLatch;
     private final long actualStartTime;
     private Logger log = LoggerFactory.getLogger(AsyncInitializationWrapper.class);
+
 
     /**
      * Creates a new instance of the async initializer.
@@ -67,6 +73,11 @@ public class AsyncInitializationWrapper extends InitializationWrapper {
 
     @Override
     public void start(LambdaContainerHandler handler) throws ContainerInitializationException {
+        if(ASYNC_INIT_DISABLED){
+            log.info("Async init disabled due to \"{}\" initialization", INITIALIZATION_TYPE);
+            super.start(handler);
+            return;
+        }
         initializationLatch = new CountDownLatch(1);
         AsyncInitializer initializer = new AsyncInitializer(initializationLatch, handler);
         Thread initThread = new Thread(initializer);
@@ -96,6 +107,9 @@ public class AsyncInitializationWrapper extends InitializationWrapper {
 
     @Override
     public CountDownLatch getInitializationLatch() {
+        if(ASYNC_INIT_DISABLED){
+            return super.getInitializationLatch();
+        }
         return initializationLatch;
     }
 

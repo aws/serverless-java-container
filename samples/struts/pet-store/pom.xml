@@ -27,9 +27,9 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <struts.version>6.1.2.1</struts.version>
-        <jackson.version>2.15.2</jackson.version>
+        <jackson.version>2.16.1</jackson.version>
         <junit.version>4.13.2</junit.version>
-        <log4j.version>2.20.0</log4j.version>
+        <log4j.version>2.22.1</log4j.version>
     </properties>
 
     <dependencies>
@@ -124,7 +124,7 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-lambda-java-log4j2</artifactId>
-            <version>1.5.1</version>
+            <version>1.6.0</version>
         </dependency>
 
         <dependency>

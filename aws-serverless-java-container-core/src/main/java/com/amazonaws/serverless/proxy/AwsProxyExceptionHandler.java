@@ -19,6 +19,7 @@ import com.amazonaws.serverless.proxy.model.ErrorModel;
 import com.amazonaws.serverless.proxy.model.Headers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,22 +48,22 @@ public class AwsProxyExceptionHandler
     // Constants
     //-------------------------------------------------------------
 
-    static final String INTERNAL_SERVER_ERROR = "Internal Server Error";
-    static final String GATEWAY_TIMEOUT_ERROR = "Gateway timeout";
+    static final String INTERNAL_SERVER_ERROR = Response.Status.INTERNAL_SERVER_ERROR.getReasonPhrase();
+    static final String GATEWAY_TIMEOUT_ERROR = Response.Status.GATEWAY_TIMEOUT.getReasonPhrase();
 
 
     //-------------------------------------------------------------
     // Variables - Private - Static
     //-------------------------------------------------------------
 
-    private static Headers headers = new Headers();
+    protected static final Headers HEADERS = new Headers();
 
     //-------------------------------------------------------------
     // Constructors
     //-------------------------------------------------------------
 
     static {
-        headers.putSingle(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+        HEADERS.putSingle(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
     }
 
 
@@ -79,9 +80,9 @@ public class AwsProxyExceptionHandler
         // output to go to the stderr.
         ex.printStackTrace();
         if (ex instanceof InvalidRequestEventException || ex instanceof InternalServerErrorException) {
-            return new AwsProxyResponse(500, headers, getErrorJson(INTERNAL_SERVER_ERROR));
+            return new AwsProxyResponse(500, HEADERS, getErrorJson(INTERNAL_SERVER_ERROR));
         } else {
-            return new AwsProxyResponse(502, headers, getErrorJson(GATEWAY_TIMEOUT_ERROR));
+            return new AwsProxyResponse(502, HEADERS, getErrorJson(GATEWAY_TIMEOUT_ERROR));
         }
     }
 
@@ -98,7 +99,7 @@ public class AwsProxyExceptionHandler
     // Methods - Protected
     //-------------------------------------------------------------
 
-    String getErrorJson(String message) {
+    protected String getErrorJson(String message) {
 
         try {
             return LambdaContainerHandler.getObjectMapper().writeValueAsString(new ErrorModel(message));
