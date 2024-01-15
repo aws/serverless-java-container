@@ -201,6 +201,11 @@
                 <configuration>
                     <destFile>${basedir}/target/coverage-reports/jacoco-unit.exec</destFile>
                     <dataFile>${basedir}/target/coverage-reports/jacoco-unit.exec</dataFile>
+                    <excludes>
+                        <!-- Native AOT implementation is currently not covered (due to complexity of the test setup) -->
+                        <exclude>com/amazonaws/serverless/proxy/spring/AWSWebRuntimeEventLoop*</exclude>
+                        <exclude>com/amazonaws/serverless/proxy/spring/AWSTypesProcessor*</exclude>
+                    </excludes>
                 </configuration>
                 <executions>
                     <execution>
