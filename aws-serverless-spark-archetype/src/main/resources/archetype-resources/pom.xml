@@ -11,7 +11,7 @@
     <packaging>jar</packaging>
 
     <name>Serverless Spark API</name>
-    <url>https://github.com/awslabs/aws-serverless-java-container</url>
+    <url>https://github.com/aws/serverless-java-container</url>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>

@@ -13,7 +13,7 @@
     <packaging>maven-archetype</packaging>
 
     <scm>
-        <url>https://github.com/awslabs/aws-serverless-java-container.git</url>
+        <url>https://github.com/aws/serverless-java-container.git</url>
       <tag>HEAD</tag>
   </scm>
 

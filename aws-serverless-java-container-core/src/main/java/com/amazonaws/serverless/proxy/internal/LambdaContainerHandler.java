@@ -163,7 +163,7 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
 
     /**
      * Configures the library to strip a base path from incoming requests before passing them on to the wrapped
-     * framework. This was added in response to issue #34 (https://github.com/awslabs/aws-serverless-java-container/issues/34).
+     * framework. This was added in response to issue #34 (https://github.com/aws/serverless-java-container/issues/34).
      * When creating a base path mapping for custom domain names in API Gateway we want to be able to strip the base path
      * from the request - the underlying service may not recognize this path.
      * @param basePath The base path to be stripped from the request

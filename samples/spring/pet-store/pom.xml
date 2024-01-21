@@ -12,7 +12,7 @@
     <url>https://aws.amazon.com/lambda/</url>
 
     <scm>
-        <url>https://github.com/awslabs/aws-serverless-java-container.git</url>
+        <url>https://github.com/aws/serverless-java-container.git</url>
     </scm>
 
     <licenses>
