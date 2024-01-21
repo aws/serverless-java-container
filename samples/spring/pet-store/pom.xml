@@ -12,7 +12,7 @@
     <url>https://aws.amazon.com/lambda/</url>
 
     <scm>
-        <url>https://github.com/awslabs/aws-serverless-java-container.git</url>
+        <url>https://github.com/aws/serverless-java-container.git</url>
     </scm>
 
     <licenses>
@@ -24,7 +24,7 @@
     </licenses>
 
     <properties>
-        <spring.version>6.1.2</spring.version>
+        <spring.version>6.1.3</spring.version>
         <log4j.version>2.22.1</log4j.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
