@@ -7,10 +7,10 @@
     <version>1.10-SNAPSHOT</version>
     <name>AWS Serverless Java container</name>
     <description>A Java framework to run Spring, Spring Boot, Jersey, Spark, and Struts applications inside AWS Lambda</description>
-    <url>https://github.com/awslabs/aws-serverless-java-container</url>
+    <url>https://github.com/aws/serverless-java-container</url>
     <issueManagement>
         <system>GitHub Issues</system>
-        <url>https://github.com/awslabs/aws-serverless-java-container/issues</url>
+        <url>https://github.com/aws/serverless-java-container/issues</url>
     </issueManagement>
     
     <developers>
@@ -39,8 +39,8 @@
     </modules>
 
     <scm>
-        <url>https://github.com/awslabs/aws-serverless-java-container</url>
-        <connection>scm:git:https://github.com/awslabs/aws-serverless-java-container.git</connection>
+        <url>https://github.com/aws/serverless-java-container</url>
+        <connection>scm:git:https://github.com/aws/serverless-java-container.git</connection>
       <tag>HEAD</tag>
   </scm>
 

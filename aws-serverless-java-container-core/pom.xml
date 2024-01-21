@@ -100,7 +100,7 @@
             <version>4.4.16</version>
             <scope>compile</scope>
             <optional>true</optional><!-- TODO move AwsProxyRequestBuilder to seperate test-jar and change scope to test
-             https://github.com/awslabs/aws-serverless-java-container/issues/394 -->
+             https://github.com/aws/serverless-java-container/issues/394 -->
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
