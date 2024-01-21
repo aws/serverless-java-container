@@ -44,7 +44,7 @@
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
             <artifactId>aws-serverless-java-container-springboot2</artifactId>
-            <version>[1.6,)</version>
+            <version>[1.9,2.0)</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.symphonia/lambda-logging -->

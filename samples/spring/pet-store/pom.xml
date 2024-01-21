@@ -35,7 +35,7 @@
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
             <artifactId>aws-serverless-java-container-spring</artifactId>
-            <version>[1.9,)</version>
+            <version>[1.9,2.0)</version>
         </dependency>
 
         <dependency>
