@@ -9,7 +9,7 @@ repositories {
 dependencies {
   implementation (
           'org.springframework.boot:spring-boot-starter-web:2.7.18',
-          'com.amazonaws.serverless:aws-serverless-java-container-springboot2:[1.9,2.0)',
+          'com.amazonaws.serverless:aws-serverless-java-container-springboot2:[1.9,2.0.0-M1)',
           'io.symphonia:lambda-logging:1.0.3'
   )
 

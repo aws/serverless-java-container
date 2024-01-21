@@ -9,7 +9,7 @@ dependencies {
   implementation (
           'org.springframework:spring-webmvc:5.3.31',
           'org.springframework:spring-context:5.3.31',
-          'com.amazonaws.serverless:aws-serverless-java-container-spring:[1.9,2.0)',
+          'com.amazonaws.serverless:aws-serverless-java-container-spring:[1.9,2.0.0-M1)',
           'org.apache.logging.log4j:log4j-core:2.19.0',
           'org.apache.logging.log4j:log4j-api:2.19.0',
           'org.apache.logging.log4j:log4j-slf4j-impl:2.19.0',

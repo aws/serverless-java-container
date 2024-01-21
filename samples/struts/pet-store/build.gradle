@@ -13,7 +13,7 @@ configurations {
 
 dependencies {
   implementation (
-          'com.amazonaws.serverless:aws-serverless-java-container-struts:[1.9,2.0)',
+          'com.amazonaws.serverless:aws-serverless-java-container-struts:[1.9,2.0.0-M1)',
           'org.apache.struts:struts2-convention-plugin:6.3.0.2',
           'org.apache.struts:struts2-rest-plugin:6.3.0.2',
           'org.apache.struts:struts2-bean-validation-plugin:6.3.0.2',
