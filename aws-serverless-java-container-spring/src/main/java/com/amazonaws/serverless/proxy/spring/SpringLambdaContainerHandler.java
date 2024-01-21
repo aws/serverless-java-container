@@ -20,7 +20,6 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.*;
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.services.lambda.runtime.Context;
-import jakarta.servlet.AsyncContext;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
@@ -161,21 +160,9 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
         // process filters
         Servlet reqServlet = ((AwsServletContext)getServletContext()).getServletForPath(containerRequest.getPathInfo());
         doFilter(containerRequest, containerResponse, reqServlet);
-        if(requiresAsyncReDispatch(containerRequest)) {
-            reqServlet = ((AwsServletContext)getServletContext()).getServletForPath(containerRequest.getPathInfo());
-            doFilter(containerRequest, containerResponse, reqServlet);
-        }
         Timer.stop("SPRING_HANDLE_REQUEST");
     }
 
-    private boolean requiresAsyncReDispatch(HttpServletRequest request) {
-        if (request.isAsyncStarted()) {
-            AsyncContext asyncContext = request.getAsyncContext();
-            return asyncContext instanceof AwsAsyncContext
-                    && ((AwsAsyncContext) asyncContext).isDispatchStarted();
-        }
-        return false;
-    }
 
     @Override
     public void initialize()
