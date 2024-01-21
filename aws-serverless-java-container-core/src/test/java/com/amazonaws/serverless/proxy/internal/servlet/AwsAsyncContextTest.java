@@ -46,49 +46,6 @@ public class AwsAsyncContextTest {
         assertEquals("/srv1/hello", req.getRequestURI());
     }
 
-    @Disabled("AwsAsyncContext does not sends to servlet anymore")
-    @Test
-    void dispatch_sendsToCorrectServlet() {
-        AwsProxyHttpServletRequest req = new AwsProxyHttpServletRequest(new AwsProxyRequestBuilder("/srv1/hello", "GET").build(), lambdaCtx, null);
-        req.setResponse(handler.getContainerResponse(req, new CountDownLatch(1)));
-        req.setServletContext(ctx);
-        req.setContainerHandler(handler);
-
-        AsyncContext asyncCtx = req.startAsync();
-        handler.setDesiredStatus(201);
-        asyncCtx.dispatch();
-        assertNotNull(handler.getSelectedServlet());
-        assertEquals(srv1, handler.getSelectedServlet());
-        assertEquals(201, handler.getResponse().getStatus());
-
-        req = new AwsProxyHttpServletRequest(new AwsProxyRequestBuilder("/srv5/hello", "GET").build(), lambdaCtx, null);
-        req.setResponse(handler.getContainerResponse(req, new CountDownLatch(1)));
-        req.setServletContext(ctx);
-        req.setContainerHandler(handler);
-        asyncCtx = req.startAsync();
-        handler.setDesiredStatus(202);
-        asyncCtx.dispatch();
-        assertNotNull(handler.getSelectedServlet());
-        assertEquals(srv2, handler.getSelectedServlet());
-        assertEquals(202, handler.getResponse().getStatus());
-    }
-
-    @Disabled("AwsAsyncContext does not sends to servlet anymore")
-    @Test
-    void dispatchNewPath_sendsToCorrectServlet() throws InvalidRequestEventException {
-        AwsProxyHttpServletRequest req = (AwsProxyHttpServletRequest)reader.readRequest(new AwsProxyRequestBuilder("/srv1/hello", "GET").build(), null, lambdaCtx, LambdaContainerHandler.getContainerConfig());
-        req.setResponse(handler.getContainerResponse(req, new CountDownLatch(1)));
-        req.setServletContext(ctx);
-        req.setContainerHandler(handler);
-
-        AsyncContext asyncCtx = req.startAsync();
-        handler.setDesiredStatus(301);
-        asyncCtx.dispatch("/srv4/hello");
-        assertNotNull(handler.getSelectedServlet());
-        assertEquals(srv2, handler.getSelectedServlet());
-        assertNotNull(handler.getResponse());
-        assertEquals(301, handler.getResponse().getStatus());
-    }
 
     private AwsServletContext getCtx() {
         AwsServletContext ctx = new AwsServletContext(handler);
