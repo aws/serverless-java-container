@@ -1,0 +1,5 @@
+#!/bin/sh
+
+cd ${LAMBDA_TASK_ROOT:-.}
+
+./function-sample-aws-serverless-web-native -Dlogging.level.org.springframework=DEBUG -Dlogging.level.com.amazonaws.serverless.proxy.spring=DEBUG
