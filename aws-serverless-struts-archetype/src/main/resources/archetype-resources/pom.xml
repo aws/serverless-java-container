@@ -10,12 +10,12 @@
     <packaging>jar</packaging>
 
     <name>Serverless Struts API</name>
-    <url>https://github.com/awslabs/aws-serverless-java-container</url>
+    <url>https://github.com/aws/serverless-java-container</url>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <struts.version>6.1.2.1</struts.version>
+        <struts.version>7.0.0-M1</struts.version>
         <jackson.version>2.16.1</jackson.version>
         <junit.version>5.10.1</junit.version>
         <log4j.version>2.22.1</log4j.version>
@@ -121,15 +121,15 @@
         </dependency>
 
         <dependency>
-            <groupId>javax.el</groupId>
-            <artifactId>javax.el-api</artifactId>
-            <version>3.0.0</version>
+            <groupId>jakarta.el</groupId>
+            <artifactId>jakarta.el-api</artifactId>
+            <version>5.0.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.el</artifactId>
-            <version>3.0.0</version>
+            <artifactId>jakarta.el</artifactId>
+            <version>5.0.0-M1</version>
             <scope>test</scope>
         </dependency>
 
@@ -175,4 +175,12 @@
             </plugin>
         </plugins>
     </build>
+
+    <repositories>
+        <repository>
+            <id>apache-pre-release</id>
+            <url>https://repository.apache.org/content/repositories/staging/</url>
+            <layout>default</layout>
+        </repository>
+    </repositories>
 </project>

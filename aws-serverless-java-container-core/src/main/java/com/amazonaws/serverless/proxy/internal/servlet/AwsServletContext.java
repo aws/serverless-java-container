@@ -169,7 +169,7 @@ public class AwsServletContext
 
         String mimeType = null;
 
-        // may not work on Lambda until mailcap package is present https://github.com/awslabs/aws-serverless-java-container/pull/504
+        // may not work on Lambda until mailcap package is present https://github.com/aws/serverless-java-container/pull/504
         try {
             mimeType = Files.probeContentType(Paths.get(file));
         } catch (IOException | InvalidPathException e) {
