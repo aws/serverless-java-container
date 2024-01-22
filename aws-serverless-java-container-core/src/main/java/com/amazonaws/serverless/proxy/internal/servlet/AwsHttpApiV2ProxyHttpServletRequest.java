@@ -442,7 +442,7 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public AsyncContext startAsync() throws IllegalStateException {
-        asyncContext = new AwsAsyncContext(this, response, containerHandler);
+        asyncContext = new AwsAsyncContext(this, response);
         setAttribute(DISPATCHER_TYPE_ATTRIBUTE, DispatcherType.ASYNC);
         log.debug("Starting async context for request: " + SecurityUtils.crlf(request.getRequestContext().getRequestId()));
         return asyncContext;
@@ -450,7 +450,7 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse) throws IllegalStateException {
-        asyncContext = new AwsAsyncContext((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse, containerHandler);
+        asyncContext = new AwsAsyncContext((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse);
         setAttribute(DISPATCHER_TYPE_ATTRIBUTE, DispatcherType.ASYNC);
         log.debug("Starting async context for request: " + SecurityUtils.crlf(request.getRequestContext().getRequestId()));
         return asyncContext;

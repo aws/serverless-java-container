@@ -32,7 +32,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class AwsAsyncContext implements AsyncContext {
     private HttpServletRequest req;
     private HttpServletResponse res;
-    private AwsLambdaServletContainerHandler handler;
     private List<AsyncListenerHolder> listeners;
     private long timeout;
     private AtomicBoolean dispatched;
@@ -41,11 +40,10 @@ public class AwsAsyncContext implements AsyncContext {
 
     private Logger log = LoggerFactory.getLogger(AwsAsyncContext.class);
 
-    public AwsAsyncContext(HttpServletRequest request, HttpServletResponse response, AwsLambdaServletContainerHandler servletHandler) {
+    public AwsAsyncContext(HttpServletRequest request, HttpServletResponse response) {
         log.debug("Initializing async context for request: " + SecurityUtils.crlf(request.getPathInfo()) + " - " + SecurityUtils.crlf(request.getMethod()));
         req = request;
         res = response;
-        handler = servletHandler;
         listeners = new ArrayList<>();
         timeout = 3000;
         dispatched = new AtomicBoolean(false);
