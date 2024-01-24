@@ -14,7 +14,7 @@ Resources:
       Handler: com.amazonaws.serverless.sample.springboot3.StreamLambdaHandler::handleRequest
       Runtime: java21
       CodeUri: .
-      MemorySize: 1512
+      MemorySize: 1024
       Policies: AWSLambdaBasicExecutionRole
       Timeout: 60
       Events:

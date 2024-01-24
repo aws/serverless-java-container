@@ -1,4 +1,4 @@
-# Serverless Spring Boot 3 and Spring-graphQl example
+# Serverless Spring Boot 3 with GraphQL example
 A basic pet store written with the [Spring Boot 3 framework](https://projects.spring.io/spring-boot/). Unlike older examples, this example uses the [Spring for GraphQl](https://docs.spring.io/spring-graphql/reference/) library. 
 
 
