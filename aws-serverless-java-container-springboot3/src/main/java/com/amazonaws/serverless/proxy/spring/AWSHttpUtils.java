@@ -14,6 +14,7 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.util.MultiValueMapAdapter;
 import org.springframework.util.StringUtils;
 
+import com.amazonaws.serverless.proxy.AsyncInitializationWrapper;
 import com.amazonaws.serverless.proxy.AwsHttpApiV2SecurityContextWriter;
 import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
 import com.amazonaws.serverless.proxy.RequestReader;
@@ -29,18 +30,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 
-public class AWSHttpUtils {
+class AWSHttpUtils {
 	
-	private static Log logger = LogFactory.getLog(AWSWebRuntimeEventLoop.class);
+	private static Log logger = LogFactory.getLog(AWSHttpUtils.class);
 	
+	private AWSHttpUtils() {
+		
+	}
 	
-	public static AwsProxyResponse serviceAWS(String gatewayEvent, ServerlessMVC mvc, ObjectMapper mapper, AwsProxyHttpServletResponseWriter responseWriter) {
+	public static AwsProxyResponse processRequest(String gatewayEvent, ServerlessMVC mvc, ObjectMapper mapper, AwsProxyHttpServletResponseWriter responseWriter) {
 		HttpServletRequest request = AWSHttpUtils.generateHttpServletRequest(gatewayEvent, null, mvc.getServletContext(), mapper);
 		CountDownLatch latch = new CountDownLatch(1);
         AwsHttpServletResponse response = new AwsHttpServletResponse(request, latch);
 		try {
 			mvc.service(request, response);
-			latch.await(10, TimeUnit.SECONDS);
+			latch.await(AsyncInitializationWrapper.LAMBDA_MAX_INIT_TIME_MS, TimeUnit.SECONDS);
 			AwsProxyResponse awsResponse = responseWriter.writeResponse(response, null);
 			return awsResponse;
 		} 

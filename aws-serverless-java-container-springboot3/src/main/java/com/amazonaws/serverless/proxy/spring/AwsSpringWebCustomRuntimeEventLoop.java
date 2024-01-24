@@ -48,9 +48,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
  * @author Mark Sailes
  *
  */
-public final class AWSWebRuntimeEventLoop implements SmartLifecycle {
+public final class AwsSpringWebCustomRuntimeEventLoop implements SmartLifecycle {
 
-	private static Log logger = LogFactory.getLog(AWSWebRuntimeEventLoop.class);
+	private static Log logger = LogFactory.getLog(AwsSpringWebCustomRuntimeEventLoop.class);
 
 	static final String LAMBDA_VERSION_DATE = "2018-06-01";
 	private static final String LAMBDA_ERROR_URL_TEMPLATE = "http://{0}/{1}/runtime/invocation/{2}/error";
@@ -65,7 +65,7 @@ public final class AWSWebRuntimeEventLoop implements SmartLifecycle {
 
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
 
-	public AWSWebRuntimeEventLoop(ServletWebServerApplicationContext applicationContext) {
+	public AwsSpringWebCustomRuntimeEventLoop(ServletWebServerApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
 	}
 
@@ -110,7 +110,7 @@ public final class AWSWebRuntimeEventLoop implements SmartLifecycle {
 		RequestEntity<Void> requestEntity = RequestEntity.get(URI.create(eventUri))
 				.header("User-Agent", USER_AGENT_VALUE).build();
 		RestTemplate rest = new RestTemplate();
-		ObjectMapper mapper = context.getBean(ObjectMapper.class);
+		ObjectMapper mapper = new ObjectMapper();//.getBean(ObjectMapper.class);
 		mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 		AwsProxyHttpServletResponseWriter responseWriter = new AwsProxyHttpServletResponseWriter();
 
@@ -128,16 +128,23 @@ public final class AWSWebRuntimeEventLoop implements SmartLifecycle {
 				try {
 					logger.debug("Submitting request to the user's web application");
 					
-					AwsProxyResponse awsResponse = AWSHttpUtils.serviceAWS(incomingEvent.getBody(), mvc, mapper, responseWriter);
-					
+					AwsProxyResponse awsResponse = AWSHttpUtils.processRequest(incomingEvent.getBody(), mvc, mapper, responseWriter);
 					if (logger.isDebugEnabled()) {
-						logger.debug("Received response - body:" + awsResponse.getBody() + 
-								"; status:" + awsResponse.getStatusCode() + "; headers:" + awsResponse.getHeaders());
+						logger.debug("Received response - body: " + awsResponse.getBody() + 
+								"; status: " + awsResponse.getStatusCode() + "; headers: " + awsResponse.getHeaders());
 					}
+
 					String invocationUrl = MessageFormat.format(LAMBDA_INVOCATION_URL_TEMPLATE, runtimeApi,
 							LAMBDA_VERSION_DATE, requestId);
-		            ResponseEntity<Object> result = rest.exchange(RequestEntity.post(URI.create(invocationUrl))
-							.header("User-Agent", USER_AGENT_VALUE).body(awsResponse, AwsProxyResponse.class), Object.class);
+					
+		            ResponseEntity<byte[]> result = rest.exchange(RequestEntity.post(URI.create(invocationUrl))
+							.header("User-Agent", USER_AGENT_VALUE).body(awsResponse), byte[].class);
+		            if (logger.isDebugEnabled()) {
+						logger.debug("Response sent: body: " + result.getBody() + 
+								"; status: " + result.getStatusCode() + "; headers: " + result.getHeaders());
+					}
+		            System.out.println("==> status " + result.getStatusCode());
+		            System.out.println("==> body " + result.getBody());
 		            logger.debug("Response submitted back to the AWS Gateway");
 		            if (logger.isInfoEnabled()) {
 						logger.info("Result POST status: " + result);

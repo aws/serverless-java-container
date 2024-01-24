@@ -28,6 +28,7 @@ import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletResponse;
 import com.amazonaws.serverless.proxy.model.ApiGatewayRequestIdentity;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
+import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.Headers;
 import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 import com.amazonaws.serverless.proxy.model.SingleValueHeaders;
@@ -40,7 +41,7 @@ import com.fasterxml.jackson.core.JsonToken;
  *
  * @author Oleg Zhurakousky
  */
-public class AWSTypesProcessor implements BeanFactoryInitializationAotProcessor {
+public class AwsSpringAotTypesProcessor implements BeanFactoryInitializationAotProcessor {
 
 	@Override
 	public BeanFactoryInitializationAotContribution processAheadOfTime(ConfigurableListableBeanFactory beanFactory) {
@@ -54,6 +55,8 @@ public class AWSTypesProcessor implements BeanFactoryInitializationAotProcessor 
 			// known static types
 			
 			runtimeHints.reflection().registerType(AwsProxyRequest.class,
+					MemberCategory.INVOKE_PUBLIC_METHODS, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS, MemberCategory.DECLARED_FIELDS, MemberCategory.DECLARED_CLASSES);
+			runtimeHints.reflection().registerType(AwsProxyResponse.class,
 					MemberCategory.INVOKE_PUBLIC_METHODS, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS, MemberCategory.DECLARED_FIELDS, MemberCategory.DECLARED_CLASSES);
 			runtimeHints.reflection().registerType(SingleValueHeaders.class,
 					MemberCategory.INVOKE_PUBLIC_METHODS, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS, MemberCategory.DECLARED_FIELDS, MemberCategory.DECLARED_CLASSES);

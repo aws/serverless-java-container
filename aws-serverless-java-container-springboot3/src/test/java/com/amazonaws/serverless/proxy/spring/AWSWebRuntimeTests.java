@@ -19,14 +19,14 @@ public class AWSWebRuntimeTests {
 	@Test
     public void testWebRuntimeInitialization() throws Exception {
     	try (ConfigurableApplicationContext context = SpringApplication.run(EmptyApplication.class);) {
-    		assertFalse(context.getBeansOfType(AWSWebRuntimeEventLoop.class).size() > 0);
+    		assertFalse(context.getBeansOfType(AwsSpringWebCustomRuntimeEventLoop.class).size() > 0);
     	}
     	System.setProperty("_HANDLER", "foo");
-    	AWSWebRuntimeEventLoop loop = null;
+    	AwsSpringWebCustomRuntimeEventLoop loop = null;
     	try (ConfigurableApplicationContext context = SpringApplication.run(EmptyApplication.class);) {
     		Thread.sleep(100);
-    		assertTrue(context.getBeansOfType(AWSWebRuntimeEventLoop.class).size() > 0);
-    		loop = context.getBean(AWSWebRuntimeEventLoop.class);
+    		assertTrue(context.getBeansOfType(AwsSpringWebCustomRuntimeEventLoop.class).size() > 0);
+    		loop = context.getBean(AwsSpringWebCustomRuntimeEventLoop.class);
     		assertTrue(loop.isRunning());
     	}
     	assertFalse(loop.isRunning());

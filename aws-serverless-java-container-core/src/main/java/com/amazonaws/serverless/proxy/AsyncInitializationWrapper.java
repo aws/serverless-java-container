@@ -47,7 +47,7 @@ public class AsyncInitializationWrapper extends InitializationWrapper {
     private static final boolean ASYNC_INIT_DISABLED = !INITIALIZATION_TYPE.equals(INITIALIZATION_TYPE_ON_DEMAND);
     private static final int INIT_GRACE_TIME_MS = Integer.parseInt(System.getenv().getOrDefault(
             INIT_GRACE_TIME_ENVIRONMENT_VARIABLE_NAME, Integer.toString(DEFAULT_INIT_GRACE_TIME_MS)));
-    private static final int LAMBDA_MAX_INIT_TIME_MS = 10_000;
+    public static final int LAMBDA_MAX_INIT_TIME_MS = 10_000;
 
     private CountDownLatch initializationLatch;
     private final long actualStartTime;

@@ -45,9 +45,9 @@ public class AWSWebRuntimeInitializer implements ApplicationContextInitializer<G
 		}
 		
 		if (context instanceof ServletWebServerApplicationContext && isCustomRuntime(environment)) {
-			if (context.getBeanFactory().getBeanNamesForType(AWSWebRuntimeEventLoop.class, false, false).length == 0) {
-				context.registerBean(StringUtils.uncapitalize(AWSWebRuntimeEventLoop.class.getSimpleName()),
-						SmartLifecycle.class, () -> new AWSWebRuntimeEventLoop((ServletWebServerApplicationContext) context));
+			if (context.getBeanFactory().getBeanNamesForType(AwsSpringWebCustomRuntimeEventLoop.class, false, false).length == 0) {
+				context.registerBean(StringUtils.uncapitalize(AwsSpringWebCustomRuntimeEventLoop.class.getSimpleName()),
+						SmartLifecycle.class, () -> new AwsSpringWebCustomRuntimeEventLoop((ServletWebServerApplicationContext) context));
 			}
 		}
 	}
