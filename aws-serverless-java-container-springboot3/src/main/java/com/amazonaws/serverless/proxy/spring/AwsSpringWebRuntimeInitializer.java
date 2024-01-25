@@ -32,9 +32,9 @@ import org.springframework.util.StringUtils;
  * @author Dave Syer
  * @author Oleg Zhurakousky
  */
-public class AWSWebRuntimeInitializer implements ApplicationContextInitializer<GenericApplicationContext> {
+public class AwsSpringWebRuntimeInitializer implements ApplicationContextInitializer<GenericApplicationContext> {
 
-	private static Log logger = LogFactory.getLog(AWSWebRuntimeInitializer.class);
+	private static Log logger = LogFactory.getLog(AwsSpringWebRuntimeInitializer.class);
 
 	@Override
 	public void initialize(GenericApplicationContext context) {

@@ -30,7 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-public class AWSHttpUtilsTests {
+public class AwsSpringHttpProcessingUtilsTests {
 	
 	private static String API_GATEWAY_EVENT = "{\n"
             + "    \"version\": \"1.0\",\n"
@@ -195,7 +195,7 @@ public class AWSHttpUtilsTests {
 	public void validateHttpServletRequestGenerationWithInputStream(String jsonEvent) {
 		ByteArrayInputStream inputStream = new ByteArrayInputStream(jsonEvent.getBytes(StandardCharsets.UTF_8));
 		ServerlessServletContext servletContext = new ServerlessServletContext();
-		HttpServletRequest request = AWSHttpUtils.generateHttpServletRequest(inputStream, null, servletContext, mapper);
+		HttpServletRequest request = AwsSpringHttpProcessingUtils.generateHttpServletRequest(inputStream, null, servletContext, mapper);
 		// spot check some headers
 		assertEquals("curl/7.79.1", request.getHeader("User-Agent"));
 		assertEquals("443", request.getHeader("X-Forwarded-Port"));
@@ -207,7 +207,7 @@ public class AWSHttpUtilsTests {
     @ParameterizedTest
 	public void validateHttpServletRequestGenerationWithJson(String jsonEvent) {
 		ServerlessServletContext servletContext = new ServerlessServletContext();
-		HttpServletRequest request = AWSHttpUtils.generateHttpServletRequest(jsonEvent, null, servletContext, mapper);
+		HttpServletRequest request = AwsSpringHttpProcessingUtils.generateHttpServletRequest(jsonEvent, null, servletContext, mapper);
 		// spot check some headers
 		assertEquals("curl/7.79.1", request.getHeader("User-Agent"));
 		assertEquals("443", request.getHeader("X-Forwarded-Port"));
@@ -221,7 +221,7 @@ public class AWSHttpUtilsTests {
     	try (ConfigurableApplicationContext context = SpringApplication.run(EmptyApplication.class);) {
     		ServerlessMVC mvc = ServerlessMVC.INSTANCE((ServletWebServerApplicationContext) context);
     		AwsProxyHttpServletResponseWriter responseWriter = new AwsProxyHttpServletResponseWriter();
-    		AwsProxyResponse awsResponse = AWSHttpUtils.processRequest(jsonEvent, mvc, mapper, responseWriter);
+    		AwsProxyResponse awsResponse = AwsSpringHttpProcessingUtils.processRequest(jsonEvent, mvc, mapper, responseWriter);
     		assertEquals("hello", awsResponse.getBody());
     		assertEquals(200, awsResponse.getStatusCode());
     	}

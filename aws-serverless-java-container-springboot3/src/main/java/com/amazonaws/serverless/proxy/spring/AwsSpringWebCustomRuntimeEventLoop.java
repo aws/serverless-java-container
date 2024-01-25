@@ -57,7 +57,7 @@ public final class AwsSpringWebCustomRuntimeEventLoop implements SmartLifecycle 
 	private static final String LAMBDA_RUNTIME_URL_TEMPLATE = "http://{0}/{1}/runtime/invocation/next";
 	private static final String LAMBDA_INVOCATION_URL_TEMPLATE = "http://{0}/{1}/runtime/invocation/{2}/response";
 	private static final String USER_AGENT_VALUE = String.format("spring-cloud-function/%s-%s",
-			System.getProperty("java.runtime.version"), AWSHttpUtils.extractVersion());
+			System.getProperty("java.runtime.version"), AwsSpringHttpProcessingUtils.extractVersion());
 
 	private final ServletWebServerApplicationContext applicationContext;
 
@@ -128,7 +128,7 @@ public final class AwsSpringWebCustomRuntimeEventLoop implements SmartLifecycle 
 				try {
 					logger.debug("Submitting request to the user's web application");
 					
-					AwsProxyResponse awsResponse = AWSHttpUtils.processRequest(incomingEvent.getBody(), mvc, mapper, responseWriter);
+					AwsProxyResponse awsResponse = AwsSpringHttpProcessingUtils.processRequest(incomingEvent.getBody(), mvc, mapper, responseWriter);
 					if (logger.isDebugEnabled()) {
 						logger.debug("Received response - body: " + awsResponse.getBody() + 
 								"; status: " + awsResponse.getStatusCode() + "; headers: " + awsResponse.getHeaders());

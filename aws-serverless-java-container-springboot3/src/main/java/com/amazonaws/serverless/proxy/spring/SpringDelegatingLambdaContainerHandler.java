@@ -61,7 +61,7 @@ public class SpringDelegatingLambdaContainerHandler implements RequestStreamHand
 
     @Override
     public void handleRequest(InputStream input, OutputStream output, Context lambdaContext) throws IOException {
-        HttpServletRequest httpServletRequest = AWSHttpUtils
+        HttpServletRequest httpServletRequest = AwsSpringHttpProcessingUtils
         		.generateHttpServletRequest(input, lambdaContext, this.mvc.getServletContext(), this.mapper);
         CountDownLatch latch = new CountDownLatch(1);
         AwsHttpServletResponse httpServletResponse = new AwsHttpServletResponse(httpServletRequest, latch);

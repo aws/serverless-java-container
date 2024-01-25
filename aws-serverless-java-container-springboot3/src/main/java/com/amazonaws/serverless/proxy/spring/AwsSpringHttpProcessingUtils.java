@@ -30,16 +30,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 
-class AWSHttpUtils {
+class AwsSpringHttpProcessingUtils {
 	
-	private static Log logger = LogFactory.getLog(AWSHttpUtils.class);
+	private static Log logger = LogFactory.getLog(AwsSpringHttpProcessingUtils.class);
 	
-	private AWSHttpUtils() {
+	private AwsSpringHttpProcessingUtils() {
 		
 	}
 	
 	public static AwsProxyResponse processRequest(String gatewayEvent, ServerlessMVC mvc, ObjectMapper mapper, AwsProxyHttpServletResponseWriter responseWriter) {
-		HttpServletRequest request = AWSHttpUtils.generateHttpServletRequest(gatewayEvent, null, mvc.getServletContext(), mapper);
+		HttpServletRequest request = AwsSpringHttpProcessingUtils.generateHttpServletRequest(gatewayEvent, null, mvc.getServletContext(), mapper);
 		CountDownLatch latch = new CountDownLatch(1);
         AwsHttpServletResponse response = new AwsHttpServletResponse(request, latch);
 		try {
@@ -56,7 +56,7 @@ class AWSHttpUtils {
 	
 	public static String extractVersion() {
 		try {
-			String path = AWSHttpUtils.class.getProtectionDomain().getCodeSource().getLocation().toString();
+			String path = AwsSpringHttpProcessingUtils.class.getProtectionDomain().getCodeSource().getLocation().toString();
 			int endIndex = path.lastIndexOf('.');
 			if (endIndex < 0) {
 				return "UNKNOWN-VERSION";
@@ -94,8 +94,8 @@ class AWSHttpUtils {
 				? new AwsHttpApiV2SecurityContextWriter()
 				: new AwsProxySecurityContextWriter();
 		HttpServletRequest httpServletRequest = "2.0".equals(_request.get("version"))
-				? AWSHttpUtils.generateRequest2(jsonRequest, lambdaContext, securityWriter, mapper, servletContext)
-				: AWSHttpUtils.generateRequest1(jsonRequest, lambdaContext, securityWriter, mapper, servletContext);
+				? AwsSpringHttpProcessingUtils.generateRequest2(jsonRequest, lambdaContext, securityWriter, mapper, servletContext)
+				: AwsSpringHttpProcessingUtils.generateRequest1(jsonRequest, lambdaContext, securityWriter, mapper, servletContext);
 		return httpServletRequest;
 	}
 
@@ -155,33 +155,5 @@ class AWSHttpUtils {
 			throw new IllegalStateException(e);
 		}
 	}
-	
-//	public static class ProxyServletConfig implements ServletConfig {
-//
-//		private final ServletContext servletContext;
-//
-//		public ProxyServletConfig(ServletContext servletContext) {
-//			this.servletContext = servletContext;
-//		}
-//
-//		@Override
-//		public String getServletName() {
-//			return DispatcherServletAutoConfiguration.DEFAULT_DISPATCHER_SERVLET_BEAN_NAME;
-//		}
-//
-//		@Override
-//		public ServletContext getServletContext() {
-//			return this.servletContext;
-//		}
-//
-//		@Override
-//		public Enumeration<String> getInitParameterNames() {
-//			return Collections.enumeration(new ArrayList<String>());
-//		}
-//
-//		@Override
-//		public String getInitParameter(String name) {
-//			return null;
-//		}
-//	}
+
 }
