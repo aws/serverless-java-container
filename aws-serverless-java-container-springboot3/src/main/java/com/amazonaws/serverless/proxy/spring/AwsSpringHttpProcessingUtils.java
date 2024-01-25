@@ -132,7 +132,7 @@ class AwsSpringHttpProcessingUtils {
 		ServerlessHttpServletRequest httpRequest = new ServerlessHttpServletRequest(servletContext,
 				v2Request.getRequestContext().getHttp().getMethod(), v2Request.getRequestContext().getHttp().getPath());
 		
-		v2Request.getHeaders().forEach((k,v) -> httpRequest.setHeader(k, v));
+		v2Request.getHeaders().forEach(httpRequest::setHeader);
 	
 		if (StringUtils.hasText(v2Request.getBody())) {
 			httpRequest.setContentType("application/json");

@@ -63,7 +63,7 @@ public final class AwsSpringWebCustomRuntimeEventLoop implements SmartLifecycle 
 
 	private volatile boolean running;
 
-	private ExecutorService executor = Executors.newSingleThreadExecutor();
+	private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
 	public AwsSpringWebCustomRuntimeEventLoop(ServletWebServerApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
