@@ -22,10 +22,11 @@ import com.amazonaws.serverless.proxy.model.Headers;
 import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 import com.amazonaws.services.lambda.runtime.Context;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.apache.commons.fileupload2.core.DiskFileItem;
 import org.apache.commons.fileupload2.core.FileItem;
 import org.apache.commons.fileupload2.core.FileUploadException;
 import org.apache.commons.fileupload2.core.DiskFileItemFactory;
-import org.apache.commons.fileupload2.jakarta.JakartaServletFileUpload;
+import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.NullInputStream;
@@ -41,7 +42,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -312,7 +313,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
      */
     protected String generateQueryString(MultiValuedTreeMap<String, String> parameters, boolean encode, String encodeCharset)
             throws ServletException {
-        if (parameters == null || parameters.size() == 0) {
+        if (parameters == null || parameters.isEmpty()) {
             return null;
         }
         if (queryString != null) {
@@ -396,7 +397,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     }
 
     protected String appendCharacterEncoding(String currentContentType, String newEncoding) {
-        if (currentContentType == null || "".equals(currentContentType.trim())) {
+        if (currentContentType == null || currentContentType.trim().isEmpty()) {
             return null;
         }
 
@@ -429,13 +430,13 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         } else {
             String encoding = getCharacterEncoding();
             if (encoding == null) {
-                encoding = StandardCharsets.ISO_8859_1.name();
+                encoding = Charset.defaultCharset().name();
             }
             try {
                 bodyBytes = body.getBytes(encoding);
             } catch (Exception e) {
                 log.error("Could not read request with character encoding: " + SecurityUtils.crlf(encoding), e);
-                bodyBytes = body.getBytes(StandardCharsets.ISO_8859_1.name());
+                bodyBytes = body.getBytes(Charset.defaultCharset());
             }
         }
         ByteArrayInputStream requestBodyStream = new ByteArrayInputStream(bodyBytes);
@@ -486,7 +487,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         Timer.start("SERVLET_REQUEST_GET_FORM_PARAMS");
         String rawBodyContent = null;
         try {
-            rawBodyContent = IOUtils.toString(getInputStream());
+            rawBodyContent = IOUtils.toString(getInputStream(), getCharacterEncoding());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -543,11 +544,12 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         Timer.start("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
         multipartFormParameters = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
-        JakartaServletFileUpload upload = new JakartaServletFileUpload(DiskFileItemFactory.builder().get());
+        JakartaServletFileUpload<DiskFileItem, DiskFileItemFactory> upload =
+                new JakartaServletFileUpload<>(DiskFileItemFactory.builder().get());
 
         try {
-            List<FileItem> items = upload.parseRequest(this);
-            for (FileItem item : items) {
+            List<DiskFileItem> items = upload.parseRequest(this);
+            for (FileItem<DiskFileItem> item : items) {
                 String fileName = FilenameUtils.getName(item.getName());
                 AwsProxyRequestPart newPart = new AwsProxyRequestPart(item.get());
                 newPart.setName(item.getFieldName());
@@ -684,11 +686,10 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
             return values;
         }
 
-        for (String v : headerValue.split(valueSeparator)) {
-            String curValue = v;
+        for (String curValue : headerValue.split(valueSeparator)) {
             float curPreference = 1.0f;
             HeaderValue newValue = new HeaderValue();
-            newValue.setRawValue(v);
+            newValue.setRawValue(curValue);
 
             for (String q : curValue.split(qualifierSeparator)) {
 
@@ -704,7 +705,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
                     // if the length of the value is 0 we assume that we are looking at a
                     // base64 encoded value with padding so we just set the value. This is because
                     // we assume that empty values in a key/value pair will contain at least a white space
-                    if (kv[1].length() == 0) {
+                    if (kv[1].isEmpty()) {
                         val = q.trim();
                     }
                     // this was a base64 string with an additional = for padding, set the value only
@@ -752,7 +753,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         );
 
         List<Locale> locales = new ArrayList<>();
-        if (values.size() == 0) {
+        if (values.isEmpty()) {
             locales.add(Locale.getDefault());
         } else {
             for (HeaderValue locale : values) {

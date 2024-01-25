@@ -46,14 +46,6 @@ jobs:
 #      - name: Build Jersey 2.29
 #        run: ./gha_build.sh jersey false false -Djersey.version=2.29.1
 
-#  build_spark:
-#    name: Build and test Spark
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v3
-#      - name: Build latest
-#        run: ./gha_build.sh spark true true
-
   build_spring:
     name: Build and test Spring
     runs-on: ubuntu-latest

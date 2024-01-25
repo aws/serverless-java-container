@@ -207,7 +207,7 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
     public void initialize() {
         Timer.start("JERSEY_COLD_START_INIT");
 
-        // manually add the spark filter to the chain. This should the last one and match all uris
+        // manually add the filter to the chain. This should the last one and match all uris
         FilterRegistration.Dynamic jerseyFilterReg = getServletContext().addFilter("JerseyFilter", jerseyFilter);
         jerseyFilterReg.addMappingForUrlPatterns(
                 EnumSet.of(DispatcherType.REQUEST, DispatcherType.ASYNC, DispatcherType.INCLUDE, DispatcherType.FORWARD),

@@ -7,10 +7,10 @@
     <version>2.0.0-SNAPSHOT</version>
     <name>AWS Serverless Java container</name>
     <description>A Java framework to run Spring, Spring Boot, Jersey, Spark, and Struts applications inside AWS Lambda</description>
-    <url>https://github.com/awslabs/aws-serverless-java-container</url>
+    <url>https://github.com/aws/serverless-java-container</url>
     <issueManagement>
         <system>GitHub Issues</system>
-        <url>https://github.com/awslabs/aws-serverless-java-container/issues</url>
+        <url>https://github.com/aws/serverless-java-container/issues</url>
     </issueManagement>
     
     <developers>
@@ -35,8 +35,8 @@
     </modules>
 
     <scm>
-        <url>https://github.com/awslabs/aws-serverless-java-container</url>
-        <connection>scm:git:https://github.com/awslabs/aws-serverless-java-container.git</connection>
+        <url>https://github.com/aws/serverless-java-container</url>
+        <connection>scm:git:https://github.com/aws/serverless-java-container.git</connection>
       <tag>HEAD</tag>
     </scm>
 
@@ -77,11 +77,11 @@
 
     <properties>
         <jacoco.minCoverage>0.7</jacoco.minCoverage>
-        <dependencyCheck.version>9.0.8</dependencyCheck.version>
+        <dependencyCheck.version>9.0.9</dependencyCheck.version>
         <jackson.version>2.16.1</jackson.version>
-        <slf4j.version>2.0.10</slf4j.version>
+        <slf4j.version>2.0.11</slf4j.version>
         <junit.version>5.10.1</junit.version>
-        <mockito.version>5.8.0</mockito.version>
+        <mockito.version>5.10.0</mockito.version>
         <hamcrest.version>1.3</hamcrest.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -119,7 +119,7 @@
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
             <artifactId>httpclient5</artifactId>
-            <version>5.3</version>
+            <version>5.3.1</version>
             <scope>test</scope>
         </dependency>
 
@@ -206,7 +206,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.2.3</version>
+                    <version>3.2.5</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -249,7 +249,7 @@
                 <plugin>
                     <groupId>com.github.spotbugs</groupId>
                     <artifactId>spotbugs-maven-plugin</artifactId>
-                    <version>4.8.2.0</version>
+                    <version>4.8.3.0</version>
                     <configuration>
                         <!--
                             Enables analysis which takes more memory but finds more bugs.
