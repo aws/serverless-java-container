@@ -7,9 +7,9 @@ You first need to build the function, then you will deploy it to AWS Lambda.
 
 ### Step 1 - Build the native image
 
-Before starting the build, you must clone or download the code in **function-sample-aws-native**.
+Before starting the build, you must clone or download the code in **pet-store-native**.
 
-1. Change into the project directory: `samples/springboot3/function-sample-aws-serverless-web-native`
+1. Change into the project directory: `samples/springboot3/pet-store-native`
 2. Run the following to build a Docker container image which will be used to create the Lambda function zip file. 
    ```
    docker build -t "al2-graalvm21:native-web" .
