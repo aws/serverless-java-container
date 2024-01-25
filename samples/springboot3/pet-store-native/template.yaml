@@ -10,7 +10,7 @@ Resources:
       Timeout: 15
       CodeUri: ./target/pet-store-native-0.0.1-SNAPSHOT-native-zip.zip
       Handler: NOP
-      Runtime: provided.al2
+      Runtime: provided.al2023
       Architectures:
         - arm64
       Events:
