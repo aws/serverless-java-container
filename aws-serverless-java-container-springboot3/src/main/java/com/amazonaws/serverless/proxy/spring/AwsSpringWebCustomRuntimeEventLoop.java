@@ -143,9 +143,6 @@ public final class AwsSpringWebCustomRuntimeEventLoop implements SmartLifecycle 
 						logger.debug("Response sent: body: " + result.getBody() + 
 								"; status: " + result.getStatusCode() + "; headers: " + result.getHeaders());
 					}
-		            System.out.println("==> status " + result.getStatusCode());
-		            System.out.println("==> body " + result.getBody());
-		            logger.debug("Response submitted back to the AWS Gateway");
 		            if (logger.isInfoEnabled()) {
 						logger.info("Result POST status: " + result);
 					}
