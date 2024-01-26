@@ -127,8 +127,10 @@ public final class AwsSpringWebCustomRuntimeEventLoop implements SmartLifecycle 
 				
 				try {
 					logger.debug("Submitting request to the user's web application");
-					
-					AwsProxyResponse awsResponse = AwsSpringHttpProcessingUtils.processRequest(incomingEvent.getBody(), mvc, mapper, responseWriter);
+
+					AwsProxyResponse awsResponse = AwsSpringHttpProcessingUtils.processRequest(
+							AwsSpringHttpProcessingUtils.generateHttpServletRequest(incomingEvent.getBody(),
+									null, mvc.getServletContext(), mapper), mvc, responseWriter);
 					if (logger.isDebugEnabled()) {
 						logger.debug("Received response - body: " + awsResponse.getBody() + 
 								"; status: " + awsResponse.getStatusCode() + "; headers: " + awsResponse.getHeaders());

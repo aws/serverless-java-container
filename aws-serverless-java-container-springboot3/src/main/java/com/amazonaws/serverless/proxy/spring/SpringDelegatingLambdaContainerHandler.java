@@ -3,13 +3,11 @@ package com.amazonaws.serverless.proxy.spring;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
+import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import org.springframework.cloud.function.serverless.web.FunctionClassUtils;
 import org.springframework.cloud.function.serverless.web.ServerlessMVC;
 
-import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
@@ -63,15 +61,7 @@ public class SpringDelegatingLambdaContainerHandler implements RequestStreamHand
     public void handleRequest(InputStream input, OutputStream output, Context lambdaContext) throws IOException {
         HttpServletRequest httpServletRequest = AwsSpringHttpProcessingUtils
         		.generateHttpServletRequest(input, lambdaContext, this.mvc.getServletContext(), this.mapper);
-        CountDownLatch latch = new CountDownLatch(1);
-        AwsHttpServletResponse httpServletResponse = new AwsHttpServletResponse(httpServletRequest, latch);
-        try {
-            this.mvc.service(httpServletRequest, httpServletResponse);
-            latch.await(10, TimeUnit.SECONDS);
-            this.mapper.writeValue(output, responseWriter.writeResponse(httpServletResponse, lambdaContext));
-        }
-        catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
+        AwsProxyResponse awsProxyResponse = AwsSpringHttpProcessingUtils.processRequest(httpServletRequest, mvc, responseWriter);
+        this.mapper.writeValue(output, awsProxyResponse);
     }
 }

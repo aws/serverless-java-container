@@ -221,7 +221,9 @@ public class AwsSpringHttpProcessingUtilsTests {
     	try (ConfigurableApplicationContext context = SpringApplication.run(EmptyApplication.class);) {
     		ServerlessMVC mvc = ServerlessMVC.INSTANCE((ServletWebServerApplicationContext) context);
     		AwsProxyHttpServletResponseWriter responseWriter = new AwsProxyHttpServletResponseWriter();
-    		AwsProxyResponse awsResponse = AwsSpringHttpProcessingUtils.processRequest(jsonEvent, mvc, mapper, responseWriter);
+    		AwsProxyResponse awsResponse = AwsSpringHttpProcessingUtils.processRequest(
+					AwsSpringHttpProcessingUtils.generateHttpServletRequest(jsonEvent, null,
+							mvc.getServletContext(), mapper), mvc, responseWriter);
     		assertEquals("hello", awsResponse.getBody());
     		assertEquals(200, awsResponse.getStatusCode());
     	}

@@ -33,18 +33,22 @@ import jakarta.servlet.http.HttpServletRequest;
 class AwsSpringHttpProcessingUtils {
 	
 	private static Log logger = LogFactory.getLog(AwsSpringHttpProcessingUtils.class);
+	private static final int LAMBDA_MAX_REQUEST_DURATION_MINUTES = 15;
 	
 	private AwsSpringHttpProcessingUtils() {
 		
 	}
 	
-	public static AwsProxyResponse processRequest(String gatewayEvent, ServerlessMVC mvc, ObjectMapper mapper, AwsProxyHttpServletResponseWriter responseWriter) {
-		HttpServletRequest request = AwsSpringHttpProcessingUtils.generateHttpServletRequest(gatewayEvent, null, mvc.getServletContext(), mapper);
+	public static AwsProxyResponse processRequest(HttpServletRequest request, ServerlessMVC mvc, 
+												  AwsProxyHttpServletResponseWriter responseWriter) {
 		CountDownLatch latch = new CountDownLatch(1);
         AwsHttpServletResponse response = new AwsHttpServletResponse(request, latch);
 		try {
 			mvc.service(request, response);
-			latch.await(AsyncInitializationWrapper.LAMBDA_MAX_INIT_TIME_MS, TimeUnit.SECONDS);
+			boolean requestTimedOut = !latch.await(LAMBDA_MAX_REQUEST_DURATION_MINUTES, TimeUnit.MINUTES); // timeout is potentially lower as user configures it
+			if (requestTimedOut) {
+				logger.warn("request timed out after " + LAMBDA_MAX_REQUEST_DURATION_MINUTES + " minutes");
+			}
 			AwsProxyResponse awsResponse = responseWriter.writeResponse(response, null);
 			return awsResponse;
 		} 
