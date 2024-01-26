@@ -69,12 +69,11 @@ public class AwsAsyncContext implements AsyncContext {
     @Override
     public void dispatch() {
         log.debug("Dispatching request");
+
         if (dispatched.get()) {
             throw new IllegalStateException("Dispatching already started");
         }
-        if (!dispatchStarted.get()) {
-            dispatchStarted.set(true);
-        } else {
+        if (dispatchStarted.getAndSet(true)) {
             dispatched.set(true);
             notifyListeners(NotificationType.START_ASYNC, null);
         }
