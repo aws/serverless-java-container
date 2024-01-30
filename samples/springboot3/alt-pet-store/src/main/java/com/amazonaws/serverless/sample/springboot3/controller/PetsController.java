@@ -17,6 +17,8 @@ package com.amazonaws.serverless.sample.springboot3.controller;
 import com.amazonaws.serverless.sample.springboot3.model.Pet;
 import com.amazonaws.serverless.sample.springboot3.model.PetData;
 
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -32,6 +34,7 @@ import java.util.UUID;
 @RestController
 @EnableWebMvc
 public class PetsController {
+	
     @RequestMapping(path = "/pets", method = RequestMethod.POST)
     public Pet createPet(@RequestBody Pet newPet) {
         if (newPet.getName() == null || newPet.getBreed() == null) {
@@ -73,5 +76,15 @@ public class PetsController {
         newPet.setName(PetData.getRandomName());
         return newPet;
     }
+    
+    @RequestMapping(path = "/foo/{gender}/bar/{age}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public String complexRequest(@RequestBody String body,
+            @PathVariable("gender") String gender,
+            @PathVariable("age") String age,
+            @RequestParam("name") String name
+    ) {
+    	System.out.println("Body: " + body + " - " + gender + "/" + age + "/" + name);
+		return gender + "/" + age + "/" + name;
+	}
 
 }

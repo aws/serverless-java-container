@@ -2,7 +2,10 @@ package com.amazonaws.serverless.proxy.spring;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -10,6 +13,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.cloud.function.serverless.web.ServerlessHttpServletRequest;
 import org.springframework.cloud.function.serverless.web.ServerlessMVC;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.MultiValueMapAdapter;
 import org.springframework.util.StringUtils;
@@ -109,6 +113,9 @@ class AwsSpringHttpProcessingUtils {
 		AwsProxyRequest v1Request = readValue(request, AwsProxyRequest.class, mapper);
 		
 		ServerlessHttpServletRequest httpRequest = new ServerlessHttpServletRequest(servletContext, v1Request.getHttpMethod(), v1Request.getPath());
+
+		populateQueryStringparameters(v1Request.getQueryStringParameters(), httpRequest);
+		
 		if (v1Request.getMultiValueHeaders() != null) {
 			MultiValueMapAdapter headers = new MultiValueMapAdapter(v1Request.getMultiValueHeaders());
 			httpRequest.setHeaders(headers);
@@ -128,16 +135,21 @@ class AwsSpringHttpProcessingUtils {
 				securityWriter.writeSecurityContext(v1Request, lambdaContext));
 		return httpRequest;
 	}
+	
+	
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private static HttpServletRequest generateRequest2(String request, Context lambdaContext,
 			SecurityContextWriter securityWriter, ObjectMapper mapper, ServletContext servletContext) {
 		HttpApiV2ProxyRequest v2Request = readValue(request, HttpApiV2ProxyRequest.class, mapper);
+		
+		
 		ServerlessHttpServletRequest httpRequest = new ServerlessHttpServletRequest(servletContext,
 				v2Request.getRequestContext().getHttp().getMethod(), v2Request.getRequestContext().getHttp().getPath());
+		populateQueryStringparameters(v2Request.getQueryStringParameters(), httpRequest);
 		
 		v2Request.getHeaders().forEach(httpRequest::setHeader);
-	
+		
 		if (StringUtils.hasText(v2Request.getBody())) {
 			httpRequest.setContentType("application/json");
 			httpRequest.setContent(v2Request.getBody().getBytes(StandardCharsets.UTF_8));
@@ -149,6 +161,14 @@ class AwsSpringHttpProcessingUtils {
 		httpRequest.setAttribute(RequestReader.JAX_SECURITY_CONTEXT_PROPERTY,
 				securityWriter.writeSecurityContext(v2Request, lambdaContext));
 		return httpRequest;
+	}
+	
+	private static void populateQueryStringparameters(Map<String, String> requestParameters, ServerlessHttpServletRequest httpRequest) {
+		if (!CollectionUtils.isEmpty(requestParameters)) {
+			for (Entry<String, String> entry : requestParameters.entrySet()) {
+				httpRequest.setParameter(entry.getKey(), entry.getValue());
+			}
+		}
 	}
 	
 	private static <T> T readValue(String json, Class<T> clazz, ObjectMapper mapper) {

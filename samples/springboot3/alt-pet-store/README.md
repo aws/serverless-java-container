@@ -37,3 +37,20 @@ PetStoreApi - URL for application            https://xxxxxxxxxx.execute-api.us-w
 
 $ curl https://xxxxxxxxxx.execute-api.us-west-2.amazonaws.com/pets
 ```
+
+You can also try a complex request passing both path and request parameters to  complex endpoint such as this:
+
+
+```
+@RequestMapping(path = "/foo/{gender}/bar/{age}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+public String complexRequest(@RequestBody String body,
+        @PathVariable("gender") String gender,
+        @PathVariable("age") String age,
+        @RequestParam("name") String name
+)
+```
+For example.
+
+```
+curl -d '{"key1":"value1", "key2":"value2"}' -H "Content-Type: application/json" -X POST https://zuhd709386.execute-api.us-east-2.amazonaws.com/foo/male/bar/25?name=Ricky
+```
