@@ -13,7 +13,7 @@
 package com.amazonaws.serverless.proxy;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
-import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
+import com.amazonaws.serverless.proxy.internal.InitializableLambdaContainerHandler;
 import com.amazonaws.services.lambda.runtime.Context;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
@@ -26,10 +26,10 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * An async implementation of the <code>InitializationWrapper</code> interface. This initializer calls the
- * {@link LambdaContainerHandler#initialize()} in a separate thread. Then uses a latch to wait for the maximum Lambda
+ * {@link InitializableLambdaContainerHandler#initialize()} in a separate thread. Then uses a latch to wait for the maximum Lambda
  * initialization time of 10 seconds, if the <code>initialize</code> method takes longer than 10 seconds to return, the
- * {@link #start(LambdaContainerHandler)} returns control to the caller and lets the initialization thread continue in
- * the background. The {@link LambdaContainerHandler#proxy(Object, Context)} automatically waits for the latch of the
+ * {@link #start(InitializableLambdaContainerHandler)} returns control to the caller and lets the initialization thread continue in
+ * the background. The {@link com.amazonaws.serverless.proxy.internal.LambdaContainerHandler#proxy(Object, Context)} automatically waits for the latch of the
  * initializer to be released.
  *
  * The constructor of this class expects an epoch long. This is meant to be as close as possible to the time the Lambda
@@ -72,7 +72,7 @@ public class AsyncInitializationWrapper extends InitializationWrapper {
     }
 
     @Override
-    public void start(LambdaContainerHandler handler) throws ContainerInitializationException {
+    public void start(InitializableLambdaContainerHandler handler) throws ContainerInitializationException {
         if(ASYNC_INIT_DISABLED){
             log.info("Async init disabled due to \"{}\" initialization", INITIALIZATION_TYPE);
             super.start(handler);
@@ -107,18 +107,18 @@ public class AsyncInitializationWrapper extends InitializationWrapper {
 
     @Override
     public CountDownLatch getInitializationLatch() {
-        if(ASYNC_INIT_DISABLED){
+        if (ASYNC_INIT_DISABLED){
             return super.getInitializationLatch();
         }
         return initializationLatch;
     }
 
     private static class AsyncInitializer implements Runnable {
-        private LambdaContainerHandler handler;
+        private final InitializableLambdaContainerHandler handler;
         private CountDownLatch initLatch;
         private Logger log = LoggerFactory.getLogger(AsyncInitializationWrapper.class);
 
-        AsyncInitializer(CountDownLatch latch, LambdaContainerHandler h) {
+        AsyncInitializer(CountDownLatch latch, InitializableLambdaContainerHandler h) {
             initLatch = latch;
             handler = h;
         }

@@ -45,7 +45,8 @@ import java.util.concurrent.TimeUnit;
  * @param <ContainerRequestType> The request type for the wrapped Java container
  * @param <ContainerResponseType> The response or response writer type for the wrapped Java container
  */
-public abstract class LambdaContainerHandler<RequestType, ResponseType, ContainerRequestType, ContainerResponseType> {
+public abstract class LambdaContainerHandler<RequestType, ResponseType, ContainerRequestType, ContainerResponseType>
+        implements InitializableLambdaContainerHandler {
 
     //-------------------------------------------------------------
     // Constants

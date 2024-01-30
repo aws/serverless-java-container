@@ -13,13 +13,13 @@
 package com.amazonaws.serverless.proxy;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
-import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
+import com.amazonaws.serverless.proxy.internal.InitializableLambdaContainerHandler;
 
 import java.util.concurrent.CountDownLatch;
 
 /**
- * This class is in charge of initializing a {@link LambdaContainerHandler}.
- * In most cases, this means calling the {@link LambdaContainerHandler#initialize()} method. Some implementations may
+ * This class is in charge of initializing a {@link InitializableLambdaContainerHandler}.
+ * In most cases, this means calling the {@link InitializableLambdaContainerHandler#initialize()} method. Some implementations may
  * require additional initialization steps, in this case implementations should provide their own
  * <code>InitializationWrapper</code>. This library includes an async implementation of this class
  * {@link AsyncInitializationWrapper} for frameworks that are likely to take longer than 10 seconds to start.
@@ -31,7 +31,7 @@ public class InitializationWrapper {
      * @param handler The container handler to be initializer
      * @throws ContainerInitializationException If anything goes wrong during container initialization.
      */
-    public void start(LambdaContainerHandler handler) throws ContainerInitializationException {
+    public void start(InitializableLambdaContainerHandler handler) throws ContainerInitializationException {
         handler.initialize();
     }
 
