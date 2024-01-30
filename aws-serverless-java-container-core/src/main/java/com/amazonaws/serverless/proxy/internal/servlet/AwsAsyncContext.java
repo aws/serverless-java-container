@@ -32,23 +32,23 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class AwsAsyncContext implements AsyncContext {
     private HttpServletRequest req;
     private HttpServletResponse res;
-    private AwsLambdaServletContainerHandler handler;
     private List<AsyncListenerHolder> listeners;
     private long timeout;
     private AtomicBoolean dispatched;
     private AtomicBoolean completed;
+    private AtomicBoolean dispatchStarted;
 
     private Logger log = LoggerFactory.getLogger(AwsAsyncContext.class);
 
-    public AwsAsyncContext(HttpServletRequest request, HttpServletResponse response, AwsLambdaServletContainerHandler servletHandler) {
+    public AwsAsyncContext(HttpServletRequest request, HttpServletResponse response) {
         log.debug("Initializing async context for request: " + SecurityUtils.crlf(request.getPathInfo()) + " - " + SecurityUtils.crlf(request.getMethod()));
         req = request;
         res = response;
-        handler = servletHandler;
         listeners = new ArrayList<>();
         timeout = 3000;
         dispatched = new AtomicBoolean(false);
         completed = new AtomicBoolean(false);
+        dispatchStarted = new AtomicBoolean(false);
     }
 
     @Override
@@ -68,16 +68,14 @@ public class AwsAsyncContext implements AsyncContext {
 
     @Override
     public void dispatch() {
-        try {
-            log.debug("Dispatching request");
-            if (dispatched.get()) {
-                throw new IllegalStateException("Dispatching already started");
-            }
+        log.debug("Dispatching request");
+
+        if (dispatched.get()) {
+            throw new IllegalStateException("Dispatching already started");
+        }
+        if (dispatchStarted.getAndSet(true)) {
             dispatched.set(true);
-            handler.doFilter(req, res, ((AwsServletContext)req.getServletContext()).getServletForPath(req.getRequestURI()));
             notifyListeners(NotificationType.START_ASYNC, null);
-        } catch (ServletException | IOException e) {
-            notifyListeners(NotificationType.ERROR, e);
         }
     }
 
@@ -152,6 +150,10 @@ public class AwsAsyncContext implements AsyncContext {
 
     public boolean isCompleted() {
         return completed.get();
+    }
+
+    public boolean isDispatchStarted() {
+        return dispatchStarted.get();
     }
 
     private void notifyListeners(NotificationType type, Throwable t) {

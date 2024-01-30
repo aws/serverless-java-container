@@ -152,11 +152,23 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
 
         FilterChain chain = getFilterChain(request, servlet);
         chain.doFilter(request, response);
-
+        if(requiresAsyncReDispatch(request)) {
+            chain = getFilterChain(request, servlet);
+            chain.doFilter(request, response);
+        }
         // if for some reason the response wasn't flushed yet, we force it here unless it's being processed asynchronously (WebFlux)
         if (!response.isCommitted() && request.getDispatcherType() != DispatcherType.ASYNC) {
             response.flushBuffer();
         }
+    }
+
+    private boolean requiresAsyncReDispatch(HttpServletRequest request) {
+        if (request.isAsyncStarted()) {
+            AsyncContext asyncContext = request.getAsyncContext();
+            return asyncContext instanceof AwsAsyncContext
+                    && ((AwsAsyncContext) asyncContext).isDispatchStarted();
+        }
+        return false;
     }
 
     @Override
