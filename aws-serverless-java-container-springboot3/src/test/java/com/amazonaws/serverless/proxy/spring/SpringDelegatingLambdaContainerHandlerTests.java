@@ -13,6 +13,7 @@ import java.util.Map;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.cloud.function.serverless.web.ServerlessServletContext;
 import org.springframework.util.CollectionUtils;
 
 import com.amazonaws.serverless.proxy.spring.servletapp.MessageData;
@@ -72,11 +73,15 @@ public class SpringDelegatingLambdaContainerHandlerTests {
             + "    },\n"
             + "    \"queryStringParameters\": {\n"
             + "        \"abc\": \"xyz\",\n"
+            + "        \"name\": \"Ricky\",\n"
             + "        \"foo\": \"baz\"\n"
             + "    },\n"
             + "    \"multiValueQueryStringParameters\": {\n"
             + "        \"abc\": [\n"
             + "            \"xyz\"\n"
+            + "        ],\n"
+            + "        \"name\": [\n"
+            + "            \"Ricky\"\n"
             + "        ],\n"
             + "        \"foo\": [\n"
             + "            \"bar\",\n"
@@ -124,7 +129,7 @@ public class SpringDelegatingLambdaContainerHandlerTests {
             "  \"version\": \"2.0\",\n" +
             "  \"routeKey\": \"$default\",\n" +
             "  \"rawPath\": \"/my/path\",\n" +
-            "  \"rawQueryString\": \"parameter1=value1&parameter1=value2&parameter2=value\",\n" +
+            "  \"rawQueryString\": \"parameter1=value1&parameter1=value2&name=Ricky&parameter2=value\",\n" +
             "  \"cookies\": [\n" +
             "    \"cookie1\",\n" +
             "    \"cookie2\"\n" +
@@ -135,6 +140,7 @@ public class SpringDelegatingLambdaContainerHandlerTests {
             "  },\n" +
             "  \"queryStringParameters\": {\n" +
             "    \"parameter1\": \"value1,value2\",\n" +
+            "    \"name\": \"Ricky\",\n" +
             "    \"parameter2\": \"value\"\n" +
             "  },\n" +
             "  \"requestContext\": {\n" +
@@ -202,6 +208,22 @@ public class SpringDelegatingLambdaContainerHandlerTests {
         return Arrays.asList(new String[]{API_GATEWAY_EVENT, API_GATEWAY_EVENT_V2});
     }
 
+    @MethodSource("data")
+    @ParameterizedTest
+    public void validateComplesrequest(String jsonEvent) throws Exception {
+        initServletAppTest();
+        InputStream targetStream = new ByteArrayInputStream(this.generateHttpRequest(jsonEvent, "POST", 
+        		"/foo/male/list/24", "{\"name\":\"bob\"}", null));
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        handler.handleRequest(targetStream, output, null);
+        Map result = mapper.readValue(output.toString(StandardCharsets.UTF_8), Map.class);
+        assertEquals(200, result.get("statusCode"));
+        String[] respponseBody = ((String) result.get("body")).split("/");
+        assertEquals("male", respponseBody[0]);
+        assertEquals("24", respponseBody[1]);
+        assertEquals("Ricky", respponseBody[2]);
+    }
+    
     @MethodSource("data")
     @ParameterizedTest
     public void testAsyncPost(String jsonEvent) throws Exception {
