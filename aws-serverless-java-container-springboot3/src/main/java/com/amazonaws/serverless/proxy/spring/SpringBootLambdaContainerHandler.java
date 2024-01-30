@@ -12,16 +12,8 @@
  */
 package com.amazonaws.serverless.proxy.spring;
 
-import com.amazonaws.serverless.exceptions.ContainerInitializationException;
-import com.amazonaws.serverless.proxy.*;
-import com.amazonaws.serverless.proxy.internal.servlet.*;
-import com.amazonaws.serverless.proxy.internal.testutils.Timer;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
-import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
-import com.amazonaws.serverless.proxy.spring.embedded.ServerlessReactiveServletEmbeddedServerFactory;
-import com.amazonaws.serverless.proxy.spring.embedded.ServerlessServletEmbeddedServerFactory;
-import com.amazonaws.services.lambda.runtime.Context;
+import java.util.concurrent.CountDownLatch;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.WebApplicationType;
@@ -29,10 +21,27 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 
+import com.amazonaws.serverless.exceptions.ContainerInitializationException;
+import com.amazonaws.serverless.proxy.ExceptionHandler;
+import com.amazonaws.serverless.proxy.InitializationWrapper;
+import com.amazonaws.serverless.proxy.RequestReader;
+import com.amazonaws.serverless.proxy.ResponseWriter;
+import com.amazonaws.serverless.proxy.SecurityContextWriter;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequest;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletResponse;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsLambdaServletContainerHandler;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsServletRegistration;
+import com.amazonaws.serverless.proxy.internal.testutils.Timer;
+import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
+import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
+import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
+import com.amazonaws.serverless.proxy.spring.embedded.ServerlessReactiveServletEmbeddedServerFactory;
+import com.amazonaws.serverless.proxy.spring.embedded.ServerlessServletEmbeddedServerFactory;
+import com.amazonaws.services.lambda.runtime.Context;
+
 import jakarta.servlet.Servlet;
-import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.concurrent.CountDownLatch;
 
 /**
  * SpringBoot implementation of the `LambdaContainerHandler` abstract class. This class uses the `LambdaSpringApplicationInitializer`

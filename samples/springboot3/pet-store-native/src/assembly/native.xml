@@ -1,0 +1,29 @@
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 https://maven.apache.org/xsd/assembly-1.1.2.xsd">
+	<id>native-zip</id>
+	<formats>
+		<format>zip</format>
+	</formats>
+	<baseDirectory></baseDirectory>
+	<fileSets>
+		<fileSet>
+			<directory>src/shell/native</directory>
+			<outputDirectory>/</outputDirectory>
+			<useDefaultExcludes>true</useDefaultExcludes>
+			<fileMode>0775</fileMode>
+			<includes>
+				<include>bootstrap</include>
+			</includes>
+		</fileSet>
+		<fileSet>
+			<directory>target</directory>
+			<outputDirectory>/</outputDirectory>
+			<useDefaultExcludes>true</useDefaultExcludes>
+			<fileMode>0775</fileMode>
+			<includes>
+				<include>pet-store-native</include>
+			</includes>
+		</fileSet>
+	</fileSets>
+</assembly>

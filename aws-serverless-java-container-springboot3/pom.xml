@@ -25,7 +25,7 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-function-serverless-web</artifactId>
-            <version>4.0.4</version>
+            <version>4.0.6</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
@@ -201,6 +201,11 @@
                 <configuration>
                     <destFile>${basedir}/target/coverage-reports/jacoco-unit.exec</destFile>
                     <dataFile>${basedir}/target/coverage-reports/jacoco-unit.exec</dataFile>
+                    <excludes>
+                        <!-- Native AOT implementation is currently not covered (due to complexity of the test setup) -->
+                        <exclude>com/amazonaws/serverless/proxy/spring/AwsSpringWebCustomRuntimeEventLoop*</exclude>
+                        <exclude>com/amazonaws/serverless/proxy/spring/AwsSpringAotTypesProcessor*</exclude>
+                    </excludes>
                 </configuration>
                 <executions>
                     <execution>

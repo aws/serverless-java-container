@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Serverless Java Container GraalVM
+Resources:
+  ServerlessWebNativeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      MemorySize: 512
+      FunctionName: pet-store-native
+      Timeout: 15
+      CodeUri: ./target/pet-store-native-0.0.1-SNAPSHOT-native-zip.zip
+      Handler: NOP
+      Runtime: provided.al2023
+      Architectures:
+        - arm64
+      Events:
+        HttpApiEvent:
+          Type: HttpApi
+          Properties:
+            TimeoutInMillis: 20000
+            PayloadFormatVersion: '1.0'
+        
+Globals:
+  Api:
+    # API Gateway regional endpoints
+    EndpointConfiguration: REGIONAL
+Outputs:
+  ServerlessWebNativeApi:
+    Description: URL for application
+    Value: !Sub 'https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/pets'
+    Export:
+      Name: ServerlessWebNativeApi
+      
