@@ -26,6 +26,26 @@ updates:
     schedule:
       interval: "weekly"
   - package-ecosystem: maven
+    directory: "/samples/springboot3/alt-pet-store"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: gradle
+    directory: "/samples/springboot3/alt-pet-store"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: maven
+    directory: "/samples/springboot3/graphql-pet-store"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: maven
+    directory: "/samples/springboot3/pet-store-native"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: gradle
+    directory: "/samples/springboot3/pet-store-native"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: maven
     directory: "/samples/jersey/pet-store"
     schedule:
       interval: "weekly"
