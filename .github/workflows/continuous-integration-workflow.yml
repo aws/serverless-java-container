@@ -58,12 +58,8 @@ jobs:
           java-version: 17
       - name: Build latest
         run: ./gha_build.sh spring true true
-#      - name: Build Spring 5.0
-#        run: ./gha_build.sh spring false false -Dspring.version=5.0.20.RELEASE -Dspring-security.version=5.0.19.RELEASE -Ddependency-check.skip=true
-#      - name: Build Spring 5.1
-#        run: ./gha_build.sh spring false false -Dspring.version=5.1.20.RELEASE -Dspring-security.version=5.1.13.RELEASE -Ddependency-check.skip=true
-#      - name: Build Spring 5.2
-#        run: ./gha_build.sh spring false false -Dspring.version=5.2.21.RELEASE -Dspring-security.version=5.2.15.RELEASE -Ddependency-check.skip=true
+      - name: Build with Spring 6.0.x
+        run: ./gha_build.sh spring false false -Dspring.version=6.0.16 -Dspring-security.version=6.1.6 -Ddependency-check.skip=true
 
   build_springboot3:
     name: Build and test SpringBoot 3
@@ -77,20 +73,14 @@ jobs:
           java-version: 17
       - name: Build latest
         run: ./gha_build.sh springboot3 true true
-      # https://github.com/spring-projects/spring-boot/wiki/Supported-Versions
-#      - name: Build Spring Boot 2.2
-#        run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.2.13.RELEASE -Dspring.version=5.2.15.RELEASE -Dspringsecurity.version=5.2.8.RELEASE -Ddependency-check.skip=true
-#      - name: Build Spring Boot 2.3
-#        run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.3.12.RELEASE -Dspring.version=5.2.15.RELEASE -Dspringsecurity.version=5.3.9.RELEASE -Ddependency-check.skip=true
-#      - name: Build Spring Boot 2.4
-#        run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.4.13 -Dspring.version=5.3.13 -Dspringsecurity.version=5.4.9 -Ddependency-check.skip=true
-#      - name: Build Spring Boot 2.5
-#        run: ./gha_build.sh springboot2 false false -Dspringboot.version=2.5.14 -Dspring.version=5.3.20 -Dspringsecurity.version=5.5.8 -Ddependency-check.skip=true
+      # Build with additional supported versions https://spring.io/projects/spring-boot#support
+      - name: Build with Spring Boot 3.1.x
+        run: ./gha_build.sh springboot3 false false -Dspringboot.version=3.1.8 -Dspring.version=6.0.16 -Dspringsecurity.version=6.1.6 -Ddependency-check.skip=true
 
-#  build_struts2:
-#    name: Build and test Struts
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v3
-#      - name: Build latest
-#        run: ./gha_build.sh struts true true
+  build_struts2:
+    name: Build and test Struts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build latest
+        run: ./gha_build.sh struts true true
