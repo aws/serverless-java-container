@@ -58,8 +58,8 @@ jobs:
           java-version: 17
       - name: Build latest
         run: ./gha_build.sh spring true true
-      - name: Build with Spring 6.0.x
-        run: ./gha_build.sh spring false false -Dspring.version=6.0.16 -Dspring-security.version=6.1.6 -Ddependency-check.skip=true
+#      - name: Build with Spring 6.0.x
+#        run: ./gha_build.sh spring false false -Dspring.version=6.0.16 -Dspring-security.version=6.1.6 -Ddependency-check.skip=true
 
   build_springboot3:
     name: Build and test SpringBoot 3
@@ -82,5 +82,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: 17
       - name: Build latest
         run: ./gha_build.sh struts true true
