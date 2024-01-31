@@ -64,13 +64,15 @@ function sample {
         if [[ "$?" -ne 0 ]]; then
             exit 1
         fi
-        cd ${SAMPLE_FOLDER} && gradle -q wrapper
-        if [[ "$?" -ne 0 ]]; then
-            exit 1
-        fi
-        cd ${SAMPLE_FOLDER} && ./gradlew -q clean build
-        if [[ "$?" -ne 0 ]]; then
-            exit 1
+        if [ -n "$(find ${SAMPLE_FOLDER} -name '*gradle*' | head -1)" ]; then
+            cd ${SAMPLE_FOLDER} && gradle -q wrapper
+            if [[ "$?" -ne 0 ]]; then
+                exit 1
+            fi
+            cd ${SAMPLE_FOLDER} && ./gradlew -q clean build
+            if [[ "$?" -ne 0 ]]; then
+                exit 1
+            fi
         fi
     done
 }
