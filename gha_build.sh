@@ -51,10 +51,6 @@ function archetype {
     if [[ "$?" -ne 0 ]]; then
         exit 1
     fi
-#    cd ${ARCHETYPE_TEST_DIR}/${PROJ_NAME} && ./gradlew wrapper --gradle-version 5.0
-#    if [[ "$?" -ne 0 ]]; then
-#        exit 1
-#    fi
     cd ${ARCHETYPE_TEST_DIR}/${PROJ_NAME} && ./gradlew -q clean build
     if [[ "$?" -ne 0 ]]; then
         exit 1
@@ -62,24 +58,21 @@ function archetype {
 }
 
 function sample {
-    # force to pet store for now. In the future we may loop over all samples
-    SAMPLE_FOLDER=${WORKING_DIR}/samples/$1/pet-store
-    cd ${SAMPLE_FOLDER} && mvn -q clean package
-    if [[ "$?" -ne 0 ]]; then
-        exit 1
-    fi
-    cd ${SAMPLE_FOLDER} && gradle -q wrapper
-    if [[ "$?" -ne 0 ]]; then
-        exit 1
-    fi
-#    cd ${SAMPLE_FOLDER} && ./gradlew wrapper --gradle-version 5.0
-#    if [[ "$?" -ne 0 ]]; then
-#        exit 1
-#    fi
-    cd ${SAMPLE_FOLDER} && ./gradlew -q clean build
-    if [[ "$?" -ne 0 ]]; then
-        exit 1
-    fi
+    for d in ${WORKING_DIR}/samples/$1/*/ ; do
+        SAMPLE_FOLDER="$d"
+        cd ${SAMPLE_FOLDER} && mvn -q clean package
+        if [[ "$?" -ne 0 ]]; then
+            exit 1
+        fi
+        cd ${SAMPLE_FOLDER} && gradle -q wrapper
+        if [[ "$?" -ne 0 ]]; then
+            exit 1
+        fi
+        cd ${SAMPLE_FOLDER} && ./gradlew -q clean build
+        if [[ "$?" -ne 0 ]]; then
+            exit 1
+        fi
+    done
 }
 
 # set up the master pom otherwise we won't be able to find new dependencies
