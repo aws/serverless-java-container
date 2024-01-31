@@ -88,4 +88,6 @@ jobs:
           distribution: 'corretto'
           java-version: 17
       - name: Build latest
-        run: ./gha_build.sh struts true true
+        run: ./gha_build.sh struts false false
+# temporarily disabled archetype and samples as Struts is not released at the moment
+#        run: ./gha_build.sh struts true true
