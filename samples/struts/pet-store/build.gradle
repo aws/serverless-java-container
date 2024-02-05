@@ -14,10 +14,10 @@ configurations {
 dependencies {
   implementation (
           'com.amazonaws.serverless:aws-serverless-java-container-struts:[2.0-SNAPSHOT,)',
-          'org.apache.struts:struts2-convention-plugin:7.0.0-M1',
-          'org.apache.struts:struts2-rest-plugin:7.0.0-M1',
-          'org.apache.struts:struts2-bean-validation-plugin:7.0.0-M1',
-          'org.apache.struts:struts2-junit-plugin:7.0.0-M1',
+          'org.apache.struts:struts2-convention-plugin:7.0.0-M2',
+          'org.apache.struts:struts2-rest-plugin:7.0.0-M2',
+          'org.apache.struts:struts2-bean-validation-plugin:7.0.0-M2',
+          'org.apache.struts:struts2-junit-plugin:7.0.0-M2',
           'com.jgeppert.struts2:struts2-aws-lambda-support-plugin:1.4.2',
           'org.hibernate.validator:hibernate-validator:6.1.7.Final',
           'org.glassfish:jakarta.el:5.0.0-M1',

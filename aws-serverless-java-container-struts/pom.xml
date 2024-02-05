@@ -15,7 +15,7 @@
     </parent>
 
     <properties>
-        <struts.version>7.0.0-M1</struts.version>
+        <struts.version>7.0.0-M2</struts.version>
     </properties>
 
     <dependencies>
@@ -38,16 +38,6 @@
             <groupId>org.apache.struts</groupId>
             <artifactId>struts2-core</artifactId>
             <version>${struts.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.commons</groupId>
-                    <artifactId>commons-fileupload2-jakarta</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-io</groupId>
-                    <artifactId>commons-io</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.struts</groupId>
