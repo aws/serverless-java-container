@@ -69,8 +69,6 @@
 						<configuration>
 			                <jvmArguments>-agentlib:native-image-agent=config-merge-dir=src/main/resources/META-INF/native-image/ --enable-preview
 			                    </jvmArguments>
-			                <compilerArguments>--enable-preview
-			                    </compilerArguments>
 			            </configuration>
 					</plugin>
 					<plugin>
