@@ -11,8 +11,9 @@ Resources:
       CodeUri: ./target/pet-store-native-0.0.1-SNAPSHOT-native-zip.zip
       Handler: NOP
       Runtime: provided.al2023
-      Architectures:
-        - arm64
+#     If you want to build for ARM64 uncomment the following lines
+#      Architectures:
+#        - arm64
       Events:
         HttpApiEvent:
           Type: HttpApi

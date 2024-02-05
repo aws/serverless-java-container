@@ -25,7 +25,7 @@ RUN ln -s /usr/lib/maven/bin/mvn /usr/bin/mvn
 ENV GRADLE_VERSION 7.4.1
 ENV GRADLE_FOLDERNAME gradle-${GRADLE_VERSION}
 ENV GRADLE_FILENAME gradle-${GRADLE_VERSION}-bin.zip
-RUN curl -LO https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip	
+RUN curl -LO https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip
 RUN unzip gradle-${GRADLE_VERSION}-bin.zip
 RUN mv $GRADLE_FOLDERNAME /usr/lib/gradle
 RUN ln -s /usr/lib/gradle/bin/gradle /usr/bin/gradle
