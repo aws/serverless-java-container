@@ -44,6 +44,10 @@ public class StreamLambdaHandler implements RequestStreamHandler {
 
 ## Public Examples
 
+### Blogs
+
+- [Re-platforming Java applications using the updated AWS Serverless Java Container](https://aws.amazon.com/blogs/compute/re-platforming-java-applications-using-the-updated-aws-serverless-java-container/)
+
 ### Workshops
 
 - [Java on AWS Lambda](https://catalog.workshops.aws/java-on-aws-lambda) From Serverful to Serverless Java with AWS Lambda in 2 hours
