@@ -77,17 +77,16 @@ jobs:
       - name: Build with Spring Boot 3.1.x
         run: ./gha_build.sh springboot3 false false -Dspringboot.version=3.1.8 -Dspring.version=6.0.16 -Dspringsecurity.version=6.1.6 -Ddependency-check.skip=true
 
-  build_struts2:
-    name: Build and test Struts
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'corretto'
-          java-version: 17
-      - name: Build latest
-        run: ./gha_build.sh struts false false
-# temporarily disabled archetype and samples as Struts is not released at the moment
+# temporarily disabled as Struts is not released at the moment
+#  build_struts2:
+#    name: Build and test Struts
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v3
+#      - name: Set up JDK 17
+#        uses: actions/setup-java@v3
+#        with:
+#          distribution: 'corretto'
+#          java-version: 17
+#      - name: Build latest
 #        run: ./gha_build.sh struts true true
