@@ -105,21 +105,8 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public long getDateHeader(String s) {
-        if (request.getMultiValueHeaders() == null) {
-            return -1L;
-        }
-        String dateString = request.getMultiValueHeaders().getFirst(s);
-        if (dateString == null) {
-            return -1L;
-        }
-        try {
-            return Instant.from(ZonedDateTime.parse(dateString, dateFormatter)).toEpochMilli();
-        } catch (DateTimeParseException e) {
-            log.warn("Invalid date header in request" + SecurityUtils.crlf(dateString));
-            return -1L;
-        }
+        return getDateHeader(s, request.getMultiValueHeaders());
     }
-
 
     @Override
     public String getHeader(String s) {
@@ -133,33 +120,19 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public Enumeration<String> getHeaders(String s) {
-        if (request.getMultiValueHeaders() == null || request.getMultiValueHeaders().get(s) == null) {
-            return Collections.emptyEnumeration();
-        }
-        return Collections.enumeration(request.getMultiValueHeaders().get(s));
+        return getHeaders(s, request.getMultiValueHeaders());
     }
 
 
     @Override
     public Enumeration<String> getHeaderNames() {
-        if (request.getMultiValueHeaders() == null) {
-            return Collections.emptyEnumeration();
-        }
-        return Collections.enumeration(request.getMultiValueHeaders().keySet());
+        return getHeaderNames(request.getMultiValueHeaders());
     }
 
 
     @Override
     public int getIntHeader(String s) {
-        if (request.getMultiValueHeaders() == null) {
-            return -1;
-        }
-        String headerValue = request.getMultiValueHeaders().getFirst(s);
-        if (headerValue == null) {
-            return -1;
-        }
-
-        return Integer.parseInt(headerValue);
+        return getIntHeader(s, request.getMultiValueHeaders());
     }
 
 
@@ -293,21 +266,13 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public int getContentLength() {
-        String headerValue = request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_LENGTH);
-        if (headerValue == null) {
-            return -1;
-        }
-        return Integer.parseInt(headerValue);
+        return getContentLength(request.getMultiValueHeaders());
     }
 
 
     @Override
     public long getContentLengthLong() {
-        String headerValue = request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_LENGTH);
-        if (headerValue == null) {
-            return -1;
-        }
-        return Long.parseLong(headerValue);
+        return getContentLengthLong(request.getMultiValueHeaders());
     }
 
 
@@ -323,19 +288,8 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getParameter(String s) {
-       String queryStringParameter = getFirstQueryParamValue(request.getMultiValueQueryStringParameters(), s, config.isQueryStringCaseSensitive());
-        if (queryStringParameter != null) {
-            return queryStringParameter;
-        }
-
-        String[] bodyParams = getFormBodyParameterCaseInsensitive(s);
-        if (bodyParams.length == 0) {
-            return null;
-        } else {
-            return bodyParams[0];
-        }
+        return getParameter(request.getMultiValueQueryStringParameters(), s, config.isQueryStringCaseSensitive());
     }
-
 
     @Override
     public Enumeration<String> getParameterNames() {

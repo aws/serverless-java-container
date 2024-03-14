@@ -26,6 +26,7 @@ import org.apache.hc.client5.http.entity.mime.StringBody;
 
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -532,5 +533,54 @@ public class AwsProxyRequestBuilder {
         req.setRequestContext(ctx);
 
         return req;
+    }
+
+    public VPCLatticeV2RequestEvent toVPCLatticeV2Request() {
+        Map<String, String> qs;
+        if (Objects.nonNull(request.getMultiValueQueryStringParameters())) {
+            qs = new HashMap<>();
+            request.getMultiValueQueryStringParameters().forEach((k, v) -> {
+                qs.put(k, v.get(0));
+            });
+        } else {
+            qs = null;
+        }
+
+        VPCLatticeV2RequestEvent.RequestContext requestContext = getVPCLatticev2RequestContext();
+
+        return VPCLatticeV2RequestEvent.builder()
+                .withVersion("2.0")
+                .withPath(request.getPath())
+                .withMethod(request.getHttpMethod())
+                .withIsBase64Encoded(request.isBase64Encoded())
+                .withBody(request.getBody())
+                .withHeaders(request.getMultiValueHeaders())
+                .withQueryStringParameters(qs)
+                .withRequestContext(requestContext)
+                .build();
+    }
+
+    @NotNull
+    private static VPCLatticeV2RequestEvent.RequestContext getVPCLatticev2RequestContext() {
+        VPCLatticeV2RequestEvent.RequestContext requestContext = new VPCLatticeV2RequestEvent.RequestContext();
+        requestContext.setServiceNetworkArn("arn:aws:vpc-lattice:region:123456789012:servicenetwork/sn-0bf3f2882e9cc805a");
+        requestContext.setServiceArn("arn:aws:vpc-lattice:region:123456789012:service/svc-0a40eebed65f8d69c");
+        requestContext.setTargetGroupArn("arn:aws:vpc-lattice:region:123456789012:targetgroup/tg-6d0ecf831eec9f09");
+        requestContext.setRegion("us-west-2");
+        requestContext.setTimeEpoch("1711801592405546");
+
+        VPCLatticeV2RequestEvent.Identity identity = new VPCLatticeV2RequestEvent.Identity();
+        identity.setSourceVpcArn("arn:aws:ec2:us-west-2:422832612717:vpc/vpc-05417e632a7302cb7");
+        identity.setType(null);
+        identity.setPrincipal(null);
+        identity.setSessionName(null);
+        identity.setX509SanDns(null);
+        identity.setX509IssuerOu(null);
+        identity.setX509SanNameCn(null);
+        identity.setX509SanUri(null);
+        identity.setX509SubjectCn(null);
+
+        requestContext.setIdentity(identity);
+        return requestContext;
     }
 }

@@ -12,11 +12,16 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder(setterPrefix = "with")
 public class VPCLatticeV2RequestEvent {
     private String version;
     private String path;
     private String method;
-    private Map<String, List<String>> headers;
+    private Headers headers;
     @Nullable
     private Map<String, String> queryStringParameters;
     private RequestContext requestContext;
