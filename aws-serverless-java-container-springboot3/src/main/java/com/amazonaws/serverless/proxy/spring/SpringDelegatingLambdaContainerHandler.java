@@ -53,6 +53,10 @@ public class SpringDelegatingLambdaContainerHandler implements RequestStreamHand
     public SpringDelegatingLambdaContainerHandler(Class<?>... startupClasses) {
         this.startupClasses = startupClasses;
         this.mvc = ServerlessMVC.INSTANCE(this.startupClasses);
+        if (System.getenv().containsKey("AWS_LAMBDA_INITIALIZATION_TYPE") 
+        		&& System.getenv().get("AWS_LAMBDA_INITIALIZATION_TYPE").equals("snap-start")) {
+    		mvc.waitForContext();
+    	}
         this.mapper = new ObjectMapper();
         this.responseWriter = new AwsProxyHttpServletResponseWriter();
     }
