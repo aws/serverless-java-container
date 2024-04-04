@@ -25,7 +25,7 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-function-serverless-web</artifactId>
-            <version>4.1.1-SNAPSHOT</version>
+            <version>4.1.1</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
