@@ -41,17 +41,13 @@ public class AsyncInitializationWrapper extends InitializationWrapper {
 
     private static final int DEFAULT_INIT_GRACE_TIME_MS = 150;
     private static final String INIT_GRACE_TIME_ENVIRONMENT_VARIABLE_NAME = "AWS_SERVERLESS_JAVA_CONTAINER_INIT_GRACE_TIME";
-    private static final String INITIALIZATION_TYPE_ENVIRONMENT_VARIABLE_NAME = "AWS_LAMBDA_INITIALIZATION_TYPE";
-    private static final String INITIALIZATION_TYPE_ON_DEMAND = "on-demand";
-    private static final String INITIALIZATION_TYPE = System.getenv().getOrDefault(INITIALIZATION_TYPE_ENVIRONMENT_VARIABLE_NAME,INITIALIZATION_TYPE_ON_DEMAND);
-    private static final boolean ASYNC_INIT_DISABLED = !INITIALIZATION_TYPE.equals(INITIALIZATION_TYPE_ON_DEMAND);
     private static final int INIT_GRACE_TIME_MS = Integer.parseInt(System.getenv().getOrDefault(
             INIT_GRACE_TIME_ENVIRONMENT_VARIABLE_NAME, Integer.toString(DEFAULT_INIT_GRACE_TIME_MS)));
     private static final int LAMBDA_MAX_INIT_TIME_MS = 10_000;
 
     private CountDownLatch initializationLatch;
     private final long actualStartTime;
-    private Logger log = LoggerFactory.getLogger(AsyncInitializationWrapper.class);
+    private final Logger log = LoggerFactory.getLogger(AsyncInitializationWrapper.class);
 
 
     /**
@@ -73,8 +69,8 @@ public class AsyncInitializationWrapper extends InitializationWrapper {
 
     @Override
     public void start(InitializableLambdaContainerHandler handler) throws ContainerInitializationException {
-        if(ASYNC_INIT_DISABLED){
-            log.info("Async init disabled due to \"{}\" initialization", INITIALIZATION_TYPE);
+        if (InitializationTypeHelper.isAsyncInitializationDisabled()){
+            log.info("Async init disabled due to \"{}\" initialization", InitializationTypeHelper.getInitializationType());
             super.start(handler);
             return;
         }
@@ -107,7 +103,7 @@ public class AsyncInitializationWrapper extends InitializationWrapper {
 
     @Override
     public CountDownLatch getInitializationLatch() {
-        if (ASYNC_INIT_DISABLED){
+        if (InitializationTypeHelper.isAsyncInitializationDisabled()){
             return super.getInitializationLatch();
         }
         return initializationLatch;
@@ -116,7 +112,7 @@ public class AsyncInitializationWrapper extends InitializationWrapper {
     private static class AsyncInitializer implements Runnable {
         private final InitializableLambdaContainerHandler handler;
         private CountDownLatch initLatch;
-        private Logger log = LoggerFactory.getLogger(AsyncInitializationWrapper.class);
+        private final Logger log = LoggerFactory.getLogger(AsyncInitializationWrapper.class);
 
         AsyncInitializer(CountDownLatch latch, InitializableLambdaContainerHandler h) {
             initLatch = latch;

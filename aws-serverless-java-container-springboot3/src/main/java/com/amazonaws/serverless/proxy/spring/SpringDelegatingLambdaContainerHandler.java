@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import com.amazonaws.serverless.proxy.InitializationTypeHelper;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import org.springframework.cloud.function.serverless.web.FunctionClassUtils;
 import org.springframework.cloud.function.serverless.web.ServerlessMVC;
@@ -53,8 +54,7 @@ public class SpringDelegatingLambdaContainerHandler implements RequestStreamHand
     public SpringDelegatingLambdaContainerHandler(Class<?>... startupClasses) {
         this.startupClasses = startupClasses;
         this.mvc = ServerlessMVC.INSTANCE(this.startupClasses);
-        if (System.getenv().containsKey("AWS_LAMBDA_INITIALIZATION_TYPE") 
-        		&& System.getenv().get("AWS_LAMBDA_INITIALIZATION_TYPE").equals("snap-start")) {
+        if (InitializationTypeHelper.isAsyncInitializationDisabled()) {
     		mvc.waitForContext();
     	}
         this.mapper = new ObjectMapper();
