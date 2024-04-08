@@ -21,13 +21,15 @@ import com.amazonaws.serverless.proxy.model.Headers;
 import com.amazonaws.serverless.proxy.model.RequestSource;
 import com.amazonaws.services.lambda.runtime.Context;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jakarta.servlet.*;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpUpgradeHandler;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.SecurityContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -441,6 +443,13 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getRemoteHost() {
+        if (Objects.nonNull(request.getRequestContext().getElb())) {
+            String host_header = request.getHeaders().get(HttpHeaders.HOST);
+
+            // the host header has the form host:port, so we split the string to get the host part
+            return Arrays.asList(host_header.split(":")).get(0);
+        }
+
         return request.getMultiValueHeaders().getFirst(HttpHeaders.HOST);
     }
 
@@ -471,6 +480,12 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public int getRemotePort() {
+        if (Objects.nonNull(request.getRequestContext().getElb())) {
+            String hostHeader = request.getHeaders().get(HttpHeaders.HOST);
+            String port = Arrays.asList(hostHeader.split(":")).get(1);
+            if (Objects.nonNull(port))
+                return Integer.parseInt(port);
+        }
         return 0;
     }
 

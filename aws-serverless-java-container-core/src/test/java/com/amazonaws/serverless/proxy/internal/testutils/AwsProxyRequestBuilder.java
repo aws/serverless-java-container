@@ -70,7 +70,8 @@ public class AwsProxyRequestBuilder {
 
     public AwsProxyRequestBuilder(String path, String httpMethod) {
         this.request = new AwsProxyRequest();
-        this.request.setMultiValueHeaders(new Headers()); // avoid NPE
+        this.request.setMultiValueHeaders(new Headers());// avoid NPE
+        this.request.setHeaders(new SingleValueHeaders());
         this.request.setHttpMethod(httpMethod);
         this.request.setPath(path);
         this.request.setMultiValueQueryStringParameters(new MultiValuedTreeMap<>());
