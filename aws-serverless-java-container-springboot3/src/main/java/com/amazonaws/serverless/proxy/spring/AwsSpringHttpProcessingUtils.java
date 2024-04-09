@@ -9,6 +9,8 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import com.amazonaws.serverless.proxy.*;
+import com.amazonaws.serverless.proxy.model.VPCLatticeV2RequestEvent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.cloud.function.serverless.web.ServerlessHttpServletRequest;
@@ -18,11 +20,6 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.util.MultiValueMapAdapter;
 import org.springframework.util.StringUtils;
 
-import com.amazonaws.serverless.proxy.AsyncInitializationWrapper;
-import com.amazonaws.serverless.proxy.AwsHttpApiV2SecurityContextWriter;
-import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
-import com.amazonaws.serverless.proxy.RequestReader;
-import com.amazonaws.serverless.proxy.SecurityContextWriter;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
@@ -107,6 +104,25 @@ class AwsSpringHttpProcessingUtils {
 		return httpServletRequest;
 	}
 
+	public static HttpServletRequest generateLatticeV2HttpServletRequest(String jsonRequest, Context lambdaContext,
+																		 ServletContext servletContext, ObjectMapper mapper) {
+		SecurityContextWriter securityWriter = new AwsVPCLatticeV2SecurityContextWriter();
+        return AwsSpringHttpProcessingUtils.generateRequestLatticeV2(jsonRequest, lambdaContext, securityWriter, mapper, servletContext);
+	}
+
+	public static HttpServletRequest generateLatticeV2HttpServletRequest(InputStream jsonRequest, Context lambdaContext,
+																ServletContext servletContext, ObjectMapper mapper) {
+		try {
+			String text = new String(FileCopyUtils.copyToByteArray(jsonRequest), StandardCharsets.UTF_8);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Creating HttpServletRequest from: " + text);
+			}
+			return generateLatticeV2HttpServletRequest(text, lambdaContext, servletContext, mapper);
+		} catch (Exception e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private static HttpServletRequest generateRequest1(String request, Context lambdaContext,
 			SecurityContextWriter securityWriter, ObjectMapper mapper, ServletContext servletContext) {
@@ -147,7 +163,7 @@ class AwsSpringHttpProcessingUtils {
 		ServerlessHttpServletRequest httpRequest = new ServerlessHttpServletRequest(servletContext,
 				v2Request.getRequestContext().getHttp().getMethod(), v2Request.getRequestContext().getHttp().getPath());
 		populateQueryStringparameters(v2Request.getQueryStringParameters(), httpRequest);
-		
+
 		v2Request.getHeaders().forEach(httpRequest::setHeader);
 		
 		if (StringUtils.hasText(v2Request.getBody())) {
@@ -160,6 +176,32 @@ class AwsSpringHttpProcessingUtils {
 		httpRequest.setAttribute(RequestReader.LAMBDA_CONTEXT_PROPERTY, lambdaContext);
 		httpRequest.setAttribute(RequestReader.JAX_SECURITY_CONTEXT_PROPERTY,
 				securityWriter.writeSecurityContext(v2Request, lambdaContext));
+		return httpRequest;
+	}
+
+	private static HttpServletRequest generateRequestLatticeV2(String request, Context lambdaContext,
+															   SecurityContextWriter securityWriter, ObjectMapper mapper, ServletContext servletContext) {
+		VPCLatticeV2RequestEvent v2Request = readValue(request, VPCLatticeV2RequestEvent.class, mapper);
+		ServerlessHttpServletRequest httpRequest = new ServerlessHttpServletRequest(servletContext,
+				v2Request.getMethod(), v2Request.getPath());
+		populateQueryStringparameters(v2Request.getQueryStringParameters(), httpRequest);
+
+		if (v2Request.getHeaders() != null) {
+			MultiValueMapAdapter headers = new MultiValueMapAdapter(v2Request.getHeaders());
+			httpRequest.setHeaders(headers);
+		}
+
+		if (StringUtils.hasText(v2Request.getBody())) {
+			httpRequest.setContentType("application/json");
+			httpRequest.setContent(v2Request.getBody().getBytes(StandardCharsets.UTF_8));
+		}
+
+		httpRequest.setAttribute(RequestReader.VPC_LATTICE_V2_CONTEXT_PROPERTY, v2Request.getRequestContext());
+		httpRequest.setAttribute(RequestReader.VPC_LATTICE_V2_EVENT_PROPERTY, v2Request);
+		httpRequest.setAttribute(RequestReader.LAMBDA_CONTEXT_PROPERTY, lambdaContext);
+		httpRequest.setAttribute(RequestReader.JAX_SECURITY_CONTEXT_PROPERTY,
+				securityWriter.writeSecurityContext(v2Request, lambdaContext));
+
 		return httpRequest;
 	}
 	

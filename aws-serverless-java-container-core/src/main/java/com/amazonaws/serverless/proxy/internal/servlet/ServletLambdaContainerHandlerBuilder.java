@@ -122,9 +122,9 @@ public abstract class ServletLambdaContainerHandlerBuilder<
 
     public Builder defaultVpcLatticeV2Proxy() {
         initializationWrapper(new AsyncInitializationWrapper())
-                .requestReader((RequestReader<RequestType, ContainerRequestType>) new AwsHttpApiV2HttpServletRequestReader())
+                .requestReader((RequestReader<RequestType, ContainerRequestType>) new AwsVpcLatticeV2HttpServletRequestReader())
                 .responseWriter((ResponseWriter<AwsHttpServletResponse, ResponseType>) new AwsProxyHttpServletResponseWriter(true))
-                .securityContextWriter((SecurityContextWriter<RequestType>) new AwsHttpApiV2SecurityContextWriter())
+                .securityContextWriter((SecurityContextWriter<RequestType>) new AwsVPCLatticeV2SecurityContextWriter())
                 .exceptionHandler(defaultExceptionHandler())
                 .requestTypeClass((Class<RequestType>) VPCLatticeV2RequestEvent.class)
                 .responseTypeClass((Class<ResponseType>) AwsProxyResponse.class);

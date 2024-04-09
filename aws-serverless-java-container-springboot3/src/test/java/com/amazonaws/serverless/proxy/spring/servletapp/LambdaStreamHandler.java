@@ -6,6 +6,7 @@ import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
+import com.amazonaws.serverless.proxy.model.VPCLatticeV2RequestEvent;
 import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
 import com.amazonaws.serverless.proxy.spring.SpringBootProxyHandlerBuilder;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -19,6 +20,7 @@ import java.io.OutputStream;
 public class LambdaStreamHandler implements RequestStreamHandler {
     private static SpringBootLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
     private static SpringBootLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> httpApiHandler;
+    private static SpringBootLambdaContainerHandler<VPCLatticeV2RequestEvent, AwsProxyResponse> latticeV2Handler;
     private String type;
 
     public LambdaStreamHandler(String reqType) {
@@ -42,6 +44,14 @@ public class LambdaStreamHandler implements RequestStreamHandler {
                             .springBootApplication(ServletApplication.class)
                             .buildAndInitialize();
                     break;
+                case "VPC_LATTICE_V2":
+                    latticeV2Handler = new SpringBootProxyHandlerBuilder<VPCLatticeV2RequestEvent>()
+                            .defaultVpcLatticeV2Proxy()
+                            .initializationWrapper(new InitializationWrapper())
+                            .servletApplication()
+                            .springBootApplication(ServletApplication.class)
+                            .buildAndInitialize();
+                    break;
             }
         } catch (ContainerInitializationException e) {
             e.printStackTrace();
@@ -57,6 +67,9 @@ public class LambdaStreamHandler implements RequestStreamHandler {
                 break;
             case "HTTP_API":
                 httpApiHandler.proxyStream(inputStream, outputStream, context);
+                break;
+            case "VPC_LATTICE_V2":
+                latticeV2Handler.proxyStream(inputStream, outputStream, context);
         }
 
     }

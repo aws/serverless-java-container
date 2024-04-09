@@ -21,9 +21,6 @@ import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.Principal;
-import java.time.Instant;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -338,6 +335,19 @@ public class AwsVpcLatticeV2HttpServletRequest extends AwsHttpServletRequest {
         setAttribute(DISPATCHER_TYPE_ATTRIBUTE, DispatcherType.ASYNC);
         log.debug("Starting async context for request: " + SecurityUtils.crlf(lambdaContext.getAwsRequestId()));
         return asyncContext;
+    }
+
+    @Override
+    public boolean isAsyncSupported() {
+        return true;
+    }
+
+    @Override
+    public boolean isAsyncStarted() {
+        if (asyncContext == null) {
+            return false;
+        }
+        return !asyncContext.isCompleted() && !asyncContext.isDispatched();
     }
 
     @Override

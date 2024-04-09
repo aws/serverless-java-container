@@ -535,6 +535,16 @@ public class AwsProxyRequestBuilder {
         return req;
     }
 
+    public InputStream toVPCLatticeV2RequestStream() {
+        VPCLatticeV2RequestEvent req = toVPCLatticeV2Request();
+        try {
+            String requestJson = LambdaContainerHandler.getObjectMapper().writeValueAsString(req);
+            return new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
+        } catch (JsonProcessingException e) {
+            return null;
+        }
+    }
+
     public VPCLatticeV2RequestEvent toVPCLatticeV2Request() {
         Map<String, String> qs;
         if (Objects.nonNull(request.getMultiValueQueryStringParameters())) {

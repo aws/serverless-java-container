@@ -404,6 +404,8 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
         return asyncContext;
     }
 
+
+
     @Override
     public AsyncContext getAsyncContext() {
         if (asyncContext == null) {
