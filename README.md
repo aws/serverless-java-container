@@ -5,10 +5,10 @@ Serverless Java Container natively supports API Gateway's proxy integration mode
 
 Currently the following versions are maintained:
 
-| Version                  | Branch | Java Enterprise support | Spring versions | JAX-RS/ Jersey version | Struts support | Spark support |
-|--------------------------|--------|-------------------------|-----------------|------------------------|----------------|---------------|
-| 1.x (stable)             | [1.x](https://github.com/aws/serverless-java-container/tree/1.x)    | Java EE (javax.*)       | 5.x (Boot 2.x)  | 2.x                    | :white_check_mark: | :white_check_mark: |
-| 2.x (under development)  | [main](https://github.com/aws/serverless-java-container/tree/main)   | Jakarta EE (jakarta.*)  | 6.x (Boot 3.x)  | 3.x                    | :x:            | :x:           |
+| Version | Branch | Java Enterprise support | Spring versions | JAX-RS/ Jersey version | Struts support | Spark support |
+|---------|--------|-------------------------|-----------------|------------------------|----------------|---------------|
+| 1.x                      | [1.x](https://github.com/aws/serverless-java-container/tree/1.x)    | Java EE (javax.*)       | 5.x (Boot 2.x)  | 2.x                    | :white_check_mark: | :white_check_mark: |
+| 2.x     | [main](https://github.com/aws/serverless-java-container/tree/main)   | Jakarta EE (jakarta.*)  | 6.x (Boot 3.x)  | 3.x                    | :x:            | :x:           |
 
 Follow the quick start guides in [our wiki](https://github.com/aws/serverless-java-container/wiki) to integrate Serverless Java Container with your project:
 * [Spring quick start](https://github.com/aws/serverless-java-container/wiki/Quick-start---Spring)
