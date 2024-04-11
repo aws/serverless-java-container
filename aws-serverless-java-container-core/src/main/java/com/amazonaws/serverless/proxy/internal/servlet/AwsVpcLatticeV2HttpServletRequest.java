@@ -239,7 +239,7 @@ public class AwsVpcLatticeV2HttpServletRequest extends AwsHttpServletRequest {
     @Override
     public ServletInputStream getInputStream() throws IOException {
         if (requestInputStream == null) {
-            requestInputStream = new AwsServletInputStream(bodyStringToInputStream(request.getBody(), request.getIsBase64Encoded()));
+            requestInputStream = new AwsServletInputStream(bodyStringToInputStream(request.getBody(), Boolean.TRUE.equals(request.getIsBase64Encoded())));
         }
         return requestInputStream;
     }
