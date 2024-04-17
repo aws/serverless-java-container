@@ -1,0 +1,254 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Description: Amazon VPC Lattice Demo
+
+Resources:
+
+  # Basic VPC
+
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.0.0/24
+      MapPublicIpOnLaunch: false
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: Private Subnet (Source Subnet)
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs: !Ref AWS::Region
+
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.1.0/24
+      MapPublicIpOnLaunch: false
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: Private Subnet (Destination Subnet)
+      AvailabilityZone: !Select
+        - 1
+        - Fn::GetAZs: !Ref AWS::Region
+
+  RouteTablePrivate1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: Private Route Table (Source Subnet)
+
+  RouteTablePrivate1Association1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTablePrivate1
+      SubnetId: !Ref PrivateSubnet1
+
+  RouteTablePrivate2:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: Private Route Table (Destination Subnet)
+
+  RouteTablePrivate2Association1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTablePrivate2
+      SubnetId: !Ref PrivateSubnet2
+
+  # VPC Lattice
+
+  VPCLatticeServiceNetwork:
+    Type: AWS::VpcLattice::ServiceNetwork
+    Properties:
+      Name: demo-servicenetwork
+      AuthType: NONE
+
+  VPCLatticeServiceNetworkSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for service network access
+      VpcId: !Ref VPC
+      SecurityGroupEgress: []
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: !GetAtt VPC.CidrBlock
+      GroupName: demo-servicenetworksg
+
+  VPCLatticeServiceNetworkVPCAssociation:
+    Type: AWS::VpcLattice::ServiceNetworkVpcAssociation
+    Properties:
+      SecurityGroupIds:
+        - !Ref VPCLatticeServiceNetworkSecurityGroup
+      ServiceNetworkIdentifier: !Ref VPCLatticeServiceNetwork
+      VpcIdentifier: !Ref VPC
+
+  VPCLatticeService:
+    Type: AWS::VpcLattice::Service
+    Properties:
+      Name: demo-service
+      AuthType: NONE
+
+  VPCLatticeServiceNetworkServiceAssociation:
+    Type: AWS::VpcLattice::ServiceNetworkServiceAssociation
+    Properties:
+      ServiceNetworkIdentifier: !Ref VPCLatticeServiceNetwork
+      ServiceIdentifier: !Ref VPCLatticeService
+
+  VPCLatticeListener:
+    Type: AWS::VpcLattice::Listener
+    Properties:
+      Name: demo-listener
+      Port: 443
+      Protocol: HTTPS
+      ServiceIdentifier: !Ref VPCLatticeService
+      DefaultAction:
+        Forward:
+          TargetGroups:
+            - TargetGroupIdentifier: !Ref VPCLatticeTargetGroup
+              Weight: 100
+
+  VPCLatticeTargetGroup:
+    Type: AWS::VpcLattice::TargetGroup
+    Properties:
+      Name: demo-targetgroup
+      Type: LAMBDA
+      Config:
+        LambdaEventStructureVersion: V2
+      Targets:
+        - Id: !GetAtt InboundLambdaFunction.Arn
+
+  # Outbound Lambda (Client)
+
+  OutboundLambdaFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - xray:PutTraceSegments
+                  - xray:PutTelemetryRecords
+                  - ec2:CreateNetworkInterface
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:DeleteNetworkInterface
+                Resource: '*'
+
+  OutboundLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Role: !GetAtt OutboundLambdaFunctionRole.Arn
+      Runtime: python3.9
+      CodeUri: app/
+      MemorySize: 1512
+      FunctionUrlConfig:
+        AuthType: NONE
+        InvokeMode: BUFFERED
+      Environment:
+        Variables:
+          ENDPOINT: !GetAtt VPCLatticeServiceNetworkServiceAssociation.DnsEntry.DomainName
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref OutboundLambdaFunctionSecurityGroup
+        SubnetIds:
+          - !Ref PrivateSubnet1
+
+  OutboundLambdaFunctionSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for OutboundLambdaFunction
+      VpcId: !Ref VPC
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 169.254.171.0/24 # should be the prefix list instead, this'll work though
+      SecurityGroupIngress: []
+      GroupName: demo-outboundsg
+
+  # Inbound Lambda (Service)
+
+  InboundLambdaFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - xray:PutTraceSegments
+                  - xray:PutTelemetryRecords
+                  - ec2:CreateNetworkInterface
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:DeleteNetworkInterface
+                Resource: '*'
+
+  InboundLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: com.amazonaws.serverless.sample.springboot3.LambdaHandler::handleRequest
+      Runtime: java21
+      CodeUri: .
+      MemorySize: 1512
+      Role: !GetAtt InboundLambdaFunctionRole.Arn
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref InboundLambdaFunctionSecurityGroup
+        SubnetIds:
+          - !Ref PrivateSubnet2
+
+  InboundLambdaFunctionSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for InboundLambdaFunction
+      VpcId: !Ref VPC
+      SecurityGroupEgress: []
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 169.254.171.0/24
+      GroupName: demo-inboundsg
+
+Outputs:
+  OutboundFunctionUrlEndpoint:
+    Description: "Outbound Lambda Function URL Endpoint"
+    Value:
+      Fn::GetAtt:  OutboundLambdaFunctionUrl.FunctionUrl
+
