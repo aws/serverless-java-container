@@ -19,6 +19,7 @@ import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.*;
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
+import com.amazonaws.serverless.proxy.model.VPCLatticeV2RequestEvent;
 import com.amazonaws.services.lambda.runtime.Context;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
@@ -83,6 +84,20 @@ public class SpringLambdaContainerHandler<RequestType, ResponseType> extends Aws
     public static SpringLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> getHttpApiV2ProxyHandler(Class<?>... config) throws ContainerInitializationException {
         return new SpringProxyHandlerBuilder<HttpApiV2ProxyRequest>()
                 .defaultHttpApiV2Proxy()
+                .initializationWrapper(new InitializationWrapper())
+                .configurationClasses(config)
+                .buildAndInitialize();
+    }
+
+    /**
+     * Creates a default SpringLambdaContainerHandler initialized with the `VPCLatticeV2RequestEvent` and `AwsProxyResponse` objects
+     * @param config A set of classes annotated with the Spring @Configuration annotation
+     * @return An initialized instance of the `SpringLambdaContainerHandler`
+     * @throws ContainerInitializationException When the Spring framework fails to start.
+     */
+    public static SpringLambdaContainerHandler<VPCLatticeV2RequestEvent, AwsProxyResponse> getLatticeV2ProxyHandler(Class<?>... config) throws ContainerInitializationException {
+        return new SpringProxyHandlerBuilder<VPCLatticeV2RequestEvent>()
+                .defaultVpcLatticeV2Proxy()
                 .initializationWrapper(new InitializationWrapper())
                 .configurationClasses(config)
                 .buildAndInitialize();

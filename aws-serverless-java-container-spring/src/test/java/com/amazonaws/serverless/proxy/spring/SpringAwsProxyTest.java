@@ -50,6 +50,7 @@ public class SpringAwsProxyTest {
     private MockLambdaContext lambdaContext = new MockLambdaContext();
     private static SpringLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
     private static SpringLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> httpApiHandler;
+    private static SpringLambdaContainerHandler<VPCLatticeV2RequestEvent, AwsProxyResponse> latticeHandler;
 
     private AwsLambdaServletContainerHandler.StartupHandler h = (c -> {
         FilterRegistration.Dynamic registration = c.addFilter("UnauthenticatedFilter", UnauthenticatedFilter.class);
@@ -61,7 +62,7 @@ public class SpringAwsProxyTest {
     private String type;
 
     public static Collection<Object> data() {
-        return Arrays.asList(new Object[]{"API_GW", "ALB", "HTTP_API"});
+        return Arrays.asList(new Object[]{"API_GW", "ALB", "HTTP_API", "VPC_LATTICE_V2"});
     }
 
     public void initSpringAwsProxyTest(String reqType) {
@@ -89,6 +90,12 @@ public class SpringAwsProxyTest {
                         httpApiHandler.onStartup(h);
                     }
                     return httpApiHandler.proxy(requestBuilder.toHttpApiV2Request(), lambdaContext);
+                case "VPC_LATTICE_V2":
+                    if (latticeHandler == null) {
+                        latticeHandler = SpringLambdaContainerHandler.getLatticeV2ProxyHandler(EchoSpringAppConfig.class);
+                        latticeHandler.onStartup(h);
+                    }
+                    return latticeHandler.proxy(requestBuilder.toVPCLatticeV2Request(), lambdaContext);
                 default:
                     throw new RuntimeException("Unknown request type: " + type);
             }
@@ -183,6 +190,7 @@ public class SpringAwsProxyTest {
     void queryString_multiParam_expectCorrectValueCount(String reqType)
             throws IOException {
         initSpringAwsProxyTest(reqType);
+        assumeFalse("VPC_LATTICE_V2".equals(reqType));
         AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/echo/multivalue-query-string", "GET")
                 .json()
                 .queryString("multiple", "first")
@@ -448,6 +456,7 @@ public class SpringAwsProxyTest {
     void contextPath_generateLink_returnsCorrectPath(String reqType) {
         initSpringAwsProxyTest(reqType);
         assumeFalse("ALB".equals(type));
+        assumeFalse("VPC_LATTICE_V2".equals(type));
         AwsProxyRequestBuilder request = new AwsProxyRequestBuilder("/echo/generate-uri", "GET")
                 .scheme("https")
                 .serverName("api.myserver.com")
