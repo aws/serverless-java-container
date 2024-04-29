@@ -16,8 +16,8 @@
     </parent>
 
     <properties>
-        <spring.version>6.1.5</spring.version>
-        <spring-security.version>6.2.3</spring-security.version>
+        <spring.version>6.1.6</spring.version>
+        <spring-security.version>6.2.4</spring-security.version>
     </properties>
 
     <dependencies>
@@ -81,13 +81,6 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>jakarta.el</groupId>
-            <artifactId>jakarta.el-api</artifactId>
-            <version>5.0.1</version>
             <scope>test</scope>
         </dependency>
 
