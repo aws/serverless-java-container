@@ -168,7 +168,7 @@ Resources:
       CodeUri: app/
       MemorySize: 1512
       FunctionUrlConfig:
-        AuthType: NONE
+        AuthType: AWS_IAM
         InvokeMode: BUFFERED
       Environment:
         Variables:
@@ -188,7 +188,7 @@ Resources:
         - IpProtocol: tcp
           FromPort: 443
           ToPort: 443
-          CidrIp: 169.254.171.0/24 # should be the prefix list instead, this'll work though
+          CidrIp: 169.254.171.0/24
       SecurityGroupIngress: []
       GroupName: demo-outboundsg
 
