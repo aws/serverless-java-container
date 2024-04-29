@@ -125,7 +125,7 @@ public class ApacheCombinedServletLogFormatter<ContainerRequestType extends Http
         logLineBuilder.append(" ");
         logLineBuilder.append(servletRequest.getRequestURI());
         logLineBuilder.append(" ");
-        //logLineBuilder.append(servletRequest.getProtocol());
+        logLineBuilder.append(servletRequest.getProtocol());
         logLineBuilder.append("\" ");
 
         // %>s

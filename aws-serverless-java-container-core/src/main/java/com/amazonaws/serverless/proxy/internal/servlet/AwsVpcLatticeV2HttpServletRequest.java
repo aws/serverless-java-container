@@ -270,7 +270,8 @@ public class AwsVpcLatticeV2HttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getProtocol() {
-        throw new UnsupportedOperationException();
+        // No protocol on the request payload. Defaulting to "HTTP/1.1". Should we return UnsupportedOperationException instead?
+        return "HTTP/1.1";
     }
 
     @Override
