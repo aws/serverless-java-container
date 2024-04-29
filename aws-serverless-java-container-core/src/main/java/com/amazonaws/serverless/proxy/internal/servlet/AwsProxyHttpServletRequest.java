@@ -444,10 +444,10 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     public String getRemoteHost() {
         if (Objects.nonNull(request.getRequestContext().getElb())) {
-            String host_header = request.getHeaders().get(HttpHeaders.HOST);
+            String hostHeader = request.getHeaders().get(HttpHeaders.HOST);
 
             // the host header has the form host:port, so we split the string to get the host part
-            return Arrays.asList(host_header.split(":")).get(0);
+            return Arrays.asList(hostHeader.split(":")).get(0);
         }
 
         return request.getMultiValueHeaders().getFirst(HttpHeaders.HOST);
@@ -481,10 +481,9 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     public int getRemotePort() {
         if (Objects.nonNull(request.getRequestContext().getElb())) {
-            String hostHeader = request.getHeaders().get(HttpHeaders.HOST);
-            String port = Arrays.asList(hostHeader.split(":")).get(1);
-            if (Objects.nonNull(port))
-                return Integer.parseInt(port);
+            String hostHeader = request.getHeaders().get(PORT_HEADER_NAME);
+            if (Objects.nonNull(hostHeader))
+                return Integer.parseInt(hostHeader);
         }
         return 0;
     }
