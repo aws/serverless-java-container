@@ -558,16 +558,22 @@ public class AwsProxyRequestBuilder {
 
         VPCLatticeV2RequestEvent.RequestContext requestContext = getVPCLatticev2RequestContext();
 
-        return VPCLatticeV2RequestEvent.builder()
-                .withVersion("2.0")
-                .withPath(request.getPath())
-                .withMethod(request.getHttpMethod())
-                .withIsBase64Encoded(request.isBase64Encoded())
-                .withBody(request.getBody())
-                .withHeaders(request.getMultiValueHeaders())
-                .withQueryStringParameters(qs)
-                .withRequestContext(requestContext)
-                .build();
+        return getVpcLatticeV2RequestEvent(qs, requestContext);
+
+    }
+
+    @NotNull
+    private VPCLatticeV2RequestEvent getVpcLatticeV2RequestEvent(Map<String, String> qs, VPCLatticeV2RequestEvent.RequestContext requestContext) {
+        VPCLatticeV2RequestEvent latticeV2Event = new VPCLatticeV2RequestEvent();
+        latticeV2Event.setVersion("2.0");
+        latticeV2Event.setPath(request.getPath());
+        latticeV2Event.setMethod(request.getHttpMethod());
+        latticeV2Event.setBase64Encoded(request.isBase64Encoded());
+        latticeV2Event.setBody(request.getBody());
+        latticeV2Event.setHeaders(request.getMultiValueHeaders());
+        latticeV2Event.setQueryStringParameters(qs);
+        latticeV2Event.setRequestContext(requestContext);
+        return latticeV2Event;
     }
 
     @NotNull

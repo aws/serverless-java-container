@@ -11,7 +11,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpUpgradeHandler;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.SecurityContext;
-import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,8 +35,8 @@ public class AwsVpcLatticeV2HttpServletRequest extends AwsHttpServletRequest {
     // Variables - Private
     //-------------------------------------------------------------
 
-    @Getter
-    private VPCLatticeV2RequestEvent request;
+
+    private final VPCLatticeV2RequestEvent request;
     private final SecurityContext securityContext;
     private final MultiValuedTreeMap<String, String> queryString;
     private final Headers headers;

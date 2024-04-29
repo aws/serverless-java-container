@@ -106,31 +106,4 @@ public class VPCLatticeV2RequestEventTest {
         }
     }
 
-    @Test
-    void requestEvent_requestContextBuilder_populatesCorrectly() {
-        VPCLatticeV2RequestEvent.Identity identity = VPCLatticeV2RequestEvent.Identity.builder()
-                .withPrincipal("arn:aws:iam::123456789012:assumed-role/my-role/my-session")
-                .withSourceVpcArn("arn:aws:ec2:region:123456789012:vpc/vpc-0b8276c84697e7339")
-                .withType("AWS_IAM")
-                .withSessionName("i-0c7de02a688bde9f7")
-                .build();
-
-        VPCLatticeV2RequestEvent.RequestContext requestContext = new VPCLatticeV2RequestEvent.RequestContext.RequestContextBuilder()
-                .withIdentity(identity)
-                .withRegion("us-west-2")
-                .withServiceArn("arn:aws:vpc-lattice:region:123456789012:service/svc-0a40eebed65f8d69c")
-                .withServiceNetworkArn("arn:aws:vpc-lattice:region:123456789012:servicenetwork/sn-0bf3f2882e9cc805a")
-                .withTargetGroupArn("arn:aws:vpc-lattice:region:123456789012:targetgroup/tg-6d0ecf831eec9f09")
-                .withTimeEpoch("1690497599177430")
-                .build();
-
-        VPCLatticeV2RequestEvent event = new VPCLatticeV2RequestEvent.VPCLatticeV2RequestEventBuilder()
-                .withRequestContext(requestContext)
-                .build();
-
-        assertEquals(requestContext, event.getRequestContext());
-        assertEquals(identity, event.getRequestContext().getIdentity());
-    }
-
-
 }

@@ -3,8 +3,6 @@ package com.amazonaws.serverless.proxy.internal.jaxrs;
 import com.amazonaws.serverless.proxy.model.VPCLatticeV2RequestEvent;
 import com.amazonaws.services.lambda.runtime.Context;
 import jakarta.ws.rs.core.SecurityContext;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 
 import java.security.Principal;
 import java.util.Objects;
@@ -13,15 +11,16 @@ import java.util.Objects;
  * default implementation of the <code>SecurityContext</code> object. This class supports 1 VPC Lattice authentication type:
  * AWS_IAM.
  */
-@Getter
-@AllArgsConstructor
 public class AwsVpcLatticeV2SecurityContext implements SecurityContext {
 
     static final String AUTH_SCHEME_AWS_IAM = "AWS_IAM";
 
 
-    private final Context lambdaContext;
     private final VPCLatticeV2RequestEvent event;
+
+    public AwsVpcLatticeV2SecurityContext(Context lambdaContext, VPCLatticeV2RequestEvent event) {
+        this.event = event;
+    }
 
     //-------------------------------------------------------------
     // Implementation - SecurityContext
@@ -33,6 +32,11 @@ public class AwsVpcLatticeV2SecurityContext implements SecurityContext {
         }
         return null;
     }
+
+    private VPCLatticeV2RequestEvent getEvent() {
+        return event;
+    }
+
 
     @Override
     public boolean isUserInRole(String role) {
