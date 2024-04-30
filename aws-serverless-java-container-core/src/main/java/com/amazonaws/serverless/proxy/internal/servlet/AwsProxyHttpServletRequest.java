@@ -437,6 +437,9 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         if (request.getRequestContext() == null || request.getRequestContext().getIdentity() == null) {
             return "127.0.0.1";
         }
+        if (request.getRequestContext().getElb() != null) {
+            return request.getHeaders().get(CLIENT_IP_HEADER);
+        }
         return request.getRequestContext().getIdentity().getSourceIp();
     }
 
