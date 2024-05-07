@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import com.amazonaws.serverless.exceptions.ContainerInitializationException;
+import com.amazonaws.serverless.proxy.AsyncInitializationWrapper;
 import com.amazonaws.serverless.proxy.InitializationTypeHelper;
+import com.amazonaws.serverless.proxy.internal.InitializableLambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import org.springframework.cloud.function.serverless.web.FunctionClassUtils;
 import org.springframework.cloud.function.serverless.web.ServerlessMVC;
@@ -38,25 +41,23 @@ import jakarta.servlet.http.HttpServletRequest;
  *
  */
 public class SpringDelegatingLambdaContainerHandler implements RequestStreamHandler {
-
-    private final Class<?>[] startupClasses;
-
     private final ServerlessMVC mvc;
-
     private final ObjectMapper mapper;
-
     private final AwsProxyHttpServletResponseWriter responseWriter;
 
-    public SpringDelegatingLambdaContainerHandler() {
+    public SpringDelegatingLambdaContainerHandler() throws ContainerInitializationException {
         this(new Class[] {FunctionClassUtils.getStartClass()});
     }
 
-    public SpringDelegatingLambdaContainerHandler(Class<?>... startupClasses) {
-        this.startupClasses = startupClasses;
-        this.mvc = ServerlessMVC.INSTANCE(this.startupClasses);
+    public SpringDelegatingLambdaContainerHandler(final Class<?>... startupClasses) throws ContainerInitializationException {
+        SpringDelegatingInitHandler initHandler = new SpringDelegatingInitHandler(startupClasses);
         if (InitializationTypeHelper.isAsyncInitializationDisabled()) {
-    		mvc.waitForContext();
-    	}
+            initHandler.initialize();
+    	} else {
+            AsyncInitializationWrapper asyncInitWrapper = new AsyncInitializationWrapper();
+            asyncInitWrapper.start(initHandler);
+        }
+        this.mvc = initHandler.getMvc();
         this.mapper = new ObjectMapper();
         this.responseWriter = new AwsProxyHttpServletResponseWriter();
     }
@@ -67,5 +68,24 @@ public class SpringDelegatingLambdaContainerHandler implements RequestStreamHand
         		.generateHttpServletRequest(input, lambdaContext, this.mvc.getServletContext(), this.mapper);
         AwsProxyResponse awsProxyResponse = AwsSpringHttpProcessingUtils.processRequest(httpServletRequest, mvc, responseWriter);
         this.mapper.writeValue(output, awsProxyResponse);
+    }
+
+    private static final class SpringDelegatingInitHandler implements InitializableLambdaContainerHandler {
+        private ServerlessMVC mvc;
+        private final Class<?>[] startupClasses;
+
+        public SpringDelegatingInitHandler(final Class<?>... startupClasses) {
+            this.startupClasses = startupClasses;
+        }
+
+        @Override
+        public void initialize() throws ContainerInitializationException {
+            this.mvc = ServerlessMVC.INSTANCE(this.startupClasses);
+            this.mvc.waitForContext();
+        }
+
+        public ServerlessMVC getMvc() {
+            return this.mvc;
+        }
     }
 }

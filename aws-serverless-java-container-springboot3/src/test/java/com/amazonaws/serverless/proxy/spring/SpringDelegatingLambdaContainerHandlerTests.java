@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.amazonaws.serverless.exceptions.ContainerInitializationException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.cloud.function.serverless.web.ServerlessServletContext;
@@ -200,7 +201,7 @@ public class SpringDelegatingLambdaContainerHandlerTests {
 
     private ObjectMapper mapper = new ObjectMapper();
 
-    public void initServletAppTest()  {
+    public void initServletAppTest() throws ContainerInitializationException {
         this.handler = new SpringDelegatingLambdaContainerHandler(ServletApplication.class);
     }
 
