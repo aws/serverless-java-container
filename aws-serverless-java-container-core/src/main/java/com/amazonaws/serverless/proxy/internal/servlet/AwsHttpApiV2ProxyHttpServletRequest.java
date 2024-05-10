@@ -425,11 +425,6 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
         return "";
     }
 
-    @Override
-    public ServletConnection getServletConnection() {
-        return null;
-    }
-
     private MultiValuedTreeMap<String, String> parseRawQueryString(String qs) {
         if (qs == null || "".equals(qs.trim())) {
             return new MultiValuedTreeMap<>();

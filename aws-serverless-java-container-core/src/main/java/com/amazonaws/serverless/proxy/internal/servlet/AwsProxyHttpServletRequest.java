@@ -484,11 +484,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         return "";
     }
 
-    @Override
-    public ServletConnection getServletConnection() {
-        return null;
-    }
-
     //-------------------------------------------------------------
     // Methods - Private
     //-------------------------------------------------------------

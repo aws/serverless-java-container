@@ -280,8 +280,12 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         return "";
     }
 
+    @Override
+    public ServletConnection getServletConnection() {
+        return null;
+    }
 
-    //-------------------------------------------------------------
+//-------------------------------------------------------------
     // Methods - Getter/Setter
     //-------------------------------------------------------------
 

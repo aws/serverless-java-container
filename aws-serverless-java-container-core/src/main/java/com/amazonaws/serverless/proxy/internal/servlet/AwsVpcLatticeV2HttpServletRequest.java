@@ -370,11 +370,6 @@ public class AwsVpcLatticeV2HttpServletRequest extends AwsHttpServletRequest {
     }
 
     @Override
-    public ServletConnection getServletConnection() {
-        return null;
-    }
-
-    @Override
     public int getServerPort() {
         if (request.getHeaders() == null) {
             return 443;
