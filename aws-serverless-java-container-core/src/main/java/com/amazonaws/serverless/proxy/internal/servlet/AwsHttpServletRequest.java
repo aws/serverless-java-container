@@ -76,6 +76,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     static final String PROTOCOL_HEADER_NAME = "X-Forwarded-Proto";
     static final String HOST_HEADER_NAME = "Host";
     static final String PORT_HEADER_NAME = "X-Forwarded-Port";
+    static final String CLIENT_IP_HEADER = "X-Forwarded-For";
 
 
     //-------------------------------------------------------------
