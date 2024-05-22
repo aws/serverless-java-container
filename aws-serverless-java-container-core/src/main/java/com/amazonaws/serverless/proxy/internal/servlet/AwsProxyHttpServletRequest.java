@@ -53,7 +53,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     //-------------------------------------------------------------
 
     private AwsProxyRequest request;
-    private SecurityContext securityContext;
     private AwsAsyncContext asyncContext;
     private static Logger log = LoggerFactory.getLogger(AwsProxyHttpServletRequest.class);
     private ContainerConfig config;
@@ -69,9 +68,8 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
 
     public AwsProxyHttpServletRequest(AwsProxyRequest awsProxyRequest, Context lambdaContext, SecurityContext awsSecurityContext, ContainerConfig config) {
-        super(lambdaContext);
+        super(lambdaContext, awsSecurityContext);
         this.request = awsProxyRequest;
-        this.securityContext = awsSecurityContext;
         this.config = config;
     }
 
@@ -82,13 +80,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     //-------------------------------------------------------------
     // Implementation - HttpServletRequest
     //-------------------------------------------------------------
-
-
-    @Override
-    public String getAuthType() {
-        return securityContext.getAuthenticationScheme();
-    }
-
 
     @Override
     public Cookie[] getCookies() {
@@ -175,26 +166,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             return null;
         }
     }
-
-
-    @Override
-    public String getRemoteUser() {
-        return securityContext.getUserPrincipal().getName();
-    }
-
-
-    @Override
-    public boolean isUserInRole(String s) {
-        // TODO: Not supported?
-        return false;
-    }
-
-
-    @Override
-    public Principal getUserPrincipal() {
-        return securityContext.getUserPrincipal();
-    }
-
 
     @Override
     public String getRequestURI() {
@@ -383,12 +354,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         List<Locale> locales = parseAcceptLanguageHeader(request.getMultiValueHeaders().getFirst(HttpHeaders.ACCEPT_LANGUAGE));
         return Collections.enumeration(locales);
     }
-
-    @Override
-    public boolean isSecure() {
-        return securityContext.isSecure();
-    }
-
 
     @Override
     public RequestDispatcher getRequestDispatcher(String s) {

@@ -47,7 +47,6 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
     private MultiValuedTreeMap<String, String> queryString;
     private Headers headers;
     private ContainerConfig config;
-    private SecurityContext securityContext;
     private AwsAsyncContext asyncContext;
 
     /**
@@ -57,22 +56,15 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
      * @param lambdaContext The Lambda function context. This object is used for utility methods such as log
      */
     public AwsHttpApiV2ProxyHttpServletRequest(HttpApiV2ProxyRequest req, Context lambdaContext, SecurityContext sc, ContainerConfig cfg) {
-        super(lambdaContext);
+        super(lambdaContext, sc);
         request = req;
         config = cfg;
-        securityContext = sc;
         queryString = parseRawQueryString(request.getRawQueryString());
         headers = headersMapToMultiValue(request.getHeaders());
     }
 
     public HttpApiV2ProxyRequest getRequest() {
         return request;
-    }
-
-    @Override
-    public String getAuthType() {
-        // TODO
-        return null;
     }
 
     @Override
@@ -156,28 +148,6 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     public String getQueryString() {
         return request.getRawQueryString();
-    }
-
-    @Override
-    public String getRemoteUser() {
-        if (securityContext == null || securityContext.getUserPrincipal() == null) {
-            return null;
-        }
-        return securityContext.getUserPrincipal().getName();
-    }
-
-    @Override
-    public boolean isUserInRole(String s) {
-        // TODO: Not supported
-        return false;
-    }
-
-    @Override
-    public Principal getUserPrincipal() {
-        if (securityContext == null) {
-            return null;
-        }
-        return securityContext.getUserPrincipal();
     }
 
     @Override
@@ -334,11 +304,6 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
     public Enumeration<Locale> getLocales() {
         List<Locale> locales = parseAcceptLanguageHeader(headers.getFirst(HttpHeaders.ACCEPT_LANGUAGE));
         return Collections.enumeration(locales);
-    }
-
-    @Override
-    public boolean isSecure() {
-        return securityContext.isSecure();
     }
 
     @Override

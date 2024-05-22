@@ -37,7 +37,6 @@ public class AwsVpcLatticeV2HttpServletRequest extends AwsHttpServletRequest {
 
 
     private final VPCLatticeV2RequestEvent request;
-    private final SecurityContext securityContext;
     private final MultiValuedTreeMap<String, String> queryString;
     private final Headers headers;
     private AwsAsyncContext asyncContext;
@@ -56,18 +55,12 @@ public class AwsVpcLatticeV2HttpServletRequest extends AwsHttpServletRequest {
 
 
     public AwsVpcLatticeV2HttpServletRequest(VPCLatticeV2RequestEvent vpcLatticeV2Request, Context lambdaContext, SecurityContext awsSecurityContext, ContainerConfig config) {
-        super(lambdaContext);
+        super(lambdaContext, awsSecurityContext);
         this.request = vpcLatticeV2Request;
-        this.securityContext = awsSecurityContext;
         this.lambdaContext = lambdaContext;
         this.config = config;
         headers = request.getHeaders();
         queryString = queryStringToMultiValue(request.getQueryStringParameters());
-    }
-
-    @Override
-    public String getAuthType() {
-        return securityContext.getAuthenticationScheme();
     }
 
     @Override
@@ -154,27 +147,6 @@ public class AwsVpcLatticeV2HttpServletRequest extends AwsHttpServletRequest {
             log.error("Could not generate query string", e);
             return null;
         }
-    }
-
-    @Override
-    public String getRemoteUser() {
-        if (securityContext == null || securityContext.getUserPrincipal() == null) {
-            return null;
-        }
-        return securityContext.getUserPrincipal().getName();
-    }
-
-    @Override
-    public boolean isUserInRole(String s) {
-        return false;
-    }
-
-    @Override
-    public Principal getUserPrincipal() {
-        if (securityContext == null) {
-            return null;
-        }
-        return securityContext.getUserPrincipal();
     }
 
     @Override
@@ -284,11 +256,6 @@ public class AwsVpcLatticeV2HttpServletRequest extends AwsHttpServletRequest {
     public Enumeration<Locale> getLocales() {
         List<Locale> locales = parseAcceptLanguageHeader(headers.getFirst(HttpHeaders.ACCEPT_LANGUAGE));
         return Collections.enumeration(locales);
-    }
-
-    @Override
-    public boolean isSecure() {
-        return securityContext.isSecure();
     }
 
     @Override

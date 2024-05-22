@@ -23,6 +23,7 @@ import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 import com.amazonaws.services.lambda.runtime.Context;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.SecurityContext;
 import org.apache.commons.fileupload2.core.DiskFileItem;
 import org.apache.commons.fileupload2.core.FileItem;
 import org.apache.commons.fileupload2.core.FileUploadException;
@@ -44,6 +45,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.security.Principal;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -99,6 +101,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     protected AwsHttpServletResponse response;
     protected AwsLambdaServletContainerHandler containerHandler;
     protected ServletInputStream requestInputStream;
+    private final SecurityContext securityContext;
 
 
     private static Logger log = LoggerFactory.getLogger(AwsHttpServletRequest.class);
@@ -112,9 +115,11 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
      * Protected constructors for implementing classes. This should be called first with the context received from
      * AWS Lambda
      * @param lambdaContext The Lambda function context. This object is used for utility methods such as log
+     * @param securityContext The security context
      */
-    protected AwsHttpServletRequest(Context lambdaContext) {
+    protected AwsHttpServletRequest(Context lambdaContext, SecurityContext securityContext) {
         this.lambdaContext = lambdaContext;
+        this.securityContext = securityContext;
         attributes = new HashMap<>();
         setAttribute(DISPATCHER_TYPE_ATTRIBUTE, DispatcherType.REQUEST);
     }
@@ -283,6 +288,37 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     @Override
     public ServletConnection getServletConnection() {
         return null;
+    }
+
+    @Override
+    public String getAuthType() {
+        return securityContext.getAuthenticationScheme();
+    }
+
+    @Override
+    public boolean isSecure() {
+        return securityContext.isSecure();
+    }
+
+    @Override
+    public Principal getUserPrincipal() {
+        if (securityContext == null) {
+            return null;
+        }
+        return securityContext.getUserPrincipal();
+    }
+
+    @Override
+    public String getRemoteUser() {
+        if (getUserPrincipal() == null) {
+            return null;
+        }
+        return getUserPrincipal().getName();
+    }
+
+    @Override
+    public boolean isUserInRole(String role) {
+        return securityContext.isUserInRole(role);
     }
 
     @Override
