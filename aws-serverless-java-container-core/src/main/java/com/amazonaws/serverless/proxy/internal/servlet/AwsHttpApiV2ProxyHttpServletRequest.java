@@ -190,12 +190,6 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
         return generateRequestURL(request.getRawPath());
     }
 
-
-    @Override
-    public boolean authenticate(HttpServletResponse httpServletResponse) throws IOException, ServletException {
-        throw new UnsupportedOperationException();
-    }
-
     @Override
     public void login(String s, String s1) throws ServletException {
         throw new UnsupportedOperationException();

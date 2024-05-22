@@ -188,11 +188,6 @@ public class AwsVpcLatticeV2HttpServletRequest extends AwsHttpServletRequest {
     }
 
     @Override
-    public boolean authenticate(HttpServletResponse httpServletResponse) throws IOException, ServletException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public void login(String s, String s1) throws ServletException {
         throw new UnsupportedOperationException();
     }

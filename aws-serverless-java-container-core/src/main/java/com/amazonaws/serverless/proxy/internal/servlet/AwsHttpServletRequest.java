@@ -285,6 +285,11 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         return null;
     }
 
+    @Override
+    public boolean authenticate(HttpServletResponse httpServletResponse) throws IOException, ServletException {
+        throw new UnsupportedOperationException();
+    }
+
 //-------------------------------------------------------------
     // Methods - Getter/Setter
     //-------------------------------------------------------------
