@@ -21,13 +21,15 @@ import com.amazonaws.serverless.proxy.model.Headers;
 import com.amazonaws.serverless.proxy.model.RequestSource;
 import com.amazonaws.services.lambda.runtime.Context;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jakarta.servlet.*;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpUpgradeHandler;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.SecurityContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -333,12 +335,22 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         if (request.getRequestContext() == null || request.getRequestContext().getIdentity() == null) {
             return "127.0.0.1";
         }
+        if (request.getRequestContext().getElb() != null) {
+            return request.getHeaders().get(CLIENT_IP_HEADER);
+        }
         return request.getRequestContext().getIdentity().getSourceIp();
     }
 
 
     @Override
     public String getRemoteHost() {
+        if (Objects.nonNull(request.getRequestContext().getElb())) {
+            String hostHeader = request.getHeaders().get(HttpHeaders.HOST);
+
+            // the host header has the form host:port, so we split the string to get the host part
+            return Arrays.asList(hostHeader.split(":")).get(0);
+        }
+
         return request.getMultiValueHeaders().getFirst(HttpHeaders.HOST);
     }
 
@@ -363,6 +375,12 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public int getRemotePort() {
+        if (Objects.nonNull(request.getRequestContext().getElb())) {
+            String portHeader = request.getHeaders().get(PORT_HEADER_NAME);
+            if (Objects.nonNull(portHeader)) {
+                return Integer.parseInt(portHeader);
+            }
+        }
         return 0;
     }
 
