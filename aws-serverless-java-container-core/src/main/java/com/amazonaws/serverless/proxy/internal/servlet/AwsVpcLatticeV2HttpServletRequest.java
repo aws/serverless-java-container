@@ -259,11 +259,6 @@ public class AwsVpcLatticeV2HttpServletRequest extends AwsHttpServletRequest {
     }
 
     @Override
-    public RequestDispatcher getRequestDispatcher(String s) {
-        return getServletContext().getRequestDispatcher(s);
-    }
-
-    @Override
     public int getRemotePort() {
         return 0;
     }

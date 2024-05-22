@@ -307,11 +307,6 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
     }
 
     @Override
-    public RequestDispatcher getRequestDispatcher(String s) {
-        return getServletContext().getRequestDispatcher(s);
-    }
-
-    @Override
     public int getRemotePort() {
         return 0;
     }

@@ -281,6 +281,11 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     }
 
     @Override
+    public RequestDispatcher getRequestDispatcher(String path) {
+        return getServletContext().getRequestDispatcher(path);
+    }
+
+    @Override
     public String getServletPath() {
         // we always work on the root path
         return "";

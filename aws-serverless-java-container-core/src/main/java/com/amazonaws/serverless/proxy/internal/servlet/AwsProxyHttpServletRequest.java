@@ -368,12 +368,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     }
 
     @Override
-    public RequestDispatcher getRequestDispatcher(String s) {
-        return getServletContext().getRequestDispatcher(s);
-    }
-
-
-    @Override
     public int getRemotePort() {
         if (Objects.nonNull(request.getRequestContext().getElb())) {
             String portHeader = request.getHeaders().get(PORT_HEADER_NAME);
