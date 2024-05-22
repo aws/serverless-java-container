@@ -191,11 +191,6 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
     }
 
     @Override
-    public <T extends HttpUpgradeHandler> T upgrade(Class<T> aClass) throws IOException, ServletException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public String getCharacterEncoding() {
         if (headers == null) {
             return config.getDefaultContentCharset();

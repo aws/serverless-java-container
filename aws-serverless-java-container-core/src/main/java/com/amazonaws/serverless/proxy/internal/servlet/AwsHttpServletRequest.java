@@ -300,6 +300,11 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass) throws IOException, ServletException {
+        throw new UnsupportedOperationException();
+    }
+
 //-------------------------------------------------------------
     // Methods - Getter/Setter
     //-------------------------------------------------------------

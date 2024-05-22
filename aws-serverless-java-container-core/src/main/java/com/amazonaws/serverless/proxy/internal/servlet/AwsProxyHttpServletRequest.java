@@ -207,12 +207,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         return generateRequestURL(request.getPath());
     }
 
-    @Override
-    public <T extends HttpUpgradeHandler> T upgrade(Class<T> aClass)
-            throws IOException, ServletException {
-        throw new UnsupportedOperationException();
-    }
-
     //-------------------------------------------------------------
     // Implementation - ServletRequest
     //-------------------------------------------------------------
