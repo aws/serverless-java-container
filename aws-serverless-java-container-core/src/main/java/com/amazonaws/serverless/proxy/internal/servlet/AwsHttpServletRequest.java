@@ -290,6 +290,16 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public void login(String username, String password) throws ServletException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void logout() throws ServletException {
+        throw new UnsupportedOperationException();
+    }
+
 //-------------------------------------------------------------
     // Methods - Getter/Setter
     //-------------------------------------------------------------
