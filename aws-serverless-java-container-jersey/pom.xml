@@ -6,12 +6,12 @@
     <name>AWS Serverless Java container support - Jersey implementation</name>
     <description>Allows Java applications written for Jersey to run in AWS Lambda</description>
     <url>https://aws.amazon.com/lambda</url>
-    <version>2.0.2</version>
+    <version>2.0.3-SNAPSHOT</version>
 
     <parent>
         <groupId>com.amazonaws.serverless</groupId>
         <artifactId>aws-serverless-java-container</artifactId>
-        <version>2.0.2</version>
+        <version>2.0.3-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
 
@@ -24,7 +24,7 @@
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
             <artifactId>aws-serverless-java-container-core</artifactId>
-            <version>2.0.2</version>
+            <version>2.0.3-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
@@ -35,7 +35,7 @@
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
             <artifactId>aws-serverless-java-container-core</artifactId>
-            <version>2.0.2</version>
+            <version>2.0.3-SNAPSHOT</version>
             <classifier>tests</classifier>
             <type>test-jar</type>
             <scope>test</scope>
