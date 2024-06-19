@@ -652,11 +652,25 @@ public class AwsProxyHttpServletRequestTest {
     }
 
     @Test
-    void getRemoteHost_albHostHeader_returnsHostHeader() {
+    void getRemoteHost_albHostHeader_singleValue_returnsHostHeader() {
         initAwsProxyHttpServletRequestTest("ALB");
         AwsProxyRequest proxyReq = new AwsProxyRequestBuilder("/test", "GET")
                 .alb().build();
+        proxyReq.setMultiValueHeaders(null);
         proxyReq.getHeaders().put(HttpHeaders.HOST, "testapi.us-east-1.elb.amazonaws.com");
+        HttpServletRequest servletRequest = new AwsProxyHttpServletRequest(proxyReq, null, null);
+
+        String host = servletRequest.getRemoteHost();
+        assertEquals("testapi.us-east-1.elb.amazonaws.com", host);
+    }
+
+    @Test
+    void getRemoteHost_albHostHeader_multiValue_returnsHostHeader() {
+        initAwsProxyHttpServletRequestTest("ALB");
+        AwsProxyRequest proxyReq = new AwsProxyRequestBuilder("/test", "GET")
+                .header(HttpHeaders.HOST, "testapi.us-east-1.elb.amazonaws.com")
+                .alb().build();
+        proxyReq.setHeaders(null);
         HttpServletRequest servletRequest = new AwsProxyHttpServletRequest(proxyReq, null, null);
 
         String host = servletRequest.getRemoteHost();

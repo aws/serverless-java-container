@@ -437,8 +437,10 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         if (request.getRequestContext() == null || request.getRequestContext().getIdentity() == null) {
             return "127.0.0.1";
         }
-        if (request.getRequestContext().getElb() != null) {
-            return request.getHeaders().get(CLIENT_IP_HEADER);
+        if (request.getRequestSource().equals(RequestSource.ALB)) {
+            return Objects.nonNull(request.getHeaders()) ?
+                    request.getHeaders().get(CLIENT_IP_HEADER) :
+                    request.getMultiValueHeaders().getFirst(CLIENT_IP_HEADER);
         }
         return request.getRequestContext().getIdentity().getSourceIp();
     }
@@ -446,14 +448,16 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getRemoteHost() {
-        if (Objects.nonNull(request.getRequestContext().getElb())) {
-            String hostHeader = request.getHeaders().get(HttpHeaders.HOST);
-
-            // the host header has the form host:port, so we split the string to get the host part
-            return Arrays.asList(hostHeader.split(":")).get(0);
+        String hostHeader;
+        if (request.getRequestSource().equals(RequestSource.ALB)) {
+            hostHeader = Objects.nonNull(request.getHeaders()) ?
+                    request.getHeaders().get(HttpHeaders.HOST) :
+                    request.getMultiValueHeaders().getFirst(HttpHeaders.HOST);
+        } else {
+            hostHeader = request.getMultiValueHeaders().getFirst(HttpHeaders.HOST);
         }
-
-        return request.getMultiValueHeaders().getFirst(HttpHeaders.HOST);
+        // the host header has the form host:port, so we split the string to get the host part
+        return Arrays.asList(hostHeader.split(":")).get(0);
     }
 
 
@@ -483,8 +487,11 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public int getRemotePort() {
-        if (Objects.nonNull(request.getRequestContext().getElb())) {
-            String portHeader = request.getHeaders().get(PORT_HEADER_NAME);
+        if (request.getRequestSource().equals(RequestSource.ALB)) {
+            String portHeader;
+            portHeader = Objects.nonNull(request.getHeaders()) ?
+                    request.getHeaders().get(PORT_HEADER_NAME) :
+                    request.getMultiValueHeaders().getFirst(PORT_HEADER_NAME);
             if (Objects.nonNull(portHeader)) {
                 return Integer.parseInt(portHeader);
             }
