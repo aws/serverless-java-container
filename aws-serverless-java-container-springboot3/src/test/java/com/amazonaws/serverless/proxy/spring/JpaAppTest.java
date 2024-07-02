@@ -21,7 +21,7 @@ public class JpaAppTest {
     private String type;
 
     public static Collection<Object> data() {
-        return Arrays.asList(new Object[]{"API_GW", "ALB", "HTTP_API"});
+        return Arrays.asList(new Object[]{"API_GW", "ALB", "HTTP_API", "VPC_LATTICE_V2"});
     }
 
     public void initJpaAppTest(String reqType) {
