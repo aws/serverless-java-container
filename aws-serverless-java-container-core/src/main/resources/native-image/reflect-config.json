@@ -1,0 +1,32 @@
+[
+  {
+    "name": "com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest",
+    "allDeclaredConstructors": true,
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequestContext",
+    "allDeclaredConstructors": true,
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.amazonaws.serverless.proxy.model.HttpApiV2AuthorizerMap",
+    "allDeclaredConstructors": true,
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.amazonaws.serverless.proxy.model.HttpApiV2AuthorizerMap$HttpApiV2AuthorizerDeserializer",
+    "allDeclaredConstructors": true,
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "com.amazonaws.serverless.proxy.model.HttpApiV2HttpContext",
+    "allDeclaredConstructors": true,
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true
+  }
+]
