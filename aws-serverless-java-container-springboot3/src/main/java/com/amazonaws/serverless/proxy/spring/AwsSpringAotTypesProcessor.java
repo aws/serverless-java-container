@@ -85,6 +85,12 @@ public class AwsSpringAotTypesProcessor implements BeanFactoryInitializationAotP
 			runtimeHints.reflection().registerType(HttpApiV2AuthorizerMap.HttpApiV2AuthorizerSerializer.class,
 					MemberCategory.INVOKE_PUBLIC_METHODS, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
 					MemberCategory.DECLARED_FIELDS, MemberCategory.DECLARED_CLASSES, MemberCategory.INTROSPECT_DECLARED_METHODS);
+			runtimeHints.reflection().registerType(HttpApiV2IamAuthorizer.class,
+					MemberCategory.INVOKE_PUBLIC_METHODS, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
+					MemberCategory.DECLARED_FIELDS, MemberCategory.DECLARED_CLASSES, MemberCategory.INTROSPECT_DECLARED_METHODS);
+			runtimeHints.reflection().registerType(HttpApiV2JwtAuthorizer.class,
+					MemberCategory.INVOKE_PUBLIC_METHODS, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
+					MemberCategory.DECLARED_FIELDS, MemberCategory.DECLARED_CLASSES, MemberCategory.INTROSPECT_DECLARED_METHODS);
 		}
 
 	}
