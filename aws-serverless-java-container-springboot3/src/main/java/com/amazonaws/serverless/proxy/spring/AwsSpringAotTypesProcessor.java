@@ -16,6 +16,7 @@
 
 package com.amazonaws.serverless.proxy.spring;
 
+import com.amazonaws.serverless.proxy.model.*;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
@@ -25,13 +26,6 @@ import org.springframework.beans.factory.aot.BeanFactoryInitializationCode;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
 import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletResponse;
-import com.amazonaws.serverless.proxy.model.ApiGatewayRequestIdentity;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequestContext;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
-import com.amazonaws.serverless.proxy.model.Headers;
-import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
-import com.amazonaws.serverless.proxy.model.SingleValueHeaders;
 import com.fasterxml.jackson.core.JsonToken;
 
 /**
@@ -72,6 +66,24 @@ public class AwsSpringAotTypesProcessor implements BeanFactoryInitializationAotP
 					MemberCategory.INVOKE_PUBLIC_METHODS, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS, MemberCategory.DECLARED_FIELDS, MemberCategory.DECLARED_CLASSES);
 			runtimeHints.reflection().registerType(AwsHttpServletResponse.class,
 					MemberCategory.INVOKE_PUBLIC_METHODS, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS, 
+					MemberCategory.DECLARED_FIELDS, MemberCategory.DECLARED_CLASSES, MemberCategory.INTROSPECT_DECLARED_METHODS);
+			runtimeHints.reflection().registerType(HttpApiV2ProxyRequest.class,
+					MemberCategory.INVOKE_PUBLIC_METHODS, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
+					MemberCategory.DECLARED_FIELDS, MemberCategory.DECLARED_CLASSES, MemberCategory.INTROSPECT_DECLARED_METHODS);
+			runtimeHints.reflection().registerType(HttpApiV2HttpContext.class,
+					MemberCategory.INVOKE_PUBLIC_METHODS, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
+					MemberCategory.DECLARED_FIELDS, MemberCategory.DECLARED_CLASSES, MemberCategory.INTROSPECT_DECLARED_METHODS);
+			runtimeHints.reflection().registerType(HttpApiV2ProxyRequestContext.class,
+					MemberCategory.INVOKE_PUBLIC_METHODS, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
+					MemberCategory.DECLARED_FIELDS, MemberCategory.DECLARED_CLASSES, MemberCategory.INTROSPECT_DECLARED_METHODS);
+			runtimeHints.reflection().registerType(HttpApiV2AuthorizerMap.class,
+					MemberCategory.INVOKE_PUBLIC_METHODS, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
+					MemberCategory.DECLARED_FIELDS, MemberCategory.DECLARED_CLASSES, MemberCategory.INTROSPECT_DECLARED_METHODS);
+			runtimeHints.reflection().registerType(HttpApiV2AuthorizerMap.HttpApiV2AuthorizerDeserializer.class,
+					MemberCategory.INVOKE_PUBLIC_METHODS, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
+					MemberCategory.DECLARED_FIELDS, MemberCategory.DECLARED_CLASSES, MemberCategory.INTROSPECT_DECLARED_METHODS);
+			runtimeHints.reflection().registerType(HttpApiV2AuthorizerMap.HttpApiV2AuthorizerSerializer.class,
+					MemberCategory.INVOKE_PUBLIC_METHODS, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
 					MemberCategory.DECLARED_FIELDS, MemberCategory.DECLARED_CLASSES, MemberCategory.INTROSPECT_DECLARED_METHODS);
 		}
 
