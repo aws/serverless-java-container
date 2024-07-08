@@ -13,7 +13,7 @@ dependencies {
           'org.apache.logging.log4j:log4j-core:2.23.1',
           'org.apache.logging.log4j:log4j-api:2.23.1',
           'org.apache.logging.log4j:log4j-slf4j-impl:2.23.1',
-          'com.fasterxml.jackson.core:jackson-databind:2.17.1',
+          'com.fasterxml.jackson.core:jackson-databind:2.17.2',
           'com.amazonaws:aws-lambda-java-log4j2:1.6.0',
   )
 
