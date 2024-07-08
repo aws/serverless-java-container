@@ -21,7 +21,7 @@
 
     <properties>
         <java.version>17</java.version>
-        <junit.version>5.10.2</junit.version>
+        <junit.version>5.10.3</junit.version>
     </properties>
 
     <dependencies>
