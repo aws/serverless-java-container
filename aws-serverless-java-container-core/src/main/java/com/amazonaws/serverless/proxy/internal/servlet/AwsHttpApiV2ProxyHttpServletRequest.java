@@ -47,7 +47,6 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
     private MultiValuedTreeMap<String, String> queryString;
     private Headers headers;
     private ContainerConfig config;
-    private SecurityContext securityContext;
     private AwsAsyncContext asyncContext;
 
     /**
@@ -57,22 +56,15 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
      * @param lambdaContext The Lambda function context. This object is used for utility methods such as log
      */
     public AwsHttpApiV2ProxyHttpServletRequest(HttpApiV2ProxyRequest req, Context lambdaContext, SecurityContext sc, ContainerConfig cfg) {
-        super(lambdaContext);
+        super(lambdaContext, sc);
         request = req;
         config = cfg;
-        securityContext = sc;
         queryString = parseRawQueryString(request.getRawQueryString());
         headers = headersMapToMultiValue(request.getHeaders());
     }
 
     public HttpApiV2ProxyRequest getRequest() {
         return request;
-    }
-
-    @Override
-    public String getAuthType() {
-        // TODO
-        return null;
     }
 
     @Override
@@ -108,56 +100,27 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public long getDateHeader(String s) {
-        if (headers == null) {
-            return -1L;
-        }
-        String dateString = headers.getFirst(s);
-        if (dateString == null) {
-            return -1L;
-        }
-        try {
-            return Instant.from(ZonedDateTime.parse(dateString, dateFormatter)).toEpochMilli();
-        } catch (DateTimeParseException e) {
-            log.warn("Invalid date header in request: " + SecurityUtils.crlf(dateString));
-            return -1L;
-        }
+        return getDateHeader(s, headers);
     }
 
     @Override
     public String getHeader(String s) {
-        if (headers == null) {
-            return null;
-        }
-        return headers.getFirst(s);
+        return getHeader(s, headers);
     }
 
     @Override
     public Enumeration<String> getHeaders(String s) {
-        if (headers == null || !headers.containsKey(s)) {
-            return Collections.emptyEnumeration();
-        }
-        return Collections.enumeration(headers.get(s));
+        return getHeaders(s, headers);
     }
 
     @Override
     public Enumeration<String> getHeaderNames() {
-        if (headers == null) {
-            return Collections.emptyEnumeration();
-        }
-        return Collections.enumeration(headers.keySet());
+        return getHeaderNames(headers);
     }
 
     @Override
     public int getIntHeader(String s) {
-        if (headers == null) {
-            return -1;
-        }
-        String headerValue = headers.getFirst(s);
-        if (headerValue == null || "".equals(headerValue)) {
-            return -1;
-        }
-
-        return Integer.parseInt(headerValue);
+        return getIntHeader(s, headers);
     }
 
     @Override
@@ -188,28 +151,6 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
     }
 
     @Override
-    public String getRemoteUser() {
-        if (securityContext == null || securityContext.getUserPrincipal() == null) {
-            return null;
-        }
-        return securityContext.getUserPrincipal().getName();
-    }
-
-    @Override
-    public boolean isUserInRole(String s) {
-        // TODO: Not supported
-        return false;
-    }
-
-    @Override
-    public Principal getUserPrincipal() {
-        if (securityContext == null) {
-            return null;
-        }
-        return securityContext.getUserPrincipal();
-    }
-
-    @Override
     public String getRequestURI() {
         return cleanUri(getContextPath()) + cleanUri(request.getRawPath());
     }
@@ -217,27 +158,6 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     public StringBuffer getRequestURL() {
         return generateRequestURL(request.getRawPath());
-    }
-
-
-    @Override
-    public boolean authenticate(HttpServletResponse httpServletResponse) throws IOException, ServletException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void login(String s, String s1) throws ServletException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void logout() throws ServletException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public <T extends HttpUpgradeHandler> T upgrade(Class<T> aClass) throws IOException, ServletException {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -250,30 +170,17 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public void setCharacterEncoding(String s) throws UnsupportedEncodingException {
-        if (headers == null || !headers.containsKey(HttpHeaders.CONTENT_TYPE)) {
-            log.debug("Called set character encoding to " + SecurityUtils.crlf(s) + " on a request without a content type. Character encoding will not be set");
-            return;
-        }
-        String currentContentType = headers.getFirst(HttpHeaders.CONTENT_TYPE);
-        headers.putSingle(HttpHeaders.CONTENT_TYPE, appendCharacterEncoding(currentContentType, s));
+        setCharacterEncoding(s, headers);
     }
 
     @Override
     public int getContentLength() {
-        String headerValue = headers.getFirst(HttpHeaders.CONTENT_LENGTH);
-        if (headerValue == null) {
-            return -1;
-        }
-        return Integer.parseInt(headerValue);
+        return getContentLength(headers);
     }
 
     @Override
     public long getContentLengthLong() {
-        String headerValue = headers.getFirst(HttpHeaders.CONTENT_LENGTH);
-        if (headerValue == null) {
-            return -1;
-        }
-        return Long.parseLong(headerValue);
+        return getContentLengthLong(headers);
     }
 
     @Override
@@ -286,17 +193,7 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getParameter(String s) {
-        String queryStringParameter = getFirstQueryParamValue(queryString, s, config.isQueryStringCaseSensitive());
-        if (queryStringParameter != null) {
-            return queryStringParameter;
-        }
-
-        String[] bodyParams = getFormBodyParameterCaseInsensitive(s);
-        if (bodyParams.length == 0) {
-            return null;
-        } else {
-            return bodyParams[0];
-        }
+        return getParameter(queryString, s, config.isQueryStringCaseSensitive());
     }
 
     @Override
@@ -315,7 +212,7 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
 
         values.addAll(Arrays.asList(getFormBodyParameterCaseInsensitive(s)));
 
-        if (values.size() == 0) {
+        if (values.isEmpty()) {
             return null;
         } else {
             return values.toArray(new String[0]);
@@ -410,16 +307,6 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
     }
 
     @Override
-    public boolean isSecure() {
-        return securityContext.isSecure();
-    }
-
-    @Override
-    public RequestDispatcher getRequestDispatcher(String s) {
-        return getServletContext().getRequestDispatcher(s);
-    }
-
-    @Override
     public int getRemotePort() {
         return 0;
     }
@@ -456,6 +343,8 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
         return asyncContext;
     }
 
+
+
     @Override
     public AsyncContext getAsyncContext() {
         if (asyncContext == null) {
@@ -473,11 +362,6 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     public String getProtocolRequestId() {
         return "";
-    }
-
-    @Override
-    public ServletConnection getServletConnection() {
-        return null;
     }
 
     private MultiValuedTreeMap<String, String> parseRawQueryString(String qs) {
@@ -505,7 +389,7 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
         return qsMap;
     }
 
-    private Headers headersMapToMultiValue(Map<String, String> headers) {
+    protected static Headers headersMapToMultiValue(Map<String, String> headers) {
         if (headers == null || headers.size() == 0) {
             return new Headers();
         }

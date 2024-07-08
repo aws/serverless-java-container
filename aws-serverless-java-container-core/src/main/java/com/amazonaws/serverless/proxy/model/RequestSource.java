@@ -14,5 +14,7 @@ package com.amazonaws.serverless.proxy.model;
 
 public enum RequestSource {
     ALB,
-    API_GATEWAY
+    API_GATEWAY,
+    VPC_LATTICE_V2,
+    VPC_LATTICE_V1
 }

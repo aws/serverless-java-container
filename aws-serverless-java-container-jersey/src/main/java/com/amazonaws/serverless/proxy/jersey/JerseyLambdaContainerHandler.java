@@ -23,6 +23,7 @@ import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
+import com.amazonaws.serverless.proxy.model.VPCLatticeV2RequestEvent;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import org.glassfish.jersey.internal.inject.AbstractBinder;
@@ -117,6 +118,28 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
                 new AwsHttpApiV2HttpServletRequestReader(),
                 new AwsProxyHttpServletResponseWriter(true),
                 new AwsHttpApiV2SecurityContextWriter(),
+                new AwsProxyExceptionHandler(),
+                jaxRsApplication);
+        newHandler.initialize();
+        return newHandler;
+    }
+
+    /**
+     * Returns an initialized <code>JerseyLambdaContainerHandler</code> that includes <code>RequestReader</code> and
+     * <code>ResponseWriter</code> objects for the <code>VPCLatticeV2RequestEvent</code> and <code>AwsProxyResponse</code>
+     * objects.
+     *
+     * @param jaxRsApplication A configured Jax-Rs application object. For Jersey apps this can be the default
+     *                         <code>ResourceConfig</code> object
+     * @return A <code>JerseyLambdaContainerHandler</code> object
+     */
+    public static JerseyLambdaContainerHandler<VPCLatticeV2RequestEvent, AwsProxyResponse> getLatticeV2ProxyHandler(Application jaxRsApplication) {
+        JerseyLambdaContainerHandler<VPCLatticeV2RequestEvent, AwsProxyResponse> newHandler = new JerseyLambdaContainerHandler<>(
+                VPCLatticeV2RequestEvent.class,
+                AwsProxyResponse.class,
+                new AwsVpcLatticeV2HttpServletRequestReader(),
+                new AwsProxyHttpServletResponseWriter(true),
+                new AwsVPCLatticeV2SecurityContextWriter(),
                 new AwsProxyExceptionHandler(),
                 jaxRsApplication);
         newHandler.initialize();
