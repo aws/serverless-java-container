@@ -33,7 +33,7 @@ dependencies {
   implementation ('org.apache.struts:struts2-core:7.0.0-M8') {
     exclude group: 'org.apache.logging.log4j', module: 'log4j-api'
   }
-  implementation ('org.hibernate.validator:hibernate-validator:6.1.7.Final')
+  implementation ('org.hibernate.validator:hibernate-validator:8.0.1.Final')
   implementation ('com.fasterxml.jackson.core:jackson-databind:2.17.2')
   implementation ('com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.17.2')
   implementation ('org.apache.logging.log4j:log4j-core:2.23.1')
