@@ -7,21 +7,12 @@ version: 2
 updates:
   - package-ecosystem: maven
     directories:
-      - "/"
-      - "/samples/spring/pet-store"
-      - "/samples/springboot3/pet-store"
-      - "/samples/springboot3/alt-pet-store"
-      - "/samples/springboot3/graphql-pet-store"
-      - "/samples/springboot3/pet-store-native"
-      - "/samples/jersey/pet-store"
+      - "**/*"
     schedule:
       interval: "weekly"
+    open-pull-requests-limit: 20
   - package-ecosystem: gradle
     directories:
-      - "/samples/spring/pet-store"
-      - "/samples/springboot3/pet-store"
-      - "/samples/springboot3/alt-pet-store"
-      - "/samples/springboot3/pet-store-native"
-      - "/samples/jersey/pet-store"
+      - "**/*"
     schedule:
       interval: "weekly"
