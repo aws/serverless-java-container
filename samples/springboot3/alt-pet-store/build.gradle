@@ -9,7 +9,7 @@ repositories {
 
 dependencies {
   implementation (
-          implementation('org.springframework.boot:spring-boot-starter-web:3.3.1') {
+          implementation('org.springframework.boot:spring-boot-starter-web:3.3.2') {
             exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
           },
           'com.amazonaws.serverless:aws-serverless-java-container-springboot3:[2.0-SNAPSHOT,)',
