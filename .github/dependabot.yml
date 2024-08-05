@@ -8,11 +8,25 @@ updates:
   - package-ecosystem: maven
     directories:
       - "**/*"
+    groups:
+      jersey:
+        patterns:
+          - "org.glassfish.jersey:*"
+      spring:
+        patterns:
+          - "org.springframework:*"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 20
   - package-ecosystem: gradle
     directories:
       - "**/*"
+    groups:
+      jersey:
+        patterns:
+          - "org.glassfish.jersey:*"
+      spring:
+        patterns:
+          - "org.springframework:*"
     schedule:
       interval: "weekly"
