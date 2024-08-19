@@ -11,10 +11,16 @@ updates:
     groups:
       jersey:
         patterns:
-          - "org.glassfish.jersey:*"
+          - "org.glassfish.jersey.*:*"
       spring:
         patterns:
           - "org.springframework:*"
+      slf4j:
+        patterns:
+          - "org.slf4j:*"
+      junit:
+        patterns:
+          - "org.junit:*"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 20
@@ -28,5 +34,8 @@ updates:
       spring:
         patterns:
           - "org.springframework:*"
+      slf4j:
+        patterns:
+          - "org.slf4j:*"
     schedule:
       interval: "weekly"
