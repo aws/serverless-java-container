@@ -43,7 +43,7 @@ dependencies {
 
   testImplementation("com.amazonaws.serverless:aws-serverless-java-container-core:[2.0-SNAPSHOT,):tests")
   testImplementation("org.apache.httpcomponents.client5:httpclient5:5.3.1")
-  testImplementation(platform("org.junit:junit-bom:5.10.3"))
+  testImplementation(platform("org.junit:junit-bom:5.11.0"))
   testImplementation("org.junit.jupiter:junit-jupiter")
   testImplementation('org.apache.struts:struts2-junit-plugin:7.0.0-M8') {
     exclude group: 'org.apache.struts', module: 'struts2-core'
