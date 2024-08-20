@@ -7,21 +7,35 @@ version: 2
 updates:
   - package-ecosystem: maven
     directories:
-      - "/"
-      - "/samples/spring/pet-store"
-      - "/samples/springboot3/pet-store"
-      - "/samples/springboot3/alt-pet-store"
-      - "/samples/springboot3/graphql-pet-store"
-      - "/samples/springboot3/pet-store-native"
-      - "/samples/jersey/pet-store"
+      - "**/*"
+    groups:
+      jersey:
+        patterns:
+          - "org.glassfish.jersey.*:*"
+      spring:
+        patterns:
+          - "org.springframework:*"
+      slf4j:
+        patterns:
+          - "org.slf4j:*"
+      junit:
+        patterns:
+          - "org.junit:*"
     schedule:
       interval: "weekly"
+    open-pull-requests-limit: 20
   - package-ecosystem: gradle
     directories:
-      - "/samples/spring/pet-store"
-      - "/samples/springboot3/pet-store"
-      - "/samples/springboot3/alt-pet-store"
-      - "/samples/springboot3/pet-store-native"
-      - "/samples/jersey/pet-store"
+      - "**/*"
+    groups:
+      jersey:
+        patterns:
+          - "org.glassfish.jersey:*"
+      spring:
+        patterns:
+          - "org.springframework:*"
+      slf4j:
+        patterns:
+          - "org.slf4j:*"
     schedule:
       interval: "weekly"

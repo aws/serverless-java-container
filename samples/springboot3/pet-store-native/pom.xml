@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.2.5</version>
+		<version>3.3.2</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.amazonaws.serverless.sample</groupId>
@@ -16,7 +16,7 @@
 	<description>Sample of AWS with Spring Native</description>
 	<properties>
 		<java.version>17</java.version>
-		<spring-cloud.version>2022.0.5</spring-cloud.version>
+		<spring-cloud.version>2023.0.2</spring-cloud.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -31,7 +31,7 @@
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-lambda-java-events</artifactId>
-			<version>3.11.5</version>
+			<version>3.13.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.amazonaws</groupId>

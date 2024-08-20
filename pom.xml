@@ -77,10 +77,10 @@
 
     <properties>
         <jacoco.minCoverage>0.6</jacoco.minCoverage>
-        <dependencyCheck.version>9.2.0</dependencyCheck.version>
-        <jackson.version>2.17.1</jackson.version>
-        <slf4j.version>2.0.13</slf4j.version>
-        <junit.version>5.10.2</junit.version>
+        <dependencyCheck.version>10.0.3</dependencyCheck.version>
+        <jackson.version>2.17.2</jackson.version>
+        <slf4j.version>2.0.16</slf4j.version>
+        <junit.version>5.11.0</junit.version>
         <mockito.version>5.12.0</mockito.version>
         <hamcrest.version>1.3</hamcrest.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -140,7 +140,7 @@
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
-            <version>4.8.5</version>
+            <version>4.8.6</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -169,7 +169,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>3.4.1</version>
+                    <version>3.5.0</version>
                     <executions>
                         <execution>
                             <id>enforce</id>
@@ -201,22 +201,22 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.6.3</version>
+                    <version>3.8.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.2.5</version>
+                    <version>3.3.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-clean-plugin</artifactId>
-                    <version>3.3.2</version>
+                    <version>3.4.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.4.1</version>
+                    <version>3.4.2</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -236,7 +236,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
-                    <version>3.0.1</version>
+                    <version>3.1.1</version>
                     <configuration>
                         <releaseProfiles>serverless-java-container-release</releaseProfiles>
                         <preparationGoals>clean verify install</preparationGoals>
@@ -249,7 +249,7 @@
                 <plugin>
                     <groupId>com.github.spotbugs</groupId>
                     <artifactId>spotbugs-maven-plugin</artifactId>
-                    <version>4.8.5.0</version>
+                    <version>4.8.6.2</version>
                     <configuration>
                         <!--
                             Enables analysis which takes more memory but finds more bugs.

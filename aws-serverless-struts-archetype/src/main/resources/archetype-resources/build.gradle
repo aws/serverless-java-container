@@ -18,34 +18,34 @@ dependencies {
     exclude group: 'org.apache.logging.log4j', module: 'log4j-api'
     exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
   }
-  implementation ('org.apache.struts:struts2-convention-plugin:7.0.0-M3') {
+  implementation ('org.apache.struts:struts2-convention-plugin:7.0.0-M8') {
     exclude group: 'org.apache.struts', module: 'struts2-core'
   }
-  implementation ('org.apache.struts:struts2-rest-plugin:7.0.0-M3') {
+  implementation ('org.apache.struts:struts2-rest-plugin:7.0.0-M8') {
     exclude group: 'org.apache.struts', module: 'struts2-core'
   }
-  implementation ('org.apache.struts:struts2-bean-validation-plugin:7.0.0-M3') {
+  implementation ('org.apache.struts:struts2-bean-validation-plugin:7.0.0-M8') {
     exclude group: 'org.apache.struts', module: 'struts2-core'
   }
-  implementation ('com.jgeppert.struts2:struts2-aws-lambda-support-plugin:1.4.2') {
+  implementation ('com.jgeppert.struts2:struts2-aws-lambda-support-plugin:1.4.3') {
     exclude group: 'org.apache.struts', module: 'struts2-core'
   }
-  implementation ('org.apache.struts:struts2-core:7.0.0-M3') {
+  implementation ('org.apache.struts:struts2-core:7.0.0-M8') {
     exclude group: 'org.apache.logging.log4j', module: 'log4j-api'
   }
   implementation ('org.hibernate.validator:hibernate-validator:6.1.7.Final')
-  implementation ('com.fasterxml.jackson.core:jackson-databind:2.17.1')
-  implementation ('com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.17.1')
+  implementation ('com.fasterxml.jackson.core:jackson-databind:2.17.2')
+  implementation ('com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.17.2')
   implementation ('org.apache.logging.log4j:log4j-core:2.23.1')
   implementation ('org.apache.logging.log4j:log4j-api:2.23.1')
   implementation ('org.apache.logging.log4j:log4j-slf4j-impl:2.23.1')
   implementation ('com.amazonaws:aws-lambda-java-log4j2:1.6.0')
 
   testImplementation("com.amazonaws.serverless:aws-serverless-java-container-core:[2.0-SNAPSHOT,):tests")
-  testImplementation("org.apache.httpcomponents.client5:httpclient5:5.2.1")
-  testImplementation(platform("org.junit:junit-bom:5.10.2"))
+  testImplementation("org.apache.httpcomponents.client5:httpclient5:5.3.1")
+  testImplementation(platform("org.junit:junit-bom:5.11.0"))
   testImplementation("org.junit.jupiter:junit-jupiter")
-  testImplementation('org.apache.struts:struts2-junit-plugin:7.0.0-M3') {
+  testImplementation('org.apache.struts:struts2-junit-plugin:7.0.0-M8') {
     exclude group: 'org.apache.struts', module: 'struts2-core'
   }
 }

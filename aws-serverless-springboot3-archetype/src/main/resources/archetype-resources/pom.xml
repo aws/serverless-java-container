@@ -16,12 +16,12 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.5</version>
+        <version>3.3.2</version>
     </parent>
 
     <properties>
         <java.version>17</java.version>
-        <junit.version>5.10.2</junit.version>
+        <junit.version>5.11.0</junit.version>
     </properties>
 
     <dependencies>
@@ -41,7 +41,7 @@
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
             <artifactId>httpclient5</artifactId>
-            <version>5.2.1</version>
+            <version>5.3.1</version>
             <scope>test</scope>
         </dependency>
 
@@ -83,7 +83,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-shade-plugin</artifactId>
-                        <version>3.5.3</version>
+                        <version>3.6.0</version>
                         <configuration>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                         </configuration>
@@ -117,7 +117,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-jar-plugin</artifactId>
-                        <version>3.2.0</version>
+                        <version>3.4.2</version>
                         <executions>
                             <execution>
                                 <id>default-jar</id>
@@ -137,7 +137,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-dependency-plugin</artifactId>
-                        <version>3.6.1</version>
+                        <version>3.7.1</version>
                         <executions>
                             <execution>
                                 <id>copy-dependencies</id>

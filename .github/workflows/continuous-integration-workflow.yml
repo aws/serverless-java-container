@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+      - 2.0.x
       - 1.x
   workflow_dispatch:
 
@@ -59,7 +60,7 @@ jobs:
       - name: Build latest
         run: ./gha_build.sh spring true true
 #      - name: Build with Spring 6.0.x
-#        run: ./gha_build.sh spring false false -Dspring.version=6.0.16 -Dspring-security.version=6.1.6 -Ddependency-check.skip=true
+#        run: ./gha_build.sh spring false false -Dspring.version=6.0.16 -Dspring-security.version=6.1.10 -Ddependency-check.skip=true
 
   build_springboot3:
     name: Build and test SpringBoot 3
@@ -75,7 +76,9 @@ jobs:
         run: ./gha_build.sh springboot3 true true
       # Build with additional supported versions https://spring.io/projects/spring-boot#support
       - name: Build with Spring Boot 3.1.x
-        run: ./gha_build.sh springboot3 false false -Dspringboot.version=3.1.8 -Dspring.version=6.0.16 -Dspringsecurity.version=6.1.6 -Ddependency-check.skip=true
+        run: ./gha_build.sh springboot3 false false -Dspringboot.version=3.1.12 -Dspring.version=6.0.21 -Dspringsecurity.version=6.1.9 -Ddependency-check.skip=true
+      - name: Build with Spring Boot 3.2.x
+        run: ./gha_build.sh springboot3 false false -Dspringboot.version=3.2.7 -Dspring.version=6.1.10 -Dspringsecurity.version=6.2.5 -Ddependency-check.skip=true
 
 # temporarily disabled as Struts is not released at the moment
 #  build_struts2:
