@@ -21,6 +21,9 @@ updates:
       junit:
         patterns:
           - "org.junit:*"
+      maven-install-plugin:
+        patterns:
+          - "org.apache.maven.plugins:maven-install-plugin"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 20
