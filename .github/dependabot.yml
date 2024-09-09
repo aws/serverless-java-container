@@ -18,6 +18,9 @@ updates:
       slf4j:
         patterns:
           - "org.slf4j:*"
+      log4j:
+        patterns:
+          - "org.apache.logging.log4j:*"
       junit:
         patterns:
           - "org.junit:*"
@@ -40,5 +43,8 @@ updates:
       slf4j:
         patterns:
           - "org.slf4j:*"
+      log4j:
+        patterns:
+          - "org.apache.logging.log4j:*"
     schedule:
       interval: "weekly"
