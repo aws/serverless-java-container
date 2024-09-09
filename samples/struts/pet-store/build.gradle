@@ -24,7 +24,7 @@ dependencies {
           'jakarta.el:jakarta.el-api:5.0.1',
           'com.fasterxml.jackson.core:jackson-databind:2.17.2',
           'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.17.2',
-          'org.apache.logging.log4j:log4j-core:2.23.1',
+          'org.apache.logging.log4j:log4j-core:2.24.0',
           'org.apache.logging.log4j:log4j-api:2.23.1',
           'com.amazonaws:aws-lambda-java-log4j2:1.6.0',
   )
