@@ -10,7 +10,7 @@ dependencies {
           'org.springframework:spring-webmvc:6.1.12',
           'org.springframework:spring-context:6.1.12',
           'com.amazonaws.serverless:aws-serverless-java-container-spring:[2.0-SNAPSHOT,)',
-          'org.apache.logging.log4j:log4j-core:2.23.1',
+          'org.apache.logging.log4j:log4j-core:2.24.0',
           'org.apache.logging.log4j:log4j-api:2.23.1',
           'org.apache.logging.log4j:log4j-slf4j-impl:2.23.1',
           'com.fasterxml.jackson.core:jackson-databind:2.17.2',
