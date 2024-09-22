@@ -18,19 +18,19 @@ dependencies {
     exclude group: 'org.apache.logging.log4j', module: 'log4j-api'
     exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
   }
-  implementation ('org.apache.struts:struts2-convention-plugin:7.0.0-M8') {
+  implementation ('org.apache.struts:struts2-convention-plugin:7.0.0-M9') {
     exclude group: 'org.apache.struts', module: 'struts2-core'
   }
-  implementation ('org.apache.struts:struts2-rest-plugin:7.0.0-M8') {
+  implementation ('org.apache.struts:struts2-rest-plugin:7.0.0-M9') {
     exclude group: 'org.apache.struts', module: 'struts2-core'
   }
-  implementation ('org.apache.struts:struts2-bean-validation-plugin:7.0.0-M8') {
+  implementation ('org.apache.struts:struts2-bean-validation-plugin:7.0.0-M9') {
     exclude group: 'org.apache.struts', module: 'struts2-core'
   }
   implementation ('com.jgeppert.struts2:struts2-aws-lambda-support-plugin:1.4.3') {
     exclude group: 'org.apache.struts', module: 'struts2-core'
   }
-  implementation ('org.apache.struts:struts2-core:7.0.0-M8') {
+  implementation ('org.apache.struts:struts2-core:7.0.0-M9') {
     exclude group: 'org.apache.logging.log4j', module: 'log4j-api'
   }
   implementation ('org.hibernate.validator:hibernate-validator:6.1.7.Final')
@@ -45,7 +45,7 @@ dependencies {
   testImplementation("org.apache.httpcomponents.client5:httpclient5:5.3.1")
   testImplementation(platform("org.junit:junit-bom:5.11.0"))
   testImplementation("org.junit.jupiter:junit-jupiter")
-  testImplementation('org.apache.struts:struts2-junit-plugin:7.0.0-M8') {
+  testImplementation('org.apache.struts:struts2-junit-plugin:7.0.0-M9') {
     exclude group: 'org.apache.struts', module: 'struts2-core'
   }
 }
