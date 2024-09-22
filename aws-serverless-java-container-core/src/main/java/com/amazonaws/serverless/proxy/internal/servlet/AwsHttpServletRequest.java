@@ -90,6 +90,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     private String queryString;
     private Map<String, List<Part>> multipartFormParameters;
     private Map<String, List<String>> urlEncodedFormParameters;
+    private CookieProcessor cookieProcessor;
 
     protected AwsHttpServletResponse response;
     protected AwsLambdaServletContainerHandler containerHandler;
@@ -295,12 +296,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
      * @return An array of Cookie objects from the header
      */
     protected Cookie[] parseCookieHeaderValue(String headerValue) {
-        List<HeaderValue> parsedHeaders = this.parseHeaderValue(headerValue,  ";", ",");
-
-        return parsedHeaders.stream()
-                            .filter(e -> e.getKey() != null)
-                            .map(e -> new Cookie(SecurityUtils.crlf(e.getKey()), SecurityUtils.crlf(e.getValue())))
-                            .toArray(Cookie[]::new);
+        return getCookieProcessor().parseCookieHeader(headerValue);
     }
 
 
@@ -510,6 +506,13 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         }
         Timer.stop("SERVLET_REQUEST_GET_FORM_PARAMS");
         return urlEncodedFormParameters;
+    }
+
+     protected CookieProcessor getCookieProcessor(){
+        if (cookieProcessor == null) {
+            cookieProcessor = new AwsCookieProcessor();
+        }
+        return cookieProcessor;
     }
 
     @Override

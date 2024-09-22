@@ -70,6 +70,7 @@ public class AwsHttpServletResponse
     private CountDownLatch writersCountDownLatch;
     private HttpServletRequest request;
     private boolean isCommitted = false;
+    private CookieProcessor cookieProcessor;
 
     private Logger log = LoggerFactory.getLogger(AwsHttpServletResponse.class);
 
@@ -102,33 +103,7 @@ public class AwsHttpServletResponse
         if (request != null && request.getDispatcherType() == DispatcherType.INCLUDE && isCommitted()) {
             throw new IllegalStateException("Cannot add Cookies for include request when response is committed");
         }
-        String cookieData = cookie.getName() + "=" + cookie.getValue();
-        if (cookie.getPath() != null) {
-            cookieData += "; Path=" + cookie.getPath();
-        }
-        if (cookie.getSecure()) {
-            cookieData += "; Secure";
-        }
-        if (cookie.isHttpOnly()) {
-            cookieData += "; HttpOnly";
-        }
-        if (cookie.getDomain() != null && !"".equals(cookie.getDomain().trim())) {
-            cookieData += "; Domain=" + cookie.getDomain();
-        }
-
-        if (cookie.getMaxAge() > 0) {
-            cookieData += "; Max-Age=" + cookie.getMaxAge();
-
-            // we always set the timezone to GMT
-            TimeZone gmtTimeZone = TimeZone.getTimeZone(COOKIE_DEFAULT_TIME_ZONE);
-            Calendar currentTimestamp = Calendar.getInstance(gmtTimeZone);
-            currentTimestamp.add(Calendar.SECOND, cookie.getMaxAge());
-            SimpleDateFormat cookieDateFormatter = new SimpleDateFormat(HEADER_DATE_PATTERN);
-            cookieDateFormatter.setTimeZone(gmtTimeZone);
-            cookieData += "; Expires=" + cookieDateFormatter.format(currentTimestamp.getTime());
-        }
-
-        setHeader(HttpHeaders.SET_COOKIE, cookieData, false);
+        setHeader(HttpHeaders.SET_COOKIE, getCookieProcessor().generateHeader(cookie), false);
     }
 
 
@@ -500,6 +475,12 @@ public class AwsHttpServletResponse
         return (AwsProxyRequest)request.getAttribute(API_GATEWAY_EVENT_PROPERTY);
     }
 
+    CookieProcessor getCookieProcessor(){
+        if (cookieProcessor == null) {
+            cookieProcessor = new AwsCookieProcessor();
+        }
+        return cookieProcessor;
+    }
 
     //-------------------------------------------------------------
     // Methods - Private
