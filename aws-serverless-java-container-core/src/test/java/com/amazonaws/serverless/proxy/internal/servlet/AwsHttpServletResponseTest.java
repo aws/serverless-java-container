@@ -17,6 +17,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Calendar;
+import java.util.Locale;
 import java.util.TimeZone;
 import java.util.concurrent.CountDownLatch;
 import java.util.regex.Matcher;
@@ -36,7 +37,7 @@ public class AwsHttpServletResponseTest {
     private static final int MAX_AGE_VALUE = 300;
 
     private static final Pattern MAX_AGE_PATTERN = Pattern.compile("Max-Age=(-?[0-9]+)");
-    private static final Pattern EXPIRES_PATTERN = Pattern.compile("Expires=(.*)$");
+    private static final Pattern EXPIRES_PATTERN = Pattern.compile("Expires=([^;]+)");
 
     private static final String CONTENT_TYPE_WITH_CHARSET = "application/json; charset=UTF-8";
     private static final String JAVASCRIPT_CONTENT_TYPE_WITH_CHARSET = "application/javascript; charset=UTF-8";
@@ -142,6 +143,23 @@ public class AwsHttpServletResponseTest {
         String cookieHeader = resp.getHeader(HttpHeaders.SET_COOKIE);
         assertNotNull(cookieHeader);
         assertFalse(cookieHeader.contains("Expires"));
+    }
+
+    @Test
+    void cookie_addCookieWithMaxAgeZero_expectExpiresInThePast() {
+        AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
+        Cookie zeroMaxAgeCookie = new Cookie(COOKIE_NAME, COOKIE_VALUE);
+        zeroMaxAgeCookie.setMaxAge(0);
+
+        resp.addCookie(zeroMaxAgeCookie);
+        String cookieHeader = resp.getHeader(HttpHeaders.SET_COOKIE);
+
+        Calendar cal = getExpires(cookieHeader);
+        long currentTimeMillis = System.currentTimeMillis();
+
+        assertNotNull(cookieHeader);
+        assertTrue(cal.getTimeInMillis() < currentTimeMillis);
+        assertTrue(cookieHeader.contains(COOKIE_NAME + "=" + COOKIE_VALUE));
     }
 
     @Test
@@ -352,7 +370,7 @@ public class AwsHttpServletResponseTest {
         assertTrue(ageMatcher.find());
         assertTrue(ageMatcher.groupCount() >= 1);
         String expiresString = ageMatcher.group(1);
-        SimpleDateFormat sdf = new SimpleDateFormat(AwsHttpServletResponse.HEADER_DATE_PATTERN);
+        SimpleDateFormat sdf = new SimpleDateFormat(AwsHttpServletResponse.HEADER_DATE_PATTERN, Locale.US);
         Calendar cal = Calendar.getInstance();
         try {
             cal.setTime(sdf.parse(expiresString));
