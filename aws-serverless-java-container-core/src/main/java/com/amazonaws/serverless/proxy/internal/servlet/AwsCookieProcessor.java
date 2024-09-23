@@ -262,6 +262,6 @@ public class AwsCookieProcessor implements CookieProcessor {
     }
 
     private boolean isValidCookieChar(char c) {
-        return !(c < 0x21 || c > 0x7E ||  c == 0x22 || c == 0x2c || c == 0x3b || c == 0x5c || c == 0x7f);
+        return !(c < 0x21 || c > 0x7E ||  c == 0x22 || c == 0x2c || c == 0x3b || c == 0x5c);
     }
 }
