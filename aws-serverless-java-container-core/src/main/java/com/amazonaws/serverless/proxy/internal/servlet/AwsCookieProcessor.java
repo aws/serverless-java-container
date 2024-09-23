@@ -4,10 +4,9 @@ import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 import jakarta.servlet.http.Cookie;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.text.DateFormat;
-import java.text.FieldPosition;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -32,16 +31,9 @@ public class AwsCookieProcessor implements CookieProcessor {
     // BitSet to validate domain characters
     static final BitSet domainValid = createDomainValidSet();
 
-    static final String COOKIE_DATE_PATTERN = "EEE, dd MMM yyyy HH:mm:ss z";
+    static final DateTimeFormatter COOKIE_DATE_FORMATTER = DateTimeFormatter.RFC_1123_DATE_TIME.withZone(ZoneId.of("GMT"));
 
-    // ThreadLocal to ensure thread-safe creation of DateFormat instances for each thread
-    static final ThreadLocal<DateFormat> COOKIE_DATE_FORMAT = ThreadLocal.withInitial(() -> {
-        DateFormat df = new SimpleDateFormat(COOKIE_DATE_PATTERN, Locale.US);
-        df.setTimeZone(TimeZone.getTimeZone("GMT"));
-        return df;
-    });
-
-    static final String ANCIENT_DATE = COOKIE_DATE_FORMAT.get().format(new Date(10000));
+    static final String ANCIENT_DATE = COOKIE_DATE_FORMATTER.format(Instant.ofEpochMilli(10000));
 
     static BitSet createTokenValidSet() {
         BitSet tokenSet = new BitSet(128);
@@ -127,8 +119,8 @@ public class AwsCookieProcessor implements CookieProcessor {
             if (maxAge == 0) {
                 header.append(ANCIENT_DATE);
             } else {
-                COOKIE_DATE_FORMAT.get().format(
-                        new Date(System.currentTimeMillis() + maxAge * 1000L), header, new FieldPosition(0));
+                Instant expiresAt = Instant.now().plusSeconds(maxAge);
+                header.append(COOKIE_DATE_FORMATTER.format(expiresAt));
                 header.append("; Max-Age=").append(maxAge);
             }
         }
