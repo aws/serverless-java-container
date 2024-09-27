@@ -105,7 +105,7 @@ public class AwsCookieProcessor implements CookieProcessor {
 
     @Override
     public String generateHeader(Cookie cookie) {
-        StringBuffer header = new StringBuffer();
+        StringBuilder header = new StringBuilder();
         header.append(cookie.getName()).append('=');
 
         String value = cookie.getValue();
