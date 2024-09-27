@@ -17,6 +17,7 @@ public class AwsCookieProcessor implements CookieProcessor {
     // Cookie attribute constants
     static final String COOKIE_COMMENT_ATTR = "Comment";
     static final String COOKIE_DOMAIN_ATTR = "Domain";
+    static final String COOKIE_EXPIRES_ATTR = "Expires";
     static final String COOKIE_MAX_AGE_ATTR = "Max-Age";
     static final String COOKIE_PATH_ATTR = "Path";
     static final String COOKIE_SECURE_ATTR = "Secure";
@@ -114,45 +115,42 @@ public class AwsCookieProcessor implements CookieProcessor {
         }
 
         int maxAge = cookie.getMaxAge();
-        if (maxAge > -1) {
-            header.append("; Expires=");
-            if (maxAge == 0) {
-                header.append(ANCIENT_DATE);
-            } else {
-                Instant expiresAt = Instant.now().plusSeconds(maxAge);
-                header.append(COOKIE_DATE_FORMATTER.format(expiresAt));
-                header.append("; Max-Age=").append(maxAge);
-            }
+        if (maxAge == 0) {
+            appendAttribute(header, COOKIE_EXPIRES_ATTR, ANCIENT_DATE);
+        } else if (maxAge > 0){
+            Instant expiresAt = Instant.now().plusSeconds(maxAge);
+            appendAttribute(header, COOKIE_EXPIRES_ATTR, COOKIE_DATE_FORMATTER.format(expiresAt));
+            appendAttribute(header, COOKIE_MAX_AGE_ATTR, String.valueOf(maxAge));
         }
 
         String domain = cookie.getDomain();
         if (domain != null && !domain.isEmpty()) {
             validateDomain(domain);
-            header.append("; Domain=").append(domain);
+            appendAttribute(header, COOKIE_DOMAIN_ATTR, domain);
         }
 
         String path = cookie.getPath();
         if (path != null && !path.isEmpty()) {
             validatePath(path);
-            header.append("; Path=").append(path);
+            appendAttribute(header, COOKIE_PATH_ATTR, path);
         }
 
         if (cookie.getSecure()) {
-            header.append("; Secure");
+            appendAttributeWithoutValue(header, COOKIE_SECURE_ATTR);
         }
 
         if (cookie.isHttpOnly()) {
-            header.append("; HttpOnly");
+            appendAttributeWithoutValue(header, COOKIE_HTTP_ONLY_ATTR);
         }
 
         String sameSite = cookie.getAttribute(COOKIE_SAME_SITE_ATTR);
         if (sameSite != null) {
-            header.append("; SameSite=").append(sameSite);
+            appendAttribute(header, COOKIE_SAME_SITE_ATTR, sameSite);
         }
 
         String partitioned = cookie.getAttribute(COOKIE_PARTITIONED_ATTR);
         if (EMPTY_STRING.equals(partitioned)) {
-            header.append("; Partitioned");
+            appendAttributeWithoutValue(header, COOKIE_PARTITIONED_ATTR);
         }
 
         addAdditionalAttributes(cookie, header);
@@ -160,7 +158,18 @@ public class AwsCookieProcessor implements CookieProcessor {
         return header.toString();
     }
 
-    private void addAdditionalAttributes(Cookie cookie, StringBuffer header) {
+    private void appendAttribute(StringBuilder header, String name, String value) {
+        header.append("; ").append(name);
+        if (!EMPTY_STRING.equals(value)) {
+            header.append('=').append(value);
+        }
+    }
+
+    private void appendAttributeWithoutValue(StringBuilder header, String name) {
+        header.append("; ").append(name);
+    }
+
+    private void addAdditionalAttributes(Cookie cookie, StringBuilder header) {
         for (Map.Entry<String, String> entry : cookie.getAttributes().entrySet()) {
             switch (entry.getKey()) {
                 case COOKIE_COMMENT_ATTR:
@@ -175,10 +184,7 @@ public class AwsCookieProcessor implements CookieProcessor {
                     break;
                 default:
                     validateAttribute(entry.getKey(), entry.getValue());
-                    header.append("; ").append(entry.getKey());
-                    if (!EMPTY_STRING.equals(entry.getValue())) {
-                        header.append('=').append(entry.getValue());
-                    }
+                    appendAttribute(header, entry.getKey(), entry.getValue());
                     break;
             }
         }
