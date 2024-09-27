@@ -76,7 +76,8 @@
 						<artifactId>native-maven-plugin</artifactId>
 						<configuration>
 							<buildArgs>
-								<buildArg>--enable-url-protocols=http --enable-preview -march=compatibility</buildArg>
+								<buildArg>--enable-url-protocols=http</buildArg>
+								<buildArg>-march=compatibility</buildArg>
 							</buildArgs>
 						</configuration>
 						<executions>

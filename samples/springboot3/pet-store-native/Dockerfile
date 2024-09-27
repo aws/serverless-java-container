@@ -14,7 +14,7 @@ RUN mv graalvm-community-openjdk-${GRAAL_VERSION}* /usr/lib/graalvm
 ENV JAVA_HOME /usr/lib/graalvm
 
 # Maven
-ENV MVN_VERSION 3.9.6
+ENV MVN_VERSION 3.9.9
 ENV MVN_FOLDERNAME apache-maven-${MVN_VERSION}
 ENV MVN_FILENAME apache-maven-${MVN_VERSION}-bin.tar.gz
 RUN curl -4 -L https://archive.apache.org/dist/maven/maven-3/${MVN_VERSION}/binaries/${MVN_FILENAME} | tar -xvz
