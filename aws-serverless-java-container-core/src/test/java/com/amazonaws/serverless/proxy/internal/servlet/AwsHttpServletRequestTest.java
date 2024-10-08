@@ -26,6 +26,12 @@ public class AwsHttpServletRequestTest {
             .header(HttpHeaders.CONTENT_TYPE, "application/xml; charset=utf-8").build();
     private static final AwsProxyRequest validCookieRequest = new AwsProxyRequestBuilder("/cookie", "GET")
             .header(HttpHeaders.COOKIE, "yummy_cookie=choco; tasty_cookie=strawberry").build();
+    private static final AwsProxyRequest controlCharCookieRequest = new AwsProxyRequestBuilder("/cookie", "GET")
+            .header(HttpHeaders.COOKIE, "name=\u0007\u0009; tasty_cookie=strawberry").build();
+    private static final AwsProxyRequest unicodeCookieRequest = new AwsProxyRequestBuilder("/cookie", "GET")
+            .header(HttpHeaders.COOKIE, "yummy_cookie=chøcø; tasty_cookie=strawberry").build();
+    private static final AwsProxyRequest invalidNameCookieRequest = new AwsProxyRequestBuilder("/cookie", "GET")
+            .header(HttpHeaders.COOKIE, "yummy@cookie=choco; tasty_cookie=strawberry").build();
     private static final AwsProxyRequest complexAcceptHeader = new AwsProxyRequestBuilder("/accept", "GET")
             .header(HttpHeaders.ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8").build();
     private static final AwsProxyRequest queryString = new AwsProxyRequestBuilder("/test", "GET")
@@ -73,6 +79,39 @@ public class AwsHttpServletRequestTest {
         assertEquals("choco", values.get(0).getValue());
         assertEquals("tasty_cookie", values.get(1).getKey());
         assertEquals("strawberry", values.get(1).getValue());
+    }
+
+    @Test
+    void headers_parseHeaderValue_controlCharCookie() {
+        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(controlCharCookieRequest, mockContext, null, config);
+        Cookie[] cookies = request.getCookies();
+
+        // parse only valid cookies
+        assertEquals(1, cookies.length);
+        assertEquals("tasty_cookie", cookies[0].getName());
+        assertEquals("strawberry", cookies[0].getValue());
+    }
+
+    @Test
+    void headers_parseHeaderValue_unicodeCookie() {
+        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(unicodeCookieRequest, mockContext, null, config);
+        Cookie[] cookies = request.getCookies();
+
+        // parse only valid cookies
+        assertEquals(1, cookies.length);
+        assertEquals("tasty_cookie", cookies[0].getName());
+        assertEquals("strawberry", cookies[0].getValue());
+    }
+
+    @Test
+    void headers_parseHeaderValue_invalidNameCookie() {
+        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(invalidNameCookieRequest, mockContext, null, config);
+        Cookie[] cookies = request.getCookies();
+
+        // parse only valid cookies
+        assertEquals(1, cookies.length);
+        assertEquals("tasty_cookie", cookies[0].getName());
+        assertEquals("strawberry", cookies[0].getValue());
     }
 
     @Test
