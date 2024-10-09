@@ -83,7 +83,7 @@ public class AwsProxyHttpServletRequestTest {
     }
 
     public static Collection<Object> data() {
-        return Arrays.asList(new Object[]{"API_GW", "ALB", "HTTP_API", "WRAP"});
+        return Arrays.asList(new Object[]{"API_GW", "ALB", "HTTP_API", "VPC_LATTICE_V2", "WRAP"});
     }
 
     private HttpServletRequest getRequest(AwsProxyRequestBuilder req, Context lambdaCtx, SecurityContext securityCtx) {
@@ -94,6 +94,8 @@ public class AwsProxyHttpServletRequestTest {
                 return new AwsProxyHttpServletRequest(req.alb().build(), lambdaCtx, securityCtx);
             case "HTTP_API":
                 return new AwsHttpApiV2ProxyHttpServletRequest(req.toHttpApiV2Request(), lambdaCtx, securityCtx, LambdaContainerHandler.getContainerConfig());
+            case "VPC_LATTICE_V2":
+                return new AwsVpcLatticeV2HttpServletRequest(req.toVPCLatticeV2Request(), lambdaCtx, securityCtx);
             case "WRAP":
                 HttpServletRequest servletRequest = new AwsProxyHttpServletRequest(req.build(), lambdaCtx, securityCtx);
                 return new AwsHttpServletRequestWrapper(servletRequest, req.build().getPath());
@@ -118,6 +120,7 @@ public class AwsProxyHttpServletRequestTest {
     void headers_getRefererAndUserAgent_returnsContextValues(String type) {
         initAwsProxyHttpServletRequestTest(type);
         assumeFalse("ALB".equals(requestType));
+        assumeFalse("VPC_LATTICE_V2".equals(requestType));
         HttpServletRequest request = getRequest(REQUEST_USER_AGENT_REFERER, null, null);
         assertNotNull(request.getHeader("Referer"));
         assertEquals(REFERER, request.getHeader("Referer"));
@@ -430,6 +433,7 @@ public class AwsProxyHttpServletRequestTest {
     void requestURL_getUrl_expectHttpSchemaAndLocalhostForLocalTesting(String type) {
         initAwsProxyHttpServletRequestTest(type);
         assumeFalse("ALB".equals(requestType));
+        assumeFalse("VPC_LATTICE_V2".equals(requestType));
         AwsProxyRequestBuilder req = getRequestWithHeaders();
         req.apiId("test-id");
         LambdaContainerHandler.getContainerConfig().enableLocalhost();
@@ -465,6 +469,7 @@ public class AwsProxyHttpServletRequestTest {
     void requestURL_getUrlWithContextPath_expectStageAsContextPath(String type) {
         initAwsProxyHttpServletRequestTest(type);
         assumeFalse("ALB".equals(requestType));
+        assumeFalse("VPC_LATTICE_V2".equals(requestType));
         AwsProxyRequestBuilder req = getRequestWithHeaders();
         req.stage("test-stage");
         LambdaContainerHandler.getContainerConfig().setUseStageAsServletContext(true);
@@ -574,7 +579,7 @@ public class AwsProxyHttpServletRequestTest {
 
         try {
             InputStream is = req.getInputStream();
-            assertTrue(is.getClass() == AwsServletInputStream.class);
+            assertSame(is.getClass(), AwsServletInputStream.class);
             assertEquals(0, is.available());
         } catch (IOException e) {
             fail("Could not get input stream");
@@ -622,6 +627,7 @@ public class AwsProxyHttpServletRequestTest {
     @ParameterizedTest
     void serverName_emptyHeaders_doesNotThrowNullPointer(String type) {
         initAwsProxyHttpServletRequestTest(type);
+        assumeFalse(type.equals("VPC_LATTICE_V2"));
         AwsProxyRequestBuilder proxyReq = new AwsProxyRequestBuilder("/test", "GET");
         proxyReq.multiValueHeaders(null);
         HttpServletRequest servletReq = getRequest(proxyReq, null, null);

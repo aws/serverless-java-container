@@ -23,6 +23,7 @@ import com.amazonaws.serverless.proxy.jersey.providers.ServletRequestFilter;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
+import com.amazonaws.serverless.proxy.model.VPCLatticeV2RequestEvent;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -73,6 +74,13 @@ public class JerseyAwsProxyTest {
     .register(new ResourceBinder())
     .property(LoggingFeature.LOGGING_FEATURE_VERBOSITY_SERVER, LoggingFeature.Verbosity.PAYLOAD_ANY);
 
+    private static ResourceConfig latticeApp = new ResourceConfig().packages("com.amazonaws.serverless.proxy.jersey")
+            .register(LoggingFeature.class)
+            .register(ServletRequestFilter.class)
+            .register(MultiPartFeature.class)
+            .register(new ResourceBinder())
+            .property(LoggingFeature.LOGGING_FEATURE_VERBOSITY_SERVER, LoggingFeature.Verbosity.PAYLOAD_ANY);
+
     private static ResourceConfig appWithoutRegisteredDependencies = new ResourceConfig()
     .packages("com.amazonaws.serverless.proxy.jersey")
     .register(LoggingFeature.class)
@@ -82,6 +90,7 @@ public class JerseyAwsProxyTest {
 
     private static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler;
     private static JerseyLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> httpApiHandler;
+    private static JerseyLambdaContainerHandler<VPCLatticeV2RequestEvent, AwsProxyResponse> latticeHandler;
 
     private static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handlerWithoutRegisteredDependencies
     = JerseyLambdaContainerHandler.getAwsProxyHandler(appWithoutRegisteredDependencies);
@@ -95,7 +104,7 @@ public class JerseyAwsProxyTest {
     }
 
     public static Collection<Object> data() {
-        return Arrays.asList(new Object[]{"API_GW", "ALB", "HTTP_API"});
+        return Arrays.asList(new Object[]{"API_GW", "ALB", "HTTP_API", "VPC_LATTICE_V2"});
     }
 
     private AwsProxyRequestBuilder getRequestBuilder(String path, String method) {
@@ -120,6 +129,11 @@ public class JerseyAwsProxyTest {
                     httpApiHandler = JerseyLambdaContainerHandler.getHttpApiV2ProxyHandler(httpApiApp);
                 }
                 return httpApiHandler.proxy(requestBuilder.toHttpApiV2Request(), lambdaContext);
+            case "VPC_LATTICE_V2":
+                if (latticeHandler == null) {
+                    latticeHandler = JerseyLambdaContainerHandler.getLatticeV2ProxyHandler(latticeApp);
+                }
+                return latticeHandler.proxy(requestBuilder.toVPCLatticeV2Request(), lambdaContext);
             default:
                 throw new RuntimeException("Unknown request type: " + type);
         }
@@ -132,6 +146,8 @@ public class JerseyAwsProxyTest {
                 return handler;
             case "HTTP_API":
                 return httpApiHandler;
+            case "VPC_LATTICE_V2":
+                return latticeHandler;
             default:
                 throw new RuntimeException("Unknown request type: " + type);
         }
@@ -371,6 +387,7 @@ public class JerseyAwsProxyTest {
     void stripBasePath_route_shouldReturn404WithStageAsContext(String reqType) {
         initJerseyAwsProxyTest(reqType);
         assumeTrue(!"ALB".equals(type));
+        assumeTrue(!"VPC_LATTICE_V2".equals(type));
         AwsProxyRequestBuilder request = getRequestBuilder("/custompath/echo/status-code", "GET")
         .stage("prod")
         .json()
