@@ -1,24 +1,26 @@
 package com.amazonaws.serverless.proxy.spring;
 
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
+import java.nio.charset.UnsupportedCharsetException;
+import java.util.Base64;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.Charsets;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.cloud.function.serverless.web.ServerlessHttpServletRequest;
 import org.springframework.cloud.function.serverless.web.ServerlessMVC;
+import org.springframework.http.HttpHeaders;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.MultiValueMapAdapter;
 import org.springframework.util.StringUtils;
 
-import com.amazonaws.serverless.proxy.AsyncInitializationWrapper;
 import com.amazonaws.serverless.proxy.AwsHttpApiV2SecurityContextWriter;
 import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
 import com.amazonaws.serverless.proxy.RequestReader;
@@ -120,10 +122,14 @@ class AwsSpringHttpProcessingUtils {
 			MultiValueMapAdapter headers = new MultiValueMapAdapter(v1Request.getMultiValueHeaders());
 			httpRequest.setHeaders(headers);
 		}
-		if (StringUtils.hasText(v1Request.getBody())) {
-			httpRequest.setContentType("application/json");
-			httpRequest.setContent(v1Request.getBody().getBytes(StandardCharsets.UTF_8));
-		}
+        if (StringUtils.hasText(v1Request.getBody())) {
+            if (v1Request.isBase64Encoded()) {
+                httpRequest.setContent(Base64.getMimeDecoder().decode(v1Request.getBody()));
+            } else {
+                Charset charseEncoding = parseCharacterEncoding(v1Request.getHeaders().get(HttpHeaders.CONTENT_TYPE));
+                httpRequest.setContent(v1Request.getBody().getBytes(charseEncoding));
+            }
+        }
 		if (v1Request.getRequestContext() != null) {
 			httpRequest.setAttribute(RequestReader.API_GATEWAY_CONTEXT_PROPERTY, v1Request.getRequestContext());
 			httpRequest.setAttribute(RequestReader.ALB_CONTEXT_PROPERTY, v1Request.getRequestContext().getElb());
@@ -149,11 +155,15 @@ class AwsSpringHttpProcessingUtils {
 		populateQueryStringparameters(v2Request.getQueryStringParameters(), httpRequest);
 		
 		v2Request.getHeaders().forEach(httpRequest::setHeader);
-		
-		if (StringUtils.hasText(v2Request.getBody())) {
-			httpRequest.setContentType("application/json");
-			httpRequest.setContent(v2Request.getBody().getBytes(StandardCharsets.UTF_8));
-		}
+
+        if (StringUtils.hasText(v2Request.getBody())) {
+            if (v2Request.isBase64Encoded()) {
+                httpRequest.setContent(Base64.getMimeDecoder().decode(v2Request.getBody()));
+            } else {
+                Charset charseEncoding = parseCharacterEncoding(v2Request.getHeaders().get(HttpHeaders.CONTENT_TYPE));
+                httpRequest.setContent(v2Request.getBody().getBytes(charseEncoding));
+            }
+        }
 		httpRequest.setAttribute(RequestReader.HTTP_API_CONTEXT_PROPERTY, v2Request.getRequestContext());
 		httpRequest.setAttribute(RequestReader.HTTP_API_STAGE_VARS_PROPERTY, v2Request.getStageVariables());
 		httpRequest.setAttribute(RequestReader.HTTP_API_EVENT_PROPERTY, v2Request);
@@ -179,5 +189,37 @@ class AwsSpringHttpProcessingUtils {
 			throw new IllegalStateException(e);
 		}
 	}
+
+    static final String HEADER_KEY_VALUE_SEPARATOR = "=";
+    static final String HEADER_VALUE_SEPARATOR = ";";
+    static final String ENCODING_VALUE_KEY = "charset";
+    static protected Charset parseCharacterEncoding(String contentTypeHeader) {
+        // we only look at content-type because content-encoding should only be used for
+        // "binary" requests such as gzip/deflate.
+        Charset defaultCharset = StandardCharsets.UTF_8;
+        if (contentTypeHeader == null) {
+            return defaultCharset;
+        }
+
+        String[] contentTypeValues = contentTypeHeader.split(HEADER_VALUE_SEPARATOR);
+        if (contentTypeValues.length <= 1) {
+            return defaultCharset;
+        }
+
+        for (String contentTypeValue : contentTypeValues) {
+            if (contentTypeValue.trim().startsWith(ENCODING_VALUE_KEY)) {
+                String[] encodingValues = contentTypeValue.split(HEADER_KEY_VALUE_SEPARATOR);
+                if (encodingValues.length <= 1) {
+                    return defaultCharset;
+                }
+                try {
+                    return Charsets.toCharset(encodingValues[1]);
+                } catch (UnsupportedCharsetException ex) {
+                    return defaultCharset;
+                }
+            }
+        }
+        return defaultCharset;
+    }
 
 }
