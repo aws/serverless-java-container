@@ -345,6 +345,7 @@ public class SpringDelegatingLambdaContainerHandlerTests {
         if (!CollectionUtils.isEmpty(headers)) {
             map.put("headers", headers);
         }
+        System.out.println(map);
         return mapper.writeValueAsBytes(map);
     }
 }

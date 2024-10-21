@@ -123,6 +123,9 @@ class AwsSpringHttpProcessingUtils {
 			httpRequest.setHeaders(headers);
 		}
         if (StringUtils.hasText(v1Request.getBody())) {
+			if (v1Request.getHeaders().get(HttpHeaders.CONTENT_TYPE)==null) {
+				httpRequest.setContentType("application/json");
+			}
             if (v1Request.isBase64Encoded()) {
                 httpRequest.setContent(Base64.getMimeDecoder().decode(v1Request.getBody()));
             } else {
@@ -156,8 +159,12 @@ class AwsSpringHttpProcessingUtils {
 		
 		v2Request.getHeaders().forEach(httpRequest::setHeader);
 
+
         if (StringUtils.hasText(v2Request.getBody())) {
-            if (v2Request.isBase64Encoded()) {
+			if (v2Request.getHeaders().get(HttpHeaders.CONTENT_TYPE)==null) {
+				httpRequest.setContentType("application/json");
+			}
+			if (v2Request.isBase64Encoded()) {
                 httpRequest.setContent(Base64.getMimeDecoder().decode(v2Request.getBody()));
             } else {
                 Charset charseEncoding = parseCharacterEncoding(v2Request.getHeaders().get(HttpHeaders.CONTENT_TYPE));
