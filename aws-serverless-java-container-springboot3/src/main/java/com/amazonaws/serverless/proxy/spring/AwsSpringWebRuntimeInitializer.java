@@ -38,11 +38,7 @@ public class AwsSpringWebRuntimeInitializer implements ApplicationContextInitial
 
 	@Override
 	public void initialize(GenericApplicationContext context) {
-		logger.info("AWS Environment: " + System.getenv());
 		Environment environment = context.getEnvironment();
-		if (logger.isDebugEnabled()) {
-			logger.debug("AWS Environment: " + System.getenv());
-		}
 		
 		if (context instanceof ServletWebServerApplicationContext && isCustomRuntime(environment)) {
 			if (context.getBeanFactory().getBeanNamesForType(AwsSpringWebCustomRuntimeEventLoop.class, false, false).length == 0) {
