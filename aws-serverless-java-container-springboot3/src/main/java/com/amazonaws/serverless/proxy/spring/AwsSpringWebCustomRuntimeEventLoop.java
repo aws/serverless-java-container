@@ -97,9 +97,6 @@ public final class AwsSpringWebCustomRuntimeEventLoop implements SmartLifecycle 
 
 		Environment environment = context.getEnvironment();
 		logger.info("Starting AWSWebRuntimeEventLoop");
-		if (logger.isDebugEnabled()) {
-			logger.debug("AWS LAMBDA ENVIRONMENT: " + System.getenv());
-		}
 
 		String runtimeApi = environment.getProperty("AWS_LAMBDA_RUNTIME_API");
 		String eventUri = MessageFormat.format(LAMBDA_RUNTIME_URL_TEMPLATE, runtimeApi, LAMBDA_VERSION_DATE);
