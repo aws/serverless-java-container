@@ -9,6 +9,7 @@ import com.amazonaws.serverless.proxy.jersey.model.SingleValueModel;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
+import com.amazonaws.serverless.proxy.model.VPCLatticeV2RequestEvent;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -73,7 +74,14 @@ public class JerseyParamEncodingTest {
     .register(new ResourceBinder())
     .property("jersey.config.server.tracing.type", "ALL")
     .property("jersey.config.server.tracing.threshold", "VERBOSE");
+
+    private static ResourceConfig latticeApp = new ResourceConfig().packages("com.amazonaws.serverless.proxy.jersey")
+            .register(MultiPartFeature.class)
+            .register(new ResourceBinder())
+            .property("jersey.config.server.tracing.type", "ALL")
+            .property("jersey.config.server.tracing.threshold", "VERBOSE");
     private static JerseyLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> httpApiHandler;
+    private static JerseyLambdaContainerHandler<VPCLatticeV2RequestEvent, AwsProxyResponse> latticeHandler;
 
     private static Context lambdaContext = new MockLambdaContext();
 
@@ -85,7 +93,7 @@ public class JerseyParamEncodingTest {
     }
 
     public static Collection<Object> data() {
-        return Arrays.asList(new Object[]{"API_GW", "ALB", "HTTP_API"});
+        return Arrays.asList(new Object[]{"API_GW", "ALB", "HTTP_API", "VPC_LATTICE_V2"});
     }
 
     private AwsProxyRequestBuilder getRequestBuilder(String path, String method) {
@@ -109,6 +117,11 @@ public class JerseyParamEncodingTest {
                     httpApiHandler = JerseyLambdaContainerHandler.getHttpApiV2ProxyHandler(httpApiApp);
                 }
                 return httpApiHandler.proxy(requestBuilder.toHttpApiV2Request(), lambdaContext);
+            case "VPC_LATTICE_V2":
+                if (latticeHandler == null) {
+                    latticeHandler = JerseyLambdaContainerHandler.getLatticeV2ProxyHandler(latticeApp);
+                }
+                return latticeHandler.proxy(requestBuilder.toVPCLatticeV2Request(), lambdaContext);
             default:
                 throw new RuntimeException("Unknown request type: " + type);
         }

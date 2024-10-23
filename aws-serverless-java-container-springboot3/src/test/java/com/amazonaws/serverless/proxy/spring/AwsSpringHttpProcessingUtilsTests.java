@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.boot.SpringApplication;
@@ -184,6 +185,40 @@ public class AwsSpringHttpProcessingUtilsTests {
             "  }\n" +
             "}";
 
+	private static final String VPC_LATTICE_V2_EVENT = "{\n" +
+			"    \"version\": \"2.0\",\n" +
+			"    \"path\": \"/async\",\n" +
+			"    \"method\": \"POST\",\n" +
+			"    \"headers\": {\n" +
+			"      \"x-forwarded-for\": [\n" +
+			"        \"10.0.0.39\"\n" +
+			"      ],\n" +
+			"      \"content-type\": [\n" +
+			"        \"application/json\"\n" +
+			"      ],\n" +
+			"      \"accept-encoding\": [\n" +
+			"        \"identity\"\n" +
+			"      ],\n" +
+			"      \"host\": [\n" +
+			"        \"demo-service-057f55fd2927517c9.7d67968.vpc-lattice-svcs.us-west-2.on.aws\"\n" +
+			"      ],\n" +
+			"      \"content-length\": [\n" +
+			"        \"54\"\n" +
+			"      ]\n" +
+			"    },\n" +
+			"    \"body\": \"{\\\"key1\\\": \\\"value1\\\", \\\"key2\\\": \\\"value2\\\", \\\"key3\\\": \\\"value3\\\"}\",\n" +
+			"    \"requestContext\": {\n" +
+			"      \"serviceNetworkArn\": \"arn:aws:vpc-lattice:us-west-2:422832612717:servicenetwork/sn-0bcd972d368921a67\",\n" +
+			"      \"serviceArn\": \"arn:aws:vpc-lattice:us-west-2:422832612717:service/svc-057f55fd2927517c9\",\n" +
+			"      \"targetGroupArn\": \"arn:aws:vpc-lattice:us-west-2:422832612717:targetgroup/tg-0c8666d87e4ebad20\",\n" +
+			"      \"identity\": {\n" +
+			"        \"sourceVpcArn\": \"arn:aws:ec2:us-west-2:422832612717:vpc/vpc-05417e632a7302cb7\"\n" +
+			"      },\n" +
+			"      \"region\": \"us-west-2\",\n" +
+			"      \"timeEpoch\": \"1711801592405546\"\n" +
+			"    }\n" +
+			"  }";
+
     private final ObjectMapper mapper = new ObjectMapper();
 
     public static Collection<String> data() {
@@ -202,7 +237,7 @@ public class AwsSpringHttpProcessingUtilsTests {
 		assertEquals("POST", request.getMethod());
 		assertEquals("/async", request.getRequestURI());
 	}
-    
+
     @MethodSource("data")
     @ParameterizedTest
 	public void validateHttpServletRequestGenerationWithJson(String jsonEvent) {
@@ -229,8 +264,48 @@ public class AwsSpringHttpProcessingUtilsTests {
     	}
     	
     }
-    
-    @EnableAutoConfiguration
+
+	/**
+	 * These tests are specific to VPC Lattice
+	 */
+	@Test
+	public void validateHttpServletRequestGenerationWithInputStream() {
+		ByteArrayInputStream inputStream = new ByteArrayInputStream(VPC_LATTICE_V2_EVENT.getBytes(StandardCharsets.UTF_8));
+		ServerlessServletContext servletContext = new ServerlessServletContext();
+		HttpServletRequest request = AwsSpringHttpProcessingUtils.generateLatticeV2HttpServletRequest(inputStream, null, servletContext, mapper);
+		// spot check some headers
+		assertEquals("application/json", request.getHeader("content-type"));
+		assertEquals("10.0.0.39", request.getHeader("X-Forwarded-For"));
+		assertEquals("POST", request.getMethod());
+		assertEquals("/async", request.getRequestURI());
+	}
+
+	@Test
+	public void validateHttpServletRequestGenerationWithJson() {
+		ServerlessServletContext servletContext = new ServerlessServletContext();
+		HttpServletRequest request = AwsSpringHttpProcessingUtils.generateLatticeV2HttpServletRequest(VPC_LATTICE_V2_EVENT, null, servletContext, mapper);
+		// spot check some headers
+		assertEquals("application/json", request.getHeader("content-type"));
+		assertEquals("10.0.0.39", request.getHeader("X-Forwarded-For"));
+		assertEquals("POST", request.getMethod());
+		assertEquals("/async", request.getRequestURI());
+	}
+
+	@Test
+	public void validateRequestResponse() throws Exception {
+		try (ConfigurableApplicationContext context = SpringApplication.run(EmptyApplication.class);) {
+			ServerlessMVC mvc = ServerlessMVC.INSTANCE((ServletWebServerApplicationContext) context);
+			AwsProxyHttpServletResponseWriter responseWriter = new AwsProxyHttpServletResponseWriter();
+			AwsProxyResponse awsResponse = AwsSpringHttpProcessingUtils.processRequest(
+					AwsSpringHttpProcessingUtils.generateLatticeV2HttpServletRequest(VPC_LATTICE_V2_EVENT, null,
+							mvc.getServletContext(), mapper), mvc, responseWriter);
+			assertEquals("hello", awsResponse.getBody());
+			assertEquals(200, awsResponse.getStatusCode());
+		}
+
+	}
+
+	@EnableAutoConfiguration
     @Configuration
     public static class EmptyApplication {
     	@RestController

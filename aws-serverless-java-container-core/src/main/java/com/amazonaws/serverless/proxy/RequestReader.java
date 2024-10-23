@@ -41,6 +41,11 @@ public abstract class RequestReader<RequestType, ContainerRequestType> {
     public static final String API_GATEWAY_CONTEXT_PROPERTY = "com.amazonaws.apigateway.request.context";
 
     /**
+     * The key for the <strong>VPC Lattice V2 context</strong> property in the PropertiesDelegate object
+     */
+    public static final String VPC_LATTICE_V2_CONTEXT_PROPERTY = "com.amazonaws.vpclattice.request.context";
+
+    /**
      * The key for the <strong>API Gateway stage variables</strong> property in the PropertiesDelegate object
      */
     public static final String API_GATEWAY_STAGE_VARS_PROPERTY = "com.amazonaws.apigateway.stage.variables";
@@ -54,6 +59,11 @@ public abstract class RequestReader<RequestType, ContainerRequestType> {
      * The key to store the entire API Gateway event
      */
     public static final String API_GATEWAY_EVENT_PROPERTY = "com.amazonaws.apigateway.request";
+
+    /**
+     * The key to store the entire VPC Lattice V2 event
+     */
+    public static final String VPC_LATTICE_V2_EVENT_PROPERTY = "com.amazonaws.vpclattice.request";
 
     /**
      * The key for the <strong>AWS Lambda context</strong> property in the PropertiesDelegate object

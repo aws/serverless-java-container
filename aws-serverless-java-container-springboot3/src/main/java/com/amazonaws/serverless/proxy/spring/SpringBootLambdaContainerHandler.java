@@ -14,6 +14,7 @@ package com.amazonaws.serverless.proxy.spring;
 
 import java.util.concurrent.CountDownLatch;
 
+import com.amazonaws.serverless.proxy.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.WebApplicationType;
@@ -33,9 +34,6 @@ import com.amazonaws.serverless.proxy.internal.servlet.AwsLambdaServletContainer
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletRegistration;
 import com.amazonaws.serverless.proxy.internal.testutils.Timer;
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
-import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.serverless.proxy.spring.embedded.ServerlessReactiveServletEmbeddedServerFactory;
 import com.amazonaws.serverless.proxy.spring.embedded.ServerlessServletEmbeddedServerFactory;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -112,6 +110,25 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
                 .profiles(profiles)
                 .buildAndInitialize();
     }
+
+    /**
+     * Creates a default SpringLambdaContainerHandler initialized with the `VPCLatticeV2RequestEvent` object and the given Spring profiles
+     * @param springBootInitializer {@code SpringBootServletInitializer} class
+     * @param profiles A list of Spring profiles to activate
+     * @return An initialized instance of the `SpringLambdaContainerHandler`
+     * @throws ContainerInitializationException If an error occurs while initializing the Spring framework
+     */
+    public static SpringBootLambdaContainerHandler<VPCLatticeV2RequestEvent, AwsProxyResponse> getVpcLatticeV2Handler(Class<?> springBootInitializer, String... profiles)
+            throws ContainerInitializationException {
+        return new SpringBootProxyHandlerBuilder<VPCLatticeV2RequestEvent>()
+                .defaultVpcLatticeV2Proxy()
+                .initializationWrapper(new InitializationWrapper())
+                .springBootApplication(springBootInitializer)
+                .profiles(profiles)
+                .buildAndInitialize();
+    }
+
+
 
     /**
      * Creates a new container handler with the given reader and writer objects
