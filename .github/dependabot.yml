@@ -36,7 +36,7 @@ updates:
     groups:
       jersey:
         patterns:
-          - "org.glassfish.jersey:*"
+          - "org.glassfish.jersey.*:*"
       spring:
         patterns:
           - "org.springframework:*"
