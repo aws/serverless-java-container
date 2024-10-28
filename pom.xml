@@ -249,7 +249,7 @@
                 <plugin>
                     <groupId>com.github.spotbugs</groupId>
                     <artifactId>spotbugs-maven-plugin</artifactId>
-                    <version>4.8.6.2</version>
+                    <version>4.8.6.5</version>
                     <configuration>
                         <!--
                             Enables analysis which takes more memory but finds more bugs.
