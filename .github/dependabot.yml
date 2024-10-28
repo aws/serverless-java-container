@@ -18,6 +18,9 @@ updates:
       slf4j:
         patterns:
           - "org.slf4j:*"
+      jackson:
+        patterns:
+          - "com.fasterxml.jackson.*:*"
       log4j:
         patterns:
           - "org.apache.logging.log4j:*"
@@ -46,5 +49,8 @@ updates:
       log4j:
         patterns:
           - "org.apache.logging.log4j:*"
+      jackson:
+        patterns:
+          - "com.fasterxml.jackson.*:*"
     schedule:
       interval: "weekly"
