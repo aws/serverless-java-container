@@ -332,6 +332,23 @@ public class AwsHttpServletRequestTest {
     }
 
     @Test
+    void parameterMapWithEncodedParams_alb_generateParameterMap_validQuery() {
+        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(encodedQueryStringAlb, mockContext, null, config);
+
+        Map<String, String[]> paramMap = null;
+        try {
+            paramMap = request.generateParameterMap(request.getAwsProxyRequest().getMultiValueQueryStringParameters(), config, true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Could not generate parameter map");
+        }
+
+        assertArrayEquals(new String[]{"two"}, paramMap.get("one"));
+        assertArrayEquals(new String[]{"{\"name\":\"faisal\"}"}, paramMap.get("json"));
+        assertTrue(paramMap.size() == 2);
+    }
+
+    @Test
     void parameterMapWithMultipleValues_generateParameterMap_validQuery() {
         AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(multipleParams, mockContext, null, config);
 
