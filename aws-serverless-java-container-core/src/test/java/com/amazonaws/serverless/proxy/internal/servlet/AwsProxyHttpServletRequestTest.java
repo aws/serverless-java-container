@@ -33,8 +33,8 @@ public class AwsProxyHttpServletRequestTest {
     private static final String FORM_PARAM_NAME = "name";
     private static final String FORM_PARAM_NAME_VALUE = "Stef";
     private static final String FORM_PARAM_TEST = "test_cookie_param";
-    private static final String QUERY_STRING_NAME_VALUE = "Bob";
-    private static final String QUERY_STRING_NAME = "name";
+    private static final String QUERY_STRING_NAME_VALUE = "Bob B!";
+    private static final String QUERY_STRING_NAME = "name$";
     private static final String REQUEST_SCHEME_HTTP = "http";
     private static final String USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.61 Safari/537.36";
     private static final String REFERER = "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent/Firefox";
