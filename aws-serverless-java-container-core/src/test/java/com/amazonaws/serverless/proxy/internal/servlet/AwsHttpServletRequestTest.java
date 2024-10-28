@@ -40,11 +40,11 @@ public class AwsHttpServletRequestTest {
     private static final AwsProxyRequest queryStringEmptyValue = new AwsProxyRequestBuilder("/test", "GET")
             .queryString("one", "two").queryString("three", "").build();
     private static final AwsProxyRequest encodedQueryString = new AwsProxyRequestBuilder("/test", "GET")
-            .queryString("one", "two").queryString("json", "{\"name\":\"faisal\"}").build();
+            .queryString("one", "two").queryString("json value@1", "{\"name\":\"faisal\"}").build();
     private static final AwsProxyRequest encodedQueryStringAlb = new AwsProxyRequestBuilder("/test", "GET")
-            .queryString("one", "two").queryString("json", "{\"name\":\"faisal\"}").alb().build();
+            .queryString("one", "two").queryString("json value@1", "{\"name\":\"faisal\"}").alb().build();
     private static final AwsProxyRequest multipleParams = new AwsProxyRequestBuilder("/test", "GET")
-            .queryString("one", "two").queryString("one", "three").queryString("json", "{\"name\":\"faisal\"}").build();
+            .queryString("one", "two").queryString("one", "three").queryString("json value@1", "{\"name\":\"faisal\"}").build();
     private static final AwsProxyRequest formEncodedAndQueryString = new AwsProxyRequestBuilder("/test", "POST")
             .queryString("one", "two").queryString("one", "three")
             .queryString("five", "six")
@@ -229,7 +229,7 @@ public class AwsHttpServletRequestTest {
             fail("Could not generate query string");
         }
         assertTrue(parsedString.contains("one=two"));
-        assertTrue(parsedString.contains("json=%7B%22name%22%3A%22faisal%22%7D"));
+        assertTrue(parsedString.contains("json+value%401=%7B%22name%22%3A%22faisal%22%7D"));
         assertTrue(parsedString.contains("&") && parsedString.indexOf("&") > 0 && parsedString.indexOf("&") < parsedString.length());
     }
 
@@ -245,7 +245,7 @@ public class AwsHttpServletRequestTest {
             fail("Could not generate query string");
         }
         assertTrue(parsedString.contains("one=two"));
-        assertTrue(parsedString.contains("json=%7B%22name%22%3A%22faisal%22%7D"));
+        assertTrue(parsedString.contains("json+value%401=%7B%22name%22%3A%22faisal%22%7D"));
         assertTrue(parsedString.contains("&") && parsedString.indexOf("&") > 0 && parsedString.indexOf("&") < parsedString.length());
     }
 
@@ -262,7 +262,7 @@ public class AwsHttpServletRequestTest {
         }
         assertTrue(parsedString.contains("one=two"));
         assertTrue(parsedString.contains("one=three"));
-        assertTrue(parsedString.contains("json=%7B%22name%22%3A%22faisal%22%7D"));
+        assertTrue(parsedString.contains("json+value%401=%7B%22name%22%3A%22faisal%22%7D"));
         assertTrue(parsedString.contains("&") && parsedString.indexOf("&") > 0 && parsedString.indexOf("&") < parsedString.length());
     }
 
@@ -327,7 +327,7 @@ public class AwsHttpServletRequestTest {
         }
 
         assertArrayEquals(new String[]{"two"}, paramMap.get("one"));
-        assertArrayEquals(new String[]{"{\"name\":\"faisal\"}"}, paramMap.get("json"));
+        assertArrayEquals(new String[]{"{\"name\":\"faisal\"}"}, paramMap.get("json value@1"));
         assertTrue(paramMap.size() == 2);
     }
 
@@ -344,7 +344,7 @@ public class AwsHttpServletRequestTest {
         }
 
         assertArrayEquals(new String[]{"two"}, paramMap.get("one"));
-        assertArrayEquals(new String[]{"{\"name\":\"faisal\"}"}, paramMap.get("json"));
+        assertArrayEquals(new String[]{"{\"name\":\"faisal\"}"}, paramMap.get("json value@1"));
         assertTrue(paramMap.size() == 2);
     }
 
@@ -360,7 +360,7 @@ public class AwsHttpServletRequestTest {
             fail("Could not generate parameter map");
         }
         assertArrayEquals(new String[]{"two", "three"}, paramMap.get("one"));
-        assertArrayEquals(new String[]{"{\"name\":\"faisal\"}"}, paramMap.get("json"));
+        assertArrayEquals(new String[]{"{\"name\":\"faisal\"}"}, paramMap.get("json value@1"));
         assertTrue(paramMap.size() == 2);
     }
 
