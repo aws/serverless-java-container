@@ -22,7 +22,7 @@ dependencies {
           'org.hibernate.validator:hibernate-validator:6.1.7.Final',
           'org.glassfish:jakarta.el:5.0.0-M1',
           'jakarta.el:jakarta.el-api:5.0.1',
-          'com.fasterxml.jackson.core:jackson-databind:2.17.2',
+          'com.fasterxml.jackson.core:jackson-databind:2.18.0',
           'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.17.2',
           'org.apache.logging.log4j:log4j-core:2.24.0',
           'org.apache.logging.log4j:log4j-api:2.24.0',
