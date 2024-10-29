@@ -22,6 +22,8 @@ import com.amazonaws.serverless.proxy.model.Headers;
 import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 import com.amazonaws.services.lambda.runtime.Context;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.SecurityContext;
 import org.apache.commons.fileupload2.core.DiskFileItem;
 import org.apache.commons.fileupload2.core.FileItem;
 import org.apache.commons.fileupload2.core.FileUploadException;
@@ -43,7 +45,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.security.Principal;
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -74,6 +80,8 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     // information from anywhere else
     static final String CF_PROTOCOL_HEADER_NAME = "CloudFront-Forwarded-Proto";
     static final String PROTOCOL_HEADER_NAME = "X-Forwarded-Proto";
+    static final String CLIENT_IP_HEADER_NAME = "X-Forwarded-For";
+
     static final String HOST_HEADER_NAME = "Host";
     static final String PORT_HEADER_NAME = "X-Forwarded-Port";
     static final String CLIENT_IP_HEADER = "X-Forwarded-For";
@@ -95,6 +103,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     protected AwsHttpServletResponse response;
     protected AwsLambdaServletContainerHandler containerHandler;
     protected ServletInputStream requestInputStream;
+    private final SecurityContext securityContext;
 
 
     private static Logger log = LoggerFactory.getLogger(AwsHttpServletRequest.class);
@@ -108,9 +117,11 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
      * Protected constructors for implementing classes. This should be called first with the context received from
      * AWS Lambda
      * @param lambdaContext The Lambda function context. This object is used for utility methods such as log
+     * @param securityContext The security context
      */
-    protected AwsHttpServletRequest(Context lambdaContext) {
+    protected AwsHttpServletRequest(Context lambdaContext, SecurityContext securityContext) {
         this.lambdaContext = lambdaContext;
+        this.securityContext = securityContext;
         attributes = new HashMap<>();
         setAttribute(DISPATCHER_TYPE_ATTRIBUTE, DispatcherType.REQUEST);
     }
@@ -271,13 +282,73 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     }
 
     @Override
+    public RequestDispatcher getRequestDispatcher(String path) {
+        return getServletContext().getRequestDispatcher(path);
+    }
+
+    @Override
     public String getServletPath() {
         // we always work on the root path
         return "";
     }
 
+    @Override
+    public ServletConnection getServletConnection() {
+        return null;
+    }
 
-    //-------------------------------------------------------------
+    @Override
+    public String getAuthType() {
+        return securityContext.getAuthenticationScheme();
+    }
+
+    @Override
+    public boolean isSecure() {
+        return securityContext.isSecure();
+    }
+
+    @Override
+    public Principal getUserPrincipal() {
+        if (securityContext == null) {
+            return null;
+        }
+        return securityContext.getUserPrincipal();
+    }
+
+    @Override
+    public String getRemoteUser() {
+        if (getUserPrincipal() == null) {
+            return null;
+        }
+        return getUserPrincipal().getName();
+    }
+
+    @Override
+    public boolean isUserInRole(String role) {
+        return securityContext.isUserInRole(role);
+    }
+
+    @Override
+    public boolean authenticate(HttpServletResponse httpServletResponse) throws IOException, ServletException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void login(String username, String password) throws ServletException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void logout() throws ServletException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass) throws IOException, ServletException {
+        throw new UnsupportedOperationException();
+    }
+
+//-------------------------------------------------------------
     // Methods - Getter/Setter
     //-------------------------------------------------------------
 
@@ -606,6 +677,18 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         return Collections.emptyList();
     }
 
+    protected String[] getParameterValues(MultiValuedTreeMap<String, String> qs, String s, boolean isCaseSensitive) {
+        List<String> values = new ArrayList<>(Arrays.asList(getQueryParamValues(qs, s, isCaseSensitive)));
+
+        values.addAll(Arrays.asList(getFormBodyParameterCaseInsensitive(s)));
+
+        if (values.isEmpty()) {
+            return null;
+        } else {
+            return values.toArray(new String[0]);
+        }
+    }
+
     protected Map<String, String[]> generateParameterMap(MultiValuedTreeMap<String, String> qs, ContainerConfig config) {
         Map<String, String[]> output;
 
@@ -827,6 +910,99 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         }
     }
 
+
+
+    /**
+     * These are helper methods meant to reduce duplicated code in servletRequest classes.
+     */
+
+    protected long getDateHeader(String s, Headers headers) {
+        if (headers == null) {
+            return -1L;
+        }
+        String dateString = headers.getFirst(s);
+        if (dateString == null) {
+            return -1L;
+        }
+        try {
+            return Instant.from(ZonedDateTime.parse(dateString, dateFormatter)).toEpochMilli();
+        } catch (DateTimeParseException e) {
+            log.warn("Invalid date header in request: " + SecurityUtils.crlf(dateString));
+            return -1L;
+        }
+    }
+
+    protected String getHeader(String s, Headers headers) {
+        if (headers == null) {
+            return null;
+        }
+        return headers.getFirst(s);
+    }
+
+    protected Enumeration<String> getHeaders(String s, Headers headers) {
+        if (headers == null || !headers.containsKey(s)) {
+            return Collections.emptyEnumeration();
+        }
+        return Collections.enumeration(headers.get(s));
+    }
+
+    protected Enumeration<String> getHeaderNames(Headers headers) {
+        if (headers == null) {
+            return Collections.emptyEnumeration();
+        }
+        return Collections.enumeration(headers.keySet());
+    }
+
+    protected int getIntHeader(String s, Headers headers) {
+        if (headers == null) {
+            return -1;
+        }
+        String headerValue = headers.getFirst(s);
+        if (headerValue == null || "".equals(headerValue)) {
+            return -1;
+        }
+
+        return Integer.parseInt(headerValue);
+    }
+
+    protected void setCharacterEncoding(String s, Headers headers) throws UnsupportedEncodingException {
+        if (headers == null || !headers.containsKey(HttpHeaders.CONTENT_TYPE)) {
+            log.debug("Called set character encoding to " + SecurityUtils.crlf(s) + " on a request without a content type. Character encoding will not be set");
+            return;
+        }
+        String currentContentType = headers.getFirst(HttpHeaders.CONTENT_TYPE);
+        headers.putSingle(HttpHeaders.CONTENT_TYPE, appendCharacterEncoding(currentContentType, s));
+    }
+
+    protected int getContentLength(Headers headers) {
+        String headerValue = headers.getFirst(HttpHeaders.CONTENT_LENGTH);
+        if (headerValue == null) {
+            return -1;
+        }
+        return Integer.parseInt(headerValue);
+    }
+
+    protected long getContentLengthLong(Headers headers) {
+        String headerValue = headers.getFirst(HttpHeaders.CONTENT_LENGTH);
+        if (headerValue == null) {
+            return -1;
+        }
+        return Long.parseLong(headerValue);
+    }
+
+    protected String getParameter(MultiValuedTreeMap<String, String> qs, String s, boolean isCaseSensitive) {
+        String queryStringParameter = getFirstQueryParamValue(qs, s, isCaseSensitive);
+        if (queryStringParameter != null) {
+            return queryStringParameter;
+        }
+
+        String[] bodyParams = getFormBodyParameterCaseInsensitive(s);
+        if (bodyParams.length == 0) {
+            return null;
+        } else {
+            return bodyParams[0];
+        }
+    }
 
     /**
      * Class that represents a header value.

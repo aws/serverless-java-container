@@ -18,6 +18,7 @@ import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 
+import com.amazonaws.serverless.proxy.model.VPCLatticeV2RequestEvent;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
@@ -117,6 +118,17 @@ public abstract class ServletLambdaContainerHandlerBuilder<
                 .responseTypeClass((Class<ResponseType>) AwsProxyResponse.class);
         return self();
 
+    }
+
+    public Builder defaultVpcLatticeV2Proxy() {
+        initializationWrapper(new AsyncInitializationWrapper())
+                .requestReader((RequestReader<RequestType, ContainerRequestType>) new AwsVpcLatticeV2HttpServletRequestReader())
+                .responseWriter((ResponseWriter<AwsHttpServletResponse, ResponseType>) new AwsProxyHttpServletResponseWriter(true))
+                .securityContextWriter((SecurityContextWriter<RequestType>) new AwsVPCLatticeV2SecurityContextWriter())
+                .exceptionHandler(defaultExceptionHandler())
+                .requestTypeClass((Class<RequestType>) VPCLatticeV2RequestEvent.class)
+                .responseTypeClass((Class<ResponseType>) AwsProxyResponse.class);
+        return self();
     }
 
     protected ExceptionHandler<ResponseType> defaultExceptionHandler() {

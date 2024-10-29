@@ -16,6 +16,7 @@ import jakarta.ws.rs.core.MediaType;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -30,7 +31,7 @@ public class ServletAppTest {
     private String type;
 
     public static Collection<Object> data() {
-        return Arrays.asList(new Object[]{"API_GW", "ALB", "HTTP_API"});
+        return Arrays.asList(new Object[]{"API_GW", "ALB", "HTTP_API", "VPC_LATTICE_V2"});
     }
 
     public void initServletAppTest(String reqType) {
@@ -173,6 +174,9 @@ public class ServletAppTest {
                 break;
             case "HTTP_API":
                 req = reqBuilder.toHttpApiV2RequestStream();
+                break;
+            case "VPC_LATTICE_V2":
+                req = reqBuilder.toVPCLatticeV2RequestStream();
         }
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         streamHandler.handleRequest(req, out, lambdaContext);
@@ -189,17 +193,13 @@ public class ServletAppTest {
         LambdaContainerHandler.getContainerConfig().setDefaultContentCharset(ContainerConfig.DEFAULT_CONTENT_CHARSET);
         LambdaStreamHandler streamHandler = new LambdaStreamHandler(type);
         AwsProxyRequestBuilder reqBuilder = new AwsProxyRequestBuilder("/content-type/jsonutf8", "GET");
-        InputStream req = null;
-        switch (type) {
-            case "ALB":
-                req = reqBuilder.alb().buildStream();
-                break;
-            case "API_GW":
-                req = reqBuilder.buildStream();
-                break;
-            case "HTTP_API":
-                req = reqBuilder.toHttpApiV2RequestStream();
-        }
+        InputStream req = switch (type) {
+            case "ALB" -> reqBuilder.alb().buildStream();
+            case "API_GW" -> reqBuilder.buildStream();
+            case "HTTP_API" -> reqBuilder.toHttpApiV2RequestStream();
+            case "VPC_LATTICE_V2" -> reqBuilder.toVPCLatticeV2RequestStream();
+            default -> null;
+        };
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         streamHandler.handleRequest(req, out, lambdaContext);
         AwsProxyResponse resp = LambdaContainerHandler.getObjectMapper().readValue(out.toByteArray(), AwsProxyResponse.class);
@@ -227,7 +227,7 @@ public class ServletAppTest {
                 .header(HttpHeaders.ACCEPT, "application/json;v=1")
                 .body(new MessageData("test message"));
         AwsProxyResponse resp = handler.handleRequest(req, lambdaContext);
-        if ("HTTP_API".equals(type)) {
+        if ("HTTP_API".equals(type) || "VPC_LATTICE_V2".equals(type)) {
             assertNotNull(resp.getHeaders());
         } else {
             assertNull(resp.getHeaders());

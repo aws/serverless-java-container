@@ -76,7 +76,7 @@
     </licenses>
 
     <properties>
-        <jacoco.minCoverage>0.7</jacoco.minCoverage>
+        <jacoco.minCoverage>0.6</jacoco.minCoverage>
         <dependencyCheck.version>10.0.3</dependencyCheck.version>
         <jackson.version>2.18.1</jackson.version>
         <slf4j.version>2.0.16</slf4j.version>

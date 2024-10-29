@@ -55,7 +55,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     //-------------------------------------------------------------
 
     private AwsProxyRequest request;
-    private SecurityContext securityContext;
     private AwsAsyncContext asyncContext;
     private static Logger log = LoggerFactory.getLogger(AwsProxyHttpServletRequest.class);
     private ContainerConfig config;
@@ -71,9 +70,8 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
 
     public AwsProxyHttpServletRequest(AwsProxyRequest awsProxyRequest, Context lambdaContext, SecurityContext awsSecurityContext, ContainerConfig config) {
-        super(lambdaContext);
+        super(lambdaContext, awsSecurityContext);
         this.request = awsProxyRequest;
-        this.securityContext = awsSecurityContext;
         this.config = config;
     }
 
@@ -84,13 +82,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     //-------------------------------------------------------------
     // Implementation - HttpServletRequest
     //-------------------------------------------------------------
-
-
-    @Override
-    public String getAuthType() {
-        return securityContext.getAuthenticationScheme();
-    }
-
 
     @Override
     public Cookie[] getCookies() {
@@ -107,21 +98,8 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public long getDateHeader(String s) {
-        if (request.getMultiValueHeaders() == null) {
-            return -1L;
-        }
-        String dateString = request.getMultiValueHeaders().getFirst(s);
-        if (dateString == null) {
-            return -1L;
-        }
-        try {
-            return Instant.from(ZonedDateTime.parse(dateString, dateFormatter)).toEpochMilli();
-        } catch (DateTimeParseException e) {
-            log.warn("Invalid date header in request" + SecurityUtils.crlf(dateString));
-            return -1L;
-        }
+        return getDateHeader(s, request.getMultiValueHeaders());
     }
-
 
     @Override
     public String getHeader(String s) {
@@ -135,33 +113,19 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public Enumeration<String> getHeaders(String s) {
-        if (request.getMultiValueHeaders() == null || request.getMultiValueHeaders().get(s) == null) {
-            return Collections.emptyEnumeration();
-        }
-        return Collections.enumeration(request.getMultiValueHeaders().get(s));
+        return getHeaders(s, request.getMultiValueHeaders());
     }
 
 
     @Override
     public Enumeration<String> getHeaderNames() {
-        if (request.getMultiValueHeaders() == null) {
-            return Collections.emptyEnumeration();
-        }
-        return Collections.enumeration(request.getMultiValueHeaders().keySet());
+        return getHeaderNames(request.getMultiValueHeaders());
     }
 
 
     @Override
     public int getIntHeader(String s) {
-        if (request.getMultiValueHeaders() == null) {
-            return -1;
-        }
-        String headerValue = request.getMultiValueHeaders().getFirst(s);
-        if (headerValue == null) {
-            return -1;
-        }
-
-        return Integer.parseInt(headerValue);
+        return getIntHeader(s, request.getMultiValueHeaders());
     }
 
 
@@ -205,26 +169,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         }
     }
 
-
-    @Override
-    public String getRemoteUser() {
-        return securityContext.getUserPrincipal().getName();
-    }
-
-
-    @Override
-    public boolean isUserInRole(String s) {
-        // TODO: Not supported?
-        return false;
-    }
-
-
-    @Override
-    public Principal getUserPrincipal() {
-        return securityContext.getUserPrincipal();
-    }
-
-
     @Override
     public String getRequestURI() {
         return cleanUri(getContextPath()) + cleanUri(request.getPath());
@@ -234,33 +178,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     public StringBuffer getRequestURL() {
         return generateRequestURL(request.getPath());
-    }
-
-
-    @Override
-    public boolean authenticate(HttpServletResponse httpServletResponse)
-            throws IOException, ServletException {
-        throw new UnsupportedOperationException();
-    }
-
-
-    @Override
-    public void login(String s, String s1)
-            throws ServletException {
-        throw new UnsupportedOperationException();
-    }
-
-
-    @Override
-    public void logout()
-            throws ServletException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public <T extends HttpUpgradeHandler> T upgrade(Class<T> aClass)
-            throws IOException, ServletException {
-        throw new UnsupportedOperationException();
     }
 
     //-------------------------------------------------------------
@@ -295,21 +212,13 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public int getContentLength() {
-        String headerValue = request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_LENGTH);
-        if (headerValue == null) {
-            return -1;
-        }
-        return Integer.parseInt(headerValue);
+        return getContentLength(request.getMultiValueHeaders());
     }
 
 
     @Override
     public long getContentLengthLong() {
-        String headerValue = request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_LENGTH);
-        if (headerValue == null) {
-            return -1;
-        }
-        return Long.parseLong(headerValue);
+        return getContentLengthLong(request.getMultiValueHeaders());
     }
 
 
@@ -325,19 +234,8 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getParameter(String s) {
-       String queryStringParameter = getFirstQueryParamValue(request.getMultiValueQueryStringParameters(), s, config.isQueryStringCaseSensitive());
-        if (queryStringParameter != null) {
-            return queryStringParameter;
-        }
-
-        String[] bodyParams = getFormBodyParameterCaseInsensitive(s);
-        if (bodyParams.length == 0) {
-            return null;
-        } else {
-            return bodyParams[0];
-        }
+        return getParameter(request.getMultiValueQueryStringParameters(), s, config.isQueryStringCaseSensitive());
     }
-
 
     @Override
     public Enumeration<String> getParameterNames() {
@@ -474,18 +372,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     }
 
     @Override
-    public boolean isSecure() {
-        return securityContext.isSecure();
-    }
-
-
-    @Override
-    public RequestDispatcher getRequestDispatcher(String s) {
-        return getServletContext().getRequestDispatcher(s);
-    }
-
-
-    @Override
     public int getRemotePort() {
         if (request.getRequestSource().equals(RequestSource.ALB)) {
             String portHeader;
@@ -553,11 +439,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     public String getProtocolRequestId() {
         return "";
-    }
-
-    @Override
-    public ServletConnection getServletConnection() {
-        return null;
     }
 
     //-------------------------------------------------------------
