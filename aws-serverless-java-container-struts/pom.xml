@@ -15,7 +15,7 @@
     </parent>
 
     <properties>
-        <struts.version>7.0.0-M9</struts.version>
+        <struts.version>7.0.0-M10</struts.version>
     </properties>
 
     <dependencies>
