@@ -122,17 +122,12 @@ class AwsSpringHttpProcessingUtils {
 			MultiValueMapAdapter headers = new MultiValueMapAdapter(v1Request.getMultiValueHeaders());
 			httpRequest.setHeaders(headers);
 		}
-        if (StringUtils.hasText(v1Request.getBody())) {
-			if (v1Request.getHeaders().get(HttpHeaders.CONTENT_TYPE)==null) {
-				httpRequest.setContentType("application/json");
-			}
-            if (v1Request.isBase64Encoded()) {
-                httpRequest.setContent(Base64.getMimeDecoder().decode(v1Request.getBody()));
-            } else {
-                Charset charseEncoding = parseCharacterEncoding(v1Request.getHeaders().get(HttpHeaders.CONTENT_TYPE));
-                httpRequest.setContent(v1Request.getBody().getBytes(charseEncoding));
-            }
-        }
+        populateContentAndContentType(
+                v1Request.getBody(),
+                v1Request.getHeaders().get(HttpHeaders.CONTENT_TYPE),
+                v1Request.isBase64Encoded(),
+                httpRequest
+        );
 		if (v1Request.getRequestContext() != null) {
 			httpRequest.setAttribute(RequestReader.API_GATEWAY_CONTEXT_PROPERTY, v1Request.getRequestContext());
 			httpRequest.setAttribute(RequestReader.ALB_CONTEXT_PROPERTY, v1Request.getRequestContext().getElb());
@@ -159,6 +154,12 @@ class AwsSpringHttpProcessingUtils {
 		
 		v2Request.getHeaders().forEach(httpRequest::setHeader);
 
+        populateContentAndContentType(
+                v2Request.getBody(),
+                v2Request.getHeaders().get(HttpHeaders.CONTENT_TYPE),
+                v2Request.isBase64Encoded(),
+                httpRequest
+        );
 
         if (StringUtils.hasText(v2Request.getBody())) {
 			if (v2Request.getHeaders().get(HttpHeaders.CONTENT_TYPE)==null) {
@@ -196,6 +197,24 @@ class AwsSpringHttpProcessingUtils {
 			throw new IllegalStateException(e);
 		}
 	}
+
+    private static void populateContentAndContentType(
+            String body,
+            String contentType,
+            boolean base64Encoded,
+            ServerlessHttpServletRequest httpRequest) {
+        if (StringUtils.hasText(body)) {
+            if (contentType == null) {
+                httpRequest.setContentType("application/json");
+            }
+            if (base64Encoded) {
+                httpRequest.setContent(Base64.getMimeDecoder().decode(body));
+            } else {
+                Charset charseEncoding = parseCharacterEncoding(contentType);
+                httpRequest.setContent(body.getBytes(charseEncoding));
+            }
+        }
+    }
 
     static final String HEADER_KEY_VALUE_SEPARATOR = "=";
     static final String HEADER_VALUE_SEPARATOR = ";";
