@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import com.amazonaws.serverless.proxy.internal.HttpUtils;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -161,17 +162,6 @@ class AwsSpringHttpProcessingUtils {
                 httpRequest
         );
 
-        if (StringUtils.hasText(v2Request.getBody())) {
-			if (v2Request.getHeaders().get(HttpHeaders.CONTENT_TYPE)==null) {
-				httpRequest.setContentType("application/json");
-			}
-			if (v2Request.isBase64Encoded()) {
-                httpRequest.setContent(Base64.getMimeDecoder().decode(v2Request.getBody()));
-            } else {
-                Charset charseEncoding = parseCharacterEncoding(v2Request.getHeaders().get(HttpHeaders.CONTENT_TYPE));
-                httpRequest.setContent(v2Request.getBody().getBytes(charseEncoding));
-            }
-        }
 		httpRequest.setAttribute(RequestReader.HTTP_API_CONTEXT_PROPERTY, v2Request.getRequestContext());
 		httpRequest.setAttribute(RequestReader.HTTP_API_STAGE_VARS_PROPERTY, v2Request.getStageVariables());
 		httpRequest.setAttribute(RequestReader.HTTP_API_EVENT_PROPERTY, v2Request);
@@ -210,42 +200,12 @@ class AwsSpringHttpProcessingUtils {
             if (base64Encoded) {
                 httpRequest.setContent(Base64.getMimeDecoder().decode(body));
             } else {
-                Charset charseEncoding = parseCharacterEncoding(contentType);
+                Charset charseEncoding = HttpUtils.parseCharacterEncoding(contentType,StandardCharsets.UTF_8);
                 httpRequest.setContent(body.getBytes(charseEncoding));
             }
         }
     }
 
-    static final String HEADER_KEY_VALUE_SEPARATOR = "=";
-    static final String HEADER_VALUE_SEPARATOR = ";";
-    static final String ENCODING_VALUE_KEY = "charset";
-    static protected Charset parseCharacterEncoding(String contentTypeHeader) {
-        // we only look at content-type because content-encoding should only be used for
-        // "binary" requests such as gzip/deflate.
-        Charset defaultCharset = StandardCharsets.UTF_8;
-        if (contentTypeHeader == null) {
-            return defaultCharset;
-        }
 
-        String[] contentTypeValues = contentTypeHeader.split(HEADER_VALUE_SEPARATOR);
-        if (contentTypeValues.length <= 1) {
-            return defaultCharset;
-        }
-
-        for (String contentTypeValue : contentTypeValues) {
-            if (contentTypeValue.trim().startsWith(ENCODING_VALUE_KEY)) {
-                String[] encodingValues = contentTypeValue.split(HEADER_KEY_VALUE_SEPARATOR);
-                if (encodingValues.length <= 1) {
-                    return defaultCharset;
-                }
-                try {
-                    return Charsets.toCharset(encodingValues[1]);
-                } catch (UnsupportedCharsetException ex) {
-                    return defaultCharset;
-                }
-            }
-        }
-        return defaultCharset;
-    }
 
 }
