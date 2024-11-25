@@ -370,14 +370,19 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     @SuppressFBWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS") // suppressing this as according to the specs we should be returning null here if we can't find params
     public String[] getParameterValues(String s) {
     
-    // TODO lots of back and forth arrays and lists here, sort it out!
-        List<String> values = new ArrayList<>(Arrays.asList(getQueryParamValues(request.getMultiValueQueryStringParameters(), s, config.isQueryStringCaseSensitive())));
-        // List<String> values = getQueryParamValuesAsList(request.getMultiValueQueryStringParameters(), s, config.isQueryStringCaseSensitive());
         // decode key if ALB
         if (request.getRequestSource() == RequestSource.ALB) {
             s = decodeValueIfEncoded(s);
         }
 
+        List<String> values = getQueryParamValuesAsList(request.getMultiValueQueryStringParameters(), s, config.isQueryStringCaseSensitive());
+        
+        // copy list so we don't modifying the underlying multi-value query params
+        if (values != null) {
+            values = new ArrayList<>(values);
+        } else {
+            values = new ArrayList<>();
+        }
         
         // decode values if ALB
         if (values != null && request.getRequestSource() == RequestSource.ALB) {
@@ -391,7 +396,6 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         } else {
             return values.toArray(new String[0]);
         }
-
     }
 
 
