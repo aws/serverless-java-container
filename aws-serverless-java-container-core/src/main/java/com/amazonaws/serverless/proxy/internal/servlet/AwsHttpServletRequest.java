@@ -607,7 +607,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     }
 
     protected Map<String, String[]> generateParameterMap(MultiValuedTreeMap<String, String> qs, ContainerConfig config) {
-    	return generateParameterMap(qs, config, false);
+        return generateParameterMap(qs, config, false);
     }
     
     protected Map<String, String[]> generateParameterMap(MultiValuedTreeMap<String, String> qs, ContainerConfig config, boolean decodeQueryParams) {
@@ -621,22 +621,22 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
                 .collect(Collectors.toMap(Map.Entry::getKey, (e) -> e.getValue().toArray(new String[0])));
         }
 
-    	// decode all keys and values in map
-    	final MultiValuedTreeMap<String, String> decodedQs = new MultiValuedTreeMap<String, String>();
-    	if (decodeQueryParams) {
-    		for (Map.Entry<String, List<String>> entry : qs.entrySet()) {
-    			String k = decodeValueIfEncoded(entry.getKey());
-    			List<String> v = getQueryParamValuesAsList(qs, entry.getKey(), false).stream()
-						.map(AwsHttpServletRequest::decodeValueIfEncoded)
-						.collect(Collectors.toList());
-    			// addAll in case map has 2 keys that are identical once decoded
-    			decodedQs.addAll(k, v);
-			}
-    	} else {
-    		decodedQs.putAll(qs);
-    	}
-    	
-    	Map<String, List<String>> queryStringParams;
+        // decode all keys and values in map
+        final MultiValuedTreeMap<String, String> decodedQs = new MultiValuedTreeMap<String, String>();
+        if (decodeQueryParams) {
+            for (Map.Entry<String, List<String>> entry : qs.entrySet()) {
+                String k = decodeValueIfEncoded(entry.getKey());
+                List<String> v = getQueryParamValuesAsList(qs, entry.getKey(), false).stream()
+                        .map(AwsHttpServletRequest::decodeValueIfEncoded)
+                        .collect(Collectors.toList());
+                // addAll in case map has 2 keys that are identical once decoded
+                decodedQs.addAll(k, v);
+            }
+        } else {
+            decodedQs.putAll(qs);
+        }
+        
+        Map<String, List<String>> queryStringParams;
         if (config.isQueryStringCaseSensitive()) {
             queryStringParams = decodedQs;
         } else {

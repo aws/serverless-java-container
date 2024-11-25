@@ -326,25 +326,25 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     public String getParameter(String s) {
 
-    	// decode key if ALB
-    	if (request.getRequestSource() == RequestSource.ALB) {
-    		s = decodeValueIfEncoded(s);
-    	}
+        // decode key if ALB
+        if (request.getRequestSource() == RequestSource.ALB) {
+            s = decodeValueIfEncoded(s);
+        }
 
        String queryStringParameter = getFirstQueryParamValue(request.getMultiValueQueryStringParameters(), s, config.isQueryStringCaseSensitive());
-        if (queryStringParameter != null) {
-        	if (request.getRequestSource() == RequestSource.ALB) {
-        		queryStringParameter = decodeValueIfEncoded(queryStringParameter);
-        	}
-            return queryStringParameter;
-        }
+       if (queryStringParameter != null) {
+           if (request.getRequestSource() == RequestSource.ALB) {
+               queryStringParameter = decodeValueIfEncoded(queryStringParameter);
+           }
+           return queryStringParameter;
+       }
 
-        String[] bodyParams = getFormBodyParameterCaseInsensitive(s);
-        if (bodyParams.length == 0) {
-            return null;
-        } else {
-            return bodyParams[0];
-        }
+       String[] bodyParams = getFormBodyParameterCaseInsensitive(s);
+       if (bodyParams.length == 0) {
+           return null;
+       } else {
+           return bodyParams[0];
+       }
     }
 
 
@@ -357,40 +357,41 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
         Set<String> paramNames = request.getMultiValueQueryStringParameters().keySet();
         if (request.getRequestSource() == RequestSource.ALB) {
-        	paramNames = paramNames.stream().map(AwsProxyHttpServletRequest::decodeValueIfEncoded).collect(Collectors.toSet());
+            paramNames = paramNames.stream().map(AwsProxyHttpServletRequest::decodeValueIfEncoded).collect(Collectors.toSet());
         }
-		
+
         return Collections.enumeration(
-				Stream.concat(formParameterNames.stream(), paramNames.stream())
-				.collect(Collectors.toSet()));
+                Stream.concat(formParameterNames.stream(), paramNames.stream())
+                .collect(Collectors.toSet()));
     }
 
 
     @Override
     @SuppressFBWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS") // suppressing this as according to the specs we should be returning null here if we can't find params
     public String[] getParameterValues(String s) {
-    	
-    	// decode key if ALB
-    	if (request.getRequestSource() == RequestSource.ALB) {
-    		s = decodeValueIfEncoded(s);
-    	}
-    	
-    	// TODO lots of back and forth arrays and lists here, sort it out!
+    
+    // TODO lots of back and forth arrays and lists here, sort it out!
         List<String> values = new ArrayList<>(Arrays.asList(getQueryParamValues(request.getMultiValueQueryStringParameters(), s, config.isQueryStringCaseSensitive())));
         // List<String> values = getQueryParamValuesAsList(request.getMultiValueQueryStringParameters(), s, config.isQueryStringCaseSensitive());
+        // decode key if ALB
+        if (request.getRequestSource() == RequestSource.ALB) {
+            s = decodeValueIfEncoded(s);
+        }
+
         
         // decode values if ALB
-        if (request.getRequestSource() == RequestSource.ALB) {
-        	values = values.stream().map(AwsHttpServletRequest::decodeValueIfEncoded).collect(Collectors.toList());
+        if (values != null && request.getRequestSource() == RequestSource.ALB) {
+            values = values.stream().map(AwsHttpServletRequest::decodeValueIfEncoded).collect(Collectors.toList());
         }
 
         values.addAll(Arrays.asList(getFormBodyParameterCaseInsensitive(s)));
-
+        
         if (values.size() == 0) {
             return null;
         } else {
             return values.toArray(new String[0]);
         }
+
     }
 
 

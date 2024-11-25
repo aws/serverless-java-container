@@ -92,26 +92,26 @@ public class AwsProxyRequestBuilder {
     //-------------------------------------------------------------
 
     public AwsProxyRequestBuilder alb() {
-		/*
-		 * This method sets up the requestContext to look like an ALB request and also
-		 * re-encodes URL query params, since ALBs do not decode them. This now returns
-		 * a new AwsProxyRequestBuilder with the new query param state, so the original
-		 * builder maintains the original configured state and can be then be reused in
-		 * further unit tests. For now the simplest way to accomplish a deep copy is by
-		 * serializing to JSON then deserializing.
-		 */
-    	
-    	ObjectMapper objectMapper = new ObjectMapper();
-    	AwsProxyRequest albRequest = null;
-    	try {
-    		String json = objectMapper.writeValueAsString(this.request);
-    		albRequest = objectMapper.readValue(json, AwsProxyRequest.class);
-    	} catch (JsonProcessingException jpe) {
-    		throw new RuntimeException(jpe);
-    	}
-    	
+        /*
+         * This method sets up the requestContext to look like an ALB request and also
+         * re-encodes URL query params, since ALBs do not decode them. This now returns
+         * a new AwsProxyRequestBuilder with the new query param state, so the original
+         * builder maintains the original configured state and can be then be reused in
+         * further unit tests. For now the simplest way to accomplish a deep copy is by
+         * serializing to JSON then deserializing.
+         */
+        
+        ObjectMapper objectMapper = new ObjectMapper();
+        AwsProxyRequest albRequest = null;
+        try {
+            String json = objectMapper.writeValueAsString(this.request);
+            albRequest = objectMapper.readValue(json, AwsProxyRequest.class);
+        } catch (JsonProcessingException jpe) {
+            throw new RuntimeException(jpe);
+        }
+        
         if (albRequest.getRequestContext() == null) {
-        	albRequest.setRequestContext(new AwsProxyRequestContext());
+            albRequest.setRequestContext(new AwsProxyRequestContext());
         }
         albRequest.getRequestContext().setElb(new AlbContext());
         albRequest.getRequestContext().getElb().setTargetGroupArn(

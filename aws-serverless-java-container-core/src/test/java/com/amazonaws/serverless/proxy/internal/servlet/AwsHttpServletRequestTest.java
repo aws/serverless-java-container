@@ -386,9 +386,9 @@ public class AwsHttpServletRequestTest {
 
     @Test
     void parameterMap_generateParameterMap_differentCasing_caseSensitive() {
-    	ContainerConfig caseSensitiveConfig = ContainerConfig.defaultConfig();
-    	caseSensitiveConfig.setQueryStringCaseSensitive(true);
-    	AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(differentCasing, mockContext, null, caseSensitiveConfig);
+        ContainerConfig caseSensitiveConfig = ContainerConfig.defaultConfig();
+        caseSensitiveConfig.setQueryStringCaseSensitive(true);
+        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(differentCasing, mockContext, null, caseSensitiveConfig);
         Map<String, String[]> paramMap = null;
         try {
             paramMap = request.generateParameterMap(request.getAwsProxyRequest().getMultiValueQueryStringParameters(), caseSensitiveConfig);
@@ -403,8 +403,8 @@ public class AwsHttpServletRequestTest {
 
     @Test
     void parameterMap_generateParameterMap_differentCasing_caseInsensitive() {
-    	ContainerConfig caseInsensitiveConfig = ContainerConfig.defaultConfig();
-    	caseInsensitiveConfig.setQueryStringCaseSensitive(false);
+        ContainerConfig caseInsensitiveConfig = ContainerConfig.defaultConfig();
+        caseInsensitiveConfig.setQueryStringCaseSensitive(false);
 
         AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(differentCasing, mockContext, null, caseInsensitiveConfig);
 
