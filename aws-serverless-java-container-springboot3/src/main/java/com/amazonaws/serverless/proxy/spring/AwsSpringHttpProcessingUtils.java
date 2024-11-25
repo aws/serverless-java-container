@@ -1,24 +1,28 @@
 package com.amazonaws.serverless.proxy.spring;
 
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
+import java.nio.charset.UnsupportedCharsetException;
+import java.util.Base64;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import com.amazonaws.serverless.proxy.internal.HttpUtils;
+import org.apache.commons.io.Charsets;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.cloud.function.serverless.web.ServerlessHttpServletRequest;
 import org.springframework.cloud.function.serverless.web.ServerlessMVC;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.MultiValueMapAdapter;
 import org.springframework.util.StringUtils;
 
-import com.amazonaws.serverless.proxy.AsyncInitializationWrapper;
 import com.amazonaws.serverless.proxy.AwsHttpApiV2SecurityContextWriter;
 import com.amazonaws.serverless.proxy.AwsProxySecurityContextWriter;
 import com.amazonaws.serverless.proxy.RequestReader;
@@ -120,10 +124,12 @@ class AwsSpringHttpProcessingUtils {
 			MultiValueMapAdapter headers = new MultiValueMapAdapter(v1Request.getMultiValueHeaders());
 			httpRequest.setHeaders(headers);
 		}
-		if (StringUtils.hasText(v1Request.getBody())) {
-			httpRequest.setContentType("application/json");
-			httpRequest.setContent(v1Request.getBody().getBytes(StandardCharsets.UTF_8));
-		}
+        populateContentAndContentType(
+                v1Request.getBody(),
+                v1Request.getHeaders().get(HttpHeaders.CONTENT_TYPE),
+                v1Request.isBase64Encoded(),
+                httpRequest
+        );
 		if (v1Request.getRequestContext() != null) {
 			httpRequest.setAttribute(RequestReader.API_GATEWAY_CONTEXT_PROPERTY, v1Request.getRequestContext());
 			httpRequest.setAttribute(RequestReader.ALB_CONTEXT_PROPERTY, v1Request.getRequestContext().getElb());
@@ -149,11 +155,14 @@ class AwsSpringHttpProcessingUtils {
 		populateQueryStringparameters(v2Request.getQueryStringParameters(), httpRequest);
 		
 		v2Request.getHeaders().forEach(httpRequest::setHeader);
-		
-		if (StringUtils.hasText(v2Request.getBody())) {
-			httpRequest.setContentType("application/json");
-			httpRequest.setContent(v2Request.getBody().getBytes(StandardCharsets.UTF_8));
-		}
+
+        populateContentAndContentType(
+                v2Request.getBody(),
+                v2Request.getHeaders().get(HttpHeaders.CONTENT_TYPE),
+                v2Request.isBase64Encoded(),
+                httpRequest
+        );
+
 		httpRequest.setAttribute(RequestReader.HTTP_API_CONTEXT_PROPERTY, v2Request.getRequestContext());
 		httpRequest.setAttribute(RequestReader.HTTP_API_STAGE_VARS_PROPERTY, v2Request.getStageVariables());
 		httpRequest.setAttribute(RequestReader.HTTP_API_EVENT_PROPERTY, v2Request);
@@ -179,5 +188,23 @@ class AwsSpringHttpProcessingUtils {
 			throw new IllegalStateException(e);
 		}
 	}
+
+    private static void populateContentAndContentType(
+            String body,
+            String contentType,
+            boolean base64Encoded,
+            ServerlessHttpServletRequest httpRequest) {
+        if (StringUtils.hasText(body)) {
+            httpRequest.setContentType(contentType == null ? MediaType.APPLICATION_JSON_VALUE : contentType);
+            if (base64Encoded) {
+                httpRequest.setContent(Base64.getMimeDecoder().decode(body));
+            } else {
+                Charset charseEncoding = HttpUtils.parseCharacterEncoding(contentType,StandardCharsets.UTF_8);
+                httpRequest.setContent(body.getBytes(charseEncoding));
+            }
+        }
+    }
+
+
 
 }

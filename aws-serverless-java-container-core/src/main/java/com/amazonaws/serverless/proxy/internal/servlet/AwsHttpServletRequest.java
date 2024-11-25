@@ -369,53 +369,9 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         return new StringBuffer(getScheme() + "://" + url);
     }
 
-    protected String parseCharacterEncoding(String contentTypeHeader) {
-        // we only look at content-type because content-encoding should only be used for
-        // "binary" requests such as gzip/deflate.
-        if (contentTypeHeader == null) {
-            return null;
-        }
 
-        String[] contentTypeValues = contentTypeHeader.split(HEADER_VALUE_SEPARATOR);
-        if (contentTypeValues.length <= 1) {
-            return null;
-        }
 
-        for (String contentTypeValue : contentTypeValues) {
-            if (contentTypeValue.trim().startsWith(ENCODING_VALUE_KEY)) {
-                String[] encodingValues = contentTypeValue.split(HEADER_KEY_VALUE_SEPARATOR);
-                if (encodingValues.length <= 1) {
-                    return null;
-                }
-                return encodingValues[1];
-            }
-        }
-        return null;
-    }
 
-    protected String appendCharacterEncoding(String currentContentType, String newEncoding) {
-        if (currentContentType == null || currentContentType.trim().isEmpty()) {
-            return null;
-        }
-
-        if (currentContentType.contains(HEADER_VALUE_SEPARATOR)) {
-            String[] contentTypeValues = currentContentType.split(HEADER_VALUE_SEPARATOR);
-            StringBuilder contentType = new StringBuilder(contentTypeValues[0]);
-
-            for (int i = 1; i < contentTypeValues.length; i++) {
-                String contentTypeValue = contentTypeValues[i];
-                String contentTypeString = HEADER_VALUE_SEPARATOR + " " + contentTypeValue;
-                if (contentTypeValue.trim().startsWith(ENCODING_VALUE_KEY)) {
-                    contentTypeString = HEADER_VALUE_SEPARATOR + " " + ENCODING_VALUE_KEY + HEADER_KEY_VALUE_SEPARATOR + newEncoding;
-                }
-                contentType.append(contentTypeString);
-            }
-
-            return contentType.toString();
-        } else {
-            return currentContentType + HEADER_VALUE_SEPARATOR + " " + ENCODING_VALUE_KEY + HEADER_KEY_VALUE_SEPARATOR + newEncoding;
-        }
-    }
 
     protected ServletInputStream bodyStringToInputStream(String body, boolean isBase64Encoded) throws IOException {
         if (body == null) {
