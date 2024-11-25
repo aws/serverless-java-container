@@ -17,6 +17,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.cloud.function.serverless.web.ServerlessHttpServletRequest;
 import org.springframework.cloud.function.serverless.web.ServerlessMVC;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.MultiValueMapAdapter;
@@ -194,9 +195,7 @@ class AwsSpringHttpProcessingUtils {
             boolean base64Encoded,
             ServerlessHttpServletRequest httpRequest) {
         if (StringUtils.hasText(body)) {
-            if (contentType == null) {
-                httpRequest.setContentType("application/json");
-            }
+            httpRequest.setContentType(contentType == null ? MediaType.APPLICATION_JSON_VALUE : contentType);
             if (base64Encoded) {
                 httpRequest.setContent(Base64.getMimeDecoder().decode(body));
             } else {
