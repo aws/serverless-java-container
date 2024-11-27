@@ -641,7 +641,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
             queryStringParams = decodedQs;
         } else {
             // If it's case insensitive, we check the entire map on every parameter
-            queryStringParams = decodedQs.entrySet().stream().collect(
+            queryStringParams = decodedQs.entrySet().stream().parallel().collect(
                 Collectors.toMap(
                     Map.Entry::getKey,
                     e -> getQueryParamValuesAsList(decodedQs, e.getKey(), false)
