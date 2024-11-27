@@ -12,6 +12,7 @@
  */
 package com.amazonaws.serverless.proxy.internal.servlet;
 
+import com.amazonaws.serverless.proxy.internal.HttpUtils;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
@@ -32,6 +33,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.security.Principal;
 import java.time.Instant;
 import java.time.ZonedDateTime;
@@ -232,7 +234,8 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
         if (headers == null) {
             return config.getDefaultContentCharset();
         }
-        return parseCharacterEncoding(headers.getFirst(HttpHeaders.CONTENT_TYPE));
+        Charset charset = HttpUtils.parseCharacterEncoding(headers.getFirst(HttpHeaders.CONTENT_TYPE),null);
+        return charset != null ? charset.name() : null;
     }
 
     @Override
@@ -242,7 +245,7 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
             return;
         }
         String currentContentType = headers.getFirst(HttpHeaders.CONTENT_TYPE);
-        headers.putSingle(HttpHeaders.CONTENT_TYPE, appendCharacterEncoding(currentContentType, s));
+        headers.putSingle(HttpHeaders.CONTENT_TYPE, HttpUtils.appendCharacterEncoding(currentContentType, s));
     }
 
     @Override

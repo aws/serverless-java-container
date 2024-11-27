@@ -79,6 +79,8 @@ jobs:
         run: ./gha_build.sh springboot3 false false -Dspringboot.version=3.1.12 -Dspring.version=6.0.21 -Dspringsecurity.version=6.1.9 -Ddependency-check.skip=true
       - name: Build with Spring Boot 3.2.x
         run: ./gha_build.sh springboot3 false false -Dspringboot.version=3.2.7 -Dspring.version=6.1.10 -Dspringsecurity.version=6.2.5 -Ddependency-check.skip=true
+      - name: Build with Spring Boot 3.3.x
+        run: ./gha_build.sh springboot3 false false -Dspringboot.version=3.3.6 -Dspring.version=6.1.15 -Dspringsecurity.version=6.3.5 -Ddependency-check.skip=true
 
 # temporarily disabled as Struts is not released at the moment
 #  build_struts2:

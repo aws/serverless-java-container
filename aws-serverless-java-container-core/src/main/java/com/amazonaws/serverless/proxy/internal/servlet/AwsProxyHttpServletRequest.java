@@ -13,6 +13,7 @@
 package com.amazonaws.serverless.proxy.internal.servlet;
 
 
+import com.amazonaws.serverless.proxy.internal.HttpUtils;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
@@ -35,6 +36,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.security.Principal;
 import java.time.Instant;
 import java.time.ZonedDateTime;
@@ -273,7 +275,8 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
         if (request.getMultiValueHeaders() == null) {
             return config.getDefaultContentCharset();
         }
-        return parseCharacterEncoding(request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
+        Charset charset = HttpUtils.parseCharacterEncoding(request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE),null);
+        return charset != null ? charset.name() : null;
     }
 
 
@@ -284,12 +287,12 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
             request.setMultiValueHeaders(new Headers());
         }
         String currentContentType = request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
-        if (currentContentType == null || "".equals(currentContentType)) {
+        if (currentContentType == null || currentContentType.isEmpty()) {
             log.debug("Called set character encoding to " + SecurityUtils.crlf(s) + " on a request without a content type. Character encoding will not be set");
             return;
         }
 
-        request.getMultiValueHeaders().putSingle(HttpHeaders.CONTENT_TYPE, appendCharacterEncoding(currentContentType, s));
+        request.getMultiValueHeaders().putSingle(HttpHeaders.CONTENT_TYPE, HttpUtils.appendCharacterEncoding(currentContentType, s));
     }
 
 
