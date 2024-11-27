@@ -301,8 +301,16 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
     @Override
     @SuppressFBWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS") // suppressing this as according to the specs we should be returning null here if we can't find params
     public String[] getParameterValues(String s) {
-        List<String> values = new ArrayList<>(Arrays.asList(getQueryParamValues(queryString, s, config.isQueryStringCaseSensitive())));
 
+        List<String> values = getQueryParamValuesAsList(queryString, s, config.isQueryStringCaseSensitive());
+
+        // copy list so we don't modifying the underlying multi-value query params
+        if (values != null) {
+            values = new ArrayList<>(values);
+        } else {
+            values = new ArrayList<>();
+        }
+        
         values.addAll(Arrays.asList(getFormBodyParameterCaseInsensitive(s)));
 
         if (values.size() == 0) {
@@ -486,10 +494,10 @@ public class AwsHttpApiV2ProxyHttpServletRequest extends AwsHttpServletRequest {
 
                 String[] kv = value.split(QUERY_STRING_KEY_VALUE_SEPARATOR);
                 String key = URLDecoder.decode(kv[0], LambdaContainerHandler.getContainerConfig().getUriEncoding());
-                String val = kv.length == 2 ? kv[1] : "";
+                String val = kv.length == 2 ? AwsHttpServletRequest.decodeValueIfEncoded(kv[1]) : "";
                 qsMap.add(key, val);
             } catch (UnsupportedEncodingException e) {
-                log.error("Unsupported encoding in query string key: " + SecurityUtils.crlf(value), e);
+                log.error("Unsupported encoding in query string key-value pair: " + SecurityUtils.crlf(value), e);
             }
         }
         return qsMap;

@@ -33,7 +33,8 @@ public class AwsProxyHttpServletRequestTest {
     private static final String FORM_PARAM_NAME = "name";
     private static final String FORM_PARAM_NAME_VALUE = "Stef";
     private static final String FORM_PARAM_TEST = "test_cookie_param";
-    private static final String QUERY_STRING_NAME_VALUE = "Bob";
+    private static final String QUERY_STRING_NAME_VALUE = "Bob B!";
+    private static final String QUERY_STRING_NAME = "name$";
     private static final String REQUEST_SCHEME_HTTP = "http";
     private static final String USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.61 Safari/537.36";
     private static final String REFERER = "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent/Firefox";
@@ -73,10 +74,9 @@ public class AwsProxyHttpServletRequestTest {
     }
 
     private static final AwsProxyRequestBuilder REQUEST_QUERY = new AwsProxyRequestBuilder("/hello", "POST")
-            .queryString(FORM_PARAM_NAME, QUERY_STRING_NAME_VALUE);
+            .queryString(QUERY_STRING_NAME, QUERY_STRING_NAME_VALUE);
     private static final AwsProxyRequestBuilder REQUEST_QUERY_EMPTY_VALUE = new AwsProxyRequestBuilder("/hello", "POST")
-            .queryString(FORM_PARAM_NAME, "");
-
+            .queryString(QUERY_STRING_NAME, "");
 
     public void initAwsProxyHttpServletRequestTest(String type) {
         requestType = type;
@@ -102,7 +102,7 @@ public class AwsProxyHttpServletRequestTest {
         }
     }
 
-
+    
     @MethodSource("data")
     @ParameterizedTest
     void headers_getHeader_validRequest(String type) {
@@ -269,7 +269,7 @@ public class AwsProxyHttpServletRequestTest {
         HttpServletRequest request = getRequest(REQUEST_QUERY, null, null);
         assertNotNull(request);
         assertEquals(1, request.getParameterMap().size());
-        assertEquals(QUERY_STRING_NAME_VALUE, request.getParameterMap().get(FORM_PARAM_NAME)[0]);
+        assertEquals(QUERY_STRING_NAME_VALUE, request.getParameterMap().get(QUERY_STRING_NAME)[0]);
     }
 
     @MethodSource("data")
@@ -279,7 +279,7 @@ public class AwsProxyHttpServletRequestTest {
         HttpServletRequest request = getRequest(REQUEST_QUERY_EMPTY_VALUE, null, null);
         assertNotNull(request);
         assertEquals(1, request.getParameterMap().size());
-        assertEquals("", request.getParameterMap().get(FORM_PARAM_NAME)[0]);
+        assertEquals("", request.getParameterMap().get(QUERY_STRING_NAME)[0]);
     }
 
     @MethodSource("data")
@@ -300,7 +300,7 @@ public class AwsProxyHttpServletRequestTest {
         List<String> parameterNames = Collections.list(request.getParameterNames());
         assertNotNull(request);
         assertEquals(1, parameterNames.size());
-        assertTrue(parameterNames.contains(FORM_PARAM_NAME));
+        assertTrue(parameterNames.contains(QUERY_STRING_NAME));
     }
 
     @MethodSource("data")
@@ -470,7 +470,6 @@ public class AwsProxyHttpServletRequestTest {
         LambdaContainerHandler.getContainerConfig().setUseStageAsServletContext(true);
         HttpServletRequest servletRequest = getRequest(req, null, null);
         String requestUrl = servletRequest.getRequestURL().toString();
-        System.out.println(requestUrl);
         assertTrue(requestUrl.contains("/test-stage/"));
         LambdaContainerHandler.getContainerConfig().setUseStageAsServletContext(false);
     }

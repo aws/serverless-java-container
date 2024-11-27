@@ -17,7 +17,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
-import java.util.Arrays;
 
 
 public class AwsHttpServletRequestTest {
@@ -38,10 +37,14 @@ public class AwsHttpServletRequestTest {
             .queryString("one", "two").queryString("three", "four").build();
     private static final AwsProxyRequest queryStringNullValue = new AwsProxyRequestBuilder("/test", "GET")
             .queryString("one", "two").queryString("three", null).build();
+    private static final AwsProxyRequest queryStringEmptyValue = new AwsProxyRequestBuilder("/test", "GET")
+            .queryString("one", "two").queryString("three", "").build();
     private static final AwsProxyRequest encodedQueryString = new AwsProxyRequestBuilder("/test", "GET")
-            .queryString("one", "two").queryString("json", "{\"name\":\"faisal\"}").build();
+            .queryString("one", "two").queryString("json value@1", "{\"name\":\"faisal\"}").build();
+    private static final AwsProxyRequest encodedQueryStringAlb = new AwsProxyRequestBuilder("/test", "GET")
+            .queryString("one", "two").queryString("json value@1", "{\"name\":\"faisal\"}").alb().build();
     private static final AwsProxyRequest multipleParams = new AwsProxyRequestBuilder("/test", "GET")
-            .queryString("one", "two").queryString("one", "three").queryString("json", "{\"name\":\"faisal\"}").build();
+            .queryString("one", "two").queryString("one", "three").queryString("json value@1", "{\"name\":\"faisal\"}").build();
     private static final AwsProxyRequest formEncodedAndQueryString = new AwsProxyRequestBuilder("/test", "POST")
             .queryString("one", "two").queryString("one", "three")
             .queryString("five", "six")
@@ -201,6 +204,20 @@ public class AwsHttpServletRequestTest {
     }
 
     @Test
+    void queryString_generateQueryString_emptyParameterIsEmpty() {
+        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(queryStringEmptyValue, mockContext, null, config);
+        String parsedString = null;
+        try {
+            parsedString = request.generateQueryString(request.getAwsProxyRequest().getMultiValueQueryStringParameters(), true, config.getUriEncoding());
+        } catch (ServletException e) {
+            e.printStackTrace();
+            fail("Could not generate query string");
+        }
+
+        assertTrue(parsedString.endsWith("three="));
+    }
+
+    @Test
     void queryStringWithEncodedParams_generateQueryString_validQuery() {
         AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(encodedQueryString, mockContext, null, config);
 
@@ -212,7 +229,23 @@ public class AwsHttpServletRequestTest {
             fail("Could not generate query string");
         }
         assertTrue(parsedString.contains("one=two"));
-        assertTrue(parsedString.contains("json=%7B%22name%22%3A%22faisal%22%7D"));
+        assertTrue(parsedString.contains("json+value%401=%7B%22name%22%3A%22faisal%22%7D"));
+        assertTrue(parsedString.contains("&") && parsedString.indexOf("&") > 0 && parsedString.indexOf("&") < parsedString.length());
+    }
+
+    @Test
+    void queryStringWithEncodedParams_alb_generateQueryString_validQuery() {
+        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(encodedQueryStringAlb, mockContext, null, config);
+
+        String parsedString = null;
+        try {
+            parsedString = request.generateQueryString(request.getAwsProxyRequest().getMultiValueQueryStringParameters(), false, config.getUriEncoding());
+        } catch (ServletException e) {
+            e.printStackTrace();
+            fail("Could not generate query string");
+        }
+        assertTrue(parsedString.contains("one=two"));
+        assertTrue(parsedString.contains("json+value%401=%7B%22name%22%3A%22faisal%22%7D"));
         assertTrue(parsedString.contains("&") && parsedString.indexOf("&") > 0 && parsedString.indexOf("&") < parsedString.length());
     }
 
@@ -229,7 +262,7 @@ public class AwsHttpServletRequestTest {
         }
         assertTrue(parsedString.contains("one=two"));
         assertTrue(parsedString.contains("one=three"));
-        assertTrue(parsedString.contains("json=%7B%22name%22%3A%22faisal%22%7D"));
+        assertTrue(parsedString.contains("json+value%401=%7B%22name%22%3A%22faisal%22%7D"));
         assertTrue(parsedString.contains("&") && parsedString.indexOf("&") > 0 && parsedString.indexOf("&") < parsedString.length());
     }
 
@@ -266,6 +299,22 @@ public class AwsHttpServletRequestTest {
     }
 
     @Test
+    void parameterMap_generateParameterMap_emptyParameter() {
+        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(queryStringEmptyValue, mockContext, null, config);
+        Map<String, String[]> paramMap = null;
+        try {
+            paramMap = request.generateParameterMap(request.getAwsProxyRequest().getMultiValueQueryStringParameters(), config);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Could not generate parameter map");
+        }
+
+        assertArrayEquals(new String[]{"two"}, paramMap.get("one"));
+        assertArrayEquals(new String[]{""}, paramMap.get("three"));
+        assertTrue(paramMap.size() == 2);
+    }
+
+    @Test
     void parameterMapWithEncodedParams_generateParameterMap_validQuery() {
         AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(encodedQueryString, mockContext, null, config);
 
@@ -278,7 +327,24 @@ public class AwsHttpServletRequestTest {
         }
 
         assertArrayEquals(new String[]{"two"}, paramMap.get("one"));
-        assertArrayEquals(new String[]{"{\"name\":\"faisal\"}"}, paramMap.get("json"));
+        assertArrayEquals(new String[]{"{\"name\":\"faisal\"}"}, paramMap.get("json value@1"));
+        assertTrue(paramMap.size() == 2);
+    }
+
+    @Test
+    void parameterMapWithEncodedParams_alb_generateParameterMap_validQuery() {
+        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(encodedQueryStringAlb, mockContext, null, config);
+
+        Map<String, String[]> paramMap = null;
+        try {
+            paramMap = request.generateParameterMap(request.getAwsProxyRequest().getMultiValueQueryStringParameters(), config, true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Could not generate parameter map");
+        }
+
+        assertArrayEquals(new String[]{"two"}, paramMap.get("one"));
+        assertArrayEquals(new String[]{"{\"name\":\"faisal\"}"}, paramMap.get("json value@1"));
         assertTrue(paramMap.size() == 2);
     }
 
@@ -294,7 +360,7 @@ public class AwsHttpServletRequestTest {
             fail("Could not generate parameter map");
         }
         assertArrayEquals(new String[]{"two", "three"}, paramMap.get("one"));
-        assertArrayEquals(new String[]{"{\"name\":\"faisal\"}"}, paramMap.get("json"));
+        assertArrayEquals(new String[]{"{\"name\":\"faisal\"}"}, paramMap.get("json value@1"));
         assertTrue(paramMap.size() == 2);
     }
 
@@ -319,12 +385,32 @@ public class AwsHttpServletRequestTest {
     }
 
     @Test
-    void parameterMap_generateParameterMap_differentCasing() {
-        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(differentCasing, mockContext, null, config);
+    void parameterMap_generateParameterMap_differentCasing_caseSensitive() {
+        ContainerConfig caseSensitiveConfig = ContainerConfig.defaultConfig();
+        caseSensitiveConfig.setQueryStringCaseSensitive(true);
+        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(differentCasing, mockContext, null, caseSensitiveConfig);
+        Map<String, String[]> paramMap = null;
+        try {
+            paramMap = request.generateParameterMap(request.getAwsProxyRequest().getMultiValueQueryStringParameters(), caseSensitiveConfig);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Could not generate parameter map");
+        }
+        assertArrayEquals(new String[] {"two", "three"}, paramMap.get("one"));
+        assertArrayEquals(new String[] {"four"}, paramMap.get("ONE"));
+        assertTrue(paramMap.size() == 2);
+    }
+
+    @Test
+    void parameterMap_generateParameterMap_differentCasing_caseInsensitive() {
+        ContainerConfig caseInsensitiveConfig = ContainerConfig.defaultConfig();
+        caseInsensitiveConfig.setQueryStringCaseSensitive(false);
+
+        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(differentCasing, mockContext, null, caseInsensitiveConfig);
 
         Map<String, String[]> paramMap = null;
         try {
-            paramMap = request.generateParameterMap(request.getAwsProxyRequest().getMultiValueQueryStringParameters(), config);
+            paramMap = request.generateParameterMap(request.getAwsProxyRequest().getMultiValueQueryStringParameters(), caseInsensitiveConfig);
         } catch (Exception e) {
             e.printStackTrace();
             fail("Could not generate parameter map");
@@ -347,6 +433,17 @@ public class AwsHttpServletRequestTest {
     }
 
     @Test
+    void queryParamValues_getQueryParamValues_nullValue() {
+        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(new AwsProxyRequest(), mockContext, null);
+        MultiValuedTreeMap<String, String> map = new MultiValuedTreeMap<>();
+        map.add("test", null);
+        String[] result1 = request.getQueryParamValues(map, "test", true);
+        assertArrayEquals(new String[] {null}, result1);
+        String[] result2 = request.getQueryParamValues(map, "TEST", true);
+        assertNull(result2);
+    }
+
+    @Test
     void queryParamValues_getQueryParamValues_caseInsensitive() {
         AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(new AwsProxyRequest(), mockContext, null);
         MultiValuedTreeMap<String, String> map = new MultiValuedTreeMap<>();
@@ -356,6 +453,19 @@ public class AwsHttpServletRequestTest {
         assertArrayEquals(new String[]{"test", "test2"}, result1);
         String[] result2 = request.getQueryParamValues(map, "TEST", false);
         assertArrayEquals(new String[]{"test", "test2"}, result2);
+    }
+
+    @Test
+    void queryParamValues_getQueryParamValues_multipleCaseInsensitive() {
+        AwsProxyHttpServletRequest request = new AwsProxyHttpServletRequest(new AwsProxyRequest(), mockContext, null);
+
+        MultiValuedTreeMap<String, String> map = new MultiValuedTreeMap<>();
+        map.add("test", "test");
+        map.add("TEST", "test2");
+        String[] result1 = request.getQueryParamValues(map, "test", false);
+        assertArrayEquals(new String[]{"test2"}, result1);
+        String[] result2 = request.getQueryParamValues(map, "TEST", false);
+        assertArrayEquals(new String[]{"test2"}, result2);
     }
 
 }

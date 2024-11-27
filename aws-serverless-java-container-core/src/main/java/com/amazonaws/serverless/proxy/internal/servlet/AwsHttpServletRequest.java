@@ -540,7 +540,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
 
     protected String[] getQueryParamValues(MultiValuedTreeMap<String, String> qs, String key, boolean isCaseSensitive) {
         List<String> value = getQueryParamValuesAsList(qs, key, isCaseSensitive);
-        if (value == null){
+        if (value == null) {
             return null;
         }
         return value.toArray(new String[0]);
@@ -563,38 +563,56 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     }
 
     protected Map<String, String[]> generateParameterMap(MultiValuedTreeMap<String, String> qs, ContainerConfig config) {
+        return generateParameterMap(qs, config, false);
+    }
+    
+    protected Map<String, String[]> generateParameterMap(MultiValuedTreeMap<String, String> qs, ContainerConfig config, boolean decodeQueryParams) {
         Map<String, String[]> output;
 
         Map<String, List<String>> formEncodedParams = getFormUrlEncodedParametersMap();
 
         if (qs == null) {
             // Just transform the List<String> values to String[]
-            output = formEncodedParams.entrySet().stream()
+            return formEncodedParams.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, (e) -> e.getValue().toArray(new String[0])));
-        } else {
-            Map<String, List<String>> queryStringParams;
-            if (config.isQueryStringCaseSensitive()) {
-                queryStringParams = qs;
-            } else {
-                // If it's case insensitive, we check the entire map on every parameter
-                queryStringParams = qs.entrySet().stream().parallel().collect(
-                    Collectors.toMap(
-                        Map.Entry::getKey,
-                        e -> getQueryParamValuesAsList(qs, e.getKey(), false)
-                    ));
-            }
-
-            // Merge formEncodedParams and queryStringParams Maps
-            output = Stream.of(formEncodedParams, queryStringParams).flatMap(m -> m.entrySet().stream())
-                .collect(
-                    Collectors.toMap(
-                        Map.Entry::getKey,
-                        e -> e.getValue().toArray(new String[0]),
-                        // If a parameter is in both Maps, we merge the list of values (and ultimately transform to String[])
-                        (formParam, queryParam) -> Stream.of(formParam, queryParam).flatMap(Stream::of).toArray(String[]::new)
-                    ));
-
         }
+
+        // decode all keys and values in map
+        final MultiValuedTreeMap<String, String> decodedQs = new MultiValuedTreeMap<String, String>();
+        if (decodeQueryParams) {
+            for (Map.Entry<String, List<String>> entry : qs.entrySet()) {
+                String k = decodeValueIfEncoded(entry.getKey());
+                List<String> v = getQueryParamValuesAsList(qs, entry.getKey(), false).stream()
+                        .map(AwsHttpServletRequest::decodeValueIfEncoded)
+                        .collect(Collectors.toList());
+                // addAll in case map has 2 keys that are identical once decoded
+                decodedQs.addAll(k, v);
+            }
+        } else {
+            decodedQs.putAll(qs);
+        }
+        
+        Map<String, List<String>> queryStringParams;
+        if (config.isQueryStringCaseSensitive()) {
+            queryStringParams = decodedQs;
+        } else {
+            // If it's case insensitive, we check the entire map on every parameter
+            queryStringParams = decodedQs.entrySet().stream().parallel().collect(
+                Collectors.toMap(
+                    Map.Entry::getKey,
+                    e -> getQueryParamValuesAsList(decodedQs, e.getKey(), false)
+                ));
+        }
+
+        // Merge formEncodedParams and queryStringParams Maps
+        output = Stream.of(formEncodedParams, queryStringParams).flatMap(m -> m.entrySet().stream())
+            .collect(
+                Collectors.toMap(
+                    Map.Entry::getKey,
+                    e -> e.getValue().toArray(new String[0]),
+                    // If a parameter is in both Maps, we merge the list of values (and ultimately transform to String[])
+                    (formParam, queryParam) -> Stream.of(formParam, queryParam).flatMap(Stream::of).toArray(String[]::new)
+                ));
 
         return output;
     }
