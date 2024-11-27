@@ -66,7 +66,7 @@ public class AwsProxyRequest {
             for (String val : this.getMultiValueQueryStringParameters().get(key)) {
                 String separator = params.length() == 0 ? "?" : "&";
 
-                params.append(separator + key + "=" + val);
+                params.append(separator).append(key).append("=").append(val);
             }
         }
 
