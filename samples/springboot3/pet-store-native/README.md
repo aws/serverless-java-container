@@ -5,6 +5,10 @@ In this sample, you'll build a native GraalVM image for running web workloads in
 
 You first need to build the function, then you will deploy it to AWS Lambda.
 
+Please note that the sample is for `x86` architectures. In case you want to build and run it on ARM, e.g. Apple Mac M1, M2, ... 
+you must change the according line in the `Dockerfile` to `ENV ARCHITECTURE aarch64`. 
+In addition, uncomment the `arm64` Architectures section in `template.yml`.
+
 ### Step 1 - Build the native image
 
 Before starting the build, you must clone or download the code in **pet-store-native**.
