@@ -126,7 +126,7 @@ class AwsSpringHttpProcessingUtils {
 		}
         populateContentAndContentType(
                 v1Request.getBody(),
-                v1Request.getHeaders().get(HttpHeaders.CONTENT_TYPE),
+                v1Request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE),
                 v1Request.isBase64Encoded(),
                 httpRequest
         );
