@@ -17,7 +17,7 @@
 
     <properties>
         <jaxrs.version>3.1.0</jaxrs.version>
-        <servlet.version>6.0.0</servlet.version>
+        <servlet.version>6.1.0</servlet.version>
     </properties>
 
     <dependencies>
