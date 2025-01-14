@@ -37,7 +37,7 @@
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
             <artifactId>aws-serverless-java-container-springboot3</artifactId>
-            <version>[2.2.0-SNAPSHOT,),[2.2.0-M1,)</version>
+            <version>[2.2.0-SNAPSHOT,),[2.1.1,)</version>
         </dependency>
     </dependencies>
 
