@@ -16,7 +16,7 @@
     </parent>
 
     <properties>
-        <spring.version>6.2.1</spring.version>
+        <spring.version>6.2.2</spring.version>
         <spring-security.version>6.4.2</spring-security.version>
     </properties>
 

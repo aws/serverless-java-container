@@ -9,7 +9,7 @@ repositories {
 
 dependencies {
   implementation (
-          'org.springframework.boot:spring-boot-starter-web:3.4.1',
+          'org.springframework.boot:spring-boot-starter-web:3.4.2',
           'com.amazonaws.serverless:aws-serverless-java-container-springboot3:[2.0-SNAPSHOT,)',
   )
 
