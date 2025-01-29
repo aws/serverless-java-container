@@ -5,10 +5,12 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 
 import com.amazonaws.serverless.proxy.internal.HttpUtils;
 import org.apache.commons.io.Charsets;
@@ -118,7 +120,11 @@ class AwsSpringHttpProcessingUtils {
 		
 		ServerlessHttpServletRequest httpRequest = new ServerlessHttpServletRequest(servletContext, v1Request.getHttpMethod(), v1Request.getPath());
 
-		populateQueryStringparameters(v1Request.getQueryStringParameters(), httpRequest);
+		populateQueryStringParameters(v1Request.getQueryStringParameters(), httpRequest);
+		if (v1Request.getMultiValueQueryStringParameters() != null) {
+			MultiValueMapAdapter<String, String> queryStringParameters = new MultiValueMapAdapter(v1Request.getMultiValueQueryStringParameters());
+			queryStringParameters.forEach((k, v) -> httpRequest.setParameter(k, StringUtils.collectionToCommaDelimitedString(v)));
+		}
 		
 		if (v1Request.getMultiValueHeaders() != null) {
 			MultiValueMapAdapter headers = new MultiValueMapAdapter(v1Request.getMultiValueHeaders());
@@ -152,7 +158,7 @@ class AwsSpringHttpProcessingUtils {
 		
 		ServerlessHttpServletRequest httpRequest = new ServerlessHttpServletRequest(servletContext,
 				v2Request.getRequestContext().getHttp().getMethod(), v2Request.getRequestContext().getHttp().getPath());
-		populateQueryStringparameters(v2Request.getQueryStringParameters(), httpRequest);
+		populateQueryStringParameters(v2Request.getQueryStringParameters(), httpRequest);
 		
 		v2Request.getHeaders().forEach(httpRequest::setHeader);
 
@@ -172,7 +178,7 @@ class AwsSpringHttpProcessingUtils {
 		return httpRequest;
 	}
 	
-	private static void populateQueryStringparameters(Map<String, String> requestParameters, ServerlessHttpServletRequest httpRequest) {
+	private static void populateQueryStringParameters(Map<String, String> requestParameters, ServerlessHttpServletRequest httpRequest) {
 		if (!CollectionUtils.isEmpty(requestParameters)) {
 			for (Entry<String, String> entry : requestParameters.entrySet()) {
 				httpRequest.setParameter(entry.getKey(), entry.getValue());

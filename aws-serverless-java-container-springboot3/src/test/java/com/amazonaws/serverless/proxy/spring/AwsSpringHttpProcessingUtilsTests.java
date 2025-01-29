@@ -79,15 +79,15 @@ public class AwsSpringHttpProcessingUtilsTests {
             + "    },\n"
             + "    \"queryStringParameters\": {\n"
             + "        \"abc\": \"xyz\",\n"
-            + "        \"foo\": \"baz\"\n"
+            + "        \"parameter1\": \"value2\"\n"
             + "    },\n"
             + "    \"multiValueQueryStringParameters\": {\n"
             + "        \"abc\": [\n"
             + "            \"xyz\"\n"
             + "        ],\n"
-            + "        \"foo\": [\n"
-            + "            \"bar\",\n"
-            + "            \"baz\"\n"
+            + "        \"parameter1\": [\n"
+            + "            \"value1\",\n"
+            + "            \"value2\"\n"
             + "        ]\n"
             + "    },\n"
             + "    \"requestContext\": {\n"
@@ -184,10 +184,35 @@ public class AwsSpringHttpProcessingUtilsTests {
             "  }\n" +
             "}";
 
+	private static final String ALB_EVENT = "{\n" +
+			"    \"requestContext\": {\n" +
+			"        \"elb\": {\n" +
+			"            \"targetGroupArn\": \"arn:aws:elasticloadbalancing:region:123456789012:targetgroup/my-target-group/6d0ecf831eec9f09\"\n" +
+			"        }\n" +
+			"    },\n" +
+			"    \"httpMethod\": \"POST\",\n" +
+			"    \"path\": \"/async\",\n" +
+			"    \"multiValueQueryStringParameters\": { \"parameter1\": [\"value1\", \"value2\"]},\n" +
+			"    \"multiValueHeaders\": {\n" +
+			"        \"accept\": [\"text/html,application/xhtml+xml\"],\n" +
+			"        \"accept-language\": [\"en-US,en;q=0.8\"],\n" +
+			"        \"content-type\": [\"text/plain\"],\n" +
+			"        \"cookie\": [\"cookies\"],\n" +
+			"        \"host\": [\"lambda-846800462-us-east-2.elb.amazonaws.com\"],\n" +
+			"    	 \"User-Agent\": [\"curl/7.79.1\"],\n" +
+			"        \"x-amzn-trace-id\": [\"Root=1-5bdb40ca-556d8b0c50dc66f0511bf520\"],\n" +
+			"        \"x-forwarded-for\": [\"72.21.198.66\"],\n" +
+			"        \"x-forwarded-port\": [\"443\"],\n" +
+			"        \"x-forwarded-proto\": [\"https\"]\n" +
+			"    },\n" +
+			"    \"isBase64Encoded\": false,\n" +
+			"    \"body\": \"request_body\"\n" +
+			"}";
+
     private final ObjectMapper mapper = new ObjectMapper();
 
     public static Collection<String> data() {
-        return Arrays.asList(new String[]{API_GATEWAY_EVENT, API_GATEWAY_EVENT_V2});
+        return Arrays.asList(new String[]{API_GATEWAY_EVENT, API_GATEWAY_EVENT_V2, ALB_EVENT});
     }
 
     @MethodSource("data")
@@ -197,10 +222,17 @@ public class AwsSpringHttpProcessingUtilsTests {
 		ServerlessServletContext servletContext = new ServerlessServletContext();
 		HttpServletRequest request = AwsSpringHttpProcessingUtils.generateHttpServletRequest(inputStream, null, servletContext, mapper);
 		// spot check some headers
+		assertRequest(request);
+	}
+
+	private static void assertRequest(HttpServletRequest request) {
 		assertEquals("curl/7.79.1", request.getHeader("User-Agent"));
 		assertEquals("443", request.getHeader("X-Forwarded-Port"));
 		assertEquals("POST", request.getMethod());
 		assertEquals("/async", request.getRequestURI());
+		assertEquals("value1,value2", request.getParameter("parameter1"));
+		// to be fixed: assertArrayEquals(new String[]{"value1","value2"}, request.getParameterValues("parameter1"));
+
 	}
     
     @MethodSource("data")
@@ -209,10 +241,7 @@ public class AwsSpringHttpProcessingUtilsTests {
 		ServerlessServletContext servletContext = new ServerlessServletContext();
 		HttpServletRequest request = AwsSpringHttpProcessingUtils.generateHttpServletRequest(jsonEvent, null, servletContext, mapper);
 		// spot check some headers
-		assertEquals("curl/7.79.1", request.getHeader("User-Agent"));
-		assertEquals("443", request.getHeader("X-Forwarded-Port"));
-		assertEquals("POST", request.getMethod());
-		assertEquals("/async", request.getRequestURI());
+		assertRequest(request);
 	}
     
     @MethodSource("data")
