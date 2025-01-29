@@ -3,17 +3,13 @@ package com.amazonaws.serverless.proxy.spring;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.charset.UnsupportedCharsetException;
 import java.util.Base64;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
 
 import com.amazonaws.serverless.proxy.internal.HttpUtils;
-import org.apache.commons.io.Charsets;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.cloud.function.serverless.web.ServerlessHttpServletRequest;
