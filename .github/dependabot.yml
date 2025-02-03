@@ -30,6 +30,9 @@ updates:
       maven-install-plugin:
         patterns:
           - "org.apache.maven.plugins:maven-install-plugin"
+      httpclient:
+        patterns:
+          - "org.apache.httpcomponents.client5:*"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 20
@@ -52,5 +55,8 @@ updates:
       jackson:
         patterns:
           - "com.fasterxml.jackson.*:*"
+      httpclient:
+        patterns:
+          - "org.apache.httpcomponents.client5:*"
     schedule:
       interval: "weekly"
