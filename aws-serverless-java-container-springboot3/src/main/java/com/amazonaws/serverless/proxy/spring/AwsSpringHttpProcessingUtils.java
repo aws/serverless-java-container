@@ -119,7 +119,9 @@ class AwsSpringHttpProcessingUtils {
 		populateQueryStringParameters(v1Request.getQueryStringParameters(), httpRequest);
 		if (v1Request.getMultiValueQueryStringParameters() != null) {
 			MultiValueMapAdapter<String, String> queryStringParameters = new MultiValueMapAdapter(v1Request.getMultiValueQueryStringParameters());
-			queryStringParameters.forEach((k, v) -> httpRequest.setParameter(k, StringUtils.collectionToCommaDelimitedString(v)));
+			queryStringParameters.forEach((k, v) -> {
+                httpRequest.setParameter(k, v.toArray(new String[2]));
+            });
 		}
 		
 		if (v1Request.getMultiValueHeaders() != null) {
@@ -155,7 +157,7 @@ class AwsSpringHttpProcessingUtils {
 		ServerlessHttpServletRequest httpRequest = new ServerlessHttpServletRequest(servletContext,
 				v2Request.getRequestContext().getHttp().getMethod(), v2Request.getRequestContext().getHttp().getPath());
 		populateQueryStringParameters(v2Request.getQueryStringParameters(), httpRequest);
-		
+
 		v2Request.getHeaders().forEach(httpRequest::setHeader);
 
         populateContentAndContentType(
@@ -177,6 +179,7 @@ class AwsSpringHttpProcessingUtils {
 	private static void populateQueryStringParameters(Map<String, String> requestParameters, ServerlessHttpServletRequest httpRequest) {
 		if (!CollectionUtils.isEmpty(requestParameters)) {
 			for (Entry<String, String> entry : requestParameters.entrySet()) {
+				// fix according to parseRawQueryString
 				httpRequest.setParameter(entry.getKey(), entry.getValue());
 			}
 		}

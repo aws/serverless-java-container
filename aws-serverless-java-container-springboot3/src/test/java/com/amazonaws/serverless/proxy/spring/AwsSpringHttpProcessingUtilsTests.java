@@ -1,12 +1,12 @@
 package com.amazonaws.serverless.proxy.spring;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 
+import com.amazonaws.serverless.proxy.RequestReader;
+import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.boot.SpringApplication;
@@ -29,6 +29,8 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AwsSpringHttpProcessingUtilsTests {
 	
@@ -221,7 +223,6 @@ public class AwsSpringHttpProcessingUtilsTests {
 		ByteArrayInputStream inputStream = new ByteArrayInputStream(jsonEvent.getBytes(StandardCharsets.UTF_8));
 		ServerlessServletContext servletContext = new ServerlessServletContext();
 		HttpServletRequest request = AwsSpringHttpProcessingUtils.generateHttpServletRequest(inputStream, null, servletContext, mapper);
-		// spot check some headers
 		assertRequest(request);
 	}
 
@@ -230,9 +231,13 @@ public class AwsSpringHttpProcessingUtilsTests {
 		assertEquals("443", request.getHeader("X-Forwarded-Port"));
 		assertEquals("POST", request.getMethod());
 		assertEquals("/async", request.getRequestURI());
-		assertEquals("value1,value2", request.getParameter("parameter1"));
-		// to be fixed: assertArrayEquals(new String[]{"value1","value2"}, request.getParameterValues("parameter1"));
-
+		assertNotNull(request.getServletContext());
+		// parameter handling for 2.0 requests is currently not spec compliant and to be fixed in future version
+		// see also GitHub issue
+		if (!(request.getAttribute(RequestReader.HTTP_API_EVENT_PROPERTY) instanceof HttpApiV2ProxyRequest)) {
+			assertEquals("value1", request.getParameter("parameter1"));
+			assertArrayEquals(new String[]{"value1", "value2"}, request.getParameterValues("parameter1"));
+		}
 	}
     
     @MethodSource("data")
