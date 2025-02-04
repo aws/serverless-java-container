@@ -120,7 +120,7 @@ class AwsSpringHttpProcessingUtils {
 		if (v1Request.getMultiValueQueryStringParameters() != null) {
 			MultiValueMapAdapter<String, String> queryStringParameters = new MultiValueMapAdapter(v1Request.getMultiValueQueryStringParameters());
 			queryStringParameters.forEach((k, v) -> {
-                httpRequest.setParameter(k, v.toArray(new String[2]));
+                httpRequest.setParameter(k, v.toArray(new String[0]));
             });
 		}
 		

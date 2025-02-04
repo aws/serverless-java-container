@@ -233,7 +233,7 @@ public class AwsSpringHttpProcessingUtilsTests {
 		assertEquals("/async", request.getRequestURI());
 		assertNotNull(request.getServletContext());
 		// parameter handling for 2.0 requests is currently not spec compliant and to be fixed in future version
-		// see also GitHub issue
+		// see also GitHub issue https://github.com/aws/serverless-java-container/issues/1278
 		if (!(request.getAttribute(RequestReader.HTTP_API_EVENT_PROPERTY) instanceof HttpApiV2ProxyRequest)) {
 			assertEquals("value1", request.getParameter("parameter1"));
 			assertArrayEquals(new String[]{"value1", "value2"}, request.getParameterValues("parameter1"));

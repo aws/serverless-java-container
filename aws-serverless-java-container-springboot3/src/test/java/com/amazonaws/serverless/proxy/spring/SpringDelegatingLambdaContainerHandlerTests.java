@@ -215,10 +215,10 @@ public class SpringDelegatingLambdaContainerHandlerTests {
         handler.handleRequest(targetStream, output, null);
         Map result = mapper.readValue(output.toString(StandardCharsets.UTF_8), Map.class);
         assertEquals(200, result.get("statusCode"));
-        String[] respponseBody = ((String) result.get("body")).split("/");
-        assertEquals("male", respponseBody[0]);
-        assertEquals("24", respponseBody[1]);
-        assertEquals("Ricky", respponseBody[2]);
+        String[] responseBody = ((String) result.get("body")).split("/");
+        assertEquals("male", responseBody[0]);
+        assertEquals("24", responseBody[1]);
+        assertEquals("Ricky", responseBody[2]);
     }
     
     @MethodSource("data")
