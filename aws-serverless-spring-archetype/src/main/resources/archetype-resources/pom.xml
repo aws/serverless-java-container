@@ -16,7 +16,7 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <spring.version>6.2.2</spring.version>
+        <spring.version>6.2.3</spring.version>
         <junit.version>5.11.4</junit.version>
         <log4j.version>2.24.2</log4j.version>
     </properties>
