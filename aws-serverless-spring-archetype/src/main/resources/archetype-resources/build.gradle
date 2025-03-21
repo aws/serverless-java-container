@@ -7,8 +7,8 @@ repositories {
 
 dependencies {
   implementation (
-          'org.springframework:spring-webmvc:6.2.4',
-          'org.springframework:spring-context:6.2.4',
+          'org.springframework:spring-webmvc:6.2.5',
+          'org.springframework:spring-context:6.2.5',
           'com.amazonaws.serverless:aws-serverless-java-container-spring:[2.0-SNAPSHOT,)',
           'org.apache.logging.log4j:log4j-core:2.24.3',
           'org.apache.logging.log4j:log4j-api:2.24.3',
