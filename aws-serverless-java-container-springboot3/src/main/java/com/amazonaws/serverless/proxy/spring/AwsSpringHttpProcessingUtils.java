@@ -4,12 +4,14 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
 import com.amazonaws.serverless.proxy.internal.HttpUtils;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequest;
+import com.amazonaws.serverless.proxy.model.RequestSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.cloud.function.serverless.web.ServerlessHttpServletRequest;
@@ -35,6 +37,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
+
+import static com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequest.decodeValueIfEncoded;
+import static com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequest.getQueryParamValuesAsList;
 
 class AwsSpringHttpProcessingUtils {
 	
@@ -116,13 +121,8 @@ class AwsSpringHttpProcessingUtils {
 		
 		ServerlessHttpServletRequest httpRequest = new ServerlessHttpServletRequest(servletContext, v1Request.getHttpMethod(), v1Request.getPath());
 
-		populateQueryStringParameters(v1Request.getQueryStringParameters(), httpRequest);
-		if (v1Request.getMultiValueQueryStringParameters() != null) {
-			MultiValueMapAdapter<String, String> queryStringParameters = new MultiValueMapAdapter(v1Request.getMultiValueQueryStringParameters());
-			queryStringParameters.forEach((k, v) -> {
-                httpRequest.setParameter(k, v.toArray(new String[0]));
-            });
-		}
+		populateQueryStringParametersV1(v1Request, httpRequest);
+		populateMultiValueQueryStringParametersV1(v1Request, httpRequest);
 		
 		if (v1Request.getMultiValueHeaders() != null) {
 			MultiValueMapAdapter headers = new MultiValueMapAdapter(v1Request.getMultiValueHeaders());
@@ -156,7 +156,7 @@ class AwsSpringHttpProcessingUtils {
 		
 		ServerlessHttpServletRequest httpRequest = new ServerlessHttpServletRequest(servletContext,
 				v2Request.getRequestContext().getHttp().getMethod(), v2Request.getRequestContext().getHttp().getPath());
-		populateQueryStringParameters(v2Request.getQueryStringParameters(), httpRequest);
+		populateQueryStringParametersV2(v2Request.getQueryStringParameters(), httpRequest);
 
 		v2Request.getHeaders().forEach(httpRequest::setHeader);
 
@@ -176,12 +176,41 @@ class AwsSpringHttpProcessingUtils {
 		return httpRequest;
 	}
 	
-	private static void populateQueryStringParameters(Map<String, String> requestParameters, ServerlessHttpServletRequest httpRequest) {
+	private static void populateQueryStringParametersV2(Map<String, String> requestParameters, ServerlessHttpServletRequest httpRequest) {
 		if (!CollectionUtils.isEmpty(requestParameters)) {
 			for (Entry<String, String> entry : requestParameters.entrySet()) {
 				// fix according to parseRawQueryString
 				httpRequest.setParameter(entry.getKey(), entry.getValue());
 			}
+		}
+	}
+
+	private static void populateQueryStringParametersV1(AwsProxyRequest v1Request, ServerlessHttpServletRequest httpRequest) {
+		Map<String, String> requestParameters = v1Request.getQueryStringParameters();
+		if (!CollectionUtils.isEmpty(requestParameters)) {
+			// decode all keys and values in map
+			for (Entry<String, String> entry : requestParameters.entrySet()) {
+				String k = v1Request.getRequestSource() == RequestSource.ALB ? decodeValueIfEncoded(entry.getKey()) : entry.getKey();
+				String v = v1Request.getRequestSource() == RequestSource.ALB ? decodeValueIfEncoded(entry.getValue()) : entry.getValue();
+				httpRequest.setParameter(k, v);
+			}
+		}
+	}
+
+	private static void populateMultiValueQueryStringParametersV1(AwsProxyRequest v1Request, ServerlessHttpServletRequest httpRequest) {
+		if (v1Request.getMultiValueQueryStringParameters() != null) {
+			MultiValueMapAdapter<String, String> queryStringParameters = new MultiValueMapAdapter<>(v1Request.getMultiValueQueryStringParameters());
+			queryStringParameters.forEach((k, v) -> {
+				String key = v1Request.getRequestSource() == RequestSource.ALB
+						? decodeValueIfEncoded(k)
+						: k;
+				List<String> value = v1Request.getRequestSource() == RequestSource.ALB
+						? getQueryParamValuesAsList(v1Request.getMultiValueQueryStringParameters(), k, false).stream()
+							.map(AwsHttpServletRequest::decodeValueIfEncoded)
+							.toList()
+						: v;
+				httpRequest.setParameter(key, value.toArray(new String[0]));
+			});
 		}
 	}
 	
