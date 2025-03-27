@@ -546,7 +546,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         return value.toArray(new String[0]);
     }
 
-    protected List<String> getQueryParamValuesAsList(MultiValuedTreeMap<String, String> qs, String key, boolean isCaseSensitive) {
+    public static List<String> getQueryParamValuesAsList(MultiValuedTreeMap<String, String> qs, String key, boolean isCaseSensitive) {
         if (qs != null) {
             if (isCaseSensitive) {
                 return qs.get(key);
@@ -788,7 +788,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         return finalUri;
     }
 
-    static String decodeValueIfEncoded(String value) {
+    public static String decodeValueIfEncoded(String value) {
         if (value == null) {
             return null;
         }

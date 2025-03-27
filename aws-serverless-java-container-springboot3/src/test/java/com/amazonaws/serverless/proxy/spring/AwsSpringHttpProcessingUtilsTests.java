@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import com.amazonaws.serverless.proxy.RequestReader;
+import com.amazonaws.serverless.proxy.model.AlbContext;
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -194,7 +195,7 @@ public class AwsSpringHttpProcessingUtilsTests {
 			"    },\n" +
 			"    \"httpMethod\": \"POST\",\n" +
 			"    \"path\": \"/async\",\n" +
-			"    \"multiValueQueryStringParameters\": { \"parameter1\": [\"value1\", \"value2\"]},\n" +
+			"    \"multiValueQueryStringParameters\": { \"parameter1\": [\"value1\", \"value2\"], \"parameter2\": [\"1970-01-01T00%3A00%3A00.004Z\"]},\n" +
 			"    \"multiValueHeaders\": {\n" +
 			"        \"accept\": [\"text/html,application/xhtml+xml\"],\n" +
 			"        \"accept-language\": [\"en-US,en;q=0.8\"],\n" +
@@ -237,6 +238,10 @@ public class AwsSpringHttpProcessingUtilsTests {
 		if (!(request.getAttribute(RequestReader.HTTP_API_EVENT_PROPERTY) instanceof HttpApiV2ProxyRequest)) {
 			assertEquals("value1", request.getParameter("parameter1"));
 			assertArrayEquals(new String[]{"value1", "value2"}, request.getParameterValues("parameter1"));
+		}
+		if (request.getAttribute(RequestReader.ALB_CONTEXT_PROPERTY) instanceof AlbContext) {
+			// query params should be decoded
+			assertEquals("1970-01-01T00:00:00.004Z", request.getParameter("parameter2"));
 		}
 	}
     
