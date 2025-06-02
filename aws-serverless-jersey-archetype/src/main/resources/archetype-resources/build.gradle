@@ -23,7 +23,7 @@ dependencies {
 
   testImplementation("com.amazonaws.serverless:aws-serverless-java-container-core:[2.0-SNAPSHOT,):tests")
   testImplementation("org.apache.httpcomponents.client5:httpclient5:5.4.3")
-  testImplementation(platform("org.junit:junit-bom:5.12.1"))
+  testImplementation(platform("org.junit:junit-bom:5.13.0"))
   testImplementation("org.junit.jupiter:junit-jupiter")
   testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
