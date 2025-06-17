@@ -517,7 +517,10 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
                 newPart.setContentType(item.getContentType());
                 newPart.setSize(item.getSize());
                 item.getHeaders().getHeaderNames().forEachRemaining(h -> {
-                    newPart.addHeader(h, item.getHeaders().getHeader(h));
+                    String headerValue = item.getHeaders().getHeader(h);
+                    if (headerValue != null) {
+                        newPart.addHeader(h, headerValue);
+                    }
                 });
 
                 addPart(multipartFormParameters, item.getFieldName(), newPart);
