@@ -493,7 +493,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     }
 
     @SuppressFBWarnings({"FILE_UPLOAD_FILENAME", "WEAK_FILENAMEUTILS"})
-    protected Map<String, List<Part>> getMultipartFormParametersMap() {
+    protected Map<String, List<Part>> getMultipartFormParametersMap() throws RuntimeException {
         if (multipartFormParameters != null) {
             return multipartFormParameters;
         }
@@ -511,19 +511,20 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
             List<DiskFileItem> items = upload.parseRequest(this);
             for (FileItem<DiskFileItem> item : items) {
                 String fileName = FilenameUtils.getName(item.getName());
-                AwsProxyRequestPart newPart = new AwsProxyRequestPart(item.get());
-                newPart.setName(item.getFieldName());
-                newPart.setSubmittedFileName(fileName);
-                newPart.setContentType(item.getContentType());
-                newPart.setSize(item.getSize());
-                item.getHeaders().getHeaderNames().forEachRemaining(h -> {
-                    String headerValue = item.getHeaders().getHeader(h);
-                    if (headerValue != null) {
-                        newPart.addHeader(h, headerValue);
-                    }
-                });
-
-                addPart(multipartFormParameters, item.getFieldName(), newPart);
+                try {
+                    AwsProxyRequestPart newPart = new AwsProxyRequestPart(item.get());
+                    newPart.setName(item.getFieldName());
+                    newPart.setSubmittedFileName(fileName);
+                    newPart.setContentType(item.getContentType());
+                    newPart.setSize(item.getSize());
+                    item.getHeaders().getHeaderNames().forEachRemaining(h -> {
+                        newPart.addHeader(h, item.getHeaders().getHeader(h));
+                    });
+                    addPart(multipartFormParameters, item.getFieldName(), newPart);
+                } catch (Exception e) {
+                    log.error("Encounter issue adding form multipart", e);
+                    throw new RuntimeException(e);
+                }
             }
         } catch (FileUploadException e) {
             Timer.stop("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
