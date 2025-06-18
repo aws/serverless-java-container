@@ -493,7 +493,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
     }
 
     @SuppressFBWarnings({"FILE_UPLOAD_FILENAME", "WEAK_FILENAMEUTILS"})
-    protected Map<String, List<Part>> getMultipartFormParametersMap() {
+    protected Map<String, List<Part>> getMultipartFormParametersMap() throws IOException {
         if (multipartFormParameters != null) {
             return multipartFormParameters;
         }
@@ -519,7 +519,6 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
                 item.getHeaders().getHeaderNames().forEachRemaining(h -> {
                     newPart.addHeader(h, item.getHeaders().getHeader(h));
                 });
-
                 addPart(multipartFormParameters, item.getFieldName(), newPart);
             }
         } catch (FileUploadException e) {
