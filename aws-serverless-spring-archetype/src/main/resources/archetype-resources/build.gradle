@@ -7,18 +7,18 @@ repositories {
 
 dependencies {
   implementation (
-          'org.springframework:spring-webmvc:6.2.6',
-          'org.springframework:spring-context:6.2.6',
+          'org.springframework:spring-webmvc:6.2.8',
+          'org.springframework:spring-context:6.2.8',
           'com.amazonaws.serverless:aws-serverless-java-container-spring:[2.0-SNAPSHOT,)',
           'org.apache.logging.log4j:log4j-core:2.24.3',
           'org.apache.logging.log4j:log4j-api:2.24.3',
           'org.apache.logging.log4j:log4j-slf4j-impl:2.24.3',
-          'com.fasterxml.jackson.core:jackson-databind:2.18.3',
+          'com.fasterxml.jackson.core:jackson-databind:2.19.1',
           'com.amazonaws:aws-lambda-java-log4j2:1.6.0',
   )
 
   testImplementation("com.amazonaws.serverless:aws-serverless-java-container-core:[2.0-SNAPSHOT,):tests")
-  testImplementation("org.apache.httpcomponents.client5:httpclient5:5.4.3")
+  testImplementation("org.apache.httpcomponents.client5:httpclient5:5.5")
   testImplementation(platform("org.junit:junit-bom:5.12.2"))
   testImplementation("org.junit.jupiter:junit-jupiter")
   testRuntimeOnly("org.junit.platform:junit-platform-launcher")
