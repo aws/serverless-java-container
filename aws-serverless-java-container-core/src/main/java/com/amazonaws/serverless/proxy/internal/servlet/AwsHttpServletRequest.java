@@ -521,7 +521,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
                         newPart.addHeader(h, item.getHeaders().getHeader(h));
                     });
                     addPart(multipartFormParameters, item.getFieldName(), newPart);
-                } catch (Exception e) {
+                } catch (IOException e) {
                     log.error("Encounter issue adding form multipart", e);
                     throw new RuntimeException(e);
                 }
