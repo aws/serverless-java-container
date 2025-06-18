@@ -511,15 +511,15 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
             List<DiskFileItem> items = upload.parseRequest(this);
             for (FileItem<DiskFileItem> item : items) {
                 String fileName = FilenameUtils.getName(item.getName());
-                    AwsProxyRequestPart newPart = new AwsProxyRequestPart(item.get());
-                    newPart.setName(item.getFieldName());
-                    newPart.setSubmittedFileName(fileName);
-                    newPart.setContentType(item.getContentType());
-                    newPart.setSize(item.getSize());
-                    item.getHeaders().getHeaderNames().forEachRemaining(h -> {
-                        newPart.addHeader(h, item.getHeaders().getHeader(h));
-                    });
-                    addPart(multipartFormParameters, item.getFieldName(), newPart);
+                AwsProxyRequestPart newPart = new AwsProxyRequestPart(item.get());
+                newPart.setName(item.getFieldName());
+                newPart.setSubmittedFileName(fileName);
+                newPart.setContentType(item.getContentType());
+                newPart.setSize(item.getSize());
+                item.getHeaders().getHeaderNames().forEachRemaining(h -> {
+                    newPart.addHeader(h, item.getHeaders().getHeader(h));
+                });
+                addPart(multipartFormParameters, item.getFieldName(), newPart);
             }
         } catch (FileUploadException e) {
             Timer.stop("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
