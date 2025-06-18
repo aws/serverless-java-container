@@ -8,7 +8,7 @@ repositories {
 dependencies {
   implementation (
           'com.amazonaws.serverless:aws-serverless-java-container-jersey:[2.0-SNAPSHOT,)',
-          'com.fasterxml.jackson.core:jackson-databind:2.18.3',
+          'com.fasterxml.jackson.core:jackson-databind:2.19.1',
   )
 
   implementation("org.glassfish.jersey.media:jersey-media-json-jackson:3.1.10") {
@@ -22,7 +22,7 @@ dependencies {
   }
 
   testImplementation("com.amazonaws.serverless:aws-serverless-java-container-core:[2.0-SNAPSHOT,):tests")
-  testImplementation("org.apache.httpcomponents.client5:httpclient5:5.4.3")
+  testImplementation("org.apache.httpcomponents.client5:httpclient5:5.5")
   testImplementation(platform("org.junit:junit-bom:5.12.1"))
   testImplementation("org.junit.jupiter:junit-jupiter")
   testRuntimeOnly("org.junit.platform:junit-platform-launcher")
