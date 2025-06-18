@@ -511,7 +511,6 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
             List<DiskFileItem> items = upload.parseRequest(this);
             for (FileItem<DiskFileItem> item : items) {
                 String fileName = FilenameUtils.getName(item.getName());
-                try {
                     AwsProxyRequestPart newPart = new AwsProxyRequestPart(item.get());
                     newPart.setName(item.getFieldName());
                     newPart.setSubmittedFileName(fileName);
@@ -521,10 +520,6 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
                         newPart.addHeader(h, item.getHeaders().getHeader(h));
                     });
                     addPart(multipartFormParameters, item.getFieldName(), newPart);
-                } catch (IOException e) {
-                    log.error("Encounter issue adding form multipart", e);
-                    throw new IOException(e);
-                }
             }
         } catch (FileUploadException e) {
             Timer.stop("SERVLET_REQUEST_GET_MULTIPART_PARAMS");
