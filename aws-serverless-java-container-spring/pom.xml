@@ -87,7 +87,7 @@
         <dependency>
             <groupId>org.glassfish.expressly</groupId>
             <artifactId>expressly</artifactId>
-            <version>5.0.0</version>
+            <version>6.0.0</version>
             <scope>test</scope>
         </dependency>
 
