@@ -14,7 +14,6 @@ package com.amazonaws.serverless.proxy.model;
 
 
 import com.amazonaws.serverless.proxy.RequestReader;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
@@ -27,6 +26,42 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ApiGatewayRequestIdentity {
+
+    /**
+     * Creates an ApiGatewayRequestIdentity instance with default values.
+     * 
+     * @return A pre-configured ApiGatewayRequestIdentity instance
+     */
+    public static ApiGatewayRequestIdentity getApiGatewayRequestIdentity() {
+        ApiGatewayRequestIdentity identity = new ApiGatewayRequestIdentity();
+        // Set default values for all fields
+        identity.setApiKey("");
+        identity.setApiKeyId("");
+        identity.setUserArn("");
+        identity.setCognitoAuthenticationType("");
+        identity.setCaller("");
+        identity.setUserAgent("");
+        identity.setUser("");
+        identity.setCognitoIdentityPoolId("");
+        identity.setCognitoIdentityId("");
+        identity.setCognitoAuthenticationProvider("");
+        identity.setSourceIp("127.0.0.1"); // Reasonable default
+        identity.setAccountId("");
+        identity.setAccessKey("");
+        return identity;
+    }
+
+    /**
+     * Creates an ApiGatewayRequestIdentity instance with the specified source IP.
+     * 
+     * @param sourceIp the source IP to set
+     * @return A pre-configured ApiGatewayRequestIdentity instance
+     */
+    public static ApiGatewayRequestIdentity getApiGatewayRequestIdentity(String sourceIp) {
+        ApiGatewayRequestIdentity identity = getApiGatewayRequestIdentity();
+        identity.setSourceIp(sourceIp);
+        return identity;
+    }
 
     //-------------------------------------------------------------
     // Variables - Private
