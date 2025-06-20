@@ -28,26 +28,26 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class ApiGatewayRequestIdentity {
 
     /**
-     * Creates an ApiGatewayRequestIdentity instance with default values.
+     * Creates an ApiGatewayRequestIdentity instance with default values based on a typical API Gateway request.
      * 
      * @return A pre-configured ApiGatewayRequestIdentity instance
      */
     public static ApiGatewayRequestIdentity getApiGatewayRequestIdentity() {
         ApiGatewayRequestIdentity identity = new ApiGatewayRequestIdentity();
-        // Set default values for all fields
-        identity.setApiKey("");
-        identity.setApiKeyId("");
-        identity.setUserArn("");
-        identity.setCognitoAuthenticationType("");
-        identity.setCaller("");
-        identity.setUserAgent("");
-        identity.setUser("");
-        identity.setCognitoIdentityPoolId("");
-        identity.setCognitoIdentityId("");
-        identity.setCognitoAuthenticationProvider("");
-        identity.setSourceIp("127.0.0.1"); // Reasonable default
-        identity.setAccountId("");
-        identity.setAccessKey("");
+        // Set default values based on example API Gateway request
+        identity.setApiKey(null);
+        identity.setApiKeyId(null);
+        identity.setUserArn(null);
+        identity.setCognitoAuthenticationType(null);
+        identity.setCaller(null);
+        identity.setUserAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36");
+        identity.setUser(null);
+        identity.setCognitoIdentityPoolId(null);
+        identity.setCognitoIdentityId(null);
+        identity.setCognitoAuthenticationProvider(null);
+        identity.setSourceIp("127.0.0.1");
+        identity.setAccountId(null);
+        identity.setAccessKey(null);
         return identity;
     }
 

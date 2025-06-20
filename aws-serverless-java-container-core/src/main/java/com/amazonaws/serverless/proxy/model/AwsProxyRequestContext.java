@@ -29,27 +29,27 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class AwsProxyRequestContext {
 
     /**
-     * Creates an AwsProxyRequestContext instance with default values.
+     * Creates an AwsProxyRequestContext instance with default values based on a typical API Gateway request.
      * 
      * @return A pre-configured AwsProxyRequestContext instance
      */
     public static AwsProxyRequestContext getAwsProxyRequestContext() {
         AwsProxyRequestContext context = new AwsProxyRequestContext();
-        // Set default values for all fields
-        context.setResourceId("");
-        context.setApiId("");
-        context.setResourcePath("");
-        context.setHttpMethod("GET"); // Reasonable default
-        context.setRequestId("");
+        
+        // Set default values based on typical API Gateway request
+        context.setAccountId("123456789012");
+        context.setApiId("id");
+        context.setResourceId("$default");
+        context.setResourcePath("/my/path");
+        context.setHttpMethod("POST");
+        context.setRequestId("id");
         context.setExtendedRequestId("");
-        context.setAccountId("");
-        context.setStage("");
-        context.setPath("");
-        context.setProtocol("");
-        context.setRequestTime("");
+        context.setStage("$default");
+        context.setPath("/my/path");
+        context.setProtocol("HTTP/1.1");
         context.setRequestTimeEpoch(System.currentTimeMillis()); // Current time as reasonable default
         
-        // Create and set identity with defaults
+        // Create and set identity with defaults (already includes sourceIp and userAgent)
         context.setIdentity(ApiGatewayRequestIdentity.getApiGatewayRequestIdentity());
         
         // Initialize authorizer
