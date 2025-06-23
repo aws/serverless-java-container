@@ -25,7 +25,7 @@
 
     <properties>
         <spring.version>6.2.8</spring.version>
-        <log4j.version>2.24.3</log4j.version>
+        <log4j.version>2.25.0</log4j.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
     </properties>
