@@ -124,16 +124,18 @@ class AwsSpringHttpProcessingUtils {
 		populateQueryStringParametersV1(v1Request, httpRequest);
 		populateMultiValueQueryStringParametersV1(v1Request, httpRequest);
 		
+		String contentType = null;
 		if (v1Request.getMultiValueHeaders() != null) {
 			MultiValueMapAdapter headers = new MultiValueMapAdapter(v1Request.getMultiValueHeaders());
 			httpRequest.setHeaders(headers);
+			contentType = v1Request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
 		}
-        populateContentAndContentType(
-                v1Request.getBody(),
-                v1Request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE),
-                v1Request.isBase64Encoded(),
-                httpRequest
-        );
+		populateContentAndContentType(
+			v1Request.getBody(),
+			contentType,
+			v1Request.isBase64Encoded(),
+			httpRequest
+		);
 		if (v1Request.getRequestContext() != null) {
 			httpRequest.setAttribute(RequestReader.API_GATEWAY_CONTEXT_PROPERTY, v1Request.getRequestContext());
 			httpRequest.setAttribute(RequestReader.ALB_CONTEXT_PROPERTY, v1Request.getRequestContext().getElb());
