@@ -496,9 +496,12 @@ public class AwsHttpServletResponse
             values = new ArrayList<>();
         }
 
-        values.add(encodedValue);
-
-        headers.put(encodedKey, values);
+        if (value == null && overwrite) {
+            headers.remove(encodedKey);
+        } else if (value != null) {
+            values.add(encodedValue);
+            headers.put(encodedKey, values);
+        }
     }
 
     private boolean canSetHeader() {
