@@ -10,6 +10,9 @@ on:
         description: "Version to use for further development"
         required: true
         default: "X.Y.Z-SNAPSHOT"
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
