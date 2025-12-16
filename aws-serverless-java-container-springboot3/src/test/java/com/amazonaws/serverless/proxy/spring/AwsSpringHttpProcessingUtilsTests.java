@@ -115,6 +115,57 @@ public class AwsSpringHttpProcessingUtilsTests {
             + "    \"isBase64Encoded\": false\n"
             + "}";
 
+	private static String API_GATEWAY_EVENT_WITHOUT_MULTIVALUE_HEADERS = "{\n"
+            + "    \"version\": \"1.0\",\n"
+            + "    \"resource\": \"$default\",\n"
+            + "    \"path\": \"/async\",\n"
+            + "    \"httpMethod\": \"POST\",\n"
+            + "    \"headers\": {\n"
+            + "        \"Content-Length\": \"45\",\n"
+            + "        \"Content-Type\": \"application/json\",\n"
+            + "        \"Host\": \"i76bfh111.execute-api.eu-west-3.amazonaws.com\",\n"
+            + "        \"User-Agent\": \"curl/7.79.1\",\n"
+            + "        \"X-Amzn-Trace-Id\": \"Root=1-64087690-2151375b219d3ba3389ea84e\",\n"
+            + "        \"X-Forwarded-For\": \"109.210.252.44\",\n"
+            + "        \"X-Forwarded-Port\": \"443\",\n"
+            + "        \"X-Forwarded-Proto\": \"https\",\n"
+            + "        \"accept\": \"*/*\"\n"
+            + "    },\n"
+            + "    \"queryStringParameters\": {\n"
+            + "        \"abc\": \"xyz\",\n"
+            + "        \"parameter1\": \"value2\"\n"
+            + "    },\n"
+            + "    \"multiValueQueryStringParameters\": {\n"
+            + "        \"abc\": [\n"
+            + "            \"xyz\"\n"
+            + "        ],\n"
+            + "        \"parameter1\": [\n"
+            + "            \"value1\",\n"
+            + "            \"value2\"\n"
+            + "        ]\n"
+            + "    },\n"
+            + "    \"requestContext\": {\n"
+            + "        \"accountId\": \"123456789098\",\n"
+            + "        \"apiId\": \"i76bfhczs0\",\n"
+            + "        \"domainName\": \"i76bfhc111.execute-api.eu-west-3.amazonaws.com\",\n"
+            + "        \"domainPrefix\": \"i76bfhczs0\",\n"
+            + "        \"extendedRequestId\": \"Bdd2ngt5iGYEMIg=\",\n"
+            + "        \"httpMethod\": \"POST\",\n"
+            + "        \"path\": \"/pets\",\n"
+            + "        \"protocol\": \"HTTP/1.1\",\n"
+            + "        \"requestId\": \"Bdd2ngt5iGYEMIg=\",\n"
+            + "        \"requestTime\": \"08/Mar/2023:11:50:40 +0000\",\n"
+            + "        \"requestTimeEpoch\": 1678276240455,\n"
+            + "        \"resourceId\": \"$default\",\n"
+            + "        \"resourcePath\": \"$default\",\n"
+            + "        \"stage\": \"$default\"\n"
+            + "    },\n"
+            + "    \"pathParameters\": null,\n"
+            + "    \"stageVariables\": null,\n"
+            + "    \"body\": \"{\\\"name\\\":\\\"bob\\\"}\",\n"
+            + "    \"isBase64Encoded\": false\n"
+            + "}";
+
     private static String API_GATEWAY_EVENT_V2 = "{\n" +
             "  \"version\": \"2.0\",\n" +
             "  \"routeKey\": \"$default\",\n" +
@@ -215,7 +266,7 @@ public class AwsSpringHttpProcessingUtilsTests {
     private final ObjectMapper mapper = new ObjectMapper();
 
     public static Collection<String> data() {
-        return Arrays.asList(new String[]{API_GATEWAY_EVENT, API_GATEWAY_EVENT_V2, ALB_EVENT});
+        return Arrays.asList(new String[]{API_GATEWAY_EVENT, API_GATEWAY_EVENT_WITHOUT_MULTIVALUE_HEADERS, API_GATEWAY_EVENT_V2, ALB_EVENT});
     }
 
     @MethodSource("data")

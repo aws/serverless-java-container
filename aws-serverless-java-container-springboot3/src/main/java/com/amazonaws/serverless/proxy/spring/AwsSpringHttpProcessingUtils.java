@@ -124,16 +124,22 @@ class AwsSpringHttpProcessingUtils {
 		populateQueryStringParametersV1(v1Request, httpRequest);
 		populateMultiValueQueryStringParametersV1(v1Request, httpRequest);
 		
-		if (v1Request.getMultiValueHeaders() != null) {
+		final boolean hasSVH = v1Request.getHeaders() != null && !v1Request.getHeaders().isEmpty();
+		final boolean hasMVH = v1Request.getMultiValueHeaders() != null && !v1Request.getMultiValueHeaders().isEmpty();
+		if (hasMVH) {
 			MultiValueMapAdapter headers = new MultiValueMapAdapter(v1Request.getMultiValueHeaders());
 			httpRequest.setHeaders(headers);
 		}
-        populateContentAndContentType(
-                v1Request.getBody(),
-                v1Request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE),
-                v1Request.isBase64Encoded(),
-                httpRequest
-        );
+		else if (hasSVH)
+		{
+			v1Request.getHeaders().forEach(httpRequest::addHeader);
+		}
+		populateContentAndContentType(
+			v1Request.getBody(),
+			v1Request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE),
+			v1Request.isBase64Encoded(),
+			httpRequest
+		);
 		if (v1Request.getRequestContext() != null) {
 			httpRequest.setAttribute(RequestReader.API_GATEWAY_CONTEXT_PROPERTY, v1Request.getRequestContext());
 			httpRequest.setAttribute(RequestReader.ALB_CONTEXT_PROPERTY, v1Request.getRequestContext().getElb());
