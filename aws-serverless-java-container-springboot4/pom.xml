@@ -55,12 +55,6 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.18.2</version>
         </dependency>
-        <!-- Use Jackson 3.x for Spring Boot 4 compatibility -->
-        <dependency>
-            <groupId>tools.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>3.0.2</version>
-        </dependency>
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
             <artifactId>aws-serverless-java-container-core</artifactId>
