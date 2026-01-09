@@ -81,7 +81,7 @@ public class StreamLambdaHandlerTest {
     private AwsProxyResponse readResponse(ByteArrayOutputStream responseStream) {
         try {
             return LambdaContainerHandler.getObjectMapper().readValue(responseStream.toByteArray(), AwsProxyResponse.class);
-        } catch (IOException e) {
+        } catch (tools.jackson.core.JacksonException e) {
             e.printStackTrace();
             fail("Error while parsing response: " + e.getMessage());
         }
