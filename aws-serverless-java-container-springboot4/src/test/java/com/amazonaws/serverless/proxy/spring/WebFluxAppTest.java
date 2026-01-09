@@ -15,7 +15,7 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.spring.webfluxapp.LambdaHandler;
 import com.amazonaws.serverless.proxy.spring.webfluxapp.MessageController;
 import com.amazonaws.serverless.proxy.spring.webfluxapp.MessageData;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.JsonProcessingException;
 
 public class WebFluxAppTest {
 

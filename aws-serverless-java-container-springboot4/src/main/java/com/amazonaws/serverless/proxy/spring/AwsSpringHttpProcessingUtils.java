@@ -11,6 +11,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import com.amazonaws.serverless.proxy.internal.HttpUtils;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequest;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
 import com.amazonaws.serverless.proxy.model.RequestSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -120,7 +121,7 @@ class AwsSpringHttpProcessingUtils {
 		AwsProxyRequest v1Request = readValue(request, AwsProxyRequest.class, mapper);
 		
 		// Use AWS container's servlet request instead of Spring Cloud Function's
-		return new AwsHttpServletRequest(v1Request, lambdaContext, securityWriter.writeSecurityContext(v1Request, lambdaContext));
+		return new AwsProxyHttpServletRequest(v1Request, lambdaContext, securityWriter.writeSecurityContext(v1Request, lambdaContext));
 	}
 	
 	

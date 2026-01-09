@@ -16,8 +16,8 @@ import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.SecurityUtils;
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.services.lambda.runtime.Context;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,7 +66,7 @@ public class AwsHttpApiV2SecurityContext implements SecurityContext {
             return (() -> {
                 return subject;
             });
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             log.error("Error while attempting to parse JWT body for requestId: " + SecurityUtils.crlf(event.getRequestContext().getRequestId()), e);
             return null;
         }

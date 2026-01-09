@@ -15,8 +15,8 @@ package com.amazonaws.serverless.proxy.internal.testutils;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.*;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.io.IOUtils;
 import org.apache.hc.core5.http.ContentType;
@@ -106,7 +106,7 @@ public class AwsProxyRequestBuilder {
         try {
             String json = objectMapper.writeValueAsString(this.request);
             albRequest = objectMapper.readValue(json, AwsProxyRequest.class);
-        } catch (JsonProcessingException jpe) {
+        } catch (JacksonException jpe) {
             throw new RuntimeException(jpe);
         }
         
@@ -265,7 +265,7 @@ public class AwsProxyRequestBuilder {
         if (request.getMultiValueHeaders() != null && request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE).startsWith(MediaType.APPLICATION_JSON)) {
             try {
                 return body(LambdaContainerHandler.getObjectMapper().writeValueAsString(body));
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 throw new UnsupportedOperationException("Could not serialize object: " + e.getMessage());
             }
         } else {
@@ -438,7 +438,7 @@ public class AwsProxyRequestBuilder {
         try {
             String requestJson = LambdaContainerHandler.getObjectMapper().writeValueAsString(request);
             return new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             return null;
         }
     }
@@ -448,7 +448,7 @@ public class AwsProxyRequestBuilder {
         try {
             String requestJson = LambdaContainerHandler.getObjectMapper().writeValueAsString(req);
             return new ByteArrayInputStream(requestJson.getBytes(StandardCharsets.UTF_8));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             return null;
         }
     }

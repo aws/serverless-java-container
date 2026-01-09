@@ -4,7 +4,7 @@
     <groupId>com.amazonaws.serverless</groupId>
     <artifactId>aws-serverless-java-container</artifactId>
     <packaging>pom</packaging>
-    <version>2.1.5-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
     <name>AWS Serverless Java container</name>
     <description>A Java framework to run Spring, Spring Boot, Jersey, Spark, and Struts applications inside AWS Lambda</description>
     <url>https://github.com/aws/serverless-java-container</url>
@@ -80,7 +80,7 @@
     <properties>
         <jacoco.minCoverage>0.7</jacoco.minCoverage>
         <dependencyCheck.version>12.1.1</dependencyCheck.version>
-        <jackson.version>2.19.1</jackson.version>
+        <!-- <jackson.version>2.19.1</jackson.version> -->
         <slf4j.version>2.0.17</slf4j.version>
         <junit.version>5.12.2</junit.version>
         <mockito.version>5.19.0</mockito.version>

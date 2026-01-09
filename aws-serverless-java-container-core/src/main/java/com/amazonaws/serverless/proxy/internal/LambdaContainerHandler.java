@@ -19,12 +19,10 @@ import com.amazonaws.serverless.proxy.internal.servlet.ApacheCombinedServletLogF
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.services.lambda.runtime.Context;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectReader;
+import tools.jackson.databind.ObjectWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,9 +84,8 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
     }
 
     private static void registerAfterBurner() {
-        objectMapper.registerModule(new AfterburnerModule());
+        // AfterburnerModule is built-in in Jackson 3, no need to register
     }
-
 
     //-------------------------------------------------------------
     // Constructors
@@ -258,11 +255,8 @@ public abstract class LambdaContainerHandler<RequestType, ResponseType, Containe
             ResponseType resp = proxy(request, context);
 
             objectWriter.writeValue(output, resp);
-        } catch (JsonParseException e) {
+        } catch (JacksonException e) {
             log.error("Error while parsing request object stream", e);
-            getObjectMapper().writeValue(output, exceptionHandler.handle(e));
-        } catch (JsonMappingException e) {
-            log.error("Error while mapping object to RequestType class", e);
             getObjectMapper().writeValue(output, exceptionHandler.handle(e));
         } finally {
             output.flush();

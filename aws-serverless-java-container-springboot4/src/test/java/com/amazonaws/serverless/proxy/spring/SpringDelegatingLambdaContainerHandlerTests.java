@@ -16,7 +16,7 @@ import org.springframework.util.CollectionUtils;
 import com.amazonaws.serverless.proxy.spring.servletapp.MessageData;
 import com.amazonaws.serverless.proxy.spring.servletapp.ServletApplication;
 import com.amazonaws.serverless.proxy.spring.servletapp.UserData;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 import jakarta.ws.rs.core.HttpHeaders;
 

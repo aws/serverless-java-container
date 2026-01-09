@@ -26,7 +26,7 @@ import org.springframework.beans.factory.aot.BeanFactoryInitializationCode;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
 import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletResponse;
-import com.fasterxml.jackson.core.JsonToken;
+import tools.jackson.core.JsonToken;
 
 /**
  * AOT Initialization processor required to register reflective hints for GraalVM.
