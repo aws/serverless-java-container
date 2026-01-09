@@ -24,7 +24,7 @@ import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.services.lambda.runtime.Context;
-import tools.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
 import org.glassfish.jersey.logging.LoggingFeature;
@@ -303,7 +303,7 @@ public class JerseyAwsProxyTest {
 
     @MethodSource("data")
     @ParameterizedTest
-    void responseBody_responseWriter_validBody(String reqType) throws JsonProcessingException {
+    void responseBody_responseWriter_validBody(String reqType) throws JacksonException {
         initJerseyAwsProxyTest(reqType);
         SingleValueModel singleValueModel = new SingleValueModel();
         singleValueModel.setValue(CUSTOM_HEADER_VALUE);
@@ -460,7 +460,7 @@ public class JerseyAwsProxyTest {
             MapResponseModel response = objectMapper.readValue(output.getBody(), MapResponseModel.class);
             assertNotNull(response.getValues().get(key));
             assertEquals(value, response.getValues().get(key));
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             e.printStackTrace();
             fail("Exception while parsing response body: " + e.getMessage());
         }
@@ -471,7 +471,7 @@ public class JerseyAwsProxyTest {
             SingleValueModel response = objectMapper.readValue(output.getBody(), SingleValueModel.class);
             assertNotNull(response.getValue());
             assertEquals(value, response.getValue());
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             e.printStackTrace();
             fail("Exception while parsing response body: " + e.getMessage());
         }
