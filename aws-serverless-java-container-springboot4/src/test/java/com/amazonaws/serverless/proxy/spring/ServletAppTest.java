@@ -6,7 +6,7 @@ import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
 import com.amazonaws.serverless.proxy.spring.servletapp.*;
-import tools.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -70,7 +70,7 @@ public class ServletAppTest {
         AwsProxyResponse resp = handler.handleRequest(req, lambdaContext);
         try {
             System.out.println(LambdaContainerHandler.getObjectMapper().writeValueAsString(resp));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             e.printStackTrace();
         }
         assertEquals("3", resp.getBody());
