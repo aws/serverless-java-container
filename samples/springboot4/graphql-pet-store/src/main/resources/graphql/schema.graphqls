@@ -1,0 +1,16 @@
+type Query {
+    petById(id: ID): Pet
+}
+
+type Pet {
+    id: ID
+    name: String
+    breed: String
+    owner: Owner
+}
+
+type Owner {
+    id: ID
+    firstName: String
+    lastName: String
+}
