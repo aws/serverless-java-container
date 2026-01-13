@@ -184,13 +184,16 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
         Timer.stop("SPRINGBOOT2_HANDLE_REQUEST");
     }
 
+    SpringApplicationBuilder getSpringApplicationBuilder(Class<?>... sources) {
+        return new SpringApplicationBuilder(sources);
+    }
 
     @Override
     public void initialize()
             throws ContainerInitializationException {
         Timer.start("SPRINGBOOT2_COLD_START");
 
-        SpringApplicationBuilder builder = new SpringApplicationBuilder(getEmbeddedContainerClasses())
+        SpringApplicationBuilder builder = getSpringApplicationBuilder(getEmbeddedContainerClasses())
                 .web(springWebApplicationType); // .REACTIVE, .SERVLET
         if(springBootInitializer != null) {
             builder.main(springBootInitializer);
