@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Example Pet Store API written with SpringBoot4 with the aws-serverless-java-container library
+
+Globals:
+  Api:
+    # API Gateway regional endpoints
+    EndpointConfiguration: REGIONAL
+
+Resources:
+  PetStoreFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: com.amazonaws.serverless.proxy.spring.SpringDelegatingLambdaContainerHandler::handleRequest
+      Runtime: java25
+      CodeUri: .
+      MemorySize: 1512
+      Policies: AWSLambdaBasicExecutionRole
+      Timeout: 60
+      Environment:
+        Variables:
+          MAIN_CLASS: com.amazonaws.serverless.sample.springboot4.Application
+      Events:
+        HttpApiEvent:
+          Type: HttpApi
+          Properties:
+            TimeoutInMillis: 20000
+            PayloadFormatVersion: '1.0'
+
+Outputs:
+  SpringBootPetStoreApi:
+    Description: URL for application
+    Value: !Sub 'https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/pets'
+    Export:
+      Name: SpringBootPetStoreApi

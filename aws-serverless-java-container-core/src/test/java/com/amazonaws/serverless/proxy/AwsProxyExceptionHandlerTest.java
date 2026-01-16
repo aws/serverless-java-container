@@ -5,8 +5,8 @@ import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.exceptions.InvalidResponseObjectException;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.ErrorModel;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -47,7 +47,7 @@ public class AwsProxyExceptionHandlerTest {
 
     @Test
     void typedHandle_InvalidRequestEventException_responseString()
-            throws JsonProcessingException {
+            throws JacksonException {
         AwsProxyResponse resp = exceptionHandler.handle(new InvalidRequestEventException(INVALID_REQUEST_MESSAGE, null));
 
         assertNotNull(resp);
@@ -74,7 +74,7 @@ public class AwsProxyExceptionHandlerTest {
 
     @Test
     void typedHandle_InvalidResponseObjectException_responseString()
-            throws JsonProcessingException {
+            throws JacksonException {
         AwsProxyResponse resp = exceptionHandler.handle(new InvalidResponseObjectException(INVALID_RESPONSE_MESSAGE, null));
 
         assertNotNull(resp);
@@ -106,7 +106,7 @@ public class AwsProxyExceptionHandlerTest {
 
     @Test
     void typedHandle_InternalServerErrorException_responseString()
-            throws JsonProcessingException {
+            throws JacksonException {
         InternalServerErrorException mockInternalServerErrorException = Mockito.mock(InternalServerErrorException.class);
         Mockito.when(mockInternalServerErrorException.getMessage()).thenReturn(INTERNAL_SERVER_ERROR_MESSAGE);
 
@@ -131,7 +131,7 @@ public class AwsProxyExceptionHandlerTest {
 
     @Test
     void typedHandle_NullPointerException_responseObject()
-            throws JsonProcessingException {
+            throws JacksonException {
         AwsProxyResponse resp = exceptionHandler.handle(new NullPointerException());
 
         assertNotNull(resp);
@@ -248,7 +248,7 @@ public class AwsProxyExceptionHandlerTest {
     void getErrorJson_JsonParsinException_validJson()
             throws IOException {
         ObjectMapper mockMapper = mock(ObjectMapper.class);
-        JsonProcessingException exception = mock(JsonProcessingException.class);
+        JacksonException exception = mock(JacksonException.class);
         when(mockMapper.writeValueAsString(any(Object.class))).thenThrow(exception);
 
         String output = exceptionHandler.getErrorJson(INVALID_RESPONSE_MESSAGE);

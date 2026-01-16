@@ -15,8 +15,8 @@ import com.amazonaws.serverless.proxy.spring.echoapp.UnauthenticatedFilter;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.MapResponseModel;
 import com.amazonaws.serverless.proxy.spring.echoapp.model.SingleValueModel;
 import com.amazonaws.services.lambda.runtime.Context;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -294,7 +294,7 @@ public class SpringAwsProxyTest {
 
     @MethodSource("data")
     @ParameterizedTest
-    void responseBody_responseWriter_validBody(String reqType) throws JsonProcessingException {
+    void responseBody_responseWriter_validBody(String reqType) throws JacksonException {
         initSpringAwsProxyTest(reqType);
         SingleValueModel singleValueModel = new SingleValueModel();
         singleValueModel.setValue(CUSTOM_HEADER_VALUE);
@@ -311,7 +311,7 @@ public class SpringAwsProxyTest {
 
     @MethodSource("data")
     @ParameterizedTest
-    void responseBody_responseWriter_validBody_UTF(String reqType) throws JsonProcessingException {
+    void responseBody_responseWriter_validBody_UTF(String reqType) throws JacksonException {
         initSpringAwsProxyTest(reqType);
         SingleValueModel singleValueModel = new SingleValueModel();
         singleValueModel.setValue(UNICODE_VALUE);
@@ -363,7 +363,7 @@ public class SpringAwsProxyTest {
         try {
             SingleValueModel output = objectMapper.readValue(response.getBody(), SingleValueModel.class);
             assertEquals("true", output.getValue());
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             e.printStackTrace();
             fail();
         }
@@ -373,7 +373,7 @@ public class SpringAwsProxyTest {
         try {
             SingleValueModel output = objectMapper.readValue(emptyResp.getBody(), SingleValueModel.class);
             assertNull(output.getValue());
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             e.printStackTrace();
             fail();
         }
@@ -392,7 +392,7 @@ public class SpringAwsProxyTest {
                     .header(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate")
                     .queryString("status", "200")
                     .body(objectMapper.writeValueAsString(singleValueModel));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             fail("Could not serialize object to JSON");
         }
 
@@ -484,7 +484,7 @@ public class SpringAwsProxyTest {
             MapResponseModel response = objectMapper.readValue(output.getBody(), MapResponseModel.class);
             assertNotNull(response.getValues().get(CUSTOM_HEADER_KEY));
             assertEquals(CUSTOM_HEADER_VALUE, response.getValues().get(CUSTOM_HEADER_KEY));
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             e.printStackTrace();
             fail("Exception while parsing response body: " + e.getMessage());
         }
@@ -495,7 +495,7 @@ public class SpringAwsProxyTest {
             SingleValueModel response = objectMapper.readValue(output.getBody(), SingleValueModel.class);
             assertNotNull(response.getValue());
             assertEquals(value, response.getValue());
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             e.printStackTrace();
             fail("Exception while parsing response body: " + e.getMessage());
         }

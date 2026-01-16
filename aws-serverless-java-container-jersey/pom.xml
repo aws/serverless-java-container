@@ -6,12 +6,12 @@
     <name>AWS Serverless Java container support - Jersey implementation</name>
     <description>Allows Java applications written for Jersey to run in AWS Lambda</description>
     <url>https://aws.amazon.com/lambda</url>
-    <version>2.1.5-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
 
     <parent>
         <groupId>com.amazonaws.serverless</groupId>
         <artifactId>aws-serverless-java-container</artifactId>
-        <version>2.1.5-SNAPSHOT</version>
+        <version>3.0.0-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
 
@@ -24,18 +24,12 @@
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
             <artifactId>aws-serverless-java-container-core</artifactId>
-            <version>2.1.5-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
-                </exclusion>
-            </exclusions>
+            <version>3.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
             <artifactId>aws-serverless-java-container-core</artifactId>
-            <version>2.1.5-SNAPSHOT</version>
+            <version>3.0.0-SNAPSHOT</version>
             <classifier>tests</classifier>
             <type>test-jar</type>
             <scope>test</scope>
@@ -69,14 +63,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
-            <optional>true</optional>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-jackson</artifactId>
             <version>${jersey.version}</version>
@@ -88,11 +74,11 @@
                     <artifactId>jackson-annotations</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <groupId>tools.jackson.core</groupId>
                     <artifactId>jackson-databind</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <groupId>tools.jackson.core</groupId>
                     <artifactId>jackson-core</artifactId>
                 </exclusion>
             </exclusions>

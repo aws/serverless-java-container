@@ -607,12 +607,22 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
         if (request.getRequestSource() == RequestSource.API_GATEWAY) {
             if ("referer".equals(key.toLowerCase(Locale.ENGLISH))) {
-                values.add(request.getRequestContext().getIdentity().getCaller());
-                return values;
+                if (request.getRequestContext() != null && request.getRequestContext().getIdentity() != null) {
+                    String caller = request.getRequestContext().getIdentity().getCaller();
+                    if (caller != null) {
+                        values.add(caller);
+                        return values;
+                    }
+                }
             }
             if ("user-agent".equals(key.toLowerCase(Locale.ENGLISH))) {
-                values.add(request.getRequestContext().getIdentity().getUserAgent());
-                return values;
+                if (request.getRequestContext() != null && request.getRequestContext().getIdentity() != null) {
+                    String userAgent = request.getRequestContext().getIdentity().getUserAgent();
+                    if (userAgent != null) {
+                        values.add(userAgent);
+                        return values;
+                    }
+                }
             }
         }
 
