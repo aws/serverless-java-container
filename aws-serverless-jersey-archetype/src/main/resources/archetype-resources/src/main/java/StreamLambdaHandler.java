@@ -10,6 +10,7 @@ import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 
+import tools.jackson.core.JacksonException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;

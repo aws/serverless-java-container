@@ -28,6 +28,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.core.HttpHeaders;
+import java.nio.ByteBuffer;
 import jakarta.ws.rs.core.MediaType;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -147,6 +148,16 @@ public class AwsHttpServletResponse
     public void sendRedirect(String s) throws IOException {
         setStatus(SC_MOVED_TEMPORARILY);
         addHeader(HttpHeaders.LOCATION, s);
+        flushBuffer();
+    }
+
+    @Override
+    public void sendRedirect(String location, int sc, boolean clearBuffer) throws IOException {
+        setStatus(sc);
+        addHeader(HttpHeaders.LOCATION, location);
+        if (clearBuffer) {
+            resetBuffer();
+        }
         flushBuffer();
     }
 
@@ -289,6 +300,25 @@ public class AwsHttpServletResponse
             public void write(int b) throws IOException {
                 try {
                     bodyOutputStream.write(b);
+                } catch (Exception e) {
+                    log.error("Cannot write to output stream", e);
+                    if (listener != null) {
+                        listener.onError(e);
+                    }
+                }
+            }
+
+            @Override
+            public void write(ByteBuffer b) throws IOException {
+                try {
+                    if (b.hasArray()) {
+                        bodyOutputStream.write(b.array(), b.arrayOffset() + b.position(), b.remaining());
+                        b.position(b.limit());
+                    } else {
+                        byte[] buf = new byte[b.remaining()];
+                        b.get(buf);
+                        bodyOutputStream.write(buf);
+                    }
                 } catch (Exception e) {
                     log.error("Cannot write to output stream", e);
                     if (listener != null) {

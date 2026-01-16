@@ -1,7 +1,7 @@
 package com.amazonaws.serverless.proxy.model;
 
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -181,7 +181,7 @@ public class HttpApiV2ProxyRequestTest {
             assertTrue(req.getRequestContext().getAuthorizer().getJwtAuthorizer().getClaims().containsKey("claim1"));
             assertEquals(2, req.getRequestContext().getAuthorizer().getJwtAuthorizer().getScopes().size());
             assertEquals(RequestSource.API_GATEWAY, req.getRequestSource());
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             e.printStackTrace();
             fail("Exception while parsing request" + e.getMessage());
         }
@@ -196,7 +196,7 @@ public class HttpApiV2ProxyRequestTest {
             assertFalse(req.getRequestContext().getAuthorizer().isJwt());
             assertFalse(req.getRequestContext().getAuthorizer().isLambda());
             assertFalse(req.getRequestContext().getAuthorizer().isIam());
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             e.printStackTrace();
             fail("Exception while parsing request" + e.getMessage());
         }
@@ -212,7 +212,7 @@ public class HttpApiV2ProxyRequestTest {
             assertTrue(req.getRequestContext().getAuthorizer().isLambda());
             assertEquals(5, req.getRequestContext().getAuthorizer().getLambdaAuthorizerContext().size());
             assertEquals(1, req.getRequestContext().getAuthorizer().getLambdaAuthorizerContext().get("numberKey"));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             e.printStackTrace();
             fail("Exception while parsing request" + e.getMessage());
         }
@@ -239,7 +239,7 @@ public class HttpApiV2ProxyRequestTest {
                     req.getRequestContext().getAuthorizer().getIamAuthorizer().getUserArn());
             assertEquals("AIDACOSFODNN7EXAMPLE2",
                     req.getRequestContext().getAuthorizer().getIamAuthorizer().getUserId());
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             e.printStackTrace();
             fail("Exception while parsing request" + e.getMessage());
         }
@@ -254,7 +254,7 @@ public class HttpApiV2ProxyRequestTest {
             req = LambdaContainerHandler.getObjectMapper().readValue(NO_AUTH_PROXY, HttpApiV2ProxyRequest.class);
             assertTrue(req.isBase64Encoded());
             assertEquals(RequestSource.API_GATEWAY, req.getRequestSource());
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             e.printStackTrace();
             fail("Exception while parsing request" + e.getMessage());
         }
@@ -277,7 +277,7 @@ public class HttpApiV2ProxyRequestTest {
             assertTrue(reqString.contains("\"scopes\":[\"first\",\"second\"]"));
             assertTrue(reqString.contains("\"authorizer\":{\"jwt\":{"));
             assertTrue(reqString.contains("\"isBase64Encoded\":false"));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             e.printStackTrace();
             fail("Exception while serializing request" + e.getMessage());
         }

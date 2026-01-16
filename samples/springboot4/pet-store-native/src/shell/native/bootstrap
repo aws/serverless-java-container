@@ -1,0 +1,5 @@
+#!/bin/sh
+
+cd ${LAMBDA_TASK_ROOT:-.}
+
+./pet-store-native -Dlogging.level.org.springframework=DEBUG -Dlogging.level.com.amazonaws.serverless.proxy.spring=DEBUG
