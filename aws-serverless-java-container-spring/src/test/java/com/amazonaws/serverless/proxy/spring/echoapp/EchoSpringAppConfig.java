@@ -1,7 +1,7 @@
 package com.amazonaws.serverless.proxy.spring.echoapp;
 
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;

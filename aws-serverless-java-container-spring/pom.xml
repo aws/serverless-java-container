@@ -6,18 +6,18 @@
     <name>AWS Serverless Java container support - Spring implementation</name>
     <description>Allows Java applications written for the Spring framework to run in AWS Lambda</description>
     <url>https://aws.amazon.com/lambda</url>
-    <version>2.1.5-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
 
     <parent>
         <groupId>com.amazonaws.serverless</groupId>
         <artifactId>aws-serverless-java-container</artifactId>
-        <version>2.1.5-SNAPSHOT</version>
+        <version>3.0.0-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
 
     <properties>
-        <spring.version>6.2.8</spring.version>
-        <spring-security.version>6.5.1</spring-security.version>
+        <spring.version>7.0.0</spring.version>
+        <spring-security.version>7.0.0</spring-security.version>
     </properties>
 
     <dependencies>
@@ -25,12 +25,12 @@
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
             <artifactId>aws-serverless-java-container-core</artifactId>
-            <version>2.1.5-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
             <artifactId>aws-serverless-java-container-core</artifactId>
-            <version>2.1.5-SNAPSHOT</version>
+            <version>${project.version}</version>
             <classifier>tests</classifier>
             <type>test-jar</type>
             <scope>test</scope>
@@ -57,12 +57,7 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
-            <scope>test</scope>
-        </dependency>
+
 
         <dependency>
             <groupId>jakarta.activation</groupId>

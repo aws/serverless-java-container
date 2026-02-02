@@ -1,0 +1,30 @@
+apply plugin: 'java'
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+  maven {url "https://repo.spring.io/milestone"}
+  maven {url "https://repo.spring.io/snapshot"}
+}
+
+dependencies {
+  implementation (
+          implementation('org.springframework.boot:spring-boot-starter-web:3.4.5') {
+            exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+          },
+          'com.amazonaws.serverless:aws-serverless-java-container-springboot4:[2.0-SNAPSHOT,)',
+          'com.fasterxml.jackson.core:jackson-databind:2.18.2'
+  )
+}
+
+task buildZip(type: Zip) {
+  from compileJava
+  from processResources
+  into('lib') {
+    from(configurations.compileClasspath) {
+      exclude 'tomcat-embed-*'
+    }
+  }
+}
+
+build.dependsOn buildZip

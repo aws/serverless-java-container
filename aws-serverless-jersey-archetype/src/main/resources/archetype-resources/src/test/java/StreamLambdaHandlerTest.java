@@ -16,6 +16,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.io.ByteArrayOutputStream;
+import tools.jackson.core.JacksonException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -81,7 +82,7 @@ public class StreamLambdaHandlerTest {
     private AwsProxyResponse readResponse(ByteArrayOutputStream responseStream) {
         try {
             return LambdaContainerHandler.getObjectMapper().readValue(responseStream.toByteArray(), AwsProxyResponse.class);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             e.printStackTrace();
             fail("Error while parsing response: " + e.getMessage());
         }

@@ -20,6 +20,7 @@ import jakarta.servlet.ReadListener;
 import jakarta.servlet.ServletInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 public class AwsServletInputStream extends ServletInputStream {
     private static Logger log = LoggerFactory.getLogger(AwsServletInputStream.class);
@@ -72,5 +73,24 @@ public class AwsServletInputStream extends ServletInputStream {
             finished = true;
         }
         return readByte;
+    }
+
+    @Override
+    public int read(ByteBuffer b) throws IOException {
+        if (bodyStream == null || bodyStream instanceof NullInputStream) {
+            return -1;
+        }
+        if (!b.hasRemaining()) {
+            return 0;
+        }
+        byte[] buf = new byte[b.remaining()];
+        int bytesRead = bodyStream.read(buf);
+        if (bytesRead > 0) {
+            b.put(buf, 0, bytesRead);
+        }
+        if (bytesRead == -1) {
+            finished = true;
+        }
+        return bytesRead;
     }
 }
