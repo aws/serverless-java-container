@@ -15,6 +15,7 @@ Follow the quick start guides in [our wiki](https://github.com/aws/serverless-ja
 * [Spring quick start](https://github.com/aws/serverless-java-container/wiki/Quick-start---Spring)
 * [Spring Boot 2 quick start](https://github.com/aws/serverless-java-container/wiki/Quick-start---Spring-Boot2)
 * [Spring Boot 3 quick start](https://github.com/aws/serverless-java-container/wiki/Quick-start---Spring-Boot3)
+* [Spring Boot 4 quick start](https://github.com/aws/serverless-java-container/wiki/Quick-start---Spring-Boot4)
 * [Apache Struts quick start](https://github.com/aws/serverless-java-container/wiki/Quick-start---Struts)
 * [Jersey quick start](https://github.com/aws/serverless-java-container/wiki/Quick-start---Jersey)
 * [Spark quick start](https://github.com/aws/serverless-java-container/wiki/Quick-start---Spark)
