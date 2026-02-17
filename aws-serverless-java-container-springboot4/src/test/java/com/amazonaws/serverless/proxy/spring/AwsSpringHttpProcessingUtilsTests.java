@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 
 import com.amazonaws.serverless.proxy.RequestReader;
 import com.amazonaws.serverless.proxy.model.AlbContext;
@@ -219,6 +220,10 @@ public class AwsSpringHttpProcessingUtilsTests {
         return Arrays.asList(new String[]{API_GATEWAY_EVENT, API_GATEWAY_EVENT_V2, ALB_EVENT});
     }
 
+    public static Collection<String> v1Data() {
+        return Arrays.asList(new String[]{API_GATEWAY_EVENT, ALB_EVENT});
+    }
+
     @MethodSource("data")
     @ParameterizedTest
 	public void validateHttpServletRequestGenerationWithInputStream(String jsonEvent) {
@@ -256,6 +261,46 @@ public class AwsSpringHttpProcessingUtilsTests {
 	}
     
     
+	@MethodSource("v1Data")
+	@ParameterizedTest
+	public void validateLambdaContextAttribute(String jsonEvent) {
+		ServerlessServletContext servletContext = new ServerlessServletContext();
+		HttpServletRequest request = AwsSpringHttpProcessingUtils.generateHttpServletRequest(jsonEvent, null, servletContext, mapper);
+		assertNotNull(request.getAttribute(RequestReader.API_GATEWAY_EVENT_PROPERTY));
+	}
+
+	@MethodSource("v1Data")
+	@ParameterizedTest
+	public void validateSecurityContextAttribute(String jsonEvent) {
+		ServerlessServletContext servletContext = new ServerlessServletContext();
+		HttpServletRequest request = AwsSpringHttpProcessingUtils.generateHttpServletRequest(jsonEvent, null, servletContext, mapper);
+		assertNotNull(request.getAttribute(RequestReader.JAX_SECURITY_CONTEXT_PROPERTY));
+	}
+
+	@MethodSource("v1Data")
+	@ParameterizedTest
+	public void validateNullMultiValueHeaders(String jsonEvent) throws Exception {
+		Map<String, Object> event = mapper.readValue(jsonEvent, Map.class);
+		event.put("multiValueHeaders", null);
+		String modifiedEvent = mapper.writeValueAsString(event);
+		ServerlessServletContext servletContext = new ServerlessServletContext();
+		HttpServletRequest request = AwsSpringHttpProcessingUtils.generateHttpServletRequest(modifiedEvent, null, servletContext, mapper);
+		assertNotNull(request);
+	}
+
+	@MethodSource("v1Data")
+	@ParameterizedTest
+	public void validateBase64EncodedBody(String jsonEvent) throws Exception {
+		String base64Body = java.util.Base64.getEncoder().encodeToString("test body".getBytes(StandardCharsets.UTF_8));
+		Map<String, Object> event = mapper.readValue(jsonEvent, Map.class);
+		event.put("body", base64Body);
+		event.put("isBase64Encoded", true);
+		String modifiedEvent = mapper.writeValueAsString(event);
+		ServerlessServletContext servletContext = new ServerlessServletContext();
+		HttpServletRequest request = AwsSpringHttpProcessingUtils.generateHttpServletRequest(modifiedEvent, null, servletContext, mapper);
+		assertNotNull(request);
+	}
+
     @EnableAutoConfiguration
     @Configuration
     @EnableWebSecurity
