@@ -120,11 +120,35 @@ class AwsSpringHttpProcessingUtils {
 			SecurityContextWriter securityWriter, ObjectMapper mapper, ServletContext servletContext) {
 		AwsProxyRequest v1Request = readValue(request, AwsProxyRequest.class, mapper);
 		
-		// Use AWS container's servlet request instead of Spring Cloud Function's
-		AwsProxyHttpServletRequest httpServletRequest = new AwsProxyHttpServletRequest(v1Request, lambdaContext, securityWriter.writeSecurityContext(v1Request, lambdaContext));
-		httpServletRequest.setServletContext(servletContext);
-		return httpServletRequest;
+		ServerlessHttpServletRequest httpRequest = new ServerlessHttpServletRequest(servletContext, v1Request.getHttpMethod(), v1Request.getPath());
+
+		populateQueryStringParametersV1(v1Request, httpRequest);
+		populateMultiValueQueryStringParametersV1(v1Request, httpRequest);
+		
+		String contentType = null;
+		if (v1Request.getMultiValueHeaders() != null) {
+			MultiValueMapAdapter headers = new MultiValueMapAdapter(v1Request.getMultiValueHeaders());
+			httpRequest.setHeaders(headers);
+			contentType = v1Request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
+		}
+        populateContentAndContentType(
+                v1Request.getBody(),
+                contentType, 
+                v1Request.isBase64Encoded(),
+                httpRequest
+        );
+		if (v1Request.getRequestContext() != null) {
+			httpRequest.setAttribute(RequestReader.API_GATEWAY_CONTEXT_PROPERTY, v1Request.getRequestContext());
+			httpRequest.setAttribute(RequestReader.ALB_CONTEXT_PROPERTY, v1Request.getRequestContext().getElb());
+		}
+		httpRequest.setAttribute(RequestReader.API_GATEWAY_STAGE_VARS_PROPERTY, v1Request.getStageVariables());
+		httpRequest.setAttribute(RequestReader.API_GATEWAY_EVENT_PROPERTY, v1Request);
+		httpRequest.setAttribute(RequestReader.LAMBDA_CONTEXT_PROPERTY, lambdaContext);
+		httpRequest.setAttribute(RequestReader.JAX_SECURITY_CONTEXT_PROPERTY,
+				securityWriter.writeSecurityContext(v1Request, lambdaContext));
+		return httpRequest;
 	}
+
 	
 	
 
