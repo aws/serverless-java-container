@@ -324,22 +324,8 @@ public class AwsSpringHttpProcessingUtilsTests {
 		ServerlessServletContext servletContext = new ServerlessServletContext();
 		HttpServletRequest request = AwsSpringHttpProcessingUtils.generateHttpServletRequest(jsonEvent, null, servletContext, mapper);
 		assertNotNull(request.getAttribute(RequestReader.HTTP_API_CONTEXT_PROPERTY));
-	}
-
-	@MethodSource("v2Data")
-	@ParameterizedTest
-	public void validateHttpApiStageVarsAttribute(String jsonEvent) {
-		ServerlessServletContext servletContext = new ServerlessServletContext();
-		HttpServletRequest request = AwsSpringHttpProcessingUtils.generateHttpServletRequest(jsonEvent, null, servletContext, mapper);
-		assertNotNull(request.getAttribute(RequestReader.HTTP_API_STAGE_VARS_PROPERTY));
-	}
-
-	@MethodSource("v2Data")
-	@ParameterizedTest
-	public void validateHttpApiEventAttribute(String jsonEvent) {
-		ServerlessServletContext servletContext = new ServerlessServletContext();
-		HttpServletRequest request = AwsSpringHttpProcessingUtils.generateHttpServletRequest(jsonEvent, null, servletContext, mapper);
-		assertNotNull(request.getAttribute(RequestReader.HTTP_API_EVENT_PROPERTY));
+        assertNotNull(request.getAttribute(RequestReader.HTTP_API_STAGE_VARS_PROPERTY));
+        assertNotNull(request.getAttribute(RequestReader.HTTP_API_EVENT_PROPERTY));
 	}
     
     @EnableAutoConfiguration
