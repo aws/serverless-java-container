@@ -223,6 +223,10 @@ public class AwsSpringHttpProcessingUtilsTests {
         return Arrays.asList(new String[]{API_GATEWAY_EVENT, ALB_EVENT});
     }
 
+    public static Collection<String> v2Data() {
+        return Arrays.asList(new String[]{API_GATEWAY_EVENT_V2});
+    }
+
     @MethodSource("data")
     @ParameterizedTest
 	public void validateHttpServletRequestGenerationWithInputStream(String jsonEvent) {
@@ -282,7 +286,7 @@ public class AwsSpringHttpProcessingUtilsTests {
 		assertNotNull(request.getAttribute(RequestReader.API_GATEWAY_EVENT_PROPERTY));
 	}
 
-	@MethodSource("v1Data")
+	@MethodSource("data")
 	@ParameterizedTest
 	public void validateSecurityContextAttribute(String jsonEvent) {
 		ServerlessServletContext servletContext = new ServerlessServletContext();
@@ -301,7 +305,7 @@ public class AwsSpringHttpProcessingUtilsTests {
 		assertNotNull(request);
 	}
 
-	@MethodSource("v1Data")
+	@MethodSource("data")
 	@ParameterizedTest
 	public void validateBase64EncodedBody(String jsonEvent) throws Exception {
 		String base64Body = java.util.Base64.getEncoder().encodeToString("test body".getBytes(StandardCharsets.UTF_8));
@@ -312,6 +316,30 @@ public class AwsSpringHttpProcessingUtilsTests {
 		ServerlessServletContext servletContext = new ServerlessServletContext();
 		HttpServletRequest request = AwsSpringHttpProcessingUtils.generateHttpServletRequest(modifiedEvent, null, servletContext, mapper);
 		assertNotNull(request);
+	}
+
+	@MethodSource("v2Data")
+	@ParameterizedTest
+	public void validateHttpApiContextAttribute(String jsonEvent) {
+		ServerlessServletContext servletContext = new ServerlessServletContext();
+		HttpServletRequest request = AwsSpringHttpProcessingUtils.generateHttpServletRequest(jsonEvent, null, servletContext, mapper);
+		assertNotNull(request.getAttribute(RequestReader.HTTP_API_CONTEXT_PROPERTY));
+	}
+
+	@MethodSource("v2Data")
+	@ParameterizedTest
+	public void validateHttpApiStageVarsAttribute(String jsonEvent) {
+		ServerlessServletContext servletContext = new ServerlessServletContext();
+		HttpServletRequest request = AwsSpringHttpProcessingUtils.generateHttpServletRequest(jsonEvent, null, servletContext, mapper);
+		assertNotNull(request.getAttribute(RequestReader.HTTP_API_STAGE_VARS_PROPERTY));
+	}
+
+	@MethodSource("v2Data")
+	@ParameterizedTest
+	public void validateHttpApiEventAttribute(String jsonEvent) {
+		ServerlessServletContext servletContext = new ServerlessServletContext();
+		HttpServletRequest request = AwsSpringHttpProcessingUtils.generateHttpServletRequest(jsonEvent, null, servletContext, mapper);
+		assertNotNull(request.getAttribute(RequestReader.HTTP_API_EVENT_PROPERTY));
 	}
     
     @EnableAutoConfiguration
