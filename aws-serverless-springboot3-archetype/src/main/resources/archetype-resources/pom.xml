@@ -33,7 +33,7 @@
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
             <artifactId>aws-serverless-java-container-core</artifactId>
-            <version>${project.version}</version>
+            <version>2.1.5</version>
             <classifier>tests</classifier>
             <type>test-jar</type>
             <scope>test</scope>
