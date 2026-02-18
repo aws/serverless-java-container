@@ -44,9 +44,9 @@
 
     <repositories>
         <repository>
-            <id>sonatype-nexus-snapshots</id>
-            <name>Sonatype Nexus Snapshots</name>
-            <url>https://aws.oss.sonatype.org/content/repositories/snapshots</url>
+            <id>sonatype-central-snapshots</id>
+            <name>Sonatype Central Snapshots</name>
+            <url>https://ossrh-staging-api.central.sonatype.com/content/repositories/snapshots</url>
             <releases>
                 <enabled>false</enabled>
             </releases>
@@ -58,14 +58,14 @@
 
     <distributionManagement>
         <snapshotRepository>
-            <id>sonatype-nexus-snapshots</id>
-            <name>Sonatype Nexus Snapshots</name>
-            <url>https://aws.oss.sonatype.org/content/repositories/snapshots/</url>
+            <id>sonatype-central-snapshots</id>
+            <name>Sonatype Central Snapshots</name>
+            <url>https://ossrh-staging-api.central.sonatype.com/content/repositories/snapshots/</url>
         </snapshotRepository>
         <repository>
-            <id>sonatype-nexus-staging</id>
-            <name>Nexus Release Repository</name>
-            <url>https://aws.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <id>sonatype-central-staging</id>
+            <name>Central Release Repository</name>
+            <url>https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
 
