@@ -24,7 +24,7 @@ jobs:
         with:
           distribution: 'corretto'
           java-version: 17
-          server-id: sonatype-nexus-staging
+          server-id: sonatype-central-staging
           server-username: MAVEN_USERNAME
           server-password: MAVEN_PASSWORD
           gpg-private-key: ${{ secrets.GPG_SIGNING_KEY }} # Value of the GPG private key to import
@@ -32,6 +32,6 @@ jobs:
       - name: Release and publish package
         run: mvn release:prepare release:perform -B -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
         env:
-          MAVEN_USERNAME: ${{ secrets.OSSRH_JIRA_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.OSSRH_JIRA_PASSWORD }}
+          MAVEN_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
