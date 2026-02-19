@@ -28,11 +28,9 @@
         <module>aws-serverless-java-container-core</module>
         <module>aws-serverless-java-container-jersey</module>
         <module>aws-serverless-java-container-spring</module>
-        <module>aws-serverless-java-container-springboot3</module>
         <module>aws-serverless-java-container-springboot4</module>
         <module>aws-serverless-jersey-archetype</module>
         <module>aws-serverless-spring-archetype</module>
-        <module>aws-serverless-springboot3-archetype</module>
         <module>aws-serverless-springboot4-archetype</module>
     </modules>
 
