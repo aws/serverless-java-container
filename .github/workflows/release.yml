@@ -34,13 +34,6 @@ jobs:
           gpg-passphrase: GPG_PASSPHRASE # env variable for GPG private key passphrase
       - name: Release and publish package
         run: mvn release:prepare release:perform -B -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
-      - name: Upload to Central Portal
-        run: |
-          curl -X POST \
-            -u "${{ secrets.CENTRAL_USERNAME }}:${{ secrets.CENTRAL_PASSWORD }}" \
-            -H "Content-Type: application/json" \
-            -d '{"deploymentName": "com.amazonaws.serverless-${{ github.event.inputs.releaseVersion }}"}' \
-            https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/com.amazonaws.serverless
         env:
           MAVEN_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
