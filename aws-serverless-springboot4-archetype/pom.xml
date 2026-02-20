@@ -4,17 +4,17 @@
     <parent>
         <groupId>com.amazonaws.serverless</groupId>
         <artifactId>aws-serverless-java-container</artifactId>
-        <version>3.0.0</version>
+        <version>3.0.1-SNAPSHOT</version>
     </parent>
 
     <groupId>com.amazonaws.serverless.archetypes</groupId>
     <artifactId>aws-serverless-springboot4-archetype</artifactId>
-    <version>3.0.0</version>
+    <version>3.0.1-SNAPSHOT</version>
     <packaging>maven-archetype</packaging>
 
     <scm>
         <url>https://github.com/aws/serverless-java-container.git</url>
-      <tag>aws-serverless-java-container-3.0.0</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <licenses>
