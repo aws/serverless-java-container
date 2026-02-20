@@ -11,6 +11,7 @@
     <artifactId>aws-serverless-springboot4-archetype</artifactId>
     <version>3.0.0-SNAPSHOT</version>
     <packaging>maven-archetype</packaging>
+    <name>AWS Serverless Spring Boot 4 Archetype</name>
 
     <scm>
         <url>https://github.com/aws/serverless-java-container.git</url>
