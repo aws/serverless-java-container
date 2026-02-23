@@ -16,7 +16,7 @@
     <url>https://aws.amazon.com/lambda</url>
 
     <properties>
-        <spring.version>6.2.8</spring.version>
+        <spring.version>6.2.10</spring.version>
         <springboot.version>3.5.8</springboot.version>
         <springsecurity.version>6.4.5</springsecurity.version>
     </properties>
