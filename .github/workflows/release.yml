@@ -38,3 +38,8 @@ jobs:
           MAVEN_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+      - name: Upload to Central Publisher Portal
+        run: |
+          AUTH=$(echo -n "${{ secrets.CENTRAL_USERNAME }}:${{ secrets.CENTRAL_PASSWORD }}" | base64)
+          curl -X POST "https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/com.amazonaws.serverless" \
+            -H "Authorization: Bearer $AUTH"
