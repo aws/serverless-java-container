@@ -6,12 +6,12 @@
     <name>AWS Serverless Java container support - Spring implementation</name>
     <description>Allows Java applications written for the Spring framework to run in AWS Lambda</description>
     <url>https://aws.amazon.com/lambda</url>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.0.1-SNAPSHOT</version>
 
     <parent>
         <groupId>com.amazonaws.serverless</groupId>
         <artifactId>aws-serverless-java-container</artifactId>
-        <version>3.0.0-SNAPSHOT</version>
+        <version>3.0.1-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
 

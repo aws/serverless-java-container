@@ -4,12 +4,12 @@
     <parent>
         <groupId>com.amazonaws.serverless</groupId>
         <artifactId>aws-serverless-java-container</artifactId>
-        <version>3.0.0-SNAPSHOT</version>
+        <version>3.0.1-SNAPSHOT</version>
     </parent>
 
     <groupId>com.amazonaws.serverless.archetypes</groupId>
     <artifactId>aws-serverless-spring-archetype</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.0.1-SNAPSHOT</version>
     <packaging>maven-archetype</packaging>
     <name>AWS Serverless Spring Archetype</name>
 
