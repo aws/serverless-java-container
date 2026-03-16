@@ -78,7 +78,6 @@ public class SpringDelegatingLambdaContainerHandler implements RequestStreamHand
         ServerlessMVC mvc = initHandler.getMvc();
         HttpServletRequest httpServletRequest = AwsSpringHttpProcessingUtils
         		.generateHttpServletRequest(input, lambdaContext, mvc.getServletContext(), this.mapper);
-        httpServletRequest.startAsync();
         AwsProxyResponse awsProxyResponse = AwsSpringHttpProcessingUtils.processRequest(httpServletRequest, mvc, responseWriter);
         this.mapper.writeValue(output, awsProxyResponse);
     }

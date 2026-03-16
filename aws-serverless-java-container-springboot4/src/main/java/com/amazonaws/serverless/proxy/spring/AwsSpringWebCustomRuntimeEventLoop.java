@@ -130,7 +130,6 @@ public final class AwsSpringWebCustomRuntimeEventLoop implements SmartLifecycle 
 
 					HttpServletRequest httpServletRequest = AwsSpringHttpProcessingUtils.generateHttpServletRequest(
 							incomingEvent.getBody(), null, mvc.getServletContext(), mapper);
-					httpServletRequest.startAsync();
 					AwsProxyResponse awsResponse = AwsSpringHttpProcessingUtils.processRequest(
 							httpServletRequest, mvc, responseWriter);
 					if (logger.isDebugEnabled()) {
