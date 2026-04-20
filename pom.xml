@@ -4,7 +4,7 @@
     <groupId>com.amazonaws.serverless</groupId>
     <artifactId>aws-serverless-java-container</artifactId>
     <packaging>pom</packaging>
-    <version>2.1.5-SNAPSHOT</version>
+    <version>3.0.2-SNAPSHOT</version>
     <name>AWS Serverless Java container</name>
     <description>A Java framework to run Spring, Spring Boot, Jersey, Spark, and Struts applications inside AWS Lambda</description>
     <url>https://github.com/aws/serverless-java-container</url>
@@ -28,10 +28,10 @@
         <module>aws-serverless-java-container-core</module>
         <module>aws-serverless-java-container-jersey</module>
         <module>aws-serverless-java-container-spring</module>
-        <module>aws-serverless-java-container-springboot3</module>
+        <module>aws-serverless-java-container-springboot4</module>
         <module>aws-serverless-jersey-archetype</module>
         <module>aws-serverless-spring-archetype</module>
-        <module>aws-serverless-springboot3-archetype</module>
+        <module>aws-serverless-springboot4-archetype</module>
     </modules>
 
     <scm>
@@ -42,9 +42,9 @@
 
     <repositories>
         <repository>
-            <id>sonatype-nexus-snapshots</id>
-            <name>Sonatype Nexus Snapshots</name>
-            <url>https://aws.oss.sonatype.org/content/repositories/snapshots</url>
+            <id>sonatype-central-snapshots</id>
+            <name>Sonatype Central Snapshots</name>
+            <url>https://ossrh-staging-api.central.sonatype.com/content/repositories/snapshots</url>
             <releases>
                 <enabled>false</enabled>
             </releases>
@@ -56,14 +56,14 @@
 
     <distributionManagement>
         <snapshotRepository>
-            <id>sonatype-nexus-snapshots</id>
-            <name>Sonatype Nexus Snapshots</name>
-            <url>https://aws.oss.sonatype.org/content/repositories/snapshots/</url>
+            <id>sonatype-central-snapshots</id>
+            <name>Sonatype Central Snapshots</name>
+            <url>https://ossrh-staging-api.central.sonatype.com/content/repositories/snapshots/</url>
         </snapshotRepository>
         <repository>
-            <id>sonatype-nexus-staging</id>
-            <name>Nexus Release Repository</name>
-            <url>https://aws.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <id>sonatype-central-staging</id>
+            <name>Central Release Repository</name>
+            <url>https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
 
@@ -78,10 +78,10 @@
     <properties>
         <jacoco.minCoverage>0.7</jacoco.minCoverage>
         <dependencyCheck.version>12.1.1</dependencyCheck.version>
-        <jackson.version>2.19.1</jackson.version>
+        <!-- <jackson.version>2.19.1</jackson.version> -->
         <slf4j.version>2.0.17</slf4j.version>
-        <junit.version>5.12.2</junit.version>
-        <mockito.version>5.17.0</mockito.version>
+        <junit.version>6.0.0</junit.version>
+        <mockito.version>5.19.0</mockito.version>
         <hamcrest.version>1.3</hamcrest.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -265,7 +265,7 @@
                         <xmlOutput>true</xmlOutput>
                         <!-- Configures the directory in which the XML report is created -->
                         <spotbugsXmlOutputDirectory>${project.build.directory}/spotbugs</spotbugsXmlOutputDirectory>
-                        <excludeFilterFile>${project.parent.basedir}/spotbugs-excludeFilter.xml</excludeFilterFile>
+                        <excludeFilterFile>${project.basedir}/../spotbugs-excludeFilter.xml</excludeFilterFile>
                         <plugins>
                             <plugin>
                                 <groupId>com.h3xstream.findsecbugs</groupId>

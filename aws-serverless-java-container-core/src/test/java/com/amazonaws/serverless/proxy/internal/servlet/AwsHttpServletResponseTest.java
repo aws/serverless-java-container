@@ -174,6 +174,16 @@ public class AwsHttpServletResponseTest {
     }
 
     @Test
+    void responseHeaders_setHeaderWithNullValue_expectHeaderRemoved() {
+        AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
+        resp.setHeader(HttpHeaders.CONTENT_DISPOSITION, "inline");
+        resp.setHeader(HttpHeaders.CONTENT_DISPOSITION, null);
+
+        Headers awsResp = resp.getAwsResponseHeaders();
+        assertEquals(0, awsResp.size());
+    }
+
+    @Test
     void responseHeaders_getAwsResponseHeaders_expectedMultpleCookieHeaders() {
         AwsHttpServletResponse resp = new AwsHttpServletResponse(null, null);
         resp.addCookie(new Cookie(COOKIE_NAME, COOKIE_VALUE));

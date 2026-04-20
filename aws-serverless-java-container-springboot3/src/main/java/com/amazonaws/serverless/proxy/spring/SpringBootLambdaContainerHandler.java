@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext;
+import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import com.amazonaws.serverless.exceptions.ContainerInitializationException;
@@ -184,20 +184,26 @@ public class SpringBootLambdaContainerHandler<RequestType, ResponseType> extends
         Timer.stop("SPRINGBOOT2_HANDLE_REQUEST");
     }
 
+    SpringApplicationBuilder getSpringApplicationBuilder(Class<?>... sources) {
+        return new SpringApplicationBuilder(sources);
+    }
 
     @Override
     public void initialize()
             throws ContainerInitializationException {
         Timer.start("SPRINGBOOT2_COLD_START");
 
-        SpringApplicationBuilder builder = new SpringApplicationBuilder(getEmbeddedContainerClasses())
+        SpringApplicationBuilder builder = getSpringApplicationBuilder(getEmbeddedContainerClasses())
                 .web(springWebApplicationType); // .REACTIVE, .SERVLET
+        if(springBootInitializer != null) {
+            builder.main(springBootInitializer);
+        }
         if (springProfiles != null) {
             builder.profiles(springProfiles);
         }
         applicationContext = builder.run();
         if (springWebApplicationType == WebApplicationType.SERVLET) {
-            ((AnnotationConfigServletWebServerApplicationContext)applicationContext).setServletContext(getServletContext());
+            ((ConfigurableWebApplicationContext)applicationContext).setServletContext(getServletContext());
             AwsServletRegistration reg = (AwsServletRegistration)getServletContext().getServletRegistration(DISPATCHER_SERVLET_REGISTRATION_NAME);
             if (reg != null) {
                 reg.setLoadOnStartup(1);

@@ -8,13 +8,14 @@ Currently the following versions are maintained:
 | Version | Branch | Java Enterprise support     | Spring versions | JAX-RS/ Jersey version | Struts support | Spark support |
 |---------|--------|-----------------------------|-----------------|------------------------|----------------|---------------|
 | 1.x     | [1.x](https://github.com/aws/serverless-java-container/tree/1.x)    | Java EE (javax.*)           | 5.x (Boot 2.x)  | 2.x                    | :white_check_mark: | :white_check_mark: |
-| 2.x     | [main](https://github.com/aws/serverless-java-container/tree/main)   | Jakarta EE 9-10 (jakarta.*) | 6.x (Boot 3.x)  | 3.x                    | :x:            | :x:           |
-| 3.x     |    | Jakarta EE 11 (jakarta.*)   | 7.x (Boot 4.x)  | 4.x                    | :x:            | :x:           |
+| 2.x     | [2.1.x](https://github.com/aws/serverless-java-container/tree/2.1.x)   | Jakarta EE 9-10 (jakarta.*) | 6.x (Boot 3.x)  | 3.x                    | :x:            | :x:           |
+| 3.x     | [main](https://github.com/aws/serverless-java-container/tree/main)   | Jakarta EE 11 (jakarta.*)   | 7.x (Boot 4.x)  | 3.x                    | :x:            | :x:           |
 
 Follow the quick start guides in [our wiki](https://github.com/aws/serverless-java-container/wiki) to integrate Serverless Java Container with your project:
 * [Spring quick start](https://github.com/aws/serverless-java-container/wiki/Quick-start---Spring)
 * [Spring Boot 2 quick start](https://github.com/aws/serverless-java-container/wiki/Quick-start---Spring-Boot2)
 * [Spring Boot 3 quick start](https://github.com/aws/serverless-java-container/wiki/Quick-start---Spring-Boot3)
+* [Spring Boot 4 quick start](https://github.com/aws/serverless-java-container/wiki/Quick-start---Spring-Boot4)
 * [Apache Struts quick start](https://github.com/aws/serverless-java-container/wiki/Quick-start---Struts)
 * [Jersey quick start](https://github.com/aws/serverless-java-container/wiki/Quick-start---Jersey)
 * [Spark quick start](https://github.com/aws/serverless-java-container/wiki/Quick-start---Spark)

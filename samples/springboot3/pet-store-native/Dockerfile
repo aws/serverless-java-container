@@ -8,7 +8,7 @@ RUN yum -y update \
 
 # Graal VM
 ENV GRAAL_VERSION 21.0.2
-ENV ARCHITECTURE x64
+ENV ARCHITECTURE aarch64
 ENV GRAAL_FILENAME graalvm-community-jdk-${GRAAL_VERSION}_linux-${ARCHITECTURE}_bin.tar.gz
 RUN curl -4 -L https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-${GRAAL_VERSION}/${GRAAL_FILENAME} | tar -xvz
 RUN mv graalvm-community-openjdk-${GRAAL_VERSION}* /usr/lib/graalvm

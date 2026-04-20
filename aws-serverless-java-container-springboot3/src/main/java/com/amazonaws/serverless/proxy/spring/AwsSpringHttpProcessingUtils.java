@@ -124,13 +124,15 @@ class AwsSpringHttpProcessingUtils {
 		populateQueryStringParametersV1(v1Request, httpRequest);
 		populateMultiValueQueryStringParametersV1(v1Request, httpRequest);
 		
+		String contentType = null;
 		if (v1Request.getMultiValueHeaders() != null) {
 			MultiValueMapAdapter headers = new MultiValueMapAdapter(v1Request.getMultiValueHeaders());
 			httpRequest.setHeaders(headers);
+			contentType = v1Request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
 		}
         populateContentAndContentType(
                 v1Request.getBody(),
-                v1Request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE),
+                contentType,
                 v1Request.isBase64Encoded(),
                 httpRequest
         );
