@@ -61,6 +61,14 @@ public class MultiValuedTreeMap<Key, Value> implements MultivaluedMap<Key, Value
         return values.get(0);
     }
 
+    public Value getLast(Key key) {
+        List<Value> values = get(key);
+        if (values == null || values.isEmpty()) {
+            return null;
+        }
+        return values.get(values.size() - 1);
+    }
+
     @Override
     public void putSingle(Key key, Value value) {
         List<Value> values = findKey(key);
