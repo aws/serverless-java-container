@@ -25,6 +25,12 @@ public class AwsProxySecurityContextTest {
             .header(ALB_ACESS_TOKEN_HEADER, "xxxxx")
             .header(ALB_IDENTITY_HEADER, COGNITO_IDENTITY_ID)
             .build();
+    private static final AwsProxyRequest ALB_REQUEST_MULTIPLE_HEADERS = new AwsProxyRequestBuilder("/hello", "GET")
+            .alb()
+            .header(ALB_ACESS_TOKEN_HEADER, "xxxxx")
+            .header(ALB_IDENTITY_HEADER, "test-identity")
+            .header(ALB_IDENTITY_HEADER, COGNITO_IDENTITY_ID)
+            .build();
 
     @Test
     void localVars_constructor_nullValues() {
@@ -68,6 +74,12 @@ public class AwsProxySecurityContextTest {
         AwsProxySecurityContext context = new AwsProxySecurityContext(null, ALB_REQUEST_COGNITO_USER_POOL);
         assertTrue(context.isSecure());
         assertEquals(AUTH_SCHEME_CUSTOM, context.getAuthenticationScheme());
+        assertEquals(COGNITO_IDENTITY_ID, context.getUserPrincipal().getName());
+    }
+
+    @Test
+    void alb_multipleIdentityHeaders_usesLastValue() {
+        AwsProxySecurityContext context = new AwsProxySecurityContext(null, ALB_REQUEST_MULTIPLE_HEADERS);
         assertEquals(COGNITO_IDENTITY_ID, context.getUserPrincipal().getName());
     }
 
