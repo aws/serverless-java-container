@@ -22,4 +22,8 @@ public class ServletApplication {
     ) {
 		return gender + "/" + age + "/" + name;
 	}
+
+	@RequestMapping(path = "/void-post", method = RequestMethod.POST)
+	public void voidPost() {
+	}
 }
