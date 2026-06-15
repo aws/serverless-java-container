@@ -4,7 +4,7 @@
         <artifactId>aws-serverless-java-container</artifactId>
         <groupId>com.amazonaws.serverless</groupId>
         <version>3.0.1-SNAPSHOT</version>
-        <relativePath>..</relativePath>
+        <relativePath/>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
