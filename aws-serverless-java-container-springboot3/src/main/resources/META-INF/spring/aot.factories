@@ -1,1 +1,0 @@
-org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor=com.amazonaws.serverless.proxy.spring.AwsSpringAotTypesProcessor
