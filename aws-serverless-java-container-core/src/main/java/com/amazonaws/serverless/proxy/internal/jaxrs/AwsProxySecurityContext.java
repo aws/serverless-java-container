@@ -87,7 +87,7 @@ public class AwsProxySecurityContext
                     case API_GATEWAY:
                         return event.getRequestContext().getAuthorizer().getPrincipalId();
                     case ALB:
-                        return event.getMultiValueHeaders().getFirst(ALB_IDENTITY_HEADER);
+                        return event.getMultiValueHeaders().getLast(ALB_IDENTITY_HEADER);
                     }
                 } else if (getAuthenticationScheme().equals(AUTH_SCHEME_AWS_IAM)) {
                     // if we received credentials from Cognito Federated Identities then we return the identity id
