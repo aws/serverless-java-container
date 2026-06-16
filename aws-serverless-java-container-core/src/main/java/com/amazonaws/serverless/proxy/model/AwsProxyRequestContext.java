@@ -14,7 +14,6 @@ package com.amazonaws.serverless.proxy.model;
 
 
 import com.amazonaws.serverless.proxy.RequestReader;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
@@ -28,6 +27,48 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AwsProxyRequestContext {
+
+    /**
+     * Creates an AwsProxyRequestContext instance with default values based on a typical API Gateway request.
+     * 
+     * @return A pre-configured AwsProxyRequestContext instance
+     */
+    public static AwsProxyRequestContext getAwsProxyRequestContext() {
+        AwsProxyRequestContext context = new AwsProxyRequestContext();
+        
+        // Set default values based on typical API Gateway request
+        context.setAccountId("123456789012");
+        context.setApiId("id");
+        context.setResourceId("$default");
+        context.setResourcePath("/my/path");
+        context.setHttpMethod("POST");
+        context.setRequestId("id");
+        context.setExtendedRequestId("");
+        context.setStage("$default");
+        context.setPath("/my/path");
+        context.setProtocol("HTTP/1.1");
+        context.setRequestTimeEpoch(System.currentTimeMillis()); // Current time as reasonable default
+        
+        // Create and set identity with defaults (already includes sourceIp and userAgent)
+        context.setIdentity(ApiGatewayRequestIdentity.getApiGatewayRequestIdentity());
+        
+        // Initialize authorizer
+        context.setAuthorizer(new ApiGatewayAuthorizerContext());
+        
+        return context;
+    }
+
+    /**
+     * Creates an AwsProxyRequestContext instance with the specified HTTP method.
+     * 
+     * @param httpMethod the HTTP method to set
+     * @return A pre-configured AwsProxyRequestContext instance
+     */
+    public static AwsProxyRequestContext getAwsProxyRequestContext(String httpMethod) {
+        AwsProxyRequestContext context = getAwsProxyRequestContext();
+        context.setHttpMethod(httpMethod);
+        return context;
+    }
 
     //-------------------------------------------------------------
     // Variables - Private
