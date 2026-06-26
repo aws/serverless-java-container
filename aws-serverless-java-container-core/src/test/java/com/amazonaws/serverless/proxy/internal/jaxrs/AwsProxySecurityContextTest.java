@@ -1,13 +1,16 @@
 package com.amazonaws.serverless.proxy.internal.jaxrs;
 
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
+import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.security.Principal;
 
 import static com.amazonaws.serverless.proxy.internal.jaxrs.AwsProxySecurityContext.ALB_ACESS_TOKEN_HEADER;
 import static com.amazonaws.serverless.proxy.internal.jaxrs.AwsProxySecurityContext.ALB_IDENTITY_HEADER;
+import static com.amazonaws.serverless.proxy.internal.jaxrs.AwsProxySecurityContext.AUTH_SCHEME_AWS_IAM;
 import static com.amazonaws.serverless.proxy.internal.jaxrs.AwsProxySecurityContext.AUTH_SCHEME_COGNITO_POOL;
 import static com.amazonaws.serverless.proxy.internal.jaxrs.AwsProxySecurityContext.AUTH_SCHEME_CUSTOM;
 import static org.junit.jupiter.api.Assertions.*;
@@ -93,5 +96,97 @@ public class AwsProxySecurityContextTest {
         assertTrue(userPrincipal instanceof AwsProxySecurityContext.CognitoUserPoolPrincipal);
         assertNotNull(((AwsProxySecurityContext.CognitoUserPoolPrincipal)userPrincipal).getClaims().getClaim(CLAIM_KEY));
         assertEquals(CLAIM_VALUE, ((AwsProxySecurityContext.CognitoUserPoolPrincipal)userPrincipal).getClaims().getClaim(CLAIM_KEY));
+    }
+
+    @Test
+    void constructor_withLambdaContext_returnsLambdaContext() {
+        Context mockContext = Mockito.mock(Context.class);
+        AwsProxySecurityContext context = new AwsProxySecurityContext(mockContext, REQUEST_NO_AUTH);
+        assertEquals(mockContext, context.getLambdaContext());
+    }
+
+    @Test
+    void iamAuth_getAuthenticationScheme_returnsAWSIAM() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/hello", "GET")
+                .build();
+        request.getRequestContext().getIdentity().setAccessKey("AKIAIOSFODNN7EXAMPLE");
+        AwsProxySecurityContext context = new AwsProxySecurityContext(null, request);
+        assertEquals(AUTH_SCHEME_AWS_IAM, context.getAuthenticationScheme());
+        assertTrue(context.isSecure());
+    }
+
+    @Test
+    void iamAuth_getUserPrincipal_returnsUserArn() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/hello", "GET")
+                .build();
+        request.getRequestContext().getIdentity().setAccessKey("AKIAIOSFODNN7EXAMPLE");
+        request.getRequestContext().getIdentity().setUserArn("arn:aws:iam::123456789012:user/test");
+        AwsProxySecurityContext context = new AwsProxySecurityContext(null, request);
+        assertEquals(AUTH_SCHEME_AWS_IAM, context.getAuthenticationScheme());
+        Principal principal = context.getUserPrincipal();
+        assertEquals("arn:aws:iam::123456789012:user/test", principal.getName());
+    }
+
+    @Test
+    void iamAuth_withCognitoIdentityId_returnsCognitoIdentityId() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/hello", "GET")
+                .build();
+        request.getRequestContext().getIdentity().setAccessKey("AKIAIOSFODNN7EXAMPLE");
+        request.getRequestContext().getIdentity().setCognitoIdentityId("us-east-2:abc-123");
+        request.getRequestContext().getIdentity().setUserArn("arn:aws:iam::123456789012:user/test");
+        AwsProxySecurityContext context = new AwsProxySecurityContext(null, request);
+        Principal principal = context.getUserPrincipal();
+        assertEquals("us-east-2:abc-123", principal.getName());
+    }
+
+    @Test
+    void customAuthorizer_noClaims_returnsCustomScheme() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/hello", "GET")
+                .build();
+        request.getRequestContext().setAuthorizer(new com.amazonaws.serverless.proxy.model.ApiGatewayAuthorizerContext());
+        request.getRequestContext().getAuthorizer().setPrincipalId("custom-user-123");
+        AwsProxySecurityContext context = new AwsProxySecurityContext(null, request);
+        assertEquals(AUTH_SCHEME_CUSTOM, context.getAuthenticationScheme());
+        assertTrue(context.isSecure());
+    }
+
+    @Test
+    void customAuthorizer_noClaims_getUserPrincipal_returnsPrincipalId() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/hello", "GET")
+                .build();
+        request.getRequestContext().setAuthorizer(new com.amazonaws.serverless.proxy.model.ApiGatewayAuthorizerContext());
+        request.getRequestContext().getAuthorizer().setPrincipalId("custom-user-123");
+        AwsProxySecurityContext context = new AwsProxySecurityContext(null, request);
+        Principal principal = context.getUserPrincipal();
+        assertEquals("custom-user-123", principal.getName());
+    }
+
+    @Test
+    void noAuth_getUserPrincipal_returnsNullName() {
+        AwsProxySecurityContext context = new AwsProxySecurityContext(null, REQUEST_NO_AUTH);
+        assertNull(context.getAuthenticationScheme());
+        assertFalse(context.isSecure());
+        Principal principal = context.getUserPrincipal();
+        assertNull(principal.getName());
+    }
+
+    @Test
+    void iamAuth_isUserInRole_matchingRole_returnsTrue() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/hello", "GET")
+                .build();
+        request.getRequestContext().getIdentity().setAccessKey("AKIAIOSFODNN7EXAMPLE");
+        request.getRequestContext().getIdentity().setUserArn("arn:aws:iam::123456789012:user/test");
+        AwsProxySecurityContext context = new AwsProxySecurityContext(null, request);
+        assertTrue(context.isUserInRole("arn:aws:iam::123456789012:user/test"));
+    }
+
+    @Test
+    void iamAuth_isUserInRole_nonMatchingRole_returnsFalse() {
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/hello", "GET")
+                .build();
+        request.getRequestContext().getIdentity().setAccessKey("AKIAIOSFODNN7EXAMPLE");
+        request.getRequestContext().getIdentity().setUserArn("arn:aws:iam::123456789012:user/test");
+        AwsProxySecurityContext context = new AwsProxySecurityContext(null, request);
+        assertFalse(context.isUserInRole("arn:aws:iam::123456789012:user/other"));
     }
 }
