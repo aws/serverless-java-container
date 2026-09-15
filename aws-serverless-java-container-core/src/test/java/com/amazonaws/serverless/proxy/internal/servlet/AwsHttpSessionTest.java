@@ -28,8 +28,14 @@ public class AwsHttpSessionTest {
 
     @Test
     void new_creationTimePopulatedCorrectly() {
+        long beforeCreation = Instant.now().toEpochMilli();
+
         AwsHttpSession session = new AwsHttpSession("id");
-        assertTrue(session.getCreationTime() > Instant.now().getEpochSecond() - 1);
+
+        long afterCreation = Instant.now().toEpochMilli();
+
+        assertTrue(session.getCreationTime() >= beforeCreation);
+        assertTrue(session.getCreationTime() <= afterCreation);
         assertEquals(AwsHttpSession.SESSION_DURATION_SEC, session.getMaxInactiveInterval());
         assertEquals(session.getLastAccessedTime(), session.getCreationTime());
     }

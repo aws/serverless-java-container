@@ -50,7 +50,7 @@ public class AwsHttpSession implements HttpSession {
         }
         this.id = id;
         attributes = new HashMap<>();
-        creationTime = Instant.now().getEpochSecond();
+        creationTime = Instant.now().toEpochMilli();
         maxInactiveInterval = SESSION_DURATION_SEC;
         lastAccessedTime = creationTime;
         valid = true;
@@ -122,11 +122,11 @@ public class AwsHttpSession implements HttpSession {
     }
 
     private void touch() {
-        lastAccessedTime = Instant.now().getEpochSecond();
+        lastAccessedTime = Instant.now().toEpochMilli();
     }
 
     boolean isValid() {
-        if (lastAccessedTime - creationTime < maxInactiveInterval) {
+        if (lastAccessedTime - creationTime < maxInactiveInterval * 1000L) {
             return valid;
         } else {
             return false;
