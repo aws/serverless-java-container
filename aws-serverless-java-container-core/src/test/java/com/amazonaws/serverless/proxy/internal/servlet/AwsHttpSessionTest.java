@@ -70,20 +70,20 @@ public class AwsHttpSessionTest {
     }
 
     @Test
-    void validSession_expectCorrectValidationOrInvalidation() throws InterruptedException {
+    void validSession_expectCorrectValidationOrInvalidation() {
         AwsHttpSession sess = new AwsHttpSession("id");
 
         assertTrue(sess.isValid());
         assertTrue(sess.isNew());
 
-        Thread.sleep(1000);
         sess.setAttribute("test", "test");
 
-        assertTrue(sess.isNew());
+        assertFalse(sess.isNew());
 
         sess.invalidate();
+
         assertFalse(sess.isValid());
-        assertNull(sess.getAttribute("test"));
+        assertThrows(IllegalStateException.class, sess::isNew);
     }
 
     @Test
