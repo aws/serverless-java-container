@@ -40,6 +40,7 @@ public class AwsHttpSession implements HttpSession {
     private int maxInactiveInterval;
     private long lastAccessedTime;
     private boolean valid;
+    private boolean isNew = true;
 
     /**
      * @param id A unique session identifier
@@ -118,7 +119,7 @@ public class AwsHttpSession implements HttpSession {
 
     @Override
     public boolean isNew() {
-        return lastAccessedTime == creationTime;
+        return isNew;
     }
 
     private void touch() {
@@ -126,10 +127,15 @@ public class AwsHttpSession implements HttpSession {
     }
 
     boolean isValid() {
-        if (lastAccessedTime - creationTime < maxInactiveInterval * 1000L) {
-            return valid;
-        } else {
+        if (!valid) {
             return false;
         }
+
+        if (maxInactiveInterval <= 0) {
+            return true;
+        }
+
+        return Instant.now().toEpochMilli() - lastAccessedTime
+                < maxInactiveInterval * 1000L;
     }
 }

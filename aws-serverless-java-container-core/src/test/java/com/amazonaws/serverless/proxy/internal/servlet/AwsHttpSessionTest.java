@@ -72,14 +72,28 @@ public class AwsHttpSessionTest {
     @Test
     void validSession_expectCorrectValidationOrInvalidation() throws InterruptedException {
         AwsHttpSession sess = new AwsHttpSession("id");
+
         assertTrue(sess.isValid());
         assertTrue(sess.isNew());
 
         Thread.sleep(1000);
         sess.setAttribute("test", "test");
-        assertFalse(sess.isNew());
+
+        assertTrue(sess.isNew());
+
         sess.invalidate();
         assertFalse(sess.isValid());
         assertNull(sess.getAttribute("test"));
+    }
+
+    @Test
+    void nonPositiveMaxInactiveIntervalDoesNotExpireSession() {
+        AwsHttpSession sess = new AwsHttpSession("id");
+
+        sess.setMaxInactiveInterval(0);
+        assertTrue(sess.isValid());
+
+        sess.setMaxInactiveInterval(-1);
+        assertTrue(sess.isValid());
     }
 }
