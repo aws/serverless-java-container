@@ -13,7 +13,7 @@ dependencies {
             exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
           },
           'com.amazonaws.serverless:aws-serverless-java-container-springboot4:[2.0-SNAPSHOT,)',
-          'com.fasterxml.jackson.core:jackson-databind:2.18.2'
+          'com.fasterxml.jackson.core:jackson-databind:2.22.3'
   )
 }
 
