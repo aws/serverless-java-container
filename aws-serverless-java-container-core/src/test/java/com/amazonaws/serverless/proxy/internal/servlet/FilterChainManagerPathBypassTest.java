@@ -206,11 +206,30 @@ public class FilterChainManagerPathBypassTest {
                 "/public/x/../../admin/secret",
                 "/admin//secret",
                 "/./admin/secret",
-                "/../../admin/secret"
+                "/../../admin/secret",
+                "/admin;x=1/secret",
+                "/admin;/secret"
         }) {
             assertTrue(filterCountFor(path) > 0,
                     "no filter selected for a spelling that can reach the protected prefix: " + path);
         }
+    }
+
+    /** Unlike decodePath, canonicalizePath resolves dot segments, which is why the validator cannot use it. */
+    @Test
+    void canonicalizePath_resolvesDotSegments() {
+        assertEquals("/admin/secret", AwsHttpServletRequest.canonicalizePath("/%2e%2e/admin/secret"));
+    }
+
+    /** Path parameters are removed from every segment, and nothing else about the path changes. */
+    @Test
+    void stripPathParameters_removesParametersFromEachSegment() {
+        assertEquals("/admin/secret", AwsHttpServletRequest.stripPathParameters("/admin;x=1/secret"));
+        assertEquals("/admin/secret", AwsHttpServletRequest.stripPathParameters("/admin;/secret"));
+        assertEquals("/a/b", AwsHttpServletRequest.stripPathParameters("/a;x=1;y=2/b;z"));
+        assertEquals("/a/b/", AwsHttpServletRequest.stripPathParameters("/a/b;x/"));
+        assertEquals("/admin/secret", AwsHttpServletRequest.stripPathParameters("/admin/secret"));
+        assertNull(AwsHttpServletRequest.stripPathParameters(null));
     }
 
     /** A path with no relationship to the protected prefix under any spelling must not select its filter. */

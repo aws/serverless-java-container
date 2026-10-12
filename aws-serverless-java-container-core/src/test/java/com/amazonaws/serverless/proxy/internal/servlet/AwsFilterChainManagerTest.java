@@ -81,6 +81,35 @@ public class AwsFilterChainManagerTest {
         assertEquals(cacheKey, secondCacheKey);
     }
 
+    /**
+     * Equality must compare the key's fields, not its hash code. Distinct paths can share a hash code, and treating
+     * that as a match would serve one path's cached filter chain for another. The subclass pins every hash code to
+     * the same value so the test checks the rule itself rather than depending on particular strings.
+     */
+    @Test
+    void cacheKey_compare_sameHashCodeDifferentPath_notEqual() {
+        FilterChainManager.TargetCacheKey cacheKey = new FixedHashCacheKey();
+        cacheKey.setDispatcherType(DispatcherType.REQUEST);
+        cacheKey.setTargetPath("/first/path");
+
+        FilterChainManager.TargetCacheKey secondCacheKey = new FixedHashCacheKey();
+        secondCacheKey.setDispatcherType(DispatcherType.REQUEST);
+        secondCacheKey.setTargetPath("/second/path");
+
+        assertEquals(cacheKey.hashCode(), secondCacheKey.hashCode());
+        assertNotEquals(cacheKey, secondCacheKey);
+
+        secondCacheKey.setTargetPath("/first/path");
+        assertEquals(cacheKey, secondCacheKey);
+    }
+
+    private static class FixedHashCacheKey extends FilterChainManager.TargetCacheKey {
+        @Override
+        public int hashCode() {
+            return 0;
+        }
+    }
+
     @Test
     void cacheKey_compare_differentDispatcher() {
         FilterChainManager.TargetCacheKey cacheKey = new FilterChainManager.TargetCacheKey();

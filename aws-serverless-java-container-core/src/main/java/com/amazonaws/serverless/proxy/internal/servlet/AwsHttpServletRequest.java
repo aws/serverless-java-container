@@ -49,8 +49,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayDeque;
-import java.util.Deque;
 
 
 /**
@@ -769,7 +767,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
      * @param request The incoming request
      * @return The raw request path relative to the context
      */
-    public static String contextRelativeRequestUri(HttpServletRequest request) {
+    static String contextRelativeRequestUri(HttpServletRequest request) {
         String uri = request.getRequestURI();
         String contextPath = request.getContextPath();
         if (uri != null && contextPath != null && !contextPath.isEmpty() && uri.startsWith(contextPath)) {
@@ -789,7 +787,7 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
      * @param path A request path
      * @return The decoded, normalized path, always starting with "/" and never ending with one
      */
-    public static String canonicalizePath(final String path) {
+    static String canonicalizePath(final String path) {
         if (path == null || path.isEmpty()) {
             return "/";
         }
@@ -833,6 +831,28 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         flushDecodedBytes(pending, decoded, charset);
 
         return decoded.toString();
+    }
+
+
+    /**
+     * Removes path parameters, everything from the first ";" to the end of each segment, leaving the rest of the path
+     * as it is. Spring removes path parameters before it matches a handler, and the servlet specification has a
+     * container remove them before matching url-patterns, so filter selection has to see the path without them too.
+     * @param path A request path
+     * @return The path with path parameters removed from every segment
+     */
+    static String stripPathParameters(final String path) {
+        if (path == null || path.indexOf(';') < 0) {
+            return path;
+        }
+        String[] segments = path.split("/", -1);
+        for (int i = 0; i < segments.length; i++) {
+            int parameterStart = segments[i].indexOf(';');
+            if (parameterStart >= 0) {
+                segments[i] = segments[i].substring(0, parameterStart);
+            }
+        }
+        return String.join("/", segments);
     }
 
 
