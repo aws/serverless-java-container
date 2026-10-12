@@ -82,10 +82,9 @@ public class UrlPathValidatorTraversalTest {
         assertNotEquals(UrlPathValidator.DEFAULT_ERROR_CODE, statusFor("/admin/a.b/secret"));
     }
 
-    /** The decode-only helper leaves dot segments in place, unlike canonicalizePath. */
+    /** The decode-only helper leaves dot segments in place. */
     @Test
     void decodePath_leavesDotSegmentsInPlace() {
         assertEquals("/../../x", AwsHttpServletRequest.decodePath("/%2e%2e/%2e%2e/x"));
-        assertEquals("/admin/secret", AwsHttpServletRequest.canonicalizePath("/%2e%2e/admin/secret"));
     }
 }

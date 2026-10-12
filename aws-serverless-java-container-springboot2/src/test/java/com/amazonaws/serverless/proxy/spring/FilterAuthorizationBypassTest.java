@@ -159,7 +159,9 @@ public class FilterAuthorizationBypassTest {
                 "/admin%2Fsecret",
                 "/ADMIN/secret",
                 "/admin//secret",
-                "/./admin/secret"
+                "/./admin/secret",
+                "/admin;x=1/secret",
+                "/admin;/secret"
         }) {
             AwsProxyResponse resp = get(reqType, path);
             assertNotEquals(FilterAuthApplication.SECRET_BODY, resp.getBody(),
