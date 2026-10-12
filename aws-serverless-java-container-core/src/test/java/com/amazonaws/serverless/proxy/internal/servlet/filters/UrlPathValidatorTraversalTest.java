@@ -12,8 +12,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 /**
- * UrlPathValidator rejects traversal attempts up front. It needs the path decoded but not normalized: the raw URI
- * leaves "%2e%2e" unrecognizable as "..", and the canonical path has already resolved the dot segments away.
+ * UrlPathValidator's ratio check rejects traversal above the root, such as "/../x". It is a heuristic, not a general
+ * traversal guard, and these cases stay within the range it covers. It needs the path decoded but not normalized: the
+ * raw URI leaves "%2e%2e" unrecognizable as "..", and the canonical path has already resolved the dot segments away.
  */
 public class UrlPathValidatorTraversalTest {
 
