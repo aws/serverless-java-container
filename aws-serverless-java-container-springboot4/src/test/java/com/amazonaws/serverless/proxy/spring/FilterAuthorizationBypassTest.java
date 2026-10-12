@@ -129,6 +129,23 @@ public class FilterAuthorizationBypassTest {
         assertProtected(reqType, "/admin/secret%2F..%2F..%2Fpublic%2Finfo");
     }
 
+    /**
+     * A path parameter on the protected segment. Spring removes everything from ";" to the end of a segment before
+     * it matches a handler, so this is /admin/secret, and filter selection has to see it that way too.
+     */
+    @MethodSource("data")
+    @ParameterizedTest
+    void pathParameterOnProtectedSegment_isBlocked(String reqType) {
+        assertProtected(reqType, "/admin;x=1/secret");
+    }
+
+    /** The same with an empty path parameter. */
+    @MethodSource("data")
+    @ParameterizedTest
+    void emptyPathParameterOnProtectedSegment_isBlocked(String reqType) {
+        assertProtected(reqType, "/admin;/secret");
+    }
+
     /** No spelling may reach the wildcard admin handler without its filter. */
     @MethodSource("data")
     @ParameterizedTest
