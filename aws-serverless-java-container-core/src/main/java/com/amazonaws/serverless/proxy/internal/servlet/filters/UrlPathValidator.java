@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -72,8 +73,12 @@ public class UrlPathValidator implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        // the getPathInfo method of the AwsProxyHttpServletRequest returns the request path with the correct base path stripped
-        String path = ((HttpServletRequest)servletRequest).getPathInfo();
+        // This filter has to see the path decoded but NOT normalized. getPathInfo resolves dot segments, which
+        // would hide a traversal attempt from the checks below, and the raw URI leaves escapes encoded, so
+        // "/%2e%2e/x" would not register as "..". The context path is excluded because it contributes slashes
+        // without contributing dot segments, which loosens the ratio check further down.
+        HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
+        String path = AwsHttpServletRequest.decodePath(stripContextPath(httpRequest));
         if (path == null) {
             setErrorResponse(servletResponse);
             return;
@@ -91,6 +96,11 @@ public class UrlPathValidator implements Filter {
         // Logic taken from the Apache UrlValidator. I opted not to include Apache lib as a dependency to save space
         // in the final Lambda function package
         // https://github.com/apache/commons-validator/blob/trunk/src/main/java/org/apache/commons/validator/UrlValidator.java
+        //
+        // This is a heuristic, not a traversal guard. It only rejects a path whose ".." segments are at least as
+        // numerous as the segments before them, so it catches traversal above the root but lets a path with ".."
+        // deeper inside it through. Do not rely on it to keep dot segments away from filter selection or routing;
+        // FilterChainManager handles those itself.
         int slashCount = countStrings("/", path);
         int dot2Count = countStrings("..", path);
         int slash2Count = countStrings("//", path);
@@ -139,4 +149,21 @@ public class UrlPathValidator implements Filter {
         }
         return stringCount;
     }
+
+    /**
+     * The request URI with the context path removed, still encoded. The context path is configured rather than
+     * client-supplied, so including it would only dilute the checks applied to the part the client controls.
+     *
+     * This deliberately does not reuse AwsHttpServletRequest.contextRelativeRequestUri, which falls back to "/" when
+     * the URI is missing. Here a missing URI has to stay null so that doFilter rejects the request.
+     */
+    private static String stripContextPath(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        String contextPath = request.getContextPath();
+        if (uri != null && contextPath != null && !contextPath.isEmpty() && uri.startsWith(contextPath)) {
+            return uri.substring(contextPath.length());
+        }
+        return uri;
+    }
+
 }
