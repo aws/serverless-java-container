@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - 2.0.x
+      - 2.1.x
       - 1.x
   workflow_dispatch:
 

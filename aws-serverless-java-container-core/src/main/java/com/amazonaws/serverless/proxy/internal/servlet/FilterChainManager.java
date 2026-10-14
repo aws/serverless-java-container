@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 /**
@@ -89,7 +90,31 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
      * @return A <code>FilterChainHolder</code> object that can be used to apply the filters to the request
      */
     FilterChainHolder getFilterChain(final HttpServletRequest request, Servlet servlet) {
-        String targetPath = request.getRequestURI();
+        // Filter selection and servlet resolution used to read the path from different sources, which is the bypass
+        // this fixes. They cannot just be pointed at one source, because consumers downstream disagree about which
+        // form they route on, so a filter applies if its url-pattern matches under any of three spellings.
+        //
+        // The canonical path is the one servlet resolution here uses, since getPathInfo() is decoded and normalized.
+        // The decoded-but-not-normalized path is needed because Spring MVC matches on the undecoded request URI and
+        // leaves dot segments to a servlet container that does not exist in Lambda. "/admin/../public/info" still
+        // reaches an "/admin/**" handler even though its canonical form is "/public/info", so matching on the
+        // canonical path alone leaves that request reaching an admin handler with its filter skipped.
+        //
+        // The third spelling is the decoded path with path parameters removed from each segment. Spring removes
+        // them before matching a handler, and the servlet specification has a container remove them before matching
+        // url-patterns, but neither of the first two spellings does.
+        //
+        // Matching under any spelling over-selects, so a filter may run for a request that is ultimately routed
+        // elsewhere. Under-selecting is the authorization bypass, so that is the direction chosen.
+        String rawPath = AwsHttpServletRequest.contextRelativeRequestUri(request);
+        String decodedPath = AwsHttpServletRequest.decodePath(rawPath);
+        String canonicalPath = request.getPathInfo();
+        if (canonicalPath == null || canonicalPath.isEmpty()) {
+            canonicalPath = AwsHttpServletRequest.canonicalizePath(rawPath);
+        }
+        String parameterFreePath = AwsHttpServletRequest.stripPathParameters(decodedPath);
+        // The parameter-free spelling is derived from the decoded one, so these two determine the result.
+        String targetPath = canonicalPath + "|" + decodedPath;
         DispatcherType type = request.getDispatcherType();
 
         // only return the cached result if the filter list hasn't changed in the meanwhile
@@ -119,8 +144,10 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
                 continue;
             }
             for (String path : holder.getRegistration().getUrlPatternMappings()) {
-                if (pathMatches(targetPath, path)) {
+                if (pathMatches(canonicalPath, path) || pathMatches(decodedPath, path)
+                        || pathMatches(parameterFreePath, path)) {
                     chainHolder.addFilter(holder);
+                    break;
                 }
             }
 
@@ -205,19 +232,24 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
      * @return true if the given mapping path can apply to the target, false otherwise.
      */
     boolean pathMatches(final String target, final String mapping) {
+        // Matching is case-insensitive throughout. The exact-equality check below always lowercased both sides while
+        // the segment comparison further down was case-sensitive, so the two halves of this method disagreed and a
+        // differently-cased path could skip its filter. Over-selecting a filter is fail-safe; under-selecting one is
+        // an authorization bypass, so both paths now compare case-insensitively.
+        String finalTarget = target.toLowerCase(Locale.ENGLISH);
+        String finalMapping = mapping.toLowerCase(Locale.ENGLISH);
+
         // easiest case, they are exactly the same
-        if (target.toLowerCase(Locale.ENGLISH).equals(mapping.toLowerCase(Locale.ENGLISH))) {
+        if (finalTarget.equals(finalMapping)) {
             return true;
         }
 
-        String finalTarget = target;
-        String finalMapping = mapping;
         // strip first slash
-        if (target.startsWith("/")) {
-            finalTarget = target.replaceFirst("/", "");
+        if (finalTarget.startsWith("/")) {
+            finalTarget = finalTarget.replaceFirst("/", "");
         }
-        if (mapping.startsWith("/")) {
-            finalMapping = mapping.replaceFirst("/", "");
+        if (finalMapping.startsWith("/")) {
+            finalMapping = finalMapping.replaceFirst("/", "");
         }
 
         String[] targetParts = finalTarget.split(PATH_PART_SEPARATOR);
@@ -261,7 +293,7 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
     // Variables - Private
     //-------------------------------------------------------------
 
-        private String targetPath;
+        private String targetPath = normalizeTargetPath(null);
         private DispatcherType dispatcherType;
         private String servletName;
 
@@ -271,57 +303,54 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
     //-------------------------------------------------------------
 
         /**
-         * The hash code for a cache key is calculated using the target path and dispatcher type. First, the target path
-         * is cleaned following these rules:
-         *  1. trim white spaces
-         *  2. Add "/" as first character if not there
-         *  3. Remove "/" as last character if it is there
-         *
-         * Once the path is cleaned, a string in the form of TARGET_PATH:DISPATCHER_TYPE is generated and used for the
-         * hash code
-         * @return An int representing the hash code fo the generated string
+         * The hash code for a cache key is calculated from the normalized target path, the dispatcher type and the
+         * servlet name, the same three fields <code>equals</code> compares.
+         * @return An int representing the hash code fo the key
          */
         @Override
         public int hashCode() {
-            String hashPath = targetPath;
-            if (targetPath == null) {
-                hashPath = "/";
-            }
-
-            String hashDispatcher = "";
-            if (dispatcherType != null) {
-                hashDispatcher = dispatcherType.name();
-            }
-
-            // clean up path
-            String hashString = hashPath.trim();
-            if (hashString.endsWith(PATH_PART_SEPARATOR)) {
-                hashString = hashString.substring(0, hashString.length() - 1);
-            }
-            if (!hashString.startsWith(PATH_PART_SEPARATOR)) {
-                hashString = PATH_PART_SEPARATOR + hashString;
-            }
-            hashString += ":" + hashDispatcher;
-
-            if (servletName != null) {
-                hashString += ":" + servletName;
-            }
-
-            return hashString.hashCode();
+            return Objects.hash(targetPath, (dispatcherType == null ? null : dispatcherType.name()), servletName);
         }
 
 
-
+        /**
+         * Two keys are equal when their normalized target path, dispatcher type and servlet name are equal. This
+         * compares the fields themselves rather than hash codes: distinct paths can share a hash code, and treating
+         * that as a match would serve one path's cached filter chain, and so its authorization decision, for another.
+         */
         @Override
         public boolean equals(Object key) {
-            if (key == null) {
+            if (this == key) {
+                return true;
+            }
+            if (key == null || !key.getClass().equals(this.getClass())) {
                 return false;
             }
-            if (key.getClass().equals(this.getClass())) {
-                return this.hashCode() == key.hashCode();
-            }
+            TargetCacheKey other = (TargetCacheKey) key;
+            return targetPath.equals(other.targetPath)
+                    && dispatcherType == other.dispatcherType
+                    && Objects.equals(servletName, other.servletName);
+        }
 
-            return false;
+
+        /**
+         * Cleans a target path so that equivalent spellings share a cache entry:
+         *  1. a null path is treated as "/"
+         *  2. trim white spaces
+         *  3. Remove "/" as last character if it is there
+         *  4. Add "/" as first character if not there
+         * This used to happen inside <code>hashCode</code> only, which made it part of equality by accident. It is
+         * applied when the path is set so that equality depends on it explicitly.
+         */
+        private static String normalizeTargetPath(String path) {
+            String normalized = (path == null ? "/" : path.trim());
+            if (normalized.endsWith(PATH_PART_SEPARATOR)) {
+                normalized = normalized.substring(0, normalized.length() - 1);
+            }
+            if (!normalized.startsWith(PATH_PART_SEPARATOR)) {
+                normalized = PATH_PART_SEPARATOR + normalized;
+            }
+            return normalized;
         }
 
 
@@ -330,7 +359,7 @@ public abstract class FilterChainManager<ServletContextType extends ServletConte
     //-------------------------------------------------------------
 
         void setTargetPath(String targetPath) {
-            this.targetPath = targetPath;
+            this.targetPath = normalizeTargetPath(targetPath);
         }
 
 
