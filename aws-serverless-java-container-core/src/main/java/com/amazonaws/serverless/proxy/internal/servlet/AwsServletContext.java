@@ -182,18 +182,30 @@ public class AwsServletContext
     }
 
     public Servlet getServletForPath(String path) {
-        String[] pathParts = path.split("/");
+        // getPathInfo() is null whenever the servlet path covered the whole request, so callers can legitimately
+        // pass null here. Treat it as the root rather than dereferencing it.
+        String targetPath = (path == null ? "/" : path);
+        String[] pathParts = targetPath.split("/");
         for (AwsServletRegistration reg : servletRegistrations.values()) {
             for (String p : reg.getMappings()) {
                 if ("".equals(p) || "/".equals(p) || "/*".equals(p)) {
                     return reg.getServlet();
                 }
                 // if  I have no path and I haven't matched something now I'll just move on to the next
-                if ("".equals(path) || "/".equals(path)) {
+                if ("".equals(targetPath) || "/".equals(targetPath)) {
                     continue;
                 }
                 String[] regParts = p.split("/");
                 for (int i = 0; i < regParts.length; i++) {
+                    if (i >= pathParts.length) {
+                        // The request has fewer segments than this mapping. A trailing wildcard still matches the
+                        // empty remainder - the servlet spec has "/a/*" match "/a" - but anything else cannot, and
+                        // walking further would read past the end of the request path.
+                        if ("*".equals(regParts[i])) {
+                            return reg.getServlet();
+                        }
+                        break;
+                    }
                     if (!regParts[i].equals(pathParts[i]) && !"*".equals(regParts[i])) {
                         break;
                     }

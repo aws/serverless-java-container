@@ -170,8 +170,9 @@ public class AwsProxyHttpServletRequest extends AwsHttpServletRequest {
 
     @Override
     public String getPathInfo() {
-        String pathInfo = cleanUri(request.getPath());
-        return decodeRequestPath(pathInfo, LambdaContainerHandler.getContainerConfig());
+        // Must be the same canonical form filter matching uses, otherwise a path can be spelled so that filter
+        // selection and servlet resolution disagree about which resource is being requested.
+        return canonicalizePath(request.getPath());
     }
 
 

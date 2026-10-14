@@ -32,6 +32,13 @@ jobs:
         with:
           distribution: 'corretto'
           java-version: 11
+      - name: Pin Gradle to a version that runs on JVM 11
+        # The archetype and sample steps below invoke Gradle. The Gradle preinstalled on the runners requires
+        # JVM 17 or later, so on this branch it refuses to start and the job dies before any build runs.
+        # Gradle 8.x starts on JVM 11, which keeps these steps on the same JDK as the rest of the job.
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.14'
       - name: Build latest
         run: ./gha_build.sh jersey true true
       - name: Set up JDK 8
@@ -64,6 +71,13 @@ jobs:
         with:
           distribution: 'corretto'
           java-version: 11
+      - name: Pin Gradle to a version that runs on JVM 11
+        # The archetype and sample steps below invoke Gradle. The Gradle preinstalled on the runners requires
+        # JVM 17 or later, so on this branch it refuses to start and the job dies before any build runs.
+        # Gradle 8.x starts on JVM 11, which keeps these steps on the same JDK as the rest of the job.
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.14'
       - name: Build latest
         # we reduce the minCoverage for this run because it will skip the SpringBoot 1.5 tests since they are no longer compatible with
         # Spring core 5.2 and above. SpringBoot 1.5 is deprecated
@@ -85,6 +99,13 @@ jobs:
         with:
           distribution: 'corretto'
           java-version: 11
+      - name: Pin Gradle to a version that runs on JVM 11
+        # The archetype and sample steps below invoke Gradle. The Gradle preinstalled on the runners requires
+        # JVM 17 or later, so on this branch it refuses to start and the job dies before any build runs.
+        # Gradle 8.x starts on JVM 11, which keeps these steps on the same JDK as the rest of the job.
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.14'
       - name: Build latest
         run: ./gha_build.sh springboot2 true true
       # https://github.com/spring-projects/spring-boot/wiki/Supported-Versions

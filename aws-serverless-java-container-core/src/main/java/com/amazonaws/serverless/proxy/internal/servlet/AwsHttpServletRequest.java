@@ -42,10 +42,12 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -738,16 +740,158 @@ public abstract class AwsHttpServletRequest implements HttpServletRequest {
         return new Locale(language, country);
     }
 
-    static String decodeRequestPath(String requestPath, ContainerConfig config) {
-        try {
-            return URLDecoder.decode(requestPath, config.getUriEncoding());
-        } catch (UnsupportedEncodingException ex) {
-            log.error("Could not URL decode the request path, configured encoding not supported: {}", SecurityUtils.encode(config.getUriEncoding()));
-            // we do not fail at this.
-            return requestPath;
+
+    /**
+     * The request URI with the context path removed, exactly as it arrived: not decoded, not normalized. The context
+     * path is configured rather than client-supplied, so it is excluded from anything that inspects what the client
+     * actually sent.
+     * @param request The incoming request
+     * @return The raw request path relative to the context
+     */
+    static String contextRelativeRequestUri(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        String contextPath = request.getContextPath();
+        if (uri != null && contextPath != null && !contextPath.isEmpty() && uri.startsWith(contextPath)) {
+            return uri.substring(contextPath.length());
+        }
+        return (uri == null || uri.isEmpty() ? "/" : uri);
+    }
+
+
+    /**
+     * Produces the canonical form of a request path: percent-decoded exactly once and then normalized. This is the
+     * form every routing and authorization decision must use, so that no spelling of a path can make two decisions
+     * disagree about which resource is being requested.
+     *
+     * Decoding is deliberately not delegated to <code>URLDecoder</code>, which implements form encoding and would
+     * turn a literal "+" in a path segment into a space.
+     * @param path A request path
+     * @return The decoded, normalized path, always starting with "/" and never ending with one
+     */
+    static String canonicalizePath(final String path) {
+        if (path == null || path.isEmpty()) {
+            return "/";
+        }
+        return normalizePathSegments(decodePath(path));
+    }
+
+
+    /**
+     * Percent-decodes a path exactly once, leaving dot segments in place. Code that rejects suspicious input needs
+     * this form rather than the canonical one: <code>canonicalizePath</code> resolves "." and ".." away, which hides
+     * a traversal attempt from any validator looking for it.
+     *
+     * Escape sequences are gathered and decoded as a group using the configured URI encoding, so a multi-byte
+     * character spanning several escapes decodes correctly. Literal characters are copied across untouched, which
+     * also means a surrogate pair is never split.
+     * @param path A request path
+     * @return The path with escape sequences decoded, dot segments untouched
+     */
+    public static String decodePath(final String path) {
+        if (path == null || path.indexOf('%') < 0) {
+            return path;
         }
 
+        Charset charset = uriCharset();
+        StringBuilder decoded = new StringBuilder(path.length());
+        ByteArrayOutputStream pending = new ByteArrayOutputStream();
+        for (int i = 0; i < path.length(); i++) {
+            char current = path.charAt(i);
+            if (current == '%' && i + 2 < path.length()) {
+                int high = Character.digit(path.charAt(i + 1), 16);
+                int low = Character.digit(path.charAt(i + 2), 16);
+                if (high >= 0 && low >= 0) {
+                    pending.write((high << 4) + low);
+                    i += 2;
+                    continue;
+                }
+            }
+            flushDecodedBytes(pending, decoded, charset);
+            decoded.append(current);
+        }
+        flushDecodedBytes(pending, decoded, charset);
+
+        return decoded.toString();
     }
+
+
+    /**
+     * Removes path parameters, everything from the first ";" to the end of each segment, leaving the rest of the path
+     * as it is. Spring removes path parameters before it matches a handler, and the servlet specification has a
+     * container remove them before matching url-patterns, so filter selection has to see the path without them too.
+     * @param path A request path
+     * @return The path with path parameters removed from every segment
+     */
+    static String stripPathParameters(final String path) {
+        if (path == null || path.indexOf(';') < 0) {
+            return path;
+        }
+        String[] segments = path.split("/", -1);
+        for (int i = 0; i < segments.length; i++) {
+            int parameterStart = segments[i].indexOf(';');
+            if (parameterStart >= 0) {
+                segments[i] = segments[i].substring(0, parameterStart);
+            }
+        }
+        return String.join("/", segments);
+    }
+
+
+    private static void flushDecodedBytes(ByteArrayOutputStream pending, StringBuilder out, Charset charset) {
+        if (pending.size() > 0) {
+            out.append(new String(pending.toByteArray(), charset));
+            pending.reset();
+        }
+    }
+
+
+    /**
+     * The charset configured for decoding request URIs, falling back to UTF-8 if it is unset or not supported.
+     * Never throws, because this runs on every request including malformed ones.
+     */
+    private static Charset uriCharset() {
+        ContainerConfig config = LambdaContainerHandler.getContainerConfig();
+        String configured = (config == null ? null : config.getUriEncoding());
+        if (configured == null || configured.isEmpty()) {
+            return StandardCharsets.UTF_8;
+        }
+        try {
+            return Charset.forName(configured);
+        } catch (Exception e) {
+            log.warn("Configured uriEncoding is not supported, falling back to UTF-8");
+            return StandardCharsets.UTF_8;
+        }
+    }
+
+
+    /**
+     * Collapses empty segments and resolves "." and ".." segments. Traversal above the root is contained rather than
+     * rejected, so that a path can never normalize to something outside the application.
+     */
+    private static String normalizePathSegments(final String path) {
+        Deque<String> segments = new ArrayDeque<>();
+        for (String segment : path.split("/", -1)) {
+            if (segment.isEmpty() || ".".equals(segment)) {
+                continue;
+            }
+            if ("..".equals(segment)) {
+                segments.pollLast();
+                continue;
+            }
+            segments.addLast(segment);
+        }
+
+        if (segments.isEmpty()) {
+            return "/";
+        }
+
+        StringBuilder normalized = new StringBuilder();
+        for (String segment : segments) {
+            normalized.append("/").append(segment);
+        }
+        return normalized.toString();
+    }
+
 
     static String cleanUri(String uri) {
         String finalUri = (uri == null ? "/" : uri);

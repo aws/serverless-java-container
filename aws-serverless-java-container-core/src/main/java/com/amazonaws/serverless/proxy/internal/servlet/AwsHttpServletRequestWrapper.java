@@ -27,6 +27,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import static com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest.cleanUri;
+import static com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletRequest.canonicalizePath;
 
 public class AwsHttpServletRequestWrapper implements HttpServletRequest {
     private HttpServletRequest originalRequest;
@@ -86,8 +87,9 @@ public class AwsHttpServletRequestWrapper implements HttpServletRequest {
 
     @Override
     public String getPathInfo() {
-        String pathInfo = cleanUri(newPath);
-        return AwsHttpServletRequest.decodeRequestPath(pathInfo, LambdaContainerHandler.getContainerConfig());
+        // Same canonical form the wrapped request and filter matching use. This is reached on async dispatch, where
+        // AwsProxyRequestDispatcher resolves the servlet from getPathInfo, so it has to agree with filter selection.
+        return canonicalizePath(newPath);
     }
 
     @Override
