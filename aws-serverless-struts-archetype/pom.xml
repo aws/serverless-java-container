@@ -9,6 +9,7 @@
 
     <groupId>com.amazonaws.serverless.archetypes</groupId>
     <artifactId>aws-serverless-struts-archetype</artifactId>
+    <name>AWS Serverless Struts Archetype</name>
     <version>1.10.0-SNAPSHOT</version>
     <packaging>maven-archetype</packaging>
 

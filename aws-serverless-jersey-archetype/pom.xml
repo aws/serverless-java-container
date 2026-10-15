@@ -9,6 +9,7 @@
 
     <groupId>com.amazonaws.serverless.archetypes</groupId>
     <artifactId>aws-serverless-jersey-archetype</artifactId>
+    <name>AWS Serverless Jersey Archetype</name>
     <version>1.10.0-SNAPSHOT</version>
     <packaging>maven-archetype</packaging>
 
