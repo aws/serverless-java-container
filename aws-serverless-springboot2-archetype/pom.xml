@@ -9,6 +9,7 @@
 
     <groupId>com.amazonaws.serverless.archetypes</groupId>
     <artifactId>aws-serverless-springboot2-archetype</artifactId>
+    <name>AWS Serverless Spring Boot 2 Archetype</name>
     <version>1.10.0-SNAPSHOT</version>
     <packaging>maven-archetype</packaging>
 
