@@ -4,18 +4,18 @@
     <parent>
         <groupId>com.amazonaws.serverless</groupId>
         <artifactId>aws-serverless-java-container</artifactId>
-        <version>1.9.6-SNAPSHOT</version>
+        <version>1.9.5</version>
     </parent>
 
     <groupId>com.amazonaws.serverless.archetypes</groupId>
     <artifactId>aws-serverless-springboot2-archetype</artifactId>
     <name>AWS Serverless Spring Boot 2 Archetype</name>
-    <version>1.9.6-SNAPSHOT</version>
+    <version>1.9.5</version>
     <packaging>maven-archetype</packaging>
 
     <scm>
         <url>https://github.com/aws/serverless-java-container.git</url>
-      <tag>HEAD</tag>
+      <tag>aws-serverless-java-container-1.9.5</tag>
   </scm>
 
     <licenses>
