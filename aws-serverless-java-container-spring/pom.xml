@@ -16,8 +16,8 @@
     </parent>
 
     <properties>
-        <spring.version>7.0.0</spring.version>
-        <spring-security.version>7.0.0</spring-security.version>
+        <spring.version>7.0.9</spring.version>
+        <spring-security.version>7.0.7</spring-security.version>
     </properties>
 
     <dependencies>

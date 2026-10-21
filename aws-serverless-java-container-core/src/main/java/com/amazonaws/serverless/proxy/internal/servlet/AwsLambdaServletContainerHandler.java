@@ -153,13 +153,23 @@ public abstract class AwsLambdaServletContainerHandler<RequestType, ResponseType
         FilterChain chain = getFilterChain(request, servlet);
         chain.doFilter(request, response);
         if(requiresAsyncReDispatch(request)) {
+            AsyncContext dispatchedContext = request.getAsyncContext();
             chain = getFilterChain(request, servlet);
             chain.doFilter(request, response);
+            // like a servlet container, we finish the response after the async dispatch unless the dispatch
+            // target started a new async cycle. Spring 7.0.6+ no longer flushes the body stream for us.
+            if (!response.isCommitted() && !startedNewAsyncContext(request, dispatchedContext)) {
+                response.flushBuffer();
+            }
         }
         // if for some reason the response wasn't flushed yet, we force it here unless it's being processed asynchronously (WebFlux)
         if (!response.isCommitted() && request.getDispatcherType() != DispatcherType.ASYNC) {
             response.flushBuffer();
         }
+    }
+
+    private boolean startedNewAsyncContext(HttpServletRequest request, AsyncContext dispatchedContext) {
+        return request.isAsyncStarted() && request.getAsyncContext() != dispatchedContext;
     }
 
     private boolean requiresAsyncReDispatch(HttpServletRequest request) {

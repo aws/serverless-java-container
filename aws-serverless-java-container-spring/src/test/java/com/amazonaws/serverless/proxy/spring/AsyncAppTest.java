@@ -9,6 +9,7 @@ import com.amazonaws.serverless.proxy.spring.springapp.LambdaHandler;
 import com.amazonaws.serverless.proxy.spring.springapp.MessageController;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -36,6 +37,7 @@ public class AsyncAppTest {
     }
 
     @Test
+    @Timeout(30)
     void springApp_asyncRequest_returnsCorrect() {
         AwsProxyRequest req = new AwsProxyRequestBuilder("/async", "GET").build();
         AwsProxyResponse resp = handler.handleRequest(req, new MockLambdaContext());
