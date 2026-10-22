@@ -15,19 +15,38 @@
     <url>https://aws.amazon.com/lambda</url>
 
     <properties>
-        <spring.version>7.0.1</spring.version>
-        <springboot.version>4.0.0</springboot.version>
-        <springsecurity.version>7.0.0</springsecurity.version>
+        <spring.version>7.0.9</spring.version>
+        <springboot.version>4.0.8</springboot.version>
+        <springsecurity.version>7.0.7</springsecurity.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <!-- Spring Boot manages an older Jackson 3 than core, align on core's version -->
+            <dependency>
+                <groupId>tools.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-framework-bom</artifactId>
                 <version>${spring.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <!-- Spring Boot's transitive dependencies disagree on these, pin them to the versions Boot manages -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jspecify</groupId>
+                <artifactId>jspecify</artifactId>
+                <version>1.0.1</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -37,7 +56,7 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-function-serverless-web</artifactId>
-            <version>5.0.0</version>
+            <version>5.0.4</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
