@@ -17,7 +17,7 @@
 
     <properties>
         <spring.version>7.0.9</spring.version>
-        <spring-security.version>7.0.7</spring-security.version>
+        <spring-security.version>7.1.1</spring-security.version>
     </properties>
 
     <dependencies>
