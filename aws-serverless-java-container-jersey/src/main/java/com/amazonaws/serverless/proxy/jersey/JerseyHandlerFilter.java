@@ -89,6 +89,19 @@ public class JerseyHandlerFilter implements Filter, Container {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
             throws IOException, ServletException {
+        // Jersey produces the response, so it ends the chain instead of passing the request on. Anything after it
+        // would only run once the resource had already executed.
+        handle(servletRequest, servletResponse);
+    }
+
+    /**
+     * Runs the request through Jersey and waits for the response to be written. {@link JerseyLambdaContainerHandler}
+     * calls this from the servlet at the end of the filter chain, so the resource is only reached once every filter
+     * registered with the servlet context has passed the request on.
+     * @param servletRequest The incoming servlet request
+     * @param servletResponse The response Jersey writes to
+     */
+    void handle(ServletRequest servletRequest, ServletResponse servletResponse) {
         Timer.start("JERSEY_FILTER_DOFILTER");
         // we use a latch to make the processing inside Jersey synchronous
         CountDownLatch jerseyLatch = new CountDownLatch(1);
@@ -106,7 +119,6 @@ public class JerseyHandlerFilter implements Filter, Container {
             throw new InternalServerErrorException(e);
         }
         Timer.stop("JERSEY_FILTER_DOFILTER");
-        filterChain.doFilter(servletRequest, servletResponse);
     }
 
     @Override
