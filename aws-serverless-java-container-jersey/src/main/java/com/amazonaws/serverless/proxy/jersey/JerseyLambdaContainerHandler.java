@@ -232,8 +232,13 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
         return jerseyFilter.getApplicationHandler().getInjectionManager();
     }
 
+    /**
+     * The servlet Jersey runs as, which is the terminal step of the filter chain for every request this handler
+     * routes. This returned null while Jersey ran as a filter and there was no servlet to hand back.
+     * @return The Jersey servlet
+     */
     public Servlet getServlet() {
-        return null;
+        return jerseyServlet;
     }
 
     //-------------------------------------------------------------
