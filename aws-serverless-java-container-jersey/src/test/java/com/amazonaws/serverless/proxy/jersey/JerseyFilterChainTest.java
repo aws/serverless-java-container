@@ -19,6 +19,7 @@ import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpApiV2HttpServletRequestReader;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequestReader;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsServletRegistration;
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
@@ -33,6 +34,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
+import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -55,6 +57,8 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
  * Servlet filters registered on a Jersey handler must run before the JAX-RS resource, as they would in front of a
@@ -247,6 +251,21 @@ public class JerseyFilterChainTest {
 
         assertEquals(200, resp.getStatusCode());
         assertEquals(SECRET_BODY, resp.getBody());
+    }
+
+    /** The handler hands back the servlet it routes to, which is the one registered on the servlet context. */
+    @MethodSource("data")
+    @ParameterizedTest
+    void getServlet_returnsTheServletRegisteredOnTheContext(String reqType) {
+        JerseyLambdaContainerHandler<?, AwsProxyResponse> handler = "HTTP_API".equals(reqType)
+                ? JerseyLambdaContainerHandler.getHttpApiV2ProxyHandler(newApp())
+                : JerseyLambdaContainerHandler.getAwsProxyHandler(newApp());
+
+        Servlet registered = ((AwsServletRegistration) handler.getServletContext()
+                .getServletRegistrations().values().iterator().next()).getServlet();
+
+        assertNotNull(handler.getServlet());
+        assertSame(registered, handler.getServlet());
     }
 
     @MethodSource("data")
