@@ -52,10 +52,15 @@ import static com.amazonaws.serverless.proxy.RequestReader.JAX_SECURITY_CONTEXT_
 import static com.amazonaws.serverless.proxy.RequestReader.LAMBDA_CONTEXT_PROPERTY;
 
 /**
- * Servlet filter class that calls Jersey's ApplicationHandler. Given a Jax RS Application object, this class
- * initializes a Jersey {@link ApplicationHandler} and calls its <code>handle</code> method. Requests are transformed
- * to <code>ContainerRequest</code> objects by the {@link #servletRequestToContainerRequest(ServletRequest)} method.
+ * Calls Jersey's ApplicationHandler. Given a Jax RS Application object, this class initializes a Jersey
+ * {@link ApplicationHandler} and calls its <code>handle</code> method. Requests are transformed to
+ * <code>ContainerRequest</code> objects by the {@link #servletRequestToContainerRequest(ServletRequest)} method.
  * Jersey responses are written directly to the ServletResponse by the {@link JerseyServletResponseWriter}.
+ *
+ * {@link JerseyLambdaContainerHandler} invokes this class from the servlet at the end of the filter chain, so that
+ * application filters run before a JAX-RS resource. It is no longer registered as a servlet filter itself. The
+ * <code>Filter</code> interface is still implemented because this class is public, but {@link #doFilter} is
+ * deprecated: Jersey writes the response, so there is nothing for a filter after it to do.
  */
 public class JerseyHandlerFilter implements Filter, Container {
     public static final String JERSEY_SERVLET_REQUEST_PROPERTY = "com.amazonaws.serverless.jersey.servletRequest";
@@ -86,9 +91,28 @@ public class JerseyHandlerFilter implements Filter, Container {
     }
 
 
+    /**
+     * @deprecated This class is not registered as a filter any more, and nothing in the library calls this method.
+     *     It runs Jersey and ignores the chain, because Jersey writes the response: a filter placed after it could
+     *     only run once the resource had already executed. Register filters on the servlet context instead, through
+     *     {@link com.amazonaws.serverless.proxy.internal.servlet.AwsLambdaServletContainerHandler#onStartup}, and
+     *     they will run before Jersey.
+     */
+    @Deprecated
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
             throws IOException, ServletException {
+        handle(servletRequest, servletResponse);
+    }
+
+    /**
+     * Runs the request through Jersey and waits for the response to be written. {@link JerseyLambdaContainerHandler}
+     * calls this from the servlet at the end of the filter chain, so the resource is only reached once every filter
+     * registered with the servlet context has passed the request on.
+     * @param servletRequest The incoming servlet request
+     * @param servletResponse The response Jersey writes to
+     */
+    void handle(ServletRequest servletRequest, ServletResponse servletResponse) {
         Timer.start("JERSEY_FILTER_DOFILTER");
         // we use a latch to make the processing inside Jersey synchronous
         CountDownLatch jerseyLatch = new CountDownLatch(1);
@@ -106,7 +130,6 @@ public class JerseyHandlerFilter implements Filter, Container {
             throw new InternalServerErrorException(e);
         }
         Timer.stop("JERSEY_FILTER_DOFILTER");
-        filterChain.doFilter(servletRequest, servletResponse);
     }
 
     @Override

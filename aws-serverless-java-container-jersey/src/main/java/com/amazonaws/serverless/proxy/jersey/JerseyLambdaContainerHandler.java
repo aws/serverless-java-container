@@ -30,15 +30,16 @@ import org.glassfish.jersey.internal.inject.InjectionManager;
 import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
 
-import jakarta.servlet.DispatcherType;
-import jakarta.servlet.FilterRegistration;
 import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.core.Application;
 
-import java.util.EnumSet;
 import java.util.concurrent.CountDownLatch;
 
 
@@ -72,7 +73,10 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
     // Variables - Private
     //-------------------------------------------------------------
 
+    private static final String JERSEY_SERVLET_NAME = "JerseyServlet";
+
     private JerseyHandlerFilter jerseyFilter;
+    private JerseyServlet jerseyServlet;
     private boolean initialized;
 
     //-------------------------------------------------------------
@@ -174,6 +178,7 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
         }
 
         this.jerseyFilter = new JerseyHandlerFilter(jaxRsApplication);
+        this.jerseyServlet = new JerseyServlet(jerseyFilter);
         Timer.stop("JERSEY_CONTAINER_CONSTRUCTOR");
     }
 
@@ -194,7 +199,7 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
             ((AwsHttpServletRequest)httpServletRequest).setServletContext(getServletContext());
         }
 
-        doFilter(httpServletRequest, httpServletResponse, null);
+        doFilter(httpServletRequest, httpServletResponse, jerseyServlet);
         Timer.stop("JERSEY_HANDLE_REQUEST");
     }
 
@@ -207,12 +212,13 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
     public void initialize() {
         Timer.start("JERSEY_COLD_START_INIT");
 
-        // manually add the filter to the chain. This should the last one and match all uris
-        FilterRegistration.Dynamic jerseyFilterReg = getServletContext().addFilter("JerseyFilter", jerseyFilter);
-        jerseyFilterReg.addMappingForUrlPatterns(
-                EnumSet.of(DispatcherType.REQUEST, DispatcherType.ASYNC, DispatcherType.INCLUDE, DispatcherType.FORWARD),
-                true, "/*"
-        );
+        // Jersey runs as the servlet at the end of the filter chain, the way DispatcherServlet does for Spring. Every
+        // filter registered with the servlet context, before or after this method, runs first and can stop the
+        // request before it reaches a resource.
+        ServletRegistration.Dynamic jerseyServletReg = getServletContext().addServlet(JERSEY_SERVLET_NAME, jerseyServlet);
+        jerseyServletReg.addMapping("/*");
+        // the filter chain reads the servlet name from its config, so the servlet has to be initialized up front
+        jerseyServlet.init(((AwsServletRegistration) jerseyServletReg).getServletConfig());
 
         Timer.stop("JERSEY_COLD_START_INIT");
         initialized = true;
@@ -226,7 +232,53 @@ public class JerseyLambdaContainerHandler<RequestType, ResponseType> extends Aws
         return jerseyFilter.getApplicationHandler().getInjectionManager();
     }
 
+    /**
+     * The servlet Jersey runs as, which is the terminal step of the filter chain for every request this handler
+     * routes. This returned null while Jersey ran as a filter and there was no servlet to hand back.
+     * @return The Jersey servlet
+     */
     public Servlet getServlet() {
-        return null;
+        return jerseyServlet;
+    }
+
+    //-------------------------------------------------------------
+    // Inner Class -
+    //-------------------------------------------------------------
+
+    /**
+     * The servlet at the end of the filter chain. It hands the request to Jersey, which writes the response.
+     */
+    private static final class JerseyServlet implements Servlet {
+        private final JerseyHandlerFilter jerseyFilter;
+        private ServletConfig config;
+
+        JerseyServlet(JerseyHandlerFilter jerseyFilter) {
+            this.jerseyFilter = jerseyFilter;
+        }
+
+        @Override
+        public void init(ServletConfig servletConfig) {
+            config = servletConfig;
+        }
+
+        @Override
+        public ServletConfig getServletConfig() {
+            return config;
+        }
+
+        @Override
+        public void service(ServletRequest servletRequest, ServletResponse servletResponse) {
+            jerseyFilter.handle(servletRequest, servletResponse);
+        }
+
+        @Override
+        public String getServletInfo() {
+            return "";
+        }
+
+        @Override
+        public void destroy() {
+
+        }
     }
 }
