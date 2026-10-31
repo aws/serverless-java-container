@@ -29,6 +29,9 @@ function archetype {
     ARCHETYPE_NAME=aws-serverless-$1-archetype
     PROJ_NAME=$1-archetype-test
     cd ${WORKING_DIR}/${ARCHETYPE_NAME} && mvn -q clean install
+    if [[ "$?" -ne 0 ]]; then
+        exit 1
+    fi
     ARCHETYPE_TEST_DIR=${WORKING_DIR}/$1_archetype_test
     mkdir -p ${ARCHETYPE_TEST_DIR}
     cd ${ARCHETYPE_TEST_DIR} && mvn archetype:generate -DgroupId=my.service -DartifactId=${PROJ_NAME} -Dversion=2.0-SNAPSHOT \
