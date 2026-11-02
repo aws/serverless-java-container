@@ -16,7 +16,7 @@
     </parent>
 
     <properties>
-        <jersey.version>3.1.10</jersey.version>
+        <jersey.version>4.0.3</jersey.version>
     </properties>
 
     <dependencies>
