@@ -45,6 +45,7 @@ public class ApiGatewayRequestIdentity {
     private String sourceIp;
     private String accountId;
     private String accessKey;
+    private ApiGatewayClientCertificate clientCert;
 
 
     //-------------------------------------------------------------
@@ -178,5 +179,15 @@ public class ApiGatewayRequestIdentity {
 
     public void setAccessKey(String accessKey) {
         this.accessKey = accessKey;
+    }
+
+
+    public ApiGatewayClientCertificate getClientCert() {
+        return clientCert;
+    }
+
+
+    public void setClientCert(ApiGatewayClientCertificate clientCert) {
+        this.clientCert = clientCert;
     }
 }
