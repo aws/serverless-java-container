@@ -3,6 +3,7 @@ package com.amazonaws.serverless.proxy;
 
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.exceptions.InvalidResponseObjectException;
+import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.ErrorModel;
 import tools.jackson.core.JacksonException;
@@ -11,10 +12,12 @@ import tools.jackson.databind.ObjectMapper;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import jakarta.ws.rs.InternalServerErrorException;
@@ -256,5 +259,38 @@ public class AwsProxyExceptionHandlerTest {
         ErrorModel error = objectMapper.readValue(output, ErrorModel.class);
         assertNotNull(error);
         assertEquals(INVALID_RESPONSE_MESSAGE, error.getMessage());
+    }
+
+    @Test
+    void handle_printStackTraceCalled() {
+        // Capture System.err to verify printStackTrace() is invoked
+        PrintStream originalErr = System.err;
+        ByteArrayOutputStream errCapture = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(errCapture));
+
+        try {
+            exceptionHandler.handle(new RuntimeException("test"));
+
+            assertTrue(errCapture.size() > 0, "printStackTrace should write to stderr");
+            String errOutput = errCapture.toString();
+            assertTrue(errOutput.contains("RuntimeException"), "stderr should contain exception class name");
+        } finally {
+            System.setErr(originalErr);
+        }
+    }
+
+    @Test
+    void getErrorJson_JacksonException_fallbackJson() {
+        ObjectMapper mockMapper = mock(ObjectMapper.class);
+        JacksonException exception = mock(JacksonException.class);
+        when(mockMapper.writeValueAsString(any(Object.class))).thenThrow(exception);
+
+        try (MockedStatic<LambdaContainerHandler> mockedHandler = mockStatic(LambdaContainerHandler.class)) {
+            mockedHandler.when(LambdaContainerHandler::getObjectMapper).thenReturn(mockMapper);
+
+            String output = exceptionHandler.getErrorJson("test error");
+
+            assertEquals("{ \"message\": \"test error\" }", output);
+        }
     }
 }
