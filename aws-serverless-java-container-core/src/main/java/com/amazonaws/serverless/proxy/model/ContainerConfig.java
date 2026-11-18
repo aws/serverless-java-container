@@ -55,6 +55,7 @@ public class ContainerConfig {
     private boolean stripBasePath;
     private String uriEncoding;
     private String defaultContentCharset;
+    private boolean appendDefaultContentCharset = true;
     private boolean consolidateSetCookieHeaders;
     private boolean useStageAsServletContext;
     private List<String> validFilePaths;
@@ -288,6 +289,24 @@ public class ContainerConfig {
      */
     public void setDefaultContentCharset(String defaultContentCharset) {
         this.defaultContentCharset = defaultContentCharset;
+    }
+
+    /**
+     * Returns whether the default charset is appended to a request's <code>Content-Type</code> header when
+     * the header does not already specify a charset. This is enabled by default.
+     * @return whether the default charset is appended to the Content-Type header
+     */
+    public boolean isAppendDefaultContentCharset() {
+        return appendDefaultContentCharset;
+    }
+
+    /**
+     * Sets whether the default charset is appended to a request's <code>Content-Type</code> header when
+     * the header does not already specify a charset. The default is <code>true</code>.
+     * @param appendDefaultContentCharset whether to append the default charset
+     */
+    public void setAppendDefaultContentCharset(boolean appendDefaultContentCharset) {
+        this.appendDefaultContentCharset = appendDefaultContentCharset;
     }
 
     /**
