@@ -3,14 +3,12 @@ package com.amazonaws.serverless.proxy.internal.servlet;
 
 import com.amazonaws.serverless.exceptions.InvalidRequestEventException;
 import com.amazonaws.serverless.proxy.internal.LambdaContainerHandler;
+import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.ContainerConfig;
-import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
-import org.junit.jupiter.api.Test;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.HttpHeaders;
-import jakarta.ws.rs.core.SecurityContext;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -78,6 +76,28 @@ public class AwsProxyHttpServletRequestReaderTest {
             String contentAndCharset = requestCharset + "; charset=" + LambdaContainerHandler.getContainerConfig().getDefaultContentCharset();
             assertEquals(contentAndCharset, servletRequest.getHeader(HttpHeaders.CONTENT_TYPE));
             assertEquals(LambdaContainerHandler.getContainerConfig().getDefaultContentCharset(), servletRequest.getCharacterEncoding());
+        } catch (InvalidRequestEventException e) {
+            e.printStackTrace();
+            fail("Could not read request");
+        }
+    }
+
+    @Test
+    void readRequest_contentCharset_doesNotAppendDefaultCharsetWhenDisabled() {
+        String requestContentType = "application/json";
+        AwsProxyRequest request = new AwsProxyRequestBuilder(ENCODED_REQUEST_PATH, "GET")
+                .header(HttpHeaders.CONTENT_TYPE, requestContentType)
+                .build();
+
+        ContainerConfig config = ContainerConfig.defaultConfig();
+        config.setAppendDefaultContentCharset(false);
+
+        try {
+            HttpServletRequest servletRequest = reader.readRequest(request, null, null, config);
+            assertNotNull(servletRequest);
+            assertEquals(requestContentType, servletRequest.getHeader(HttpHeaders.CONTENT_TYPE));
+            assertEquals(requestContentType, request.getMultiValueHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
+            assertNull(servletRequest.getCharacterEncoding());
         } catch (InvalidRequestEventException e) {
             e.printStackTrace();
             fail("Could not read request");
