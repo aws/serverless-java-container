@@ -41,6 +41,7 @@ public class ContainerConfig {
         configuration.setQueryStringCaseSensitive(false);
         configuration.addBinaryContentTypes("application/octet-stream", "image/jpeg", "image/png", "image/gif");
         configuration.setDefaultContentCharset(DEFAULT_CONTENT_CHARSET);
+        configuration.setAppendDefaultContentCharset(true);
         configuration.setInitializationTimeout(MAX_INIT_TIMEOUT_MS);
         configuration.setDisableExceptionMapper(false);
 
@@ -55,6 +56,7 @@ public class ContainerConfig {
     private boolean stripBasePath;
     private String uriEncoding;
     private String defaultContentCharset;
+    private boolean appendDefaultContentCharset = true;
     private boolean consolidateSetCookieHeaders;
     private boolean useStageAsServletContext;
     private List<String> validFilePaths;
@@ -288,6 +290,25 @@ public class ContainerConfig {
      */
     public void setDefaultContentCharset(String defaultContentCharset) {
         this.defaultContentCharset = defaultContentCharset;
+    }
+
+    /**
+     * Returns whether the default charset should be appended to the <code>Content-Type</code> header.
+     * This is enabled by default.
+     *
+     * @return <code>true</code> if the default charset should be appended, <code>false</code> otherwise.
+     */
+    public boolean isAppendDefaultContentCharset() {
+        return appendDefaultContentCharset;
+    }
+
+    /**
+     * Sets whether the default charset should be appended to the <code>Content-Type</code> header.
+     *
+     * @param appendDefaultContentCharset whether to append the default charset.
+     */
+    public void setAppendDefaultContentCharset(boolean appendDefaultContentCharset) {
+        this.appendDefaultContentCharset = appendDefaultContentCharset;
     }
 
     /**

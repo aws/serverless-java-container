@@ -85,6 +85,49 @@ public class AwsProxyHttpServletRequestReaderTest {
     }
 
     @Test
+    void readRequest_contentCharset_doesNotAppendDefaultCharsetWhenDisabled() {
+        String requestContentType = "application/json";
+
+        AwsProxyRequest request = new AwsProxyRequestBuilder(ENCODED_REQUEST_PATH, "GET")
+            .header(HttpHeaders.CONTENT_TYPE, requestContentType)
+            .build();
+
+        ContainerConfig config = ContainerConfig.defaultConfig();
+        config.setAppendDefaultContentCharset(false);
+
+        try {
+            HttpServletRequest servletRequest = reader.readRequest(request, null, null, config);
+            assertNotNull(servletRequest);
+            assertEquals(requestContentType, servletRequest.getHeader(HttpHeaders.CONTENT_TYPE));
+        } catch (InvalidRequestEventException e) {
+            e.printStackTrace();
+            fail("Could not read request");
+        }
+    }
+
+    @Test
+    void readRequest_contentCharset_preservesRequestCharsetWhenAppendingDisabled() {
+        String requestContentType = "application/json; charset=UTF-8";
+
+        AwsProxyRequest request = new AwsProxyRequestBuilder(ENCODED_REQUEST_PATH, "GET")
+                .header(HttpHeaders.CONTENT_TYPE, requestContentType)
+                .build();
+
+        ContainerConfig config = ContainerConfig.defaultConfig();
+        config.setAppendDefaultContentCharset(false);
+
+        try {
+            HttpServletRequest servletRequest = reader.readRequest(request, null, null, config);
+
+            assertEquals(requestContentType, servletRequest.getHeader(HttpHeaders.CONTENT_TYPE));
+            assertEquals("UTF-8", servletRequest.getCharacterEncoding());
+        } catch (InvalidRequestEventException e) {
+            e.printStackTrace();
+            fail("Could not read request");
+        }
+    }
+
+    @Test
     void readRequest_contentCharset_appendsCharsetToComplextContentType() {
         String contentType = "multipart/form-data; boundary=something";
         AwsProxyRequest request = new AwsProxyRequestBuilder(ENCODED_REQUEST_PATH, "GET").header(HttpHeaders.CONTENT_TYPE, contentType).build();
