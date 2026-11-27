@@ -84,6 +84,10 @@ public class AwsProxyHttpServletRequestReader extends RequestReader<AwsProxyRequ
             return headerValue;
         }
 
+        if (!config.isAppendDefaultContentCharset()) {
+            return headerValue;
+        }
+
         if (headerValue.contains("charset=")) {
             return headerValue;
         }
@@ -92,7 +96,6 @@ public class AwsProxyHttpServletRequestReader extends RequestReader<AwsProxyRequ
         if (!headerValue.trim().endsWith(";")) {
             newValue += "; ";
         }
-
         newValue += "charset=" + config.getDefaultContentCharset();
         return newValue;
     }
